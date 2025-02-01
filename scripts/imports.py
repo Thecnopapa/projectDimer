@@ -2,7 +2,7 @@ import os
 from globals import root, local
 from utilities import *
 
-from molecules import Reference
+from molecules import Reference, PDB
 
 def load_references(force_reload=False):
     sprint("Loading references, force reload: ", force_reload)
@@ -14,7 +14,7 @@ def load_references(force_reload=False):
     if len(references) == 0:
         print1("No saved references found, generating them now")
         for file in os.listdir(root.references):
-            if file.endswith((".pdb", ".cif")):
+            if file.endswith((".pdb", ".cif", "pdb1")):
                 references.append(Reference(os.path.join(root.references, file)))
     print1("{} references loaded:".format(len(references)))
     for reference in references:
@@ -31,8 +31,8 @@ def load_experimental(force_reload=False):
     if len(molecules) == 0:
         print1("No saved molecules found, generating them now")
         for file in os.listdir(root.experimental):
-            if file.endswith((".pdb", ".cif")):
-                molecules.append(Reference(os.path.join(root.experimental, file)))
+            if file.endswith((".pdb", ".cif", "pdb1")):
+                molecules.append(PDB(os.path.join(root.experimental, file)))
     print1("{} molecules loaded:".format(len(molecules)))
     for reference in molecules:
         print2(reference)

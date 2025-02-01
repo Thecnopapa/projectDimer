@@ -17,6 +17,9 @@ references = load_references(force_reload=True)
 molecules = load_experimental(force_reload=True)
 
 
+for reference in references:
+    reference.parse_structure()
+
 
 
 

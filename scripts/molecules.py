@@ -1,7 +1,7 @@
 import os
 from utilities import *
 from globals import root, local
-
+from Bio.PDB import PDBParser
 
 
 class BioObject:
@@ -23,22 +23,26 @@ class BioObject:
     def __repr__(self):
         return "{} ({})".format(self.name, self.__class__.__name__)
 
+    def parse_structure(self):
+        self.structure = PDBParser(QUIET=True).get_structure(self.name[:4], self.path)
+
 
 
 class PDB(BioObject):
+    pickle_extension = '.molecule'
+    pickle_folder = "molecules"
     def __init__(self, path):
-        self.pickle_extension = '.molecule'
-        self.pickle_folder = "molecules"
         self.path = path
         self.name = clean_string(os.path.basename(path).split(".")[0], allow = ["_"])
         self.structure = None
 
 
 class Reference(PDB):
-    def __init__(self, path):
-        super().__init__(path)
-        pickle_extension = '.reference'
-        pickle_folder = "molecules"
+    pickle_extension = '.reference'
+    pickle_folder = "molecules"
+    '''def __init__(self, path):
+        super().__init__(path)'''
+
 
 
 class Monomer(BioObject):
