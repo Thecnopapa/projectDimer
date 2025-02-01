@@ -5,7 +5,7 @@ def tprint(*strings, head=10, style="#", end="\n", sep=" "):  # Print section ti
     width = shutil.get_terminal_size()[0] - 10
     string = " ".join(strings)
     tail = width - head - len(string)
-    print("{}{}{}{}{}".format(style*head, sep, string,sep, style*tail), end=end)
+    print("\n{}{}{}{}{}".format(style*head, sep, string,sep, style*tail), end=end)
 
 
 
