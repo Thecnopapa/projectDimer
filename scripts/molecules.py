@@ -1,7 +1,7 @@
 import os
 from utilities import *
 from globals import root, local
-from Bio.PDB import PDBParser
+from Bio.PDB import PDBParser, MMCIFParser
 
 
 class BioObject:
@@ -24,7 +24,10 @@ class BioObject:
         return "{} ({})".format(self.name, self.__class__.__name__)
 
     def parse_structure(self):
-        self.structure = PDBParser(QUIET=True).get_structure(self.name[:4], self.path)
+        if self.path.endswith('.cif'):
+            self.structure = MMCIFParser(QUIET=True).get_structure(self.name[:4], self.path)
+        else:
+            self.structure = PDBParser(QUIET=True).get_structure(self.name[:4], self.path)
 
 
 
