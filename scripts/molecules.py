@@ -37,14 +37,13 @@ class PDB(BioObject):
     def __init__(self, path):
         self.path = path
         self.name = clean_string(os.path.basename(path).split(".")[0], allow = ["_"])
-        self.structure = None
+        self.parse_structure()
 
 
 class Reference(PDB):
     pickle_extension = '.reference'
     pickle_folder = "molecules"
-    '''def __init__(self, path):
-        super().__init__(path)'''
+
 
 
 
