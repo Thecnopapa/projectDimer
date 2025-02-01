@@ -1,11 +1,12 @@
 import os
+from utilities import *
 root = None
 local = None
 
 class Directory:
     def __init__(self, path):
         self.path = path
-        print(path)
+        os.makedirs(self.path, exist_ok=True)
         self.children = {}
         self.load_folders(self.path)
 
@@ -38,8 +39,10 @@ class Directory:
 def set_root(path):
     global root
     root = Directory(path)
+    sprint("Root set to: {}".format(os.path.abspath(root.path)))
 
 def set_local(path):
     global local
     local = Directory(path)
+    sprint("Local set to: {}".format(os.path.abspath(local.path)))
 

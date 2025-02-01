@@ -31,3 +31,13 @@ def print2(*strings): # Print with 2 indents
 
 def print3(*strings):
     print1(strings, space=6)
+
+
+def clean_string(string, allow=(".", "_")):
+    from unidecode import unidecode
+    return ''.join(e for e in unidecode(string) if e.isalnum() or e in allow)
+
+def unpickle(path):
+    import pickle
+    with open(path, "rb") as f:
+        return pickle.load(f)

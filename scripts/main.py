@@ -3,15 +3,18 @@ import globals
 
 
 
-
-
 globals.set_root("../")
-print(globals.root)
+if os.name == "nt":
+    globals.set_local("C:/Users/iainv/localdata/_local/projectB")
+from globals import root, local
 
 
-print(os.listdir(globals.root.path))
 
-print(os.path.abspath(globals.root.path))
+from  molecules import *
+molecule1 = PDB(os.path.join(root.references, "AR.pdb"))
 
-from globals import root
+references = []
 
+for reference in os.listdir(root.references):
+    if reference.endswith(".pdb"):
+        references.append(Reference(os.path.join(root.references,reference)))
