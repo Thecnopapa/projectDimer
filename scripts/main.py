@@ -10,11 +10,23 @@ from globals import root, local
 
 
 
+
+from references import load_references
+references = load_references(force_reload=True)
+
 from  molecules import *
-molecule1 = PDB(os.path.join(root.references, "AR.pdb"))
 
-references = []
 
-for reference in os.listdir(root.references):
-    if reference.endswith(".pdb"):
-        references.append(Reference(os.path.join(root.references,reference)))
+
+
+
+
+
+
+
+
+
+
+# Save and exit
+for reference in references:
+    reference.pickle()

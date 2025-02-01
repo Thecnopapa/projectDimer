@@ -1,6 +1,6 @@
 import os
 from utilities import *
-import globals
+from globals import root, local
 
 
 
@@ -12,13 +12,16 @@ class BioObject:
 
     def pickle(self):
         import pickle
-        globals.local["pickles"] = "pickles"
-        pickle_folder = os.path.join(globals.local.pickles, self.pickle_folder)
+        local["pickles"] = "pickles"
+        pickle_folder = os.path.join(local.pickles, self.pickle_folder)
         os.makedirs(pickle_folder, exist_ok=True)
         file_name = "{}{}".format(self.name, self.pickle_extension)
         self.pickle_path = os.path.join(pickle_folder, file_name)
         with open(self.pickle_path, 'wb') as f:
             pickle.dump(self, f)
+
+    def __repr__(self):
+        return "{} ({})".format(self.name, self.__class__.__name__)
 
 
 
@@ -33,7 +36,7 @@ class PDB(BioObject):
 
 class Reference(PDB):
     pickle_extension = '.reference'
-    pickle_folder = "reference"
+    pickle_folder = "molecules"
 
 
 class Monomer(BioObject):
