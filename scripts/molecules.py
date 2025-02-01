@@ -26,17 +26,19 @@ class BioObject:
 
 
 class PDB(BioObject):
-    pickle_extension = '.molecule'
-    pickle_folder = "molecules"
     def __init__(self, path):
+        self.pickle_extension = '.molecule'
+        self.pickle_folder = "molecules"
         self.path = path
         self.name = clean_string(os.path.basename(path).split(".")[0], allow = ["_"])
         self.structure = None
 
 
 class Reference(PDB):
-    pickle_extension = '.reference'
-    pickle_folder = "molecules"
+    def __init__(self, path):
+        super().__init__(path)
+        pickle_extension = '.reference'
+        pickle_folder = "molecules"
 
 
 class Monomer(BioObject):

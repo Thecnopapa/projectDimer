@@ -11,10 +11,10 @@ from globals import root, local
 
 
 
-from references import load_references
+from imports import load_references, load_experimental
 references = load_references(force_reload=True)
 
-from  molecules import *
+molecules = load_experimental(force_reload=True)
 
 
 
@@ -30,3 +30,5 @@ from  molecules import *
 # Save and exit
 for reference in references:
     reference.pickle()
+for molecule in molecules:
+    molecule.pickle()
