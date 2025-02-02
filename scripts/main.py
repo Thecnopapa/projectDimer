@@ -1,7 +1,7 @@
 import os
 import globals
 from utilities import *
-
+import pandas as pd
 
 globals.set_root("../")
 if os.name == "nt":
@@ -27,6 +27,17 @@ from imports import load_monomers
 monomers = load_monomers(molecules = molecules, force_reload=True)
 eprint("Monomers loaded")
 
+tprint("Superposing Monomers")
+columns = ["ID", "name", "chain"]
+for reference in references:
+    columns.extend(["rmsd_" + reference.name, "align_len_" + reference.name])
+super_df = pd.DataFrame(columns = columns)
+progress = ProgressBar(len(monomers))
+for monomer in monomers:
+    monomer.superpose(references, super_df)
+    progress.add()
+root["dataframes"] = "dataframes"
+super_df.to_csv(os.path.join(root.dataframes,"super_df.csv"), header = True, index = False)
 
 
 

@@ -3,6 +3,8 @@ from utilities import *
 root = None
 local = None
 
+
+
 class Directory:
     def __init__(self, path):
         self.path = path
@@ -46,3 +48,23 @@ def set_local(path):
     local = Directory(path)
     sprint("Local set to: {}".format(os.path.abspath(local.path)))
 
+
+
+class Variable:
+    def __init__(self):
+        self.vars= {}
+
+    def __getitem__(self, item):
+        return self.vars[item]
+
+    def __setitem__(self, key, value):
+        self.vars[key] = value
+
+    def __contains__(self, item):
+        return item in self.vars
+
+    def __getattr__(self, item):
+        return self.vars[item]
+
+
+vars = Variable()
