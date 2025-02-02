@@ -1,4 +1,6 @@
 import os
+
+
 from utilities import *
 from globals import root, local
 from Bio.PDB import PDBParser, MMCIFParser, PDBIO
@@ -16,13 +18,13 @@ class BioObject:
         local["pickles"] = "pickles"
         pickle_folder = os.path.join(local.pickles, self.pickle_folder)
         os.makedirs(pickle_folder, exist_ok=True)
-        file_name = "{}{}".format(self.name, self.pickle_extension)
+        file_name = "{}{}".format(self.id, self.pickle_extension)
         self.pickle_path = os.path.join(pickle_folder, file_name)
         with open(self.pickle_path, 'wb') as f:
             pickle.dump(self, f)
 
     def __repr__(self):
-        return "{} ({})".format(self.name, self.__class__.__name__)
+        return "{} ({})".format(self.id, self.__class__.__name__)
 
     def parse_structure(self):
         if self.path is None:
@@ -40,7 +42,7 @@ class BioObject:
         if subfolder is not None:
             path = os.path.join(local.exports, subfolder)
         else:
-            path = os.path.join(local.exports, self.pickle_folder)
+            path = os.path.join(local.exports, "pdb_" + self.pickle_folder)
         os.makedirs(path, exist_ok=True)
         path = os.path.join(path, self.id+".pdb")
         exporting.save(path)
@@ -55,7 +57,14 @@ class PDB(BioObject):
         self.parse_structure()
 
     def get_monomers(self):
-        pass
+        monomers = []
+        for chain in self.structure.get_chains():
+            if len(chain.get_list()) > 50:
+                monomers.append(Monomer(self.name, chain.id, chain))
+        return monomers
+
+
+
 
 
 class Reference(PDB):

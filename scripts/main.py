@@ -24,7 +24,7 @@ eprint("Files loaded")
 
 tprint("Loading monomers")
 from imports import load_monomers
-monomers = load_monomers(force_reload=True)
+monomers = load_monomers(molecules = molecules, force_reload=True)
 
 eprint("Monomers loaded")
 
@@ -42,9 +42,11 @@ for file in references + molecules + monomers:
 
 
 # Save and exit
+tprint("Saving pickles")
 for reference in references:
     reference.pickle()
 for molecule in molecules:
     molecule.pickle()
 for monomer in monomers:
     monomer.pickle()
+eprint("Finished")
