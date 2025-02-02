@@ -85,6 +85,26 @@ class Monomer(BioObject):
         self.id = "{}_{}".format(name, chain)
         self.path = self.export()
 
+        self.rmsds = {}
+        self.al_lens = {}
+        self.rotations = {}
+
+    def superpose(self, references, df, force_superposed=False):
+        from superpose import superpose_single
+        for reference in references:
+            ref_name = reference.id
+            if not ref_name in self.rmsds.keys() or force_superposed:
+                super_id = self.id + "_x_" + ref_name
+                rmsd, al_len, rotation = superpose_single(super_id, self.path, reference.path)
+                self.rmsds[ref_name] = rmsd
+                self.al_lens[ref_name] = al_len
+                self.rotations[ref_name] = rotation
+        contents = [self.id, self.name, self.chain]
+        contents.extend(self.rmsds)
+        contents.extend(self.al_lens)
+        contents.extend(self.rotations)
+
+
 
 class Dimer(BioObject):
     pickle_extension = '.dimer'
