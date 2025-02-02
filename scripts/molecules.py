@@ -1,13 +1,14 @@
 import os
 from utilities import *
 from globals import root, local
-from Bio.PDB import PDBParser, MMCIFParser
+from Bio.PDB import PDBParser, MMCIFParser, PDBIO
 
 
 class BioObject:
     pickle_extension = '.pickle'
     pickle_folder = "other"
     name = "BioObject"
+    path = None
 
 
     def pickle(self):
@@ -24,20 +25,37 @@ class BioObject:
         return "{} ({})".format(self.name, self.__class__.__name__)
 
     def parse_structure(self):
-        if self.path.endswith('.cif'):
-            self.structure = MMCIFParser(QUIET=True).get_structure(self.name[:4], self.path)
+        if self.path is None:
+            path = self.o_path
+        if path.endswith('.cif'):
+            self.structure = MMCIFParser(QUIET=True).get_structure(self.name[:4], path)
         else:
-            self.structure = PDBParser(QUIET=True).get_structure(self.name[:4], self.path)
+            self.structure = PDBParser(QUIET=True).get_structure(self.name[:4], path)
 
 
+    def export(self, subfolder = None):
+        exporting = PDBIO()
+        exporting.set_structure(self.structure)
+        local["exports"] = "exports"
+        if subfolder is not None:
+            path = os.path.join(local.exports, subfolder)
+        else:
+            path = os.path.join(local.exports, self.pickle_folder)
+        os.makedirs(path, exist_ok=True)
+        path = os.path.join(path, self.id+".pdb")
+        exporting.save(path)
+        self.path = path
 
 class PDB(BioObject):
     pickle_extension = '.molecule'
     pickle_folder = "molecules"
     def __init__(self, path):
-        self.path = path
-        self.name = clean_string(os.path.basename(path).split(".")[0], allow = ["_"])
+        self.o_path = path
+        self.name = self.id = clean_string(os.path.basename(path).split(".")[0], allow = ["_"])
         self.parse_structure()
+
+    def get_monomers(self):
+        pass
 
 
 class Reference(PDB):
@@ -50,7 +68,13 @@ class Reference(PDB):
 class Monomer(BioObject):
     pickle_extension = '.monomer'
     pickle_folder = "monomers"
-    pass
+
+    def __init__(self, name, chain, structure):
+        self.name = name
+        self.chain = chain
+        self.structure = structure
+        self.id = "{}_{}".format(name, chain)
+        self.path = self.export()
 
 
 class Dimer(BioObject):

@@ -2,44 +2,48 @@ import os
 from globals import root, local
 from utilities import *
 
-from molecules import Reference, PDB
-
-def load_references(force_reload=False):
-    sprint("Loading references, force reload: ", force_reload)
-    references = []
-    if "molecules" in local.list() and not force_reload:
-        for file in local.molecules:
-            if file.endswith(".reference"):
-                references.append(unpickle(file))
-    if len(references) == 0:
-        print1("No saved references found, generating them now")
-        for file in os.listdir(root.references):
-            if file.endswith((".pdb", ".cif", "pdb1")):
-                references.append(Reference(os.path.join(root.references, file)))
-    print1("{} references loaded:".format(len(references)))
-    for reference in references:
-        print2(reference)
-    return references
-
-def load_experimental(force_reload=False):
-    sprint("Loading experimental files, force reload: ", force_reload)
-    molecules = []
-    if "molecules" in local.list() and not force_reload:
-        for file in local.molecules:
-            if file.endswith(".molecule"):
-                molecules.append(unpickle(file))
-    if len(molecules) == 0:
-        print1("No saved molecules found, generating them now")
-        for file in os.listdir(root.experimental):
-            if file.endswith((".pdb", ".cif", "pdb1")):
-                molecules.append(PDB(os.path.join(root.experimental, file)))
-    print1("{} molecules loaded:".format(len(molecules)))
-    for reference in molecules:
-        print2(reference)
-    return molecules
+from molecules import PDB, Monomer
 
 
-def load_monomers(force_reload=False):
-    sprint("Loading monomer files, force reload: ", force_reload)
-    monomers = []
+
+def load_pickles(folder, extension = (".pickle")):
+    print1("Looking for pickles in {}, with extension: {}".format(
+        folder, extension))
+    pickles = []
+    if folder in local.list():
+        for file in os.listdir(local[folder]):
+            if file.endswith(extension):
+                pickles.append(unpickle(file))
+    return pickles
+
+
+def load_from_pdb(pdb_folder = root.experimental, obj = PDB, pickle_folder = "molecules", pickle_extension = ".molecule", pdb_extension = (".pdb", ".pdb1", ".cif"), force_reload=False):
+    sprint("Loading pdbs, force reload:", force_reload)
+    loaded = []
+    if not force_reload:
+        loaded = load_pickles(pickle_folder, pickle_extension)
+    if len(loaded) == 0:
+        print1("No saved pickles found, importing from:", pdb_folder)
+        for file in os.listdir(pdb_folder):
+            if file.endswith(pdb_extension):
+                loaded.append(obj(os.path.join(pdb_folder, file)))
+    print1("{} objects loaded:".format(len(loaded)))
+    for obj in loaded:
+        print2(obj)
+    return loaded
+
+def load_monomers(molecules = None, folder = "monomers", extension = ".monomers",force_reload=False):
+    sprint("Loading monomers, force reload:", force_reload)
+    loaded = []
+    if not force_reload:
+        loaded = load_pickles(folder, extension)
+    if len(loaded) == 0 and molecules is not None:
+        print1("No saved monomers found, generating monomers now")
+        for molecule in molecules:
+            loaded.extend(molecule.get_monomers())
+    print1("{} objects loaded:".format(len(loaded)))
+    for obj in loaded:
+        print2(obj)
+    return loaded
+
 
