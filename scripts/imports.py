@@ -39,3 +39,7 @@ def load_experimental(force_reload=False):
     return molecules
 
 
+def load_monomers(force_reload=False):
+    sprint("Loading monomer files, force reload: ", force_reload)
+    monomers = []
+
