@@ -55,6 +55,7 @@ class PDB(BioObject):
         self.o_path = path
         self.name = self.id = clean_string(os.path.basename(path).split(".")[0], allow = ["_"])
         self.parse_structure()
+        self.export()
 
     def get_monomers(self):
         monomers = []
@@ -83,26 +84,23 @@ class Monomer(BioObject):
         self.chain = chain
         self.structure = structure
         self.id = "{}_{}".format(name, chain)
-        self.path = self.export()
+        self.export()
 
         self.rmsds = {}
-        self.al_lens = {}
+        self.al_res = {}
         self.rotations = {}
 
     def superpose(self, references, df, force_superposed=False):
         from superpose import superpose_single
+        contents = [self.id, self.name, self.chain]
         for reference in references:
             ref_name = reference.id
             if not ref_name in self.rmsds.keys() or force_superposed:
                 super_id = self.id + "_x_" + ref_name
-                rmsd, al_len, rotation = superpose_single(super_id, self.path, reference.path)
-                self.rmsds[ref_name] = rmsd
-                self.al_lens[ref_name] = al_len
-                self.rotations[ref_name] = rotation
-        contents = [self.id, self.name, self.chain]
-        contents.extend(self.rmsds)
-        contents.extend(self.al_lens)
-        contents.extend(self.rotations)
+                #print(super_id, self.path)
+                data = superpose_single(super_id, self.path, reference.path)
+                contents.extend([data["rmsd"], data["aligned_residues"]])
+        df.loc[self.id] = contents
 
 
 
