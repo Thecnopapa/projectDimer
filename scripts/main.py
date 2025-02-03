@@ -29,6 +29,8 @@ molecules = load_from_files(local.many_pdbs,
                           force_reload = PROCESS_ALL)
 #molecules = load_from_pdb(force_reload = PROCESS_ALL)
 
+for file in references+molecules:
+    file.pickle()
 eprint("Files loaded")
 
 
@@ -46,9 +48,11 @@ super_raw_df = pd.DataFrame(columns = columns_raw)
 colums_filtered = ["ID", "best_fit", "coverage (%)","rmsd", "identity (%)",  "Rx", "Ry", "Rz", "T"]
 super_filtered_df = pd.DataFrame(columns = colums_filtered)
 
+globals.vars["failed_df"] = pd.DataFrame(columns= ["ID", "reason", "details"])
+
 progress = ProgressBar(len(monomers))
 for monomer in monomers:
-    monomer.superpose(references, super_raw_df, super_filtered_df,force_superpose = PROCESS_ALL)
+    monomer.superpose(references, super_raw_df, super_filtered_df,force_superpose = True)
     progress.add()
 root["dataframes"] = "dataframes"
 super_raw_df.to_csv(os.path.join(root.dataframes,"super_raw.csv"), header = True, index = False)
@@ -66,7 +70,7 @@ eprint("Dimers loaded")
 
 
 
-
+globals.vars.failed_df.to_csv(os.path.join(root.dataframes,"failed_df.csv"), header = True, index = False)
 # Save and exit
 tprint("Saving data")
 all_files = references + molecules + monomers + dimers

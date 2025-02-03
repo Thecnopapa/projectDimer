@@ -2,7 +2,7 @@ import os
 
 
 from utilities import *
-from globals import root, local
+from globals import root, local, vars
 from Bio.PDB import PDBParser, MMCIFParser, PDBIO, StructureBuilder, Structure
 import numpy as np
 
@@ -98,10 +98,6 @@ class Reference(PDB):
     pickle_extension = '.reference'
     pickle_folder = "molecules"
 
-    def __init__(self, path):
-        super().__init__(path)
-        #print(self.structure[0].get_list()[0])
-        self.structure[0].get_list()[0].id = "ç"
 
 
 
@@ -135,14 +131,21 @@ class Monomer(BioObject):
                     super_id = self.id + "_x_" + ref_name
                     #print(super_id, self.path)
                     data = superpose_single(super_id, self.path, reference.path)
-                    contents.extend([data["rmsd"], data["aligned_residues"]])
-                    self.superpositions[ref_name] = data
+                    #print(self.id)
+                    #print(data)
+                    if "rmsd" in data:
+                        contents.extend([data["rmsd"], data["aligned_residues"]])
+                        self.superpositions[ref_name] = data
+                    else:
+                        vars.failed_df[self.id] = [self.id, "gesamt error", "are DISSIMILAR and cannot be reasonably aligned"]
+                        contents.extend([0,0])
             df_raw.loc[self.id] = contents
             self.choose_superposition(df_filtered)
 
     def choose_superposition(self, df):
         finalists = []
         criteria = []
+        coverages = []
         #print1("Choosing superpositions in", self.id)
         #print(self.superpositions.items())
         for ref_name, data in self.superpositions.items():
@@ -152,15 +155,18 @@ class Monomer(BioObject):
                 finalists.append((ref_name,data))
                 criteria.append(data["identity"])
             else:
-                # print2("Dropped:", ref_name, round(data["coverage"],2))
+                coverages.append(data["coverage"])
                 pass
-        self.super_data = finalists[np.argmax(criteria)]
-        data = self.super_data[1]
-        contents = [self.id,self.super_data[0], round(data["coverage"]*100), data["rmsd"], round(data["identity"]*100)]
-        contents.extend(data["t_matrix"].values())
-        #print3(contents)
-        df.loc[self.id] = contents
-        self.super_path = data["out_path"]
+        if len(finalists) >0:
+            self.super_data = finalists[np.argmax(criteria)]
+            data = self.super_data[1]
+            contents = [self.id,self.super_data[0], round(data["coverage"]*100), data["rmsd"], round(data["identity"]*100)]
+            contents.extend(data["t_matrix"].values())
+            #print3(contents)
+            df.loc[self.id] = contents
+            self.super_path = data["out_path"]
+        else:
+            vars.failed_df[self.id] = [self.id, "no reference meets coverage (80%)", coverages]
 
 
 

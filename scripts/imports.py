@@ -11,7 +11,7 @@ def load_pickles(folder, extension = (".pickle")):
         folder, extension))
     pickles = []
     if folder in local.list():
-        print(len(os.listdir(local[folder])))
+        print("Files found:", len(os.listdir(local[folder])))
         for file in os.listdir(local[folder]):
             if file.endswith(extension):
                 pickles.append(unpickle(os.path.join(local[folder],file)))

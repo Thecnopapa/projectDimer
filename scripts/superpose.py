@@ -12,10 +12,12 @@ def superpose_single(id, fixed, moving):
     import subprocess
     local["super_raw"] = "superposed/super_raw"
     os.makedirs(local.super_raw, exist_ok=True)
+    #print(id)
     out_path =  os.path.join(local["super_raw"], id + ".pdb")
     super_line = [globals.vars.gesamt, fixed, moving, "-o", out_path ]
     #print(super_line)
     gesamt_out = subprocess.run(super_line, capture_output=True, text=True)
+    #print(gesamt_out.stderr)
     #print(gesamt_out.stdout)
     data = {"out_path": out_path}
     t_matrix_lines = 0
