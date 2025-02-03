@@ -3,7 +3,7 @@ import os
 
 from utilities import *
 from globals import root, local
-from Bio.PDB import PDBParser, MMCIFParser, PDBIO, Select
+from Bio.PDB import PDBParser, MMCIFParser, PDBIO
 import numpy as np
 
 
@@ -43,6 +43,7 @@ class BioObject:
         exporting = PDBIO()
         exporting.set_structure(self.structure)
         local["exports"] = "exports"
+        os.makedirs(local.exports, exist_ok=True)
         if subfolder is not None:
             path = os.path.join(local.exports, subfolder)
         else:
@@ -111,7 +112,7 @@ class Monomer(BioObject):
     def choose_superposition(self, df):
         finalists = []
         rmsds = []
-        print1("Choosing superpositions in", self.id)
+        #print1("Choosing superpositions in", self.id)
         #print(self.superpositions.items())
         for ref_name, data in self.superpositions.items():
             #print(ref_name, data)
@@ -120,12 +121,13 @@ class Monomer(BioObject):
                 finalists.append((ref_name,data))
                 rmsds.append(data["rmsd"])
             else:
-                print2("Dropped:", ref_name, round(data["coverage"],2))
+                # print2("Dropped:", ref_name, round(data["coverage"],2))
+                pass
         self.super_data = finalists[np.argmin(rmsds)]
         data = self.super_data[1]
-        contents = [self.id,self.super_data[0], round(data["coverage"]*100), data["rmsd"], data["aligned_residues"]]
+        contents = [self.id,self.super_data[0], round(data["coverage"]*100), data["rmsd"], round(data["identity"]*100)]
         contents.extend(data["t_matrix"].values())
-        print3(contents)
+        #print3(contents)
         df.loc[self.id] = contents
 
 

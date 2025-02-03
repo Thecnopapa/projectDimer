@@ -6,6 +6,8 @@ import pandas as pd
 globals.set_root("../")
 if os.name == "nt":
     globals.set_local("C:/Users/iainv/localdata/_local/projectB")
+elif os.name == "posix":
+    globals.set_local("/localdata/iain/_local/projectB")
 from globals import root, local
 
 
@@ -33,11 +35,11 @@ for reference in references:
     columns_raw.extend(["rmsd_" + reference.name, "align_len_" + reference.name])
 super_raw_df = pd.DataFrame(columns = columns_raw)
 
-colums_filtered = ["ID", "best_fit", "coverage","rmsd", "align_len",  "Rx", "Ry", "Rz", "T"]
+colums_filtered = ["ID", "best_fit", "coverage (%)","rmsd", "identity (%)",  "Rx", "Ry", "Rz", "T"]
 super_filtered_df = pd.DataFrame(columns = colums_filtered)
 progress = ProgressBar(len(monomers))
 for monomer in monomers:
-    sprint(monomer.id)
+    #sprint(monomer.id)
     monomer.superpose(references, super_raw_df)
     monomer.choose_superposition(super_filtered_df)
     progress.add()

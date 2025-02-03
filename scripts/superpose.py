@@ -5,6 +5,8 @@ from utilities import *
 
 if os.name == 'nt':
     globals.vars["gesamt"] = "C:\Program Files\CCP4-9\CCP4/bin\gesamt.exe"
+if os.name == 'posix':
+    globals.vars["gesamt"] = "/xtal/ccp4/ccp4-9/bin/gesamt"
 
 def superpose_single(id, fixed, moving):
     import subprocess
@@ -24,6 +26,8 @@ def superpose_single(id, fixed, moving):
             data["rmsd"] = float(line.split(":")[1])
         if "Aligned residues" in line:
             data["aligned_residues"] = int(line.split(":")[1])
+        if "Sequence Id:" in line:
+            data["identity"] = float(line.split(":")[2])
         if t_matrix_lines > 0:
             l = line.split()
             data["t_matrix"]["Rx"].append(float(l[0]))
