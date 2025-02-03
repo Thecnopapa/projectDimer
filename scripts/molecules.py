@@ -176,7 +176,7 @@ class Dimer(BioObject):
         self.monomer2 = monomer2
         self.name = monomer1.name
         self.id = "{}_{}{}".format(self.name, monomer1.chain, monomer2.chain)
-        self.original_structure, self.replaced_structure = self.merge_structures(monomer1, monomer2)
+        self.original_structure, self.replaced_structure, self.merged_structure = self.merge_structures(monomer1, monomer2)
 
     def merge_structures(self, monomer1, monomer2):
         print1("merging monomers", monomer1, monomer2)
@@ -186,7 +186,7 @@ class Dimer(BioObject):
         originalB = structureB[0]
         replacedA = structureA[1]
         replacedB = structureB[1]
-        replacedA.id = replacedB.id = 0
+        replacedA.id = replacedB.id = 1
 
         replacedA.get_list()[0].id = originalA.get_list()[0].id
         replacedB.get_list()[0].id = originalB.get_list()[0].id
@@ -200,11 +200,15 @@ class Dimer(BioObject):
         replaced_structure = Structure.Structure(self.id+"_r")
         replaced_structure.add(replacedA)
         #print1(replaced_structure, replaced_structure.get_list())
+        merged_structure = Structure.Structure(self.id + "_m")
+        merged_structure.add(originalA)
+        merged_structure.add(replacedA)
 
-        return original_structure, replaced_structure
+        return original_structure, replaced_structure, merged_structure
 
     def export(self):
-        super().export(subfolder="original_dimers", structure=self.original_structure)
-        super().export(subfolder="replaced_dimers", structure=self.replaced_structure, extra_id="_replaced")
+        super().export(subfolder="dimers_original", structure=self.original_structure)
+        super().export(subfolder="dimers_replaced", structure=self.replaced_structure, extra_id="_replaced")
+        super().export(subfolder="dimers_merged", structure=self.merged_structure, extra_id="_merged")
 
 
