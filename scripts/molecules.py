@@ -27,15 +27,22 @@ class BioObject:
     def __repr__(self):
         return "{} ({})".format(self.id, self.__class__.__name__)
 
-    def parse_structure(self):
-        if self.path is None:
-            path = self.o_path
-        if path.endswith('.cif'):
-            self.structure = MMCIFParser(QUIET=True).get_structure(self.name[:4], path)
+    def parse_structure(self, parse_original = False):
+        if self.path is None or parse_original:
+            self.path = self.o_path
+        if self.path.endswith('.cif'):
+            self.structure = MMCIFParser(QUIET=True).get_structure(self.name[:4], self.path)
         else:
-            self.structure = PDBParser(QUIET=True).get_structure(self.name[:4], path)
+            self.structure = PDBParser(QUIET=True).get_structure(self.name[:4], self.path)
         for model in self.structure.get_list()[1:]:
             self.structure.__delitem__(model.id)
+        for chain in self.structure[0].get_list():
+            for residue in chain.get_list():
+                for atom in residue.get_list():
+                    if atom.name != "CA":
+                        residue.__delitem__(atom.id)
+
+
 
 
 

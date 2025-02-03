@@ -4,7 +4,7 @@ from globals import *
 from utilities import *
 
 if os.name == 'nt':
-    globals.vars["gesamt"] = "C:\Program Files\CCP4-9\CCP4/bin\gesamt.exe"
+    globals.vars["gesamt"] = "C:/Program Files/CCP4-9/CCP4/bin/gesamt.exe"
 if os.name == 'posix':
     globals.vars["gesamt"] = "/xtal/ccp4/ccp4-9/bin/gesamt"
 
