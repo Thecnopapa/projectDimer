@@ -27,18 +27,25 @@ from imports import load_monomers
 monomers = load_monomers(molecules = molecules, force_reload=True)
 eprint("Monomers loaded")
 
-tprint("Superposing Monomers")
-columns = ["ID", "name", "chain"]
+
+columns_raw = ["ID", "name", "chain"]
 for reference in references:
-    columns.extend(["rmsd_" + reference.name, "align_len_" + reference.name])
-super_df = pd.DataFrame(columns = columns)
+    columns_raw.extend(["rmsd_" + reference.name, "align_len_" + reference.name])
+super_raw_df = pd.DataFrame(columns = columns_raw)
+
+colums_filtered = ["ID", "best_fit", "coverage","rmsd", "align_len",  "Rx", "Ry", "Rz", "T"]
+super_filtered_df = pd.DataFrame(columns = colums_filtered)
 progress = ProgressBar(len(monomers))
 for monomer in monomers:
-    monomer.superpose(references, super_df)
+    sprint(monomer.id)
+    monomer.superpose(references, super_raw_df)
+    monomer.choose_superposition(super_filtered_df)
     progress.add()
 root["dataframes"] = "dataframes"
-super_df.to_csv(os.path.join(root.dataframes,"super_df.csv"), header = True, index = False)
+super_raw_df.to_csv(os.path.join(root.dataframes,"super_raw.csv"), header = True, index = False)
+super_filtered_df.to_csv(os.path.join(root.dataframes,"super_filtered.csv"), header = True, index = False)
 
+tprint("Superposing Monomers")
 
 
 

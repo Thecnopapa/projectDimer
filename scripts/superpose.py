@@ -8,13 +8,13 @@ if os.name == 'nt':
 
 def superpose_single(id, fixed, moving):
     import subprocess
-    local["superposed_monomers"] = "superposed/superposed_monomers"
-    os.makedirs(local.superposed_monomers, exist_ok=True)
-    out_path =  os.path.join(local["superposed_monomers"], id + ".pdb")
+    local["super_raw"] = "superposed/super_raw"
+    os.makedirs(local.super_raw, exist_ok=True)
+    out_path =  os.path.join(local["super_raw"], id + ".pdb")
     super_line = [globals.vars.gesamt, fixed, moving, "-o", out_path ]
     #print(super_line)
     gesamt_out = subprocess.run(super_line, capture_output=True, text=True)
-    #print(gesamt_out)
+    #print(gesamt_out.stdout)
     data = {}
     t_matrix_lines = 0
     for line in gesamt_out.stdout.splitlines():
@@ -34,6 +34,10 @@ def superpose_single(id, fixed, moving):
         if "Rx" in line:
             data["t_matrix"] = {"Rx": [],"Ry": [],"Rz": [], "T": []}
             t_matrix_lines = 3
+        if "FIXED |" in line:
+            data["nres"] = int(line.split("|")[1])
+        if "MOVING |" in line:
+            data["ref_nres"] = int(line.split("|")[1])
     return data
 
 

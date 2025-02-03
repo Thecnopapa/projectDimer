@@ -3,7 +3,8 @@ import os
 
 from utilities import *
 from globals import root, local
-from Bio.PDB import PDBParser, MMCIFParser, PDBIO
+from Bio.PDB import PDBParser, MMCIFParser, PDBIO, Select
+import numpy as np
 
 
 class BioObject:
@@ -33,6 +34,9 @@ class BioObject:
             self.structure = MMCIFParser(QUIET=True).get_structure(self.name[:4], path)
         else:
             self.structure = PDBParser(QUIET=True).get_structure(self.name[:4], path)
+        for model in self.structure.get_list()[1:]:
+            self.structure.__delitem__(model.id)
+
 
 
     def export(self, subfolder = None):
@@ -93,6 +97,7 @@ class Monomer(BioObject):
     def superpose(self, references, df, force_superposed=False):
         from superpose import superpose_single
         contents = [self.id, self.name, self.chain]
+        self.superpositions = {}
         for reference in references:
             ref_name = reference.id
             if not ref_name in self.rmsds.keys() or force_superposed:
@@ -100,7 +105,32 @@ class Monomer(BioObject):
                 #print(super_id, self.path)
                 data = superpose_single(super_id, self.path, reference.path)
                 contents.extend([data["rmsd"], data["aligned_residues"]])
+                self.superpositions[ref_name] = data
         df.loc[self.id] = contents
+
+    def choose_superposition(self, df):
+        finalists = []
+        rmsds = []
+        print1("Choosing superpositions in", self.id)
+        #print(self.superpositions.items())
+        for ref_name, data in self.superpositions.items():
+            #print(ref_name, data)
+            data["coverage"] = data["aligned_residues"] / data["nres"]
+            if  data["coverage"] >= 0.8:
+                finalists.append((ref_name,data))
+                rmsds.append(data["rmsd"])
+            else:
+                print2("Dropped:", ref_name, round(data["coverage"],2))
+        self.super_data = finalists[np.argmin(rmsds)]
+        data = self.super_data[1]
+        contents = [self.id,self.super_data[0], round(data["coverage"]*100), data["rmsd"], data["aligned_residues"]]
+        contents.extend(data["t_matrix"].values())
+        print3(contents)
+        df.loc[self.id] = contents
+
+
+
+
 
 
 
