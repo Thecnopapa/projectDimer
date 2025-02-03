@@ -182,7 +182,12 @@ class Dimer(BioObject):
         self.monomer2 = monomer2
         self.name = monomer1.name
         self.id = "{}_{}{}".format(self.name, monomer1.chain, monomer2.chain)
-        self.original_structure, self.replaced_structure, self.merged_structure = self.merge_structures(monomer1, monomer2)
+        self.incomplete = False
+        if monomer1.super_path is None or monomer2.super_path is None:
+            vars.failed_df[self.id] = [self.id, "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)]
+            self.incomplete = True
+        else:
+            self.original_structure, self.replaced_structure, self.merged_structure = self.merge_structures(monomer1, monomer2)
 
     def merge_structures(self, monomer1, monomer2):
         print1("merging monomers", monomer1, monomer2)
@@ -213,8 +218,9 @@ class Dimer(BioObject):
         return original_structure, replaced_structure, merged_structure
 
     def export(self):
-        super().export(subfolder="dimers_original", structure=self.original_structure)
-        super().export(subfolder="dimers_replaced", structure=self.replaced_structure, extra_id="_replaced")
-        super().export(subfolder="dimers_merged", structure=self.merged_structure, extra_id="_merged")
+        if not self.incomplete:
+            super().export(subfolder="dimers_original", structure=self.original_structure)
+            super().export(subfolder="dimers_replaced", structure=self.replaced_structure, extra_id="_replaced")
+            super().export(subfolder="dimers_merged", structure=self.merged_structure, extra_id="_merged")
 
 

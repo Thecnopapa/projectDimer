@@ -70,8 +70,9 @@ eprint("Dimers loaded")
 
 
 
-globals.vars.failed_df.to_csv(os.path.join(root.dataframes,"failed_df.csv"), header = True, index = False)
 # Save and exit
+globals.vars.failed_df.to_csv(os.path.join(root.dataframes,"failed_df.csv"), header = True, index = False)
+
 tprint("Saving data")
 all_files = references + molecules + monomers + dimers
 progress = ProgressBar(len(all_files))
