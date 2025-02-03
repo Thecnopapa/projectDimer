@@ -1,5 +1,5 @@
 # projectB
-
+**Iain Visa** @ IBMB-CSIC
 ## Instructions:
 
 - Set the working directory to `../projectB`
