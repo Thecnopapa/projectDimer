@@ -29,7 +29,7 @@ from imports import load_monomers
 monomers = load_monomers(molecules = molecules, force_reload=True)
 eprint("Monomers loaded")
 
-
+tprint("Superposing monomers")
 columns_raw = ["ID", "name", "chain"]
 for reference in references:
     columns_raw.extend(["rmsd_" + reference.name, "align_len_" + reference.name])
@@ -37,6 +37,7 @@ super_raw_df = pd.DataFrame(columns = columns_raw)
 
 colums_filtered = ["ID", "best_fit", "coverage (%)","rmsd", "identity (%)",  "Rx", "Ry", "Rz", "T"]
 super_filtered_df = pd.DataFrame(columns = colums_filtered)
+
 progress = ProgressBar(len(monomers))
 for monomer in monomers:
     #sprint(monomer.id)
@@ -46,8 +47,7 @@ for monomer in monomers:
 root["dataframes"] = "dataframes"
 super_raw_df.to_csv(os.path.join(root.dataframes,"super_raw.csv"), header = True, index = False)
 super_filtered_df.to_csv(os.path.join(root.dataframes,"super_filtered.csv"), header = True, index = False)
-
-tprint("Superposing Monomers")
+eprint("Monomers superposed")
 
 
 

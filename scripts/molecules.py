@@ -118,7 +118,7 @@ class Monomer(BioObject):
 
     def choose_superposition(self, df):
         finalists = []
-        rmsds = []
+        criteria = []
         #print1("Choosing superpositions in", self.id)
         #print(self.superpositions.items())
         for ref_name, data in self.superpositions.items():
@@ -126,11 +126,11 @@ class Monomer(BioObject):
             data["coverage"] = data["aligned_residues"] / data["nres"]
             if  data["coverage"] >= 0.8:
                 finalists.append((ref_name,data))
-                rmsds.append(data["rmsd"])
+                criteria.append(data["identity"])
             else:
                 # print2("Dropped:", ref_name, round(data["coverage"],2))
                 pass
-        self.super_data = finalists[np.argmin(rmsds)]
+        self.super_data = finalists[np.argmax(criteria)]
         data = self.super_data[1]
         contents = [self.id,self.super_data[0], round(data["coverage"]*100), data["rmsd"], round(data["identity"]*100)]
         contents.extend(data["t_matrix"].values())
