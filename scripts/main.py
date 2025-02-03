@@ -14,15 +14,21 @@ from globals import root, local
 PROCESS_ALL = False
 
 
+from imports import *
+#download_pdbs(os.path.join(root.pdb_lists,"list_1500"), "many_pdbs")
+
 tprint("Loading files")
-from imports import load_from_pdb
+from imports import load_from_files
 from molecules import Reference, PDB
-references = load_from_pdb(root.references,
+references = load_from_files(root.references,
                            Reference,
                            pickle_extension= ".reference",
                            force_reload = PROCESS_ALL)
 
-molecules = load_from_pdb(force_reload = PROCESS_ALL)
+molecules = load_from_files(local.many_pdbs,
+                          force_reload = PROCESS_ALL)
+#molecules = load_from_pdb(force_reload = PROCESS_ALL)
+
 eprint("Files loaded")
 
 

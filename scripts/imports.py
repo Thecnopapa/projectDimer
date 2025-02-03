@@ -18,16 +18,18 @@ def load_pickles(folder, extension = (".pickle")):
     return pickles
 
 
-def load_from_pdb(pdb_folder = root.experimental, obj = PDB, pickle_folder = "molecules", pickle_extension = ".molecule", pdb_extension = (".pdb", ".pdb1", ".cif"), force_reload=False):
+def load_from_files(pdb_folder = root.experimental, obj = PDB, pickle_folder = "molecules", pickle_extension = ".molecule", pdb_extension = (".pdb", ".pdb1", ".cif"), force_reload=False):
     sprint("Loading pdbs, force reload:", force_reload)
     loaded = []
     if not force_reload:
         loaded = load_pickles(pickle_folder, pickle_extension)
     if len(loaded) == 0:
         print1("No saved pickles found, importing from:", pdb_folder)
+        progress = ProgressBar(len(os.listdir(pdb_folder)))
         for file in os.listdir(pdb_folder):
             if file.endswith(pdb_extension):
                 loaded.append(obj(os.path.join(pdb_folder, file)))
+            progress.add()
     print1("{} objects loaded:".format(len(loaded)))
     for obj in loaded:
         print2(obj)
@@ -40,8 +42,10 @@ def load_monomers(molecules = None, folder = "monomers", extension = ".monomer",
         loaded = load_pickles(folder, extension)
     if len(loaded) == 0 and molecules is not None:
         print1("No saved monomers found, generating monomers now")
+        progress = ProgressBar(len(molecules))
         for molecule in molecules:
             loaded.extend(molecule.get_monomers())
+            progress.add()
     print1("{} objects loaded:".format(len(loaded)))
     for obj in loaded:
         print2(obj)
@@ -60,5 +64,22 @@ def load_dimers(molecules = None, folder = "dimers", extension = ".dimer",force_
     for obj in loaded:
         print2(obj)
     return loaded
+
+def download_pdbs(list_path, save_folder):
+    import subprocess
+    local[save_folder] = save_folder
+    pdb_list = []
+    with open(list_path, "r") as f:
+        for line in f:
+            pdb_list.extend(line.split(","))
+    print(pdb_list)
+    pdb_links = list_path+"_links.txt"
+    open(pdb_links, "w")
+    with open(pdb_links, "a") as f:
+        for pdb in pdb_list:
+            f.write("https://files.rcsb.org/download/{}.pdb\n".format(pdb))
+    print(local[save_folder])
+    subprocess.run(["wget","-i", pdb_links, "-P", local[save_folder]])
+
 
 
