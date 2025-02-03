@@ -3,7 +3,7 @@ import os
 
 from utilities import *
 from globals import root, local
-from Bio.PDB import PDBParser, MMCIFParser, PDBIO
+from Bio.PDB import PDBParser, MMCIFParser, PDBIO, StructureBuilder
 import numpy as np
 
 
@@ -68,14 +68,31 @@ class PDB(BioObject):
         self.name = self.id = clean_string(os.path.basename(path).split(".")[0], allow = ["_"])
         self.parse_structure()
         self.export()
+        self.monomers = []
+        self.dimers = []
 
     def get_monomers(self):
-        monomers = []
-        for chain in self.structure.get_chains():
-            if len(chain.get_list()) > 50:
-                monomers.append(Monomer(self.name, chain.id, chain))
-        return monomers
+        if len(self.monomers) == 0 or True:
+            self.monomers = []
+            for chain in self.structure.get_chains():
+                if len(chain.get_list()) > 50:
+                    self.monomers.append(Monomer(self.name, chain.id, chain))
+        return self.monomers
 
+    def get_dimers(self):
+        done = []
+        if len(self.dimers) == 0 or True:
+            self.dimers = []
+            print(self.monomers)
+            if len(self.monomers) >= 2:
+                for monomer1 in self.monomers:
+                    for monomer2 in self.monomers:
+                        if monomer2.id != monomer1.id and monomer2.id not in done:
+                            print(monomer1, monomer2)
+                            self.dimers.append(Dimer(monomer1, monomer2))
+                    done.append(monomer1.id)
+        print(self.dimers)
+        return self.dimers
 
 
 
@@ -101,20 +118,25 @@ class Monomer(BioObject):
         self.rmsds = {}
         self.al_res = {}
         self.rotations = {}
+        self.super_path = None
 
-    def superpose(self, references, df, force_superposed=False):
-        from superpose import superpose_single
-        contents = [self.id, self.name, self.chain]
-        self.superpositions = {}
-        for reference in references:
-            ref_name = reference.id
-            if not ref_name in self.rmsds.keys() or force_superposed:
-                super_id = self.id + "_x_" + ref_name
-                #print(super_id, self.path)
-                data = superpose_single(super_id, self.path, reference.path)
-                contents.extend([data["rmsd"], data["aligned_residues"]])
-                self.superpositions[ref_name] = data
-        df.loc[self.id] = contents
+    def superpose(self, references, df_raw, df_filtered, force_superpose=False):
+        sprint("Force superpose:", force_superpose)
+        if self.super_path is None or force_superpose:
+            print(self.super_path)
+            from superpose import superpose_single
+            contents = [self.id, self.name, self.chain]
+            self.superpositions = {}
+            for reference in references:
+                ref_name = reference.id
+                if not ref_name in self.rmsds.keys() or force_superpose:
+                    super_id = self.id + "_x_" + ref_name
+                    #print(super_id, self.path)
+                    data = superpose_single(super_id, self.path, reference.path)
+                    contents.extend([data["rmsd"], data["aligned_residues"]])
+                    self.superpositions[ref_name] = data
+            df_raw.loc[self.id] = contents
+            self.choose_superposition(df_filtered)
 
     def choose_superposition(self, df):
         finalists = []
@@ -136,7 +158,7 @@ class Monomer(BioObject):
         contents.extend(data["t_matrix"].values())
         #print3(contents)
         df.loc[self.id] = contents
-
+        self.super_path = data["out_path"]
 
 
 
@@ -146,7 +168,31 @@ class Monomer(BioObject):
 class Dimer(BioObject):
     pickle_extension = '.dimer'
     pickle_folder = "dimers"
-    pass
+
+    def __init__(self, monomer1, monomer2):
+        self.monomer1 = monomer1
+        self.monomer2 = monomer2
+        self.name = monomer1.name
+        self.id = "{}_{}{}".format(self.name, monomer1.chain, monomer2.chain)
+        self.original_structure, self.replaced_structure = self.merge_structures(monomer1, monomer2)
+
+    def merge_structures(self, monomer1, monomer2):
+        print("merging monomers", monomer1, monomer2)
+        structureA = PDBParser(QUIET=True).get_structure(monomer1.id, monomer1.super_path)
+        structureB = PDBParser(QUIET=True).get_structure(monomer2.id, monomer2.super_path)
+        originalA = structureA[0]
+        originalB = structureB[0]
+        replacedA = structureA[1]
+        replacedB = structureB[1]
+
+        print(originalA, originalB, replacedA, replacedB)
+
+        original_structure = StructureBuilder.StructureBuilder()
+        print(original_structure.structure)
+        replaced_structure = StructureBuilder.StructureBuilder()
+        print(original_structure.structure)
+
+        return original_structure, replaced_structure
 
 
 

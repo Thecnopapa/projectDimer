@@ -17,16 +17,16 @@ from imports import load_from_pdb
 from molecules import Reference, PDB
 references = load_from_pdb(root.references,
                            Reference,
-                           ".reference",
-                           force_reload = True)
+                           pickle_extension= ".reference",
+                           force_reload = False)
 
-molecules = load_from_pdb(force_reload = True)
+molecules = load_from_pdb(force_reload = False)
 eprint("Files loaded")
 
 
 tprint("Loading monomers")
 from imports import load_monomers
-monomers = load_monomers(molecules = molecules, force_reload=True)
+monomers = load_monomers(molecules = molecules, force_reload=False)
 eprint("Monomers loaded")
 
 tprint("Superposing monomers")
@@ -40,15 +40,18 @@ super_filtered_df = pd.DataFrame(columns = colums_filtered)
 
 progress = ProgressBar(len(monomers))
 for monomer in monomers:
-    #sprint(monomer.id)
-    monomer.superpose(references, super_raw_df)
-    monomer.choose_superposition(super_filtered_df)
+    monomer.superpose(references, super_raw_df, super_filtered_df,force_superpose = False)
     progress.add()
 root["dataframes"] = "dataframes"
 super_raw_df.to_csv(os.path.join(root.dataframes,"super_raw.csv"), header = True, index = False)
 super_filtered_df.to_csv(os.path.join(root.dataframes,"super_filtered.csv"), header = True, index = False)
 eprint("Monomers superposed")
 
+
+tprint("Loading dimers")
+from imports import load_dimers
+dimers = load_dimers(molecules = molecules, force_reload=True)
+eprint("Dimers loaded")
 
 
 
@@ -58,8 +61,9 @@ eprint("Monomers superposed")
 
 # Save and exit
 tprint("Saving data")
-progress = ProgressBar(len(references + molecules + monomers))
-for file in references + molecules + monomers:
+all_files = references + molecules + monomers
+progress = ProgressBar(len(all_files))
+for file in all_files:
     file.pickle()
     file.export()
     progress.add()

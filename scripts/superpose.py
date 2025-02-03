@@ -17,7 +17,7 @@ def superpose_single(id, fixed, moving):
     #print(super_line)
     gesamt_out = subprocess.run(super_line, capture_output=True, text=True)
     #print(gesamt_out.stdout)
-    data = {}
+    data = {"out_path": out_path}
     t_matrix_lines = 0
     for line in gesamt_out.stdout.splitlines():
         if "Q-score" in line:

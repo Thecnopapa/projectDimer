@@ -11,9 +11,10 @@ def load_pickles(folder, extension = (".pickle")):
         folder, extension))
     pickles = []
     if folder in local.list():
+        print(len(os.listdir(local[folder])))
         for file in os.listdir(local[folder]):
             if file.endswith(extension):
-                pickles.append(unpickle(file))
+                pickles.append(unpickle(os.path.join(local[folder],file)))
     return pickles
 
 
@@ -32,7 +33,7 @@ def load_from_pdb(pdb_folder = root.experimental, obj = PDB, pickle_folder = "mo
         print2(obj)
     return loaded
 
-def load_monomers(molecules = None, folder = "monomers", extension = ".monomers",force_reload=False):
+def load_monomers(molecules = None, folder = "monomers", extension = ".monomer",force_reload=False):
     sprint("Loading monomers, force reload:", force_reload)
     loaded = []
     if not force_reload:
@@ -41,6 +42,20 @@ def load_monomers(molecules = None, folder = "monomers", extension = ".monomers"
         print1("No saved monomers found, generating monomers now")
         for molecule in molecules:
             loaded.extend(molecule.get_monomers())
+    print1("{} objects loaded:".format(len(loaded)))
+    for obj in loaded:
+        print2(obj)
+    return loaded
+
+def load_dimers(molecules = None, folder = "dimers", extension = ".dimer",force_reload=False):
+    sprint("Loading dimers, force reload:", force_reload)
+    loaded = []
+    if not force_reload:
+        loaded = load_pickles(folder, extension)
+    if len(loaded) == 0 and molecules is not None:
+        print1("No saved dimers found, generating dimers now")
+        for molecule in molecules:
+            loaded.extend(molecule.get_dimers())
     print1("{} objects loaded:".format(len(loaded)))
     for obj in loaded:
         print2(obj)
