@@ -11,6 +11,8 @@ elif os.name == "posix":
 from globals import root, local
 
 
+PROCESS_ALL = False
+
 
 tprint("Loading files")
 from imports import load_from_pdb
@@ -18,15 +20,15 @@ from molecules import Reference, PDB
 references = load_from_pdb(root.references,
                            Reference,
                            pickle_extension= ".reference",
-                           force_reload = False)
+                           force_reload = PROCESS_ALL)
 
-molecules = load_from_pdb(force_reload = False)
+molecules = load_from_pdb(force_reload = PROCESS_ALL)
 eprint("Files loaded")
 
 
 tprint("Loading monomers")
 from imports import load_monomers
-monomers = load_monomers(molecules = molecules, force_reload=False)
+monomers = load_monomers(molecules = molecules, force_reload=PROCESS_ALL)
 eprint("Monomers loaded")
 
 tprint("Superposing monomers")
@@ -40,7 +42,7 @@ super_filtered_df = pd.DataFrame(columns = colums_filtered)
 
 progress = ProgressBar(len(monomers))
 for monomer in monomers:
-    monomer.superpose(references, super_raw_df, super_filtered_df,force_superpose = False)
+    monomer.superpose(references, super_raw_df, super_filtered_df,force_superpose = PROCESS_ALL)
     progress.add()
 root["dataframes"] = "dataframes"
 super_raw_df.to_csv(os.path.join(root.dataframes,"super_raw.csv"), header = True, index = False)
@@ -61,7 +63,7 @@ eprint("Dimers loaded")
 
 # Save and exit
 tprint("Saving data")
-all_files = references + molecules + monomers
+all_files = references + molecules + monomers + dimers
 progress = ProgressBar(len(all_files))
 for file in all_files:
     file.pickle()

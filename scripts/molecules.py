@@ -3,7 +3,7 @@ import os
 
 from utilities import *
 from globals import root, local
-from Bio.PDB import PDBParser, MMCIFParser, PDBIO, StructureBuilder
+from Bio.PDB import PDBParser, MMCIFParser, PDBIO, StructureBuilder, Structure
 import numpy as np
 
 
@@ -44,11 +44,11 @@ class BioObject:
 
 
 
-
-
-    def export(self, subfolder = None):
+    def export(self, subfolder = None, structure = None, extra_id = ""):
         exporting = PDBIO()
-        exporting.set_structure(self.structure)
+        if structure is None:
+            structure = self.structure
+        exporting.set_structure(structure)
         local["exports"] = "exports"
         os.makedirs(local.exports, exist_ok=True)
         if subfolder is not None:
@@ -56,7 +56,7 @@ class BioObject:
         else:
             path = os.path.join(local.exports, "pdb_" + self.pickle_folder)
         os.makedirs(path, exist_ok=True)
-        path = os.path.join(path, self.id+".pdb")
+        path = os.path.join(path, self.id+extra_id+".pdb")
         exporting.save(path)
         self.path = path
 
@@ -83,15 +83,12 @@ class PDB(BioObject):
         done = []
         if len(self.dimers) == 0 or True:
             self.dimers = []
-            print(self.monomers)
             if len(self.monomers) >= 2:
                 for monomer1 in self.monomers:
                     for monomer2 in self.monomers:
                         if monomer2.id != monomer1.id and monomer2.id not in done:
-                            print(monomer1, monomer2)
                             self.dimers.append(Dimer(monomer1, monomer2))
                     done.append(monomer1.id)
-        print(self.dimers)
         return self.dimers
 
 
@@ -100,6 +97,11 @@ class PDB(BioObject):
 class Reference(PDB):
     pickle_extension = '.reference'
     pickle_folder = "molecules"
+
+    def __init__(self, path):
+        super().__init__(path)
+        #print(self.structure[0].get_list()[0])
+        self.structure[0].get_list()[0].id = "ç"
 
 
 
@@ -121,9 +123,9 @@ class Monomer(BioObject):
         self.super_path = None
 
     def superpose(self, references, df_raw, df_filtered, force_superpose=False):
-        sprint("Force superpose:", force_superpose)
+        #sprint("Force superpose:", force_superpose)
         if self.super_path is None or force_superpose:
-            print(self.super_path)
+            #print(self.super_path)
             from superpose import superpose_single
             contents = [self.id, self.name, self.chain]
             self.superpositions = {}
@@ -177,22 +179,32 @@ class Dimer(BioObject):
         self.original_structure, self.replaced_structure = self.merge_structures(monomer1, monomer2)
 
     def merge_structures(self, monomer1, monomer2):
-        print("merging monomers", monomer1, monomer2)
+        print1("merging monomers", monomer1, monomer2)
         structureA = PDBParser(QUIET=True).get_structure(monomer1.id, monomer1.super_path)
         structureB = PDBParser(QUIET=True).get_structure(monomer2.id, monomer2.super_path)
         originalA = structureA[0]
         originalB = structureB[0]
         replacedA = structureA[1]
         replacedB = structureB[1]
+        replacedA.id = replacedB.id = 0
 
-        print(originalA, originalB, replacedA, replacedB)
+        replacedA.get_list()[0].id = originalA.get_list()[0].id
+        replacedB.get_list()[0].id = originalB.get_list()[0].id
 
-        original_structure = StructureBuilder.StructureBuilder()
-        print(original_structure.structure)
-        replaced_structure = StructureBuilder.StructureBuilder()
-        print(original_structure.structure)
+        originalA.add(originalB.get_list()[0])
+        replacedA.add(replacedB.get_list()[0])
+
+        original_structure = Structure.Structure(self.id+"_o")
+        original_structure.add(originalA)
+        #print1(original_structure, original_structure.get_list())
+        replaced_structure = Structure.Structure(self.id+"_r")
+        replaced_structure.add(replacedA)
+        #print1(replaced_structure, replaced_structure.get_list())
 
         return original_structure, replaced_structure
 
+    def export(self):
+        super().export(subfolder="original_dimers", structure=self.original_structure)
+        super().export(subfolder="replaced_dimers", structure=self.replaced_structure, extra_id="_replaced")
 
 
