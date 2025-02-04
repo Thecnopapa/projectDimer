@@ -16,7 +16,7 @@ from dataframes import save_dfs
 
 
 
-PROCESS_ALL = False
+PROCESS_ALL = True
 LARGE_DATASET = True # Delete all saved data previously to avoid errors
 
 
