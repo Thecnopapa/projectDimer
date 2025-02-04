@@ -141,7 +141,7 @@ class Monomer(BioObject):
             scores = []
             for reference in references:
                 scores.append(aligner.score(self.sequence, reference.sequence))
-            vars.alignments_df.loc[self.id] = [self.id].extend(scores)
+            vars.alignments_df.loc[self.id] = [self.id] + scores
             self.scores = scores
 
 
