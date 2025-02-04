@@ -5,7 +5,9 @@ from utilities import *
 from globals import root, local, vars
 from Bio.PDB import PDBParser, MMCIFParser, PDBIO, StructureBuilder, Structure
 import numpy as np
+from alignments import *
 import pandas as pd
+
 
 
 class BioObject:
@@ -103,9 +105,7 @@ class PDB(BioObject):
 
 
 
-class Reference(PDB):
-    pickle_extension = '.reference'
-    pickle_folder = "molecules"
+
 
 
 
@@ -131,14 +131,34 @@ class Monomer(BioObject):
         self.failed_entries = {}
         self.monomers_entries = {}
 
+        self.sequence = clean_string(get_sequence(self.structure))
+        self.scores = None
 
-    def superpose(self, references, force_superpose=False):
+
+    def sequence_align(self, references, force_align = False):
+        if self.scores is None or force_align:
+            aligner = create_aligner(matrix="BLOSUM62")
+            scores = []
+            for reference in references:
+                scores.append(aligner.score(self.sequence, reference.sequence))
+            vars.alignments_df.loc[self.id] = [self.id].extend(scores)
+            self.scores = scores
+
+
+
+
+
+
+
+    def superpose(self, references = None, force_superpose=False):
         #sprint("Force superpose:", force_superpose)
         if self.super_path is None or force_superpose:
             #print(self.super_path)
             from superpose import superpose_single
             contents = [self.id, self.name, self.chain]
             self.superpositions = {}
+            if references is None:
+                references = self.top_refs_for_super
             for reference in references:
                 ref_name = reference.id
                 if not ref_name in self.rmsds.keys() or force_superpose:
@@ -165,8 +185,8 @@ class Monomer(BioObject):
         #print(self.superpositions.items())
         for ref_name, data in self.superpositions.items():
             #print(ref_name, data)
-            data["coverage"] = data["aligned_residues"] / data["nres"]
-            if  data["coverage"] >= 0.8:
+            data["coverage"] = (data["aligned_residues"] / data["nres"]*100, data["aligned_residues"] / data["ref_nres"]*100)
+            if  data["coverage"] >= (80, 80):
                 finalists.append((ref_name,data))
                 criteria.append(data["identity"])
             else:
@@ -175,7 +195,7 @@ class Monomer(BioObject):
         if len(finalists) > 0:
             self.super_data = finalists[np.argmax(criteria)]
             data = self.super_data[1]
-            contents = [self.id,self.super_data[0], round(data["coverage"]*100), data["rmsd"], round(data["identity"]*100)]
+            contents = [self.id,self.super_data[0], data["coverage"][0], data["coverage"][1], data["rmsd"], round(data["identity"]*100)]
             contents.extend(data["t_matrix"].values())
             #print3(contents)
             vars.monomers_df.loc[self.id] = contents
@@ -248,3 +268,9 @@ class Dimer(BioObject):
             super().export(subfolder="dimers_merged", structure=self.merged_structure, extra_id="_merged")
 
 
+
+
+
+class Reference(Monomer):
+    pickle_extension = '.reference'
+    pickle_folder = "refs"

@@ -24,7 +24,7 @@ def load_pickles(folder, extension = (".pickle")):
     return pickles
 
 
-def load_from_files(pdb_folder = root.experimental, obj = PDB, pickle_folder = "molecules", pickle_extension = ".molecule", pdb_extension = (".pdb", ".pdb1", ".cif"), force_reload=False):
+def load_from_files(pdb_folder = root.experimental, obj = PDB, pickle_folder = "molecules",get_monomer = False, pickle_extension = ".molecule", pdb_extension = (".pdb", ".pdb1", ".cif"), force_reload=False):
     sprint("Loading pdbs, force reload:", force_reload)
     loaded = []
     if not force_reload:
@@ -34,7 +34,10 @@ def load_from_files(pdb_folder = root.experimental, obj = PDB, pickle_folder = "
         progress = ProgressBar(len(os.listdir(pdb_folder)))
         for file in os.listdir(pdb_folder):
             if file.endswith(pdb_extension):
-                loaded.append(obj(os.path.join(pdb_folder, file)))
+                object = obj(os.path.join(pdb_folder, file))
+                if get_monomer:
+                    object = object.get_monomers()[0]
+                loaded.append(object)
             progress.add()
     print1("{} objects loaded:".format(len(loaded)))
     for obj in loaded:
