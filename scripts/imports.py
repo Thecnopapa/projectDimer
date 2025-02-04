@@ -104,5 +104,13 @@ def download_pdbs(list_path, save_folder, terminal = False):
         subprocess.run(["wget","-i", pdb_links, "-P", local[save_folder]])
 
 
+def pickle(list):
+    for item in list:
+        item.pickle()
+
+def export(list):
+    for item in list:
+        item.export()
+
 
 

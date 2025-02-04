@@ -29,7 +29,8 @@ class BioObject:
         for key, value in self.__dict__.items():
             if "_entries" in key:
                 df_name = key.split("_entries")[0] + "_df"
-                for id, contents in value:
+                print(value)
+                for id, contents in value.items():
                     vars[df_name].loc[id] = contents
 
 
