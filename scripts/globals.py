@@ -67,5 +67,13 @@ class Variable:
     def __getattr__(self, item):
         return self.vars[item]
 
+    def keys(self):
+        return list(self.vars.keys())
+
+    def items(self):
+        return self.vars.items()
+
+    def values(self):
+        return list(self.vars.values())
 vars = Variable()
 
