@@ -5,6 +5,7 @@ from utilities import *
 from globals import root, local, vars
 from Bio.PDB import PDBParser, MMCIFParser, PDBIO, StructureBuilder, Structure
 import numpy as np
+import pandas as pd
 
 
 class BioObject:
@@ -24,6 +25,15 @@ class BioObject:
         with open(self.pickle_path, 'wb') as f:
             pickle.dump(self, f)
 
+    def restore_dfs(self):
+        for key, value in self.__dict__.items():
+            if "entries" in key:
+                df_name = key.split("_entries")[0] + "_df"
+                for id, contents in value:
+                    vars[df_name].loc[id] = contents
+
+
+
     def __repr__(self):
         return "{} ({})".format(self.id, self.__class__.__name__)
 
@@ -41,7 +51,6 @@ class BioObject:
                 for atom in residue.get_list():
                     if atom.name != "CA":
                         residue.__delitem__(atom.id)
-
 
 
     def export(self, subfolder = None, structure = None, extra_id = ""):
@@ -118,7 +127,12 @@ class Monomer(BioObject):
         self.rotations = {}
         self.super_path = None
 
-    def superpose(self, references, df_raw, df_filtered, force_superpose=False):
+        self.raw_monomers_entries = {}
+        self.failed_entries = {}
+        self.monomers_entries = {}
+
+
+    def superpose(self, references, force_superpose=False):
         #sprint("Force superpose:", force_superpose)
         if self.super_path is None or force_superpose:
             #print(self.super_path)
@@ -139,10 +153,11 @@ class Monomer(BioObject):
                     else:
                         vars.failed_df.loc[self.id] = [self.id, "gesamt error", "are DISSIMILAR and cannot be reasonably aligned"]
                         contents.extend([99,0])
-            df_raw.loc[self.id] = contents
-            self.choose_superposition(df_filtered)
+            vars.raw_monomers_df.loc[self.id] = contents
+            self.raw_monomers_entries[self.id] = contents
+            self.choose_superposition()
 
-    def choose_superposition(self, df):
+    def choose_superposition(self):
         finalists = []
         criteria = []
         coverages = []
@@ -163,11 +178,13 @@ class Monomer(BioObject):
             contents = [self.id,self.super_data[0], round(data["coverage"]*100), data["rmsd"], round(data["identity"]*100)]
             contents.extend(data["t_matrix"].values())
             #print3(contents)
-            df.loc[self.id] = contents
+            vars.monomers_df.loc[self.id] = contents
+            self.successful_entries[self.id] = contents
             self.super_path = data["out_path"]
         else:
             self.super_path = ""
             vars.failed_df.loc[self.id] = [self.id, "no reference meets coverage (80%)", coverages]
+            self.failed_entries[self.id] = [self.id, "no reference meets coverage (80%)", coverages]
 
 
 
@@ -184,8 +201,14 @@ class Dimer(BioObject):
         self.name = monomer1.name
         self.id = "{}_{}{}".format(self.name, monomer1.chain, monomer2.chain)
         self.incomplete = False
+
+        self.failed_entries = {}
+
+
+
         if monomer1.super_path is None or monomer2.super_path is None or monomer1.super_path == "" or monomer2.super_path == "":
             vars.failed_df.loc[self.id] = [self.id, "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)]
+            self.failed_entries[self.id] = [self.id, "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)]
             self.incomplete = True
         else:
             self.original_structure, self.replaced_structure, self.merged_structure = self.merge_structures(monomer1, monomer2)

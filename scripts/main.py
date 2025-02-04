@@ -8,7 +8,7 @@ if os.name == "nt":
     globals.set_local("C:/Users/iainv/localdata/_local/projectB")
 elif os.name == "posix":
     globals.set_local("/localdata/iain/_local/projectB")
-from globals import root, local
+from globals import root, local, vars
 
 
 PROCESS_ALL = False
@@ -34,6 +34,17 @@ for file in references+molecules:
     file.pickle()
 eprint("Files loaded")
 
+tprint("Creating dataframes")
+columns_raw = ["ID", "name", "chain"]
+for reference in references:
+    columns_raw.extend(["rmsd_" + reference.name, "align_len_" + reference.name])
+globals.vars["super_raw_df"] = pd.DataFrame(columns = columns_raw)
+
+colums_filtered = ["ID", "best_fit", "coverage (%)","rmsd", "identity (%)",  "Rx", "Ry", "Rz", "T"]
+globals.vars["monomers_df"] = pd.DataFrame(columns = colums_filtered)
+
+globals.vars["failed_df"] = pd.DataFrame(columns= ["ID", "reason", "details"])
+tprint("Dataframes created")
 
 tprint("Loading monomers")
 from imports import load_monomers
@@ -41,23 +52,19 @@ monomers = load_monomers(molecules = molecules, force_reload=PROCESS_ALL)
 eprint("Monomers loaded")
 
 tprint("Superposing monomers")
-columns_raw = ["ID", "name", "chain"]
-for reference in references:
-    columns_raw.extend(["rmsd_" + reference.name, "align_len_" + reference.name])
-super_raw_df = pd.DataFrame(columns = columns_raw)
 
-colums_filtered = ["ID", "best_fit", "coverage (%)","rmsd", "identity (%)",  "Rx", "Ry", "Rz", "T"]
-super_filtered_df = pd.DataFrame(columns = colums_filtered)
 
-globals.vars["failed_df"] = pd.DataFrame(columns= ["ID", "reason", "details"])
+
+
+
 
 progress = ProgressBar(len(monomers))
 for monomer in monomers:
-    monomer.superpose(references, super_raw_df, super_filtered_df,force_superpose = PROCESS_ALL)
+    monomer.superpose(referencesforce_superpose = PROCESS_ALL)
     progress.add()
 root["dataframes"] = "dataframes"
-super_raw_df.to_csv(os.path.join(root.dataframes,"super_raw.csv"), header = True, index = False)
-super_filtered_df.to_csv(os.path.join(root.dataframes,"super_filtered.csv"), header = True, index = False)
+super_raw_df.to_csv(os.path.join(root.dataframes,"raw_monomers_df.csv"), header = True, index = False)
+super_filtered_df.to_csv(os.path.join(root.dataframes,"monomers_df.csv"), header = True, index = False)
 eprint("Monomers superposed")
 
 

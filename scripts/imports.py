@@ -1,7 +1,7 @@
 import os
 
-import scripts.main
-from globals import root, local
+
+from globals import root, local, vars
 from utilities import *
 
 from molecules import PDB, Monomer
@@ -17,7 +17,9 @@ def load_pickles(folder, extension = (".pickle")):
         progress = ProgressBar(len(os.listdir(local[folder])))
         for file in os.listdir(local[folder]):
             if file.endswith(extension):
-                pickles.append(unpickle(os.path.join(local[folder],file)))
+                p = unpickle(os.path.join(local[folder],file))
+                p.restore_dfs()
+                pickles.append(p)
                 progress.add()
     return pickles
 
