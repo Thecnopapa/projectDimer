@@ -28,11 +28,11 @@ class BioObject:
             pickle.dump(self, f)
 
     def restore_dfs(self):
-        for key, value in self.__dict__.items():
+        for key, entries in self.__dict__.items():
             if "_entries" in key:
                 df_name = key.split("_entries")[0] + "_df"
-                for id, contents in value.items():
-                    vars[df_name].loc[id] = contents
+                for contents in entries:
+                    vars[df_name].loc[len(vars[df_name])] = contents
 
 
 
@@ -127,9 +127,9 @@ class Monomer(BioObject):
         self.rotations = {}
         self.super_path = None
 
-        self.raw_monomers_entries = {}
-        self.failed_entries = {}
-        self.monomers_entries = {}
+        self.raw_monomers_entries = []
+        self.failed_entries = []
+        self.monomers_entries = []
 
         self.sequence = clean_string(get_sequence(self.structure))
         self.scores = None
@@ -137,13 +137,16 @@ class Monomer(BioObject):
 
     def sequence_align(self, references, force_align = False):
         if self.scores is None or force_align:
-            aligner = create_aligner(matrix="BLOSUM62")
-            scores = []
-            for reference in references:
-                scores.append(aligner.score(self.sequence, reference.sequence))
-            vars.alignments_df.loc[self.id] = [self.id] + scores
-            self.scores = scores
-
+            if len(self.sequence) > 0 :
+                aligner = create_aligner(matrix="BLOSUM62")
+                scores = []
+                for reference in references:
+                    scores.append(aligner.score(self.sequence, reference.sequence))
+                vars.alignments_df.loc[self.id] = [self.id] + scores
+                self.scores = scores
+            else:
+                vars.failed_df.loc[len(vars.failed_df)] = [self.id, "sequence", "sequence of length 0", self.sequence]
+                self.failed_entries.append([self.id, "sequence", "sequence of length 0", self.sequence])
 
 
 
@@ -171,10 +174,10 @@ class Monomer(BioObject):
                         contents.extend([data["rmsd"], data["aligned_residues"]])
                         self.superpositions[ref_name] = data
                     else:
-                        vars.failed_df.loc[self.id] = [self.id, "gesamt", "gesamt error", "are DISSIMILAR and cannot be reasonably aligned"]
+                        vars.failed_df.loc[len(vars.failed_df)] = [self.id, "gesamt", "gesamt error", "are DISSIMILAR and cannot be reasonably aligned"]
                         contents.extend([99,0])
             vars.raw_monomers_df.loc[self.id] = contents
-            self.raw_monomers_entries[self.id] = contents
+            self.raw_monomers_entries.append(contents)
             self.choose_superposition()
 
     def choose_superposition(self):
@@ -199,12 +202,12 @@ class Monomer(BioObject):
             contents.extend(data["t_matrix"].values())
             #print3(contents)
             vars.monomers_df.loc[self.id] = contents
-            self.monomers_entries[self.id] = contents
+            self.monomers_entries.append(contents)
             self.super_path = data["out_path"]
         else:
             self.super_path = ""
-            vars.failed_df.loc[self.id] = [self.id, "monomer", "no reference meets coverage (80%)", coverages]
-            self.failed_entries[self.id] = [self.id, "monomer", "no reference meets coverage (80%)", coverages]
+            vars.failed_df.loc[len(vars.failed_df)] = [self.id, "monomer", "no reference meets coverage (80%)", coverages]
+            self.failed_entries.append([self.id, "monomer", "no reference meets coverage (80%)", coverages])
 
 
 
@@ -222,13 +225,13 @@ class Dimer(BioObject):
         self.id = "{}_{}{}".format(self.name, monomer1.chain, monomer2.chain)
         self.incomplete = False
 
-        self.failed_entries = {}
+        self.failed_entries = []
 
 
 
         if monomer1.super_path is None or monomer2.super_path is None or monomer1.super_path == "" or monomer2.super_path == "":
-            vars.failed_df.loc[self.id] = [self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)]
-            self.failed_entries[self.id] = [self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)]
+            vars.failed_df.loc[len(vars.failed_df)] = [self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)]
+            self.failed_entries.append([self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)])
             self.incomplete = True
         else:
             self.original_structure, self.replaced_structure, self.merged_structure = self.merge_structures(monomer1, monomer2)
