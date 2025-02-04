@@ -15,10 +15,10 @@ from globals import root, local, vars
 from dataframes import save_dfs
 
 PROCESS_ALL = False
-
+LARGE_DATASET = True # Delete all saved data previously to avoid errors
 
 from imports import *
-if "many_pdbs" not in local.list():
+if "many_pdbs" not in local.list() and LARGE_DATASET:
     download_pdbs(os.path.join(root.pdb_lists,"list_1500"), "many_pdbs")
 
 
@@ -29,9 +29,10 @@ references = load_from_files(root.references,
                            Reference,
                            pickle_extension= ".reference",
                            force_reload = PROCESS_ALL)
-
-#molecules = load_from_files(local.many_pdbs, force_reload = PROCESS_ALL)
-molecules = load_from_files(force_reload = PROCESS_ALL)
+if LARGE_DATASET:
+    molecules = load_from_files(local.many_pdbs, force_reload = PROCESS_ALL)
+else:
+    molecules = load_from_files(force_reload = PROCESS_ALL)
 pickle(molecules)
 eprint("Files loaded")
 
