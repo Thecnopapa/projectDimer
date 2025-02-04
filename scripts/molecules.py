@@ -27,7 +27,7 @@ class BioObject:
 
     def restore_dfs(self):
         for key, value in self.__dict__.items():
-            if "entries" in key:
+            if "_entries" in key:
                 df_name = key.split("_entries")[0] + "_df"
                 for id, contents in value:
                     vars[df_name].loc[id] = contents
@@ -179,7 +179,7 @@ class Monomer(BioObject):
             contents.extend(data["t_matrix"].values())
             #print3(contents)
             vars.monomers_df.loc[self.id] = contents
-            self.successful_entries[self.id] = contents
+            self.monomers_entries[self.id] = contents
             self.super_path = data["out_path"]
         else:
             self.super_path = ""

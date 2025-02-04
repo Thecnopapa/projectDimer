@@ -1,5 +1,6 @@
 import os
 from utilities import *
+import pandas as pd
 root = None
 local = None
 
@@ -66,5 +67,5 @@ class Variable:
     def __getattr__(self, item):
         return self.vars[item]
 
-
 vars = Variable()
+

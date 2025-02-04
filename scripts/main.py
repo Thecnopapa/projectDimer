@@ -1,7 +1,9 @@
 import os
 import globals
+from dataframes import save_dfs
 from utilities import *
 import pandas as pd
+
 
 globals.set_root("../")
 if os.name == "nt":
@@ -11,7 +13,7 @@ elif os.name == "posix":
 from globals import root, local, vars
 
 
-PROCESS_ALL = False
+PROCESS_ALL = True
 
 
 from imports import *
@@ -34,17 +36,17 @@ for file in references+molecules:
     file.pickle()
 eprint("Files loaded")
 
-tprint("Creating dataframes")
+sprint("Creating dataframes")
 columns_raw = ["ID", "name", "chain"]
 for reference in references:
     columns_raw.extend(["rmsd_" + reference.name, "align_len_" + reference.name])
-globals.vars["super_raw_df"] = pd.DataFrame(columns = columns_raw)
+vars["raw_monomers_df"] = pd.DataFrame(columns = columns_raw)
 
 colums_filtered = ["ID", "best_fit", "coverage (%)","rmsd", "identity (%)",  "Rx", "Ry", "Rz", "T"]
-globals.vars["monomers_df"] = pd.DataFrame(columns = colums_filtered)
+vars["monomers_df"] = pd.DataFrame(columns = colums_filtered)
 
-globals.vars["failed_df"] = pd.DataFrame(columns= ["ID", "reason", "details"])
-tprint("Dataframes created")
+vars["failed_df"] = pd.DataFrame(columns= ["ID", "reason", "details"])
+print1("Dataframes created")
 
 tprint("Loading monomers")
 from imports import load_monomers
@@ -60,11 +62,10 @@ tprint("Superposing monomers")
 
 progress = ProgressBar(len(monomers))
 for monomer in monomers:
-    monomer.superpose(referencesforce_superpose = PROCESS_ALL)
+    monomer.superpose(references, force_superpose = PROCESS_ALL)
     progress.add()
 root["dataframes"] = "dataframes"
-super_raw_df.to_csv(os.path.join(root.dataframes,"raw_monomers_df.csv"), header = True, index = False)
-super_filtered_df.to_csv(os.path.join(root.dataframes,"monomers_df.csv"), header = True, index = False)
+save_dfs()
 eprint("Monomers superposed")
 
 
@@ -79,7 +80,7 @@ eprint("Dimers loaded")
 
 
 # Save and exit
-globals.vars.failed_df.to_csv(os.path.join(root.dataframes,"failed_df.csv"), header = True, index = False)
+save_dfs()
 from visualisation import *
 generate_charts()
 tprint("Saving data")
