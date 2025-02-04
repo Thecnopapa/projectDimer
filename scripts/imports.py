@@ -1,4 +1,6 @@
 import os
+
+import scripts.main
 from globals import root, local
 from utilities import *
 
@@ -12,9 +14,11 @@ def load_pickles(folder, extension = (".pickle")):
     pickles = []
     if folder in local.list():
         print("Files found:", len(os.listdir(local[folder])))
+        progress = ProgressBar(len(os.listdir(local[folder])))
         for file in os.listdir(local[folder]):
             if file.endswith(extension):
                 pickles.append(unpickle(os.path.join(local[folder],file)))
+                progress.add()
     return pickles
 
 
@@ -65,21 +69,38 @@ def load_dimers(molecules = None, folder = "dimers", extension = ".dimer",force_
         print2(obj)
     return loaded
 
-def download_pdbs(list_path, save_folder):
-    import subprocess
+def download_pdbs(list_path, save_folder, terminal = False):
+
+    sprint("Downloading PDBs:")
+
     local[save_folder] = save_folder
     pdb_list = []
     with open(list_path, "r") as f:
         for line in f:
             pdb_list.extend(line.split(","))
-    print(pdb_list)
+    #print(pdb_list)
+    print1("{} pdbs for download".format(len(pdb_list)))
     pdb_links = list_path+"_links.txt"
     open(pdb_links, "w")
     with open(pdb_links, "a") as f:
         for pdb in pdb_list:
             f.write("https://files.rcsb.org/download/{}.pdb\n".format(pdb))
-    print(local[save_folder])
-    subprocess.run(["wget","-i", pdb_links, "-P", local[save_folder]])
+    print1("Links saved at {}".format(pdb_links))
+    if not terminal:
+        import wget
+        counter =0
+        with open(pdb_links, "r") as f:
+            for line in f:
+                print2("({}/{})".format(counter,len(pdb_list)),line)
+                try:
+                    wget.download(line, out=local[save_folder])
+                except:
+                    print3("Failed to import", line)
+                counter+=1
+    else:
+        import subprocess
+        subprocess.run(["wget","-i", pdb_links, "-P", local[save_folder]])
+
 
 
 

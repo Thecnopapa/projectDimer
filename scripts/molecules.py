@@ -166,6 +166,7 @@ class Monomer(BioObject):
             df.loc[self.id] = contents
             self.super_path = data["out_path"]
         else:
+            self.super_path = ""
             vars.failed_df.loc[self.id] = [self.id, "no reference meets coverage (80%)", coverages]
 
 
@@ -183,14 +184,14 @@ class Dimer(BioObject):
         self.name = monomer1.name
         self.id = "{}_{}{}".format(self.name, monomer1.chain, monomer2.chain)
         self.incomplete = False
-        if monomer1.super_path is None or monomer2.super_path is None:
+        if monomer1.super_path is None or monomer2.super_path is None or monomer1.super_path == "" or monomer2.super_path == "":
             vars.failed_df.loc[self.id] = [self.id, "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)]
             self.incomplete = True
         else:
             self.original_structure, self.replaced_structure, self.merged_structure = self.merge_structures(monomer1, monomer2)
 
     def merge_structures(self, monomer1, monomer2):
-        print1("merging monomers", monomer1, monomer2)
+        print1("Merging monomers:", monomer1, monomer2)
         structureA = PDBParser(QUIET=True).get_structure(monomer1.id, monomer1.super_path)
         structureB = PDBParser(QUIET=True).get_structure(monomer2.id, monomer2.super_path)
         originalA = structureA[0]

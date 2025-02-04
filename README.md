@@ -8,4 +8,5 @@
 
 
 ## Current Data distribution:
-![Distribution of best fit references](charts/succesfull.png) ![Distribution of failed superpositions](charts/failed.png)
+![super_filtered.png](charts/super_filtered.png)
+![failed_df.png](charts/failed_df.png)

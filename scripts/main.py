@@ -15,7 +15,8 @@ PROCESS_ALL = False
 
 
 from imports import *
-#download_pdbs(os.path.join(root.pdb_lists,"list_1500"), "many_pdbs")
+if "many_pdbs" not in local.list():
+    download_pdbs(os.path.join(root.pdb_lists,"list_1500"), "many_pdbs")
 
 tprint("Loading files")
 from imports import load_from_files
@@ -52,7 +53,7 @@ globals.vars["failed_df"] = pd.DataFrame(columns= ["ID", "reason", "details"])
 
 progress = ProgressBar(len(monomers))
 for monomer in monomers:
-    monomer.superpose(references, super_raw_df, super_filtered_df,force_superpose = True)
+    monomer.superpose(references, super_raw_df, super_filtered_df,force_superpose = PROCESS_ALL)
     progress.add()
 root["dataframes"] = "dataframes"
 super_raw_df.to_csv(os.path.join(root.dataframes,"super_raw.csv"), header = True, index = False)
@@ -72,7 +73,8 @@ eprint("Dimers loaded")
 
 # Save and exit
 globals.vars.failed_df.to_csv(os.path.join(root.dataframes,"failed_df.csv"), header = True, index = False)
-
+from visualisation import *
+generate_charts()
 tprint("Saving data")
 all_files = references + molecules + monomers + dimers
 progress = ProgressBar(len(all_files))
