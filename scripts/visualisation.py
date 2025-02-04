@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 
 def generate_charts():
     root["charts"] = "charts"
-    if "super_filtered.csv" in os.listdir(root.dataframes):
-        data = pd.read_csv(os.path.join(root.dataframes,"super_filtered.csv"))
+    if "monomers_df.csv" in os.listdir(root.dataframes):
+        data = pd.read_csv(os.path.join(root.dataframes,"monomers_df.csv"))
 
         labels = data["best_fit"].unique()
         sizes = []
@@ -17,7 +17,7 @@ def generate_charts():
 
         fig, ax = plt.subplots()
         ax.pie(sizes, labels=labels)
-        fig.savefig(os.path.join(root.charts,"super_filtered.png"))
+        fig.savefig(os.path.join(root.charts,"monomers_df.png"))
 
     if "failed_df.csv" in os.listdir(root.dataframes):
         data = pd.read_csv(os.path.join(root.dataframes,"failed_df.csv"))
