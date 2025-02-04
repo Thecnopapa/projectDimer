@@ -151,7 +151,7 @@ class Monomer(BioObject):
                         contents.extend([data["rmsd"], data["aligned_residues"]])
                         self.superpositions[ref_name] = data
                     else:
-                        vars.failed_df.loc[self.id] = [self.id, "gesamt error", "are DISSIMILAR and cannot be reasonably aligned"]
+                        vars.failed_df.loc[self.id] = [self.id, "gesamt", "gesamt error", "are DISSIMILAR and cannot be reasonably aligned"]
                         contents.extend([99,0])
             vars.raw_monomers_df.loc[self.id] = contents
             self.raw_monomers_entries[self.id] = contents
@@ -172,7 +172,7 @@ class Monomer(BioObject):
             else:
                 coverages.append(data["coverage"])
                 pass
-        if len(finalists) >0:
+        if len(finalists) > 0:
             self.super_data = finalists[np.argmax(criteria)]
             data = self.super_data[1]
             contents = [self.id,self.super_data[0], round(data["coverage"]*100), data["rmsd"], round(data["identity"]*100)]
@@ -183,8 +183,8 @@ class Monomer(BioObject):
             self.super_path = data["out_path"]
         else:
             self.super_path = ""
-            vars.failed_df.loc[self.id] = [self.id, "no reference meets coverage (80%)", coverages]
-            self.failed_entries[self.id] = [self.id, "no reference meets coverage (80%)", coverages]
+            vars.failed_df.loc[self.id] = [self.id, "monomer", "no reference meets coverage (80%)", coverages]
+            self.failed_entries[self.id] = [self.id, "monomer", "no reference meets coverage (80%)", coverages]
 
 
 
@@ -207,8 +207,8 @@ class Dimer(BioObject):
 
 
         if monomer1.super_path is None or monomer2.super_path is None or monomer1.super_path == "" or monomer2.super_path == "":
-            vars.failed_df.loc[self.id] = [self.id, "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)]
-            self.failed_entries[self.id] = [self.id, "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)]
+            vars.failed_df.loc[self.id] = [self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)]
+            self.failed_entries[self.id] = [self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)]
             self.incomplete = True
         else:
             self.original_structure, self.replaced_structure, self.merged_structure = self.merge_structures(monomer1, monomer2)

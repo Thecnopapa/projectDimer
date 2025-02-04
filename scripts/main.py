@@ -1,9 +1,9 @@
 import os
-import globals
+
 from utilities import *
 import pandas as pd
 
-
+import globals
 globals.set_root("../")
 if os.name == "nt":
     globals.set_local("C:/Users/iainv/localdata/_local/projectB")
@@ -14,8 +14,13 @@ elif os.name == "posix":
 from globals import root, local, vars
 from dataframes import save_dfs
 
+
+
 PROCESS_ALL = False
 LARGE_DATASET = True # Delete all saved data previously to avoid errors
+
+
+
 
 from imports import *
 if "many_pdbs" not in local.list() and LARGE_DATASET:
@@ -47,7 +52,7 @@ vars["raw_monomers_df"] = pd.DataFrame(columns = columns_raw)
 colums_filtered = ["ID", "best_fit", "coverage (%)","rmsd", "identity (%)",  "Rx", "Ry", "Rz", "T"]
 vars["monomers_df"] = pd.DataFrame(columns = colums_filtered)
 
-vars["failed_df"] = pd.DataFrame(columns= ["ID", "reason", "details"])
+vars["failed_df"] = pd.DataFrame(columns= ["ID", "stage", "error", "details"])
 print1("Dataframes created")
 
 
