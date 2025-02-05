@@ -8,12 +8,31 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def html(string, new_line=True, paragraph=False, bold=False, header: int = None, italic=False, in_list = False, other:list = None):
+def html(string, new_line=True, paragraph=False, bold=False, header:int=None, italic=False, in_list=False,
+         other:list=None, emphasis=False, insert=False, sup=False, strike=False, mark=False, small=False):
     start = []
     end = []
     if paragraph:
         start.append("<p>")
         end.append("</p>")
+    if emphasis:
+        start.append("<em>")
+        end.append("</em>")
+    if insert:
+        start.append("<ins>")
+        end.append("</ins>")
+    if sup:
+        start.append("<sup>")
+        end.append("</sup>")
+    if strike:
+        start.append("<del>")
+        end.append("</del>")
+    if mark:
+        start.append("<mark>")
+        end.append("</mark>")
+    if small:
+        start.append("<small>")
+        end.append("</small>")
     if bold:
         start.append("<b>")
         end.append("</b>")
@@ -79,9 +98,25 @@ def build_html_from_df(df, obj):
             f.write(obj(item))
         f.write(java())
 
-def object_collapsible(obj):
+def object_collapsible(self):
+    c = "<button type=\")button\" class=\"collapsible\">{}</button>\n".format(self.id)
+    c += "<div class=\"content\">\n"
+    c += "<p>\n"
+    c += html(self.id, header=1)
+    c += html("pdb: {}".format(self.path), emphasis=True, insert=True)
+    if "super_data" in self.__dict__:
+        c += html("Superposition details:", header=2)
+        c += html("Best fit: {}".format(self.super_data[0]), header=3)
+        super_data = self.super_data[1]
+        print(super_data)
+        c += html("RMSD: {}".format(super_data["rmsd"]), in_list=True)
+        c += html("Identity: {}".format(super_data["identity"]), in_list=True)
+        c += html("Coverage: {}% of self".format(super_data["coverage"][0]), in_list=True)
+        c += html("Coverage: {}% of reference".format(super_data["coverage"][1]), in_list=True)
+    c += "</p>\n"
+    c += "</div>\n"
+    return c
 
-    return ""
 
 
 
