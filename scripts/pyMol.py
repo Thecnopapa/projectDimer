@@ -1,4 +1,7 @@
 import os
+
+import scipy.stats
+
 from utilities import *
 from globals import root, local, vars
 
@@ -23,7 +26,8 @@ def pymol_load_name(file_name, folder):
     pymol.cmd.load(os.path.join(local[folder], file_name),file_name)
 
 def pymol_load_path(path):
-    pymol.cmd.load(path,os.path.basename(path))
+    print(path, os.path.basename(path),"\n")
+    pymol.cmd.load(path,os.path.basename(path), state=0)
 
 
 def pymol_save_small(file_name, folder, dpi=300, height=100, width=100):
@@ -31,10 +35,14 @@ def pymol_save_small(file_name, folder, dpi=300, height=100, width=100):
     pymol.cmd.png(image_path, width=width, height=height, dpi=dpi)
     return image_path
 
-def generate_preview(path):
-    root["previews"] = "images/previews"
-    name = os.path.basename(path).split(".")[0]
-    pymol_reset()
-    pymol_load_path(path)
-    preview_path = pymol_save_small(name, root.previews, dpi=100, height=100, width=100)
-    return preview_path
+def generate_preview(path, folder=""):
+    try:
+        root[folder] = "previews/{}".format(folder)
+        name = os.path.basename(path).split(".")[0]
+        pymol_reset()
+        pymol_load_path(path)
+        preview_path = pymol_save_small(name, root[folder], dpi=50, height=150, width=150)
+        return preview_path
+    except:
+        print("Failed to generate preview for {} ({})".format(name,path))
+        return None

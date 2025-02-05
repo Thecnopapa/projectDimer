@@ -71,7 +71,7 @@ def html_image(url, text=None, width=None, height=None):
 
 def head(title):
     contents = "<head>\n"
-    contents +="<link rel=\"stylesheet\" href=\"style.css\">\n"
+    #contents +="<link rel=\"stylesheet\" href=\"style.txt\">\n"
     contents += "<title>{}</title>\n".format(title)
     contents += "</head>\n"
     contents += "<h1>{}</h1>\n".format(title)
@@ -83,35 +83,41 @@ def java():
         contents = f.read()
     return contents
 
+def style():
+    with (open(os.path.join(root.other, "style.txt"), "r") as f):
+        contents = "<style>\n"
+        contents += f.read()
+        contents += "\n</style>\n".format()
+    return contents
+
 
 def monomer_collapsible(info):
     #print(info)
-    content = "<button type=\")button\" class=\"collapsible\">{}</button>\n".format(info.ID)
-    content += "<div class=\"content\">\n"
-    content += "<p>\n"
-    content += html(info.ID, header=1)
-    content += html("Best fit: {}".format(info.best_fit), header=2)
-    content += html("RMSD: {}".format(info.rmsd), in_list=True)
-    content += html("Identity: {}".format(info._6), in_list=True)
-    content += html("Coverage: {}% of self".format(round(info._3)), in_list=True)
-    content += html("Coverage: {}% of reference".format(round(info._4)), in_list=True)
-    content += "</p>\n"
-    content += "</div>\n"
-    return content
+    c = "<button type=\")button\" class=\"collapsible\">{}</button>\n".format(info.ID)
+    c += "<div class=\"content\">\n"
+    c += "<div class=\"row\">\n"
+    c += "<div class=\"column\">\n"
+    c += "<p>\n"
+    c += html(info.ID, header=1)
+    c += html("Best fit: {}".format(info.best_fit), header=2)
+    c += html("RMSD: {}".format(info.rmsd), in_list=True)
+    c += html("Identity: {}".format(info._6), in_list=True)
+    c += html("Coverage: {}% of self".format(round(info._3)), in_list=True)
+    c += html("Coverage: {}% of reference".format(round(info._4)), in_list=True)
+    c += "</p>\n"
+    c += "</div>\n"
+    c += "</div>\n"  # Column
+    c += "<div class=\"column\">\n"
+    c += html("Cleaned PDB", header=4)
+    c += html_image(os.path.join("../previews/cleaned", "{}.png".format(info.ID)), info.ID,150,150)
+    c += "</div>\n"  # Column
+
+    c += "</div>\n" # Row
+    return c
 
 
-def build_html_from_df(df, obj):
-    data = pd.read_csv(os.path.join(root.dataframes, df))
-    data.sort_values(by=["ID"], inplace=True)
-    df_name = df.split(".")[0]
-    file_path = os.path.join(root.other, "{}.html".format(df_name))
-    with open(file_path, "w") as f:
-        pass
-    with open(file_path, "a") as f:
-        f.write(head(df_name))
-        for item in data.itertuples(name="item"):
-            f.write(obj(item))
-        f.write(java())
+
+
 
 
 def object_collapsible(self):
@@ -135,9 +141,16 @@ def object_collapsible(self):
     c += "</p>\n"
     c += "</div>\n" # Column
     c += "<div class=\"column\">\n"
-    c += html("Column 2")
-    c += html_link(self.path,html_image(os.path.join("images/previews", "{}.png".format(self.id)), self.id,150,150))
+    c += html("Cleaned PDB", header=4)
+    c += html_link(self.path,html_image(os.path.join("../previews/cleaned", "{}.png".format(self.id)), self.id,150,150))
     c += "</div>\n"  # Column
+    if "super_data" in self.__dict__:
+        if self.super_data is not None:
+            c += "<div class=\"column\">\n"
+            c += html("Superposed PDB", header=4)
+            c += html_link(self.path,
+                           html_image(os.path.join("../previews/supers", "{}_X_{}.png".format(self.id, self.super_data[0])), self.id, 150, 150))
+            c += "</div>\n"  # Column
 
     c += "</div>\n" # Row
     c += "</div>\n" # Content
@@ -147,6 +160,20 @@ def object_collapsible(self):
 
 
 
+def build_html_from_df(df, obj):
+    data = pd.read_csv(os.path.join(root.dataframes, df))
+    data.sort_values(by=["ID"], inplace=True)
+    df_name = df.split(".")[0]
+    file_path = os.path.join(root.other, "{}.html".format(df_name))
+    with open(file_path, "w") as f:
+        pass
+    with open(file_path, "a") as f:
+        f.write(head(df_name))
+        f.write(java())
+        f.write(style())
+        for item in data.itertuples(name="item"):
+            f.write(obj(item))
+
 
 def build_html_from_objects(objects, name="objects"):
     file_path = os.path.join(root.other, "{}.html".format(name))
@@ -154,9 +181,11 @@ def build_html_from_objects(objects, name="objects"):
         pass
     with open(file_path, "a") as f:
         f.write(head(name))
+        f.write(java())
+        f.write(style())
         for obj in objects:
             f.write(object_collapsible(obj))
-        f.write(java())
+
 
 
 
@@ -187,17 +216,18 @@ if __name__ == "__main__":
     eprint("Monomers loaded")
 
 
-    GENERATE_PREVIEWS = False
-
+    GENERATE_PREVIEWS = True
+    force_previews = False
     if GENERATE_PREVIEWS:
         tprint("Generating previews")
         from pyMol import generate_preview
         progress = ProgressBar(len(monomers))
         for monomer in monomers:
-            if not "preview" in monomer.__dict__.keys():
-                print(monomer.__dict__.keys())
-                print1("generating for", monomer.id)
-                monomer.preview = generate_preview(monomer.path)
+            if not "preview" in monomer.__dict__.keys() or force_previews:
+                #print(monomer.__dict__.keys())
+                #print1("generating for", monomer.id)
+                monomer.previews = {"cleaned": generate_preview(monomer.path, "cleaned")}
+                monomer.preview["superposed"] = generate_preview(monomer.super_path, "supers")
             progress.add()
         eprint("Previews generated")
 
