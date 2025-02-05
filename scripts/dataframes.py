@@ -10,11 +10,13 @@ from visualisation import generate_charts
 
 def save_dfs():
     sprint("Saving dataframes...")
-    for key, value in vars.items():
-        if "df" in key:
-            print1("Saving {}.csv".format(key))
-            value.to_csv(os.path.join(root.dataframes,f"{key}.csv"), header = True, index=False)
-    generate_charts()
+    if "do_only" in vars:
+        if len(vars.do_only) == 0 or vars.do_only is None:
+            for key, value in vars.items():
+                if "df" in key:
+                    print1("Saving {}.csv".format(key))
+                    value.to_csv(os.path.join(root.dataframes,f"{key}.csv"), header = True, index=False)
+            generate_charts()
 
 
 def create_dfs(references):

@@ -62,10 +62,13 @@ class Variable:
         self.vars[key] = value
 
     def __contains__(self, item):
-        return item in self.vars
+        return item in list(self.vars.keys())
 
     def __getattr__(self, item):
         return self.vars[item]
+
+    def __repr__(self):
+        return str(list(self.vars.keys()))
 
     def keys(self):
         return list(self.vars.keys())

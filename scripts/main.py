@@ -18,13 +18,13 @@ from dataframes import save_dfs, create_dfs
 
 PROCESS_ALL = True
 LARGE_DATASET = True # Delete all saved data previously to avoid errors
+DO_ONLY = "" # Names of pdbs to be processed (CAPS sensitive, separated by space) e.g "5N10 1M2Z"
 
-
-
+vars["do_only"] = DO_ONLY
 
 from imports import *
 if "many_pdbs" not in local.list() and LARGE_DATASET:
-    download_pdbs(os.path.join(root.pdb_lists,"list_1500"), "many_pdbs")
+    download_pdbs(os.path.join(root.pdb_lists,"list_1500v2"), "many_pdbs")
 
 
 tprint("Loading files")
@@ -33,6 +33,7 @@ from molecules import Reference, PDB
 references = load_from_files(root.references,
                              pickle_extension= ".reference",
                              get_monomer=True,
+                             ignore_selection = True,
                              force_reload = PROCESS_ALL)
 if LARGE_DATASET:
     molecules = load_from_files(local.many_pdbs, force_reload = PROCESS_ALL)
@@ -86,8 +87,7 @@ eprint("Dimers loaded")
 
 # Save and exit
 save_dfs()
-from visualisation import *
-generate_charts()
+
 tprint("Saving data")
 all_files = references + molecules + monomers + dimers
 progress = ProgressBar(len(all_files))

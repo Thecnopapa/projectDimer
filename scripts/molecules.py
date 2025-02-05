@@ -86,7 +86,7 @@ class PDB(BioObject):
         if len(self.monomers) == 0 or True:
             self.monomers = []
             for chain in self.structure.get_chains():
-                if len(chain.get_list()) > 50:
+                if len(chain) > 200:
                     self.monomers.append(Monomer(self.name, chain.id, chain))
         return self.monomers
 
@@ -163,7 +163,7 @@ class Monomer(BioObject):
             if references is None:
                 references = self.top_refs_for_super
             for reference in references:
-                ref_name = reference.id
+                ref_name = reference.name
                 if not ref_name in self.rmsds.keys() or force_superpose:
                     super_id = self.id + "_x_" + ref_name
                     #print(super_id, self.path)

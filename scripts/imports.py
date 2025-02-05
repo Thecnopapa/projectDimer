@@ -8,15 +8,20 @@ from molecules import PDB, Monomer
 
 
 
-def load_pickles(folder, extension = (".pickle")):
+def load_pickles(folder, extension = (".pickle"), ignore_selection = False):
     print1("Looking for pickles in {}, with extension: {}".format(
         folder, extension))
+    print2("Loading only:", vars.do_only)
     pickles = []
     if folder in local.list():
         print("Files found:", len(os.listdir(local[folder])))
         progress = ProgressBar(len(os.listdir(local[folder])))
         for file in os.listdir(local[folder]):
-            if file.endswith(extension):
+            selection = None
+            if "do_only" in vars and not ignore_selection:
+                if len(vars.do_only) > 0:
+                    selection = vars.do_only.split(" ")
+            if file.endswith(extension) and (selection is None or file.split(".")[0] in selection):
                 p = unpickle(os.path.join(local[folder],file))
                 p.restore_dfs()
                 pickles.append(p)
@@ -24,16 +29,21 @@ def load_pickles(folder, extension = (".pickle")):
     return pickles
 
 
-def load_from_files(pdb_folder = root.experimental, obj = PDB, pickle_folder = "molecules",get_monomer = False, pickle_extension = ".molecule", pdb_extension = (".pdb", ".pdb1", ".cif"), force_reload=False):
+def load_from_files(pdb_folder = root.experimental, obj = PDB, ignore_selection = False, pickle_folder = "molecules",get_monomer = False, pickle_extension = ".molecule", pdb_extension = (".pdb", ".pdb1", ".cif"), force_reload=False):
     sprint("Loading pdbs, force reload:", force_reload)
+    print1("Loading only:", vars.do_only)
     loaded = []
     if not force_reload:
-        loaded = load_pickles(pickle_folder, pickle_extension)
+        loaded = load_pickles(pickle_folder, pickle_extension, ignore_selection=ignore_selection)
     if len(loaded) == 0:
         print1("No saved pickles found, importing from:", pdb_folder)
         progress = ProgressBar(len(os.listdir(pdb_folder)))
         for file in os.listdir(pdb_folder):
-            if file.endswith(pdb_extension):
+            selection = None
+            if "do_only" in vars and not ignore_selection:
+                if len(vars.do_only) > 0:
+                    selection = vars.do_only.split(" ")
+            if file.endswith(pdb_extension) and (selection is None or file.split(".")[0] in selection):
                 object = obj(os.path.join(pdb_folder, file))
                 if get_monomer:
                     object = object.get_monomers()[0]
