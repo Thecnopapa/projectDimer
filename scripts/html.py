@@ -54,7 +54,10 @@ def html(string, new_line=True, paragraph=False, bold=False, header:int=None, it
 
     return " ".join(start + [string] + end)
 
-
+def html_link(url, text=None):
+    if text is None:
+        text = url
+    return html("<a href=\"{}\"> {}</a>".format(url, text))
 
 def head(title):
     contents = "<head>\n"
@@ -63,6 +66,7 @@ def head(title):
     contents += "</head>\n"
     contents += "<h1>{}</h1>\n".format(title)
     return contents
+
 
 def java():
     with open(os.path.join(root.other, "java.txt"), "r") as f:
@@ -85,6 +89,7 @@ def monomer_collapsible(info):
     content += "</div>\n"
     return content
 
+
 def build_html_from_df(df, obj):
     data = pd.read_csv(os.path.join(root.dataframes, df))
     data.sort_values(by=["ID"], inplace=True)
@@ -98,21 +103,22 @@ def build_html_from_df(df, obj):
             f.write(obj(item))
         f.write(java())
 
+
 def object_collapsible(self):
     c = "<button type=\")button\" class=\"collapsible\">{}</button>\n".format(self.id)
     c += "<div class=\"content\">\n"
     c += "<p>\n"
     c += html(self.id, header=1)
-    c += html("pdb: {}".format(self.path), emphasis=True, insert=True)
+    c += html("pdb: ", emphasis = True, new_line=False)
+    c += html(html_link(self.path), emphasis=True, insert=True)
     if "super_data" in self.__dict__:
         c += html("Superposition details:", header=2)
-        c += html("Best fit: {}".format(self.super_data[0]), header=3)
+        c += html("Best fit: <b>{}</b>".format(self.super_data[0]), header=3)
         super_data = self.super_data[1]
-        print(super_data)
         c += html("RMSD: {}".format(super_data["rmsd"]), in_list=True)
-        c += html("Identity: {}".format(super_data["identity"]), in_list=True)
-        c += html("Coverage: {}% of self".format(super_data["coverage"][0]), in_list=True)
-        c += html("Coverage: {}% of reference".format(super_data["coverage"][1]), in_list=True)
+        c += html("Identity: {}%".format(round(super_data["identity"]*100)), in_list=True)
+        c += html("Coverage: {}% of self".format(round(super_data["coverage"][0])), in_list=True)
+        c += html("Coverage: {}% of reference".format(round(super_data["coverage"][1])), in_list=True)
     c += "</p>\n"
     c += "</div>\n"
     return c
