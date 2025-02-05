@@ -24,7 +24,7 @@ from imports import pickle, export
 # Some essential variables
 PROCESS_ALL = True # Ignore saved pickles and generate everything from scratch
 LARGE_DATASET = True # Delete all saved data previously to avoid errors
-DO_ONLY = "1M2Z" # Names of pdbs to be processed (CAPS sensitive, separated by space) e.g "5N10 1M2Z"
+DO_ONLY = "" # Names of pdbs to be processed (CAPS sensitive, separated by space) e.g "5N10 1M2Z"
 
 
 # Set up

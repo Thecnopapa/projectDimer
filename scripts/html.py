@@ -136,7 +136,7 @@ def object_collapsible(self):
     c += "</div>\n" # Column
     c += "<div class=\"column\">\n"
     c += html("Column 2")
-    c += html_link(self.path,html_image(os.path.join(format(local.previews), "{}.png".format(self.id)), self.id,150,150))
+    c += html_link(self.path,html_image(os.path.join("images/previews", "{}.png".format(self.id)), self.id,150,150))
     c += "</div>\n"  # Column
 
     c += "</div>\n" # Row

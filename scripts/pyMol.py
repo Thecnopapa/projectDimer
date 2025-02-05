@@ -27,14 +27,14 @@ def pymol_load_path(path):
 
 
 def pymol_save_small(file_name, folder, dpi=300, height=100, width=100):
-    image_path = os.path.join(local[folder], file_name+".png")
+    image_path = os.path.join(folder, file_name+".png")
     pymol.cmd.png(image_path, width=width, height=height, dpi=dpi)
     return image_path
 
 def generate_preview(path):
-    local["previews"] = "images/previews"
+    root["previews"] = "images/previews"
     name = os.path.basename(path).split(".")[0]
     pymol_reset()
     pymol_load_path(path)
-    preview_path = pymol_save_small(name, "previews", dpi=100, height=100, width=100)
+    preview_path = pymol_save_small(name, root.previews, dpi=100, height=100, width=100)
     return preview_path
