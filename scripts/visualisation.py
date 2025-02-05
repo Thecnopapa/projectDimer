@@ -60,13 +60,14 @@ def generate_html():
 
 if __name__ == "__main__":
     import globals
-
     globals.set_root("../")
     if os.name == "nt":
         globals.set_local("C:/Users/iainv/localdata/_local/projectB")
     elif os.name == "posix":
         globals.set_local("/localdata/iain/_local/projectB")
     from globals import root, local, vars
+
+
     generate_charts()
 
 

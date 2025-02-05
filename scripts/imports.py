@@ -11,7 +11,8 @@ from molecules import PDB, Monomer
 def load_pickles(folder, extension = (".pickle"), ignore_selection = False):
     print1("Looking for pickles in {}, with extension: {}".format(
         folder, extension))
-    print2("Loading only:", vars.do_only)
+    if "do_only" in vars:
+        print2("Loading only:", vars.do_only)
     pickles = []
     if folder in local.list():
         print("Files found:", len(os.listdir(local[folder])))

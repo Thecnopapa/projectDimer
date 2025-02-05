@@ -32,7 +32,8 @@ class BioObject:
             if "_entries" in key:
                 df_name = key.split("_entries")[0] + "_df"
                 for contents in entries:
-                    vars[df_name].loc[len(vars[df_name])] = contents
+                    if df_name in vars:
+                        vars[df_name].loc[len(vars[df_name])] = contents
 
 
 
