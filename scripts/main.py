@@ -1,8 +1,12 @@
+# Project_B by Iain Visa @ IBMB-CSIC / UB
+
+# Essential imports
 import os
-
-from utilities import *
 import pandas as pd
+from utilities import *
 
+
+# Initialise globals
 import globals
 globals.set_root("../")
 if os.name == "nt":
@@ -10,23 +14,32 @@ if os.name == "nt":
 elif os.name == "posix":
     globals.set_local("/localdata/iain/_local/projectB")
 
+
 # Imports that need globals initialised:
 from globals import root, local, vars
 from dataframes import save_dfs, create_dfs
+from imports import pickle, export
 
 
-
-PROCESS_ALL = True
+# Some essential variables
+PROCESS_ALL = True # Ignore saved pickles and generate everything from scratch
 LARGE_DATASET = True # Delete all saved data previously to avoid errors
 DO_ONLY = "" # Names of pdbs to be processed (CAPS sensitive, separated by space) e.g "5N10 1M2Z"
 
+
+# Set up
 vars["do_only"] = DO_ONLY
 
-from imports import *
+
+# Download large dataset
+tprint("Downloading large data")
+from imports import download_pdbs
 if "many_pdbs" not in local.list() and LARGE_DATASET:
     download_pdbs(os.path.join(root.pdb_lists,"list_1500v2"), "many_pdbs")
+eprint("Large data downloaded")
 
 
+# Load/Import molecule files
 tprint("Loading files")
 from imports import load_from_files
 from molecules import Reference, PDB
@@ -43,17 +56,23 @@ pickle(molecules)
 eprint("Files loaded")
 
 
+# Create dataframes
 sprint("Creating dataframes")
 create_dfs(references)
+for df in os.listdir(root.dataframes):
+    print1(df)
 print1("Dataframes created")
 
 
+# Load/Generate monomer files
 tprint("Loading monomers")
 from imports import load_monomers
 monomers = load_monomers(molecules = molecules, force_reload=PROCESS_ALL)
 pickle(monomers)
 eprint("Monomers loaded")
 
+
+# Align references to monomers
 tprint("Aligning monomers")
 progress = ProgressBar(len(monomers))
 for monomer in monomers:
@@ -64,7 +83,7 @@ save_dfs()
 eprint("Monomers aligned")
 
 
-
+# Superpose references to monomers
 tprint("Superposing monomers")
 progress = ProgressBar(len(monomers))
 for monomer in monomers:
@@ -75,10 +94,23 @@ save_dfs()
 eprint("Monomers superposed")
 
 
+# Load/Generate dimer files
 tprint("Loading dimers")
 from imports import load_dimers
-dimers = load_dimers(molecules = molecules, force_reload=True)
+dimers = load_dimers(molecules = molecules, force_reload=PROCESS_ALL)
+pickle(dimers)
 eprint("Dimers loaded")
+
+
+# Processing dimers
+tprint("Processing dimers")
+progress = ProgressBar(len(dimers))
+for dimer in dimers:
+    dimer
+    progress.add()
+pickle(dimers)
+save_dfs()
+eprint("Dimers processed")
 
 
 
@@ -86,13 +118,15 @@ eprint("Dimers loaded")
 
 
 # Save and exit
-save_dfs()
-
 tprint("Saving data")
-all_files = references + molecules + monomers + dimers
+save_dfs() # Save dataframes and generate figures
+
+all_files = references + molecules + monomers + dimers # select all loaded files
 progress = ProgressBar(len(all_files))
 for file in all_files:
-    file.pickle()
-    file.export()
+    file.pickle() # Save the object
+    file.export() # Save the pdb
     progress.add()
 eprint("Finished")
+
+# Done xd
