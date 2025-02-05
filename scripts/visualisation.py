@@ -54,6 +54,9 @@ def generate_charts():
     # Errors piechart:
     generate_piechart("failed_df.csv", "error")
 
+def generate_html():
+    pass
+
 
 if __name__ == "__main__":
     import globals
@@ -65,3 +68,9 @@ if __name__ == "__main__":
         globals.set_local("/localdata/iain/_local/projectB")
     from globals import root, local, vars
     generate_charts()
+
+
+
+
+
+
