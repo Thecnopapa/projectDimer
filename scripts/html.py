@@ -120,22 +120,23 @@ def object_collapsible(self):
     c += "<div class=\"row\">\n"
     c += "<div class=\"column\">\n"
     c += "<p>\n"
-    c += html(self.id, header=1)
+    c += html(self.id, header=1, bold=True)
     c += html("pdb: ", emphasis = True, new_line=False)
     c += html(html_link(self.path), emphasis=True, insert=True)
     if "super_data" in self.__dict__:
-        c += html("Superposition details:", header=2)
-        c += html("Best fit: <b>{}</b>".format(self.super_data[0]), header=3)
-        super_data = self.super_data[1]
-        c += html("RMSD: {}".format(super_data["rmsd"]), in_list=True)
-        c += html("Identity: {}%".format(round(super_data["identity"]*100)), in_list=True)
-        c += html("Coverage: {}% of self".format(round(super_data["coverage"][0])), in_list=True)
-        c += html("Coverage: {}% of reference".format(round(super_data["coverage"][1])), in_list=True)
+        if self.super_data is not None:
+            c += html("Superposition details:", header=2)
+            c += html("Best fit: <b>{}</b>".format(self.super_data[0]), header=3)
+            super_data = self.super_data[1]
+            c += html("RMSD: {}".format(super_data["rmsd"]), in_list=True)
+            c += html("Identity: {}%".format(round(super_data["identity"]*100)), in_list=True)
+            c += html("Coverage: {}% of self".format(round(super_data["coverage"][0])), in_list=True)
+            c += html("Coverage: {}% of reference".format(round(super_data["coverage"][1])), in_list=True)
     c += "</p>\n"
     c += "</div>\n" # Column
     c += "<div class=\"column\">\n"
     c += html("Column 2")
-    c += html_image(os.path.join(format(local.previews), "{}.png".format(self.id)))
+    c += html_link(self.path,html_image(os.path.join(format(local.previews), "{}.png".format(self.id)), self.id,150,150))
     c += "</div>\n"  # Column
 
     c += "</div>\n" # Row
