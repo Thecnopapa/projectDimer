@@ -36,3 +36,11 @@
 .active:after {
   content: "\2796"; /* Unicode character for "minus" sign (-) */
 }
+
+ .row {
+  display: flex;
+}
+
+.column {
+  flex: 50%;
+}

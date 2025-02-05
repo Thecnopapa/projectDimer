@@ -59,6 +59,16 @@ def html_link(url, text=None):
         text = url
     return html("<a href=\"{}\"> {}</a>".format(url, text))
 
+def html_image(url, text=None, width=None, height=None):
+    if text is None:
+        text = url
+    w = h = ""
+    if width is not None:
+        w = " width=\"{}\"".format(width)
+    if height is not None:
+        h = " height=\"{}\"".format(height)
+    return "<img src=\"{}\" alt=\"{}\"{}{}>".format(url, text,h,w)
+
 def head(title):
     contents = "<head>\n"
     contents +="<link rel=\"stylesheet\" href=\"style.css\">\n"
@@ -107,6 +117,8 @@ def build_html_from_df(df, obj):
 def object_collapsible(self):
     c = "<button type=\")button\" class=\"collapsible\">{}</button>\n".format(self.id)
     c += "<div class=\"content\">\n"
+    c += "<div class=\"row\">\n"
+    c += "<div class=\"column\">\n"
     c += "<p>\n"
     c += html(self.id, header=1)
     c += html("pdb: ", emphasis = True, new_line=False)
@@ -120,7 +132,15 @@ def object_collapsible(self):
         c += html("Coverage: {}% of self".format(round(super_data["coverage"][0])), in_list=True)
         c += html("Coverage: {}% of reference".format(round(super_data["coverage"][1])), in_list=True)
     c += "</p>\n"
-    c += "</div>\n"
+    c += "</div>\n" # Column
+    c += "<div class=\"column\">\n"
+    c += html("Column 2")
+    c += html_image(os.path.join(format(local.previews), "{}.png".format(self.id)))
+    c += "</div>\n"  # Column
+
+    c += "</div>\n" # Row
+    c += "</div>\n" # Content
+
     return c
 
 
@@ -165,4 +185,26 @@ if __name__ == "__main__":
     monomers = load_monomers()
     eprint("Monomers loaded")
 
+
+    GENERATE_PREVIEWS = False
+
+    if GENERATE_PREVIEWS:
+        tprint("Generating previews")
+        from pyMol import generate_preview
+        progress = ProgressBar(len(monomers))
+        for monomer in monomers:
+            if not "preview" in monomer.__dict__.keys():
+                print(monomer.__dict__.keys())
+                print1("generating for", monomer.id)
+                monomer.preview = generate_preview(monomer.path)
+            progress.add()
+        eprint("Previews generated")
+
+    tprint("Building html")
     build_html_from_objects(monomers, name="monomers")
+    eprint("HTML built")
+
+    from imports import pickle
+    print("pickling...")
+    pickle(monomers)
+    print("done")

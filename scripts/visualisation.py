@@ -67,7 +67,6 @@ if __name__ == "__main__":
         globals.set_local("/localdata/iain/_local/projectB")
     from globals import root, local, vars
 
-
     generate_charts()
 
 
