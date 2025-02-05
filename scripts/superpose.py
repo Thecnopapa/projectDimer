@@ -17,11 +17,15 @@ def superpose_single(id, fixed, moving):
     super_line = [globals.vars.gesamt, fixed, moving, "-o", out_path ]
     #print(super_line)
     gesamt_out = subprocess.run(super_line, capture_output=True, text=True)
-    #print(gesamt_out.stderr)
-    #print(gesamt_out.stdout)
+    if "do_only" in vars:
+        if not(len(vars.do_only) == 0 or vars.do_only is None):
+            print(gesamt_out.stdout)
+            print(gesamt_out.stderr)
     data = {"out_path": out_path}
     t_matrix_lines = 0
+    centroid_lines = 0
     for line in gesamt_out.stdout.splitlines():
+        #print(centroid_lines, line)
         if "Q-score" in line:
             data["q_score"] = float(line.split(":")[1])
         if "RMSD" in line:
@@ -44,6 +48,42 @@ def superpose_single(id, fixed, moving):
             data["nres"] = int(line.split("|")[1])
         if "MOVING |" in line:
             data["ref_nres"] = int(line.split("|")[1])
+
+        if centroid_lines > 0 :
+            if "FIXED" in line:
+                l = line.split()
+                data["centroids"]["self"] = [float(i) for i in l[1:4]]
+            elif "MOVING" in line:
+                l = line.split()
+                data["centroids"]["reference"] = [float(i) for i in l[1:4]]
+            elif "Distance" in line:
+                data["centroids"]["distance"] = float(line.split(":")[1])
+
+            elif "cosines" in line:
+                l = line.split(":")[1]
+                l = l.split()
+                data["centroids"]["cosines"] = [float(i) for i in l]
+            elif "Angle between" in line:
+                data["centroids"]["angle"] = float(line.split(":")[1])
+        if "CENTROIDS" in line:
+            centroid_lines = 8
+            data["centroids"] = {}
+
+        if "Polar angles" in line:
+            l = line.split(":")
+            data["ccp4_angles"] = {"polar": [float(i) for i in l[1].split()]}
+        if "Euler angles" in line:
+            l = line.split(":")
+            data["ccp4_angles"]["euler"] = [float(i) for i in l[1].split()]
+        if "Orthogonal translation" in line:
+            l = line.split(":")
+            data["ccp4_angles"]["translation"] = [float(i) for i in l[1].split()]
+
+
+
+
+
+        centroid_lines -=1
     return data
 
 
