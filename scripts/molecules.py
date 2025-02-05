@@ -206,8 +206,8 @@ class Monomer(BioObject):
             self.super_path = data["out_path"]
         else:
             self.super_path = ""
-            vars.failed_df.loc[len(vars.failed_df)] = [self.id, "monomer", "no coverage", "no reference meets coverage (80%)" + str(coverages)]
-            self.failed_entries.append([self.id, "monomer", "no coverage", "no reference meets coverage (80%)" + str(coverages)])
+            vars.failed_df.loc[len(vars.failed_df)] = [self.id, "monomer", "No coverage", "No reference meets coverage (80%)" + str(coverages)]
+            self.failed_entries.append([self.id, "monomer", "No coverage", "No reference meets coverage (80%)" + str(coverages)])
 
 
 
