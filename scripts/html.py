@@ -109,18 +109,25 @@ def monomer_collapsible(info):
     c += "</div>\n"  # Column
     c += "<div class=\"column\">\n"
     c += html("Cleaned PDB", header=4)
-    c += html_image(os.path.join("../previews/cleaned", "{}.png".format(info.ID)), info.ID,150,150)
+    c += html_image(os.path.join("../previews/cleaned/{}.png".format(info.ID)), info.ID,150,150)
     c += "</div>\n"  # Column
 
     c += "</div>\n" # Row
     return c
 
 
+def firebase_link(folder,file, type="previews"):
+    storageBucket = 'iv-projectb.firebasestorage.app'
+    firebase_storageURL = 'https://firebasestorage.googleapis.com/v0/b/{}/o/{}/{}/{}?alt=media'.format(storageBucket,type, folder,file)
+    return firebase_storageURL
+#https://stackoverflow.com/questions/72037182/how-do-i-get-url-with-token-of-uploaded-file-to-firebase-storage
 
 
-
-
-def object_collapsible(self):
+def object_collapsible(self, online=False):
+    if online:
+        preview_path = "https://firebasestorage.googleapis.com/v0/b/{}/o/previews/".format('iv-projectb.firebasestorage.app')
+    else:
+        preview_path = "../previews/"
     if "super_data" in self.__dict__ and self.super_data is not None:
         c = "<button type=\")button\" class=\"collapsible\">{}</button>\n".format(html(self.id,bold=True, new_line=False))
     else:
@@ -136,14 +143,14 @@ def object_collapsible(self):
     c +=        "</div>\n" # Column
     c +=    "<div class=\"column\">\n"
     c +=    html("Cleaned PDB", header=2)
-    c +=    html_link(self.path,html_image(os.path.join("../previews/cleaned", "{}.png".format(self.id)), self.id,300,300))
+    c +=    html_link(self.path,html_image(preview_path+ "cleaned/" +"{}.png".format(self.id), self.id,300,300))
     c +=    "</div>\n"  # Column
     if "super_data" in self.__dict__:
         if self.super_data is not None:
             c += "<div class=\"column\">\n"
             c += html("Superposed PDB", header=2)
             c += html_link(self.super_path,
-                           html_image(os.path.join("../previews/supers", "{}_X_{}.png".format(self.id, self.super_data[0])), self.id, 300, 300))
+                           html_image(os.path.join("{}supers".format(preview_path), "{}_X_{}.png".format(self.id, self.super_data[0])), self.id, 300, 300))
             #c += html("Superposition details:", header=2)
             c += html("Best fit: <b>{}</b>".format(self.super_data[0]), header=3)
             super_data = self.super_data[1]
@@ -176,15 +183,14 @@ def build_html_from_df(df, obj):
         f.write(style())
 
 
-def build_html_from_objects(objects, name="objects"):
+def build_html_from_objects(objects, name="objects", online=False):
     file_path = os.path.join(root.other, "{}.html".format(name))
     with open(file_path, "w") as f:
         pass
     with open(file_path, "a") as f:
         f.write(head(name))
-
         for obj in objects:
-            f.write(object_collapsible(obj))
+            f.write(object_collapsible(obj, online=online))
         f.write(style())
         f.write(java())
 
@@ -217,6 +223,10 @@ if __name__ == "__main__":
     monomers = load_monomers()
     eprint("Monomers loaded")
 
+    tprint("Building html")
+    build_html_from_objects(monomers, name="monomers")
+    build_html_from_objects(monomers, name="monomers_online", online=True)
+    eprint("HTML built")
 
     GENERATE_PREVIEWS = True
     force_previews = False
@@ -232,9 +242,7 @@ if __name__ == "__main__":
             progress.add()
         eprint("Previews generated")
 
-    tprint("Building html")
-    build_html_from_objects(monomers, name="monomers")
-    eprint("HTML built")
+
 
     from imports import pickle
     print("pickling...")
