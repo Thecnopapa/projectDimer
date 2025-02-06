@@ -142,7 +142,7 @@ def object_collapsible(self):
         if self.super_data is not None:
             c += "<div class=\"column\">\n"
             c += html("Superposed PDB", header=2)
-            c += html_link(self.path,
+            c += html_link(self.super_path,
                            html_image(os.path.join("../previews/supers", "{}_X_{}.png".format(self.id, self.super_data[0])), self.id, 300, 300))
             #c += html("Superposition details:", header=2)
             c += html("Best fit: <b>{}</b>".format(self.super_data[0]), header=3)
