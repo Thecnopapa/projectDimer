@@ -10,26 +10,32 @@ from Bio.PDB import PDBParser, MMCIFParser, PDBIO, StructureBuilder, Structure, 
 
 def get_contact_res(self=None, monomer1=None, monomer2=None, dimer_structure = None, radius=1.4, n_points=100):
 
-    sr = SASA.ShrakeRupley(n_points=n_points, probe_radius=radius)
+
+
 
     if self is not None:
+        if not "replaced_structure" in self.__dict__.keys():
+            print(self.id, "has no replaced_structure")
+            return
         monomer1 = self.monomer1
         monomer2 = self.monomer2
     if dimer_structure is None:
         dimer_structure = self.replaced_structure
+
+    sr = SASA.ShrakeRupley(n_points=n_points, probe_radius=radius)
 
     structure1 = monomer1.structure
     structure2 = monomer2.structure
 
     sr.compute(structure1,level="R")
     sr.compute(structure2,level="R")
-    dimer_sasa = sr.compute(dimer_structure,level="R")
+    sr.compute(dimer_structure,level="R")
 
-    sasa_df = pd.DataFrame(columns=["ID", "name", "sasa1", "sasa2", "sasa1_dimer", "sasa2_dimer", "is_contact"])
+    sasa_df = pd.DataFrame(columns=["ID", "name", "sasa1", "sasa2", "sasa1_dimer", "sasa2_dimer"])
 
     if monomer1.id == monomer2.id:
         for i, res in enumerate(monomer1.get_residues()):
-            sasa_df[len(sasa_df)] = [res.id, res.resname, structure1[i].sasa, structure2[i].sasa, dimer_structure[0][i].sasa, dimer_structure[1][i].sasa]
+            sasa_df.loc[len(sasa_df)] = [res.id, res.resname, structure1[i].sasa, structure2[i].sasa, dimer_structure[0][i].sasa, dimer_structure[1][i].sasa]
     if self is not None:
         self.sasa_df = sasa_df
     return sasa_df
