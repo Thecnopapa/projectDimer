@@ -1,6 +1,6 @@
 import os
 
-import scipy.stats
+
 
 from utilities import *
 from globals import root, local, vars
@@ -21,7 +21,7 @@ def pymol_colour_everything(num_states=2):
     i = 0
     for obj in get_all_obj():
         for state in range(1,num_states):
-            pymol.cmd.color(colours[i], obj+" and state "+str(state+1))
+            pymol.cmd.color(colours[i], obj+" and state "+str(state))
             i += 1
             if i == ncolours:
                 i = 0
@@ -50,23 +50,30 @@ def pymol_load_path(path, state = 0):
     pymol.cmd.load(path,os.path.basename(path))
     pymol.cmd.set("state", state)
 
-def pymol_save_small(file_name, folder, dpi=300, height=100, width=100):
+def pymol_save_small(file_name, folder, dpi=300, height=100, width=100, save_session=None):
     image_path = os.path.join(folder, file_name+".png")
     pymol.cmd.png(image_path, width=width, height=height, dpi=dpi)
     return image_path
 
+def pymol_save_session(file_name, folder):
+    path = os.path.join(folder, file_name + ".pse")
+    pymol.cmd.save(path)
+    return path
 def get_all_obj():
     return pymol.cmd.get_names(type='objects')
 
-def generate_preview(path, folder="", state = 0,id = ""):
-
-    root[folder] = "previews/{}".format(folder)
+def generate_preview(path, folder="", state = 0,id = "",save_session=True):
+    if save_session:
+        local[folder+"_sessions"] = "sessions/{}_sessions".format(folder)
+    local[folder] = "previews/{}".format(folder)
     name = os.path.basename(path).split(".")[0]
     pymol_reset()
     pymol_load_path(path, state=state)
     pymol.cmd.orient("(all)")
     pymol_colour_everything(2)
-    preview_path = pymol_save_small(name, root[folder], dpi=50, height=150, width=150)
+    if save_session:
+        pymol_save_session(name, local[folder+"_sessions"])
+    preview_path = pymol_save_small(name, local[folder], dpi=50, height=150, width=150)
     return preview_path
     try:
         pass

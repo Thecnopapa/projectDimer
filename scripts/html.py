@@ -127,7 +127,7 @@ def object_collapsible(self, online=False):
     if online:
         preview_path = "https://firebasestorage.googleapis.com/v0/b/{}/o/previews/".format('iv-projectb.firebasestorage.app')
     else:
-        preview_path = "../previews/"
+        preview_path = local.previews+"/"
     if "super_data" in self.__dict__ and self.super_data is not None:
         c = "<button type=\")button\" class=\"collapsible\">{}</button>\n".format(html(self.id,bold=True, new_line=False))
     else:
@@ -137,21 +137,21 @@ def object_collapsible(self, online=False):
     c +=        "<div class=\"column\">\n"
     c +=            "<p>\n"
     c +=            html(self.id, header=1, bold=True)
-    c +=            html("pdb: ", emphasis = True, new_line=False)
-    c +=            html(html_link(self.path), emphasis=True, insert=True)
+    c +=            html("https://www.rcsb.org/structure/{}".format(self.name), emphasis = True)
     c +=            "</p>\n"
     c +=        "</div>\n" # Column
     c +=    "<div class=\"column\">\n"
     c +=    html("Cleaned PDB", header=2)
-    c +=    html_link(self.path,html_image(preview_path+ "cleaned/" +"{}.png".format(self.id), self.id,300,300))
+    c +=    html_link(local.sessions+ "/cleaned_sessions/" +"{}.pse".format(self.id),html_image(preview_path+ "cleaned/" +"{}.png".format(self.id), self.id,300,300))
+    c +=    html(html_link(self.path), emphasis=True, insert=True)
     c +=    "</div>\n"  # Column
     if "super_data" in self.__dict__:
         if self.super_data is not None:
             c += "<div class=\"column\">\n"
             c += html("Superposed PDB", header=2)
-            c += html_link(self.super_path,
-                           html_image(os.path.join("{}supers".format(preview_path), "{}_X_{}.png".format(self.id, self.super_data[0])), self.id, 300, 300))
-            #c += html("Superposition details:", header=2)
+            c += html_link(local.sessions + "/supers_sessions/{}_x_{}.pse".format(self.id, self.super_data[0]),
+                           html_image(os.path.join("{}supers".format(preview_path), "{}_x_{}.png".format(self.id, self.super_data[0])), self.id, 300, 300))
+            c += html(html_link(self.super_path), emphasis=True, insert=True)
             c += html("Best fit: <b>{}</b>".format(self.super_data[0]), header=3)
             super_data = self.super_data[1]
             c += html("RMSD: {}".format(super_data["rmsd"]), in_list=True)
@@ -205,6 +205,11 @@ def build_html_from_objects(objects, name="objects", online=False):
 
 
 if __name__ == "__main__":
+
+    GENERATE_PREVIEWS = True
+    force_previews = True
+
+
     import globals
 
     globals.set_root("../")
@@ -228,8 +233,9 @@ if __name__ == "__main__":
     build_html_from_objects(monomers, name="monomers_online", online=True)
     eprint("HTML built")
 
-    GENERATE_PREVIEWS = True
-    force_previews = False
+
+
+
     if GENERATE_PREVIEWS:
         tprint("Generating previews")
         from pyMol import generate_preview
@@ -237,8 +243,9 @@ if __name__ == "__main__":
         for monomer in monomers:
             if not "previews" in monomer.__dict__.keys() or force_previews:
                 monomer.previews = {"cleaned": generate_preview(monomer.path, "cleaned", state=1, id=monomer.id)}
-                if monomer.super_data is not None:
-                    monomer.previews["superposed"] = generate_preview(monomer.super_path, "supers", state=0, id=monomer.id)
+                if "super_data" in monomer.__dict__.keys():
+                    if monomer.super_data is not None:
+                        monomer.previews["superposed"] = generate_preview(monomer.super_path, "supers", state=0, id=monomer.id, save_session=True)
             progress.add()
         eprint("Previews generated")
 
