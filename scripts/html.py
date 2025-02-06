@@ -224,7 +224,6 @@ if __name__ == "__main__":
     # Load/Generate monomer files
     tprint("Loading monomers")
     from imports import load_monomers
-
     monomers = load_monomers()
     eprint("Monomers loaded")
 
@@ -252,6 +251,6 @@ if __name__ == "__main__":
 
 
     from imports import pickle
-    print("pickling...")
+    print("Pickling...")
     pickle(monomers)
-    print("done")
+    print("Done")

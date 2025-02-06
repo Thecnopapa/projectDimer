@@ -83,8 +83,8 @@ class ProgressBar:
     def update(self, end="\r", info = ""):
         progress = int(self.current * 100 // self.total)
         progress_scaled = int(progress * self.width //100)
-        if len(info) >0:
-            info+=" "
+        if len(info) > 0:
+            info+= " "
         percentage = "|{}{}%".format(info,add_front_0(progress, digits=3, zero = " "))
         bar = "|{}>".format(self.style * progress_scaled)
         blank = " " * (self.width - len(bar))
