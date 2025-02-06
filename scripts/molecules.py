@@ -130,6 +130,7 @@ class Monomer(BioObject):
         self.rotations = {}
         self.super_path = None
         self.super_data = None
+        self.previews = None
 
         self.raw_monomers_entries = []
         self.failed_entries = []

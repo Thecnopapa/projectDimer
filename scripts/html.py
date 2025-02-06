@@ -206,7 +206,7 @@ def build_html_from_objects(objects, name="objects", online=False):
 
 if __name__ == "__main__":
 
-    GENERATE_PREVIEWS = True
+    GENERATE_PREVIEWS = False
     force_previews = True
 
 
@@ -246,7 +246,7 @@ if __name__ == "__main__":
                 if "super_data" in monomer.__dict__.keys():
                     if monomer.super_data is not None:
                         monomer.previews["superposed"] = generate_preview(monomer.super_path, "supers", state=0, id=monomer.id, save_session=True)
-            progress.add()
+            progress.add(info=monomer.id)
         eprint("Previews generated")
 
 

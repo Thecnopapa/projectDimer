@@ -64,12 +64,12 @@ class ProgressBar:
             self.width = 19
         self.style = style
 
-    def add(self, increment=1):
+    def add(self, increment=1, info = ""):
         self.current += increment
         if self.current == self.total:
             self.finish()
         else:
-            self.update()
+            self.update(info=info)
 
     def restart(self,total=None):
         self.current = self.start
@@ -80,10 +80,12 @@ class ProgressBar:
         self.update(end="\n")
         print("Completed in {} seconds".format(round(time.perf_counter() - self.start_time), 2))
 
-    def update(self, end="\r"):
+    def update(self, end="\r", info = ""):
         progress = int(self.current * 100 // self.total)
         progress_scaled = int(progress * self.width //100)
-        percentage = "|{}%".format(add_front_0(progress, digits=3, zero = " "))
+        if len(info) >0:
+            info+=" "
+        percentage = "|{}{}%".format(info,add_front_0(progress, digits=3, zero = " "))
         bar = "|{}>".format(self.style * progress_scaled)
         blank = " " * (self.width - len(bar))
         print("{}{}{}".format(bar, blank, percentage), end = end)
