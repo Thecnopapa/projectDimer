@@ -9,6 +9,23 @@ from globals import root, local, vars
 import pymol
 
 
+def pymol_colour_everything(num_states=2):
+    # List of available colours
+    colours = ['green', 'cyan', 'red', 'yellow', 'violet','blue',
+               'salmon', 'lime', 'pink', 'slate', 'magenta', 'orange', 'marine',
+               'olive', 'purple', 'teal', 'forest', 'firebrick', 'chocolate',
+               'wheat', 'white', 'grey']
+    ncolours = len(colours)
+    pymol.cmd.count_states("(all)")
+    # Loop over objects
+    i = 0
+    for obj in get_all_obj():
+        for state in range(1,num_states):
+            pymol.cmd.color(colours[i], obj+" and state "+str(state+1))
+            i += 1
+            if i == ncolours:
+                i = 0
+
 def pymol_start(show=False, quiet=True):
     # Start PyMol
     sprint("Starting PyMol...")
@@ -19,30 +36,47 @@ def pymol_start(show=False, quiet=True):
     else:
         pymol.finish_launching(["pymol", "-cqQ"])
 
+def pymol_close():
+    sprint("Closing PyMol...")
+    pymol.cmd.quit()
+
 def pymol_reset():
     pymol.cmd.delete("All")
 
 def pymol_load_name(file_name, folder):
     pymol.cmd.load(os.path.join(local[folder], file_name),file_name)
 
-def pymol_load_path(path):
-    print(path, os.path.basename(path),"\n")
-    pymol.cmd.load(path,os.path.basename(path), state=0)
-
+def pymol_load_path(path, state = 0):
+    pymol.cmd.load(path,os.path.basename(path))
+    pymol.cmd.set("state", state)
 
 def pymol_save_small(file_name, folder, dpi=300, height=100, width=100):
     image_path = os.path.join(folder, file_name+".png")
     pymol.cmd.png(image_path, width=width, height=height, dpi=dpi)
     return image_path
 
-def generate_preview(path, folder=""):
+def get_all_obj():
+    return pymol.cmd.get_names(type='objects')
+
+def generate_preview(path, folder="", state = 0,id = ""):
+
+    root[folder] = "previews/{}".format(folder)
+    name = os.path.basename(path).split(".")[0]
+    pymol_reset()
+    pymol_load_path(path, state=state)
+    pymol.cmd.orient("(all)")
+    pymol_colour_everything(2)
+    preview_path = pymol_save_small(name, root[folder], dpi=50, height=150, width=150)
+    return preview_path
     try:
-        root[folder] = "previews/{}".format(folder)
-        name = os.path.basename(path).split(".")[0]
-        pymol_reset()
-        pymol_load_path(path)
-        preview_path = pymol_save_small(name, root[folder], dpi=50, height=150, width=150)
-        return preview_path
+        pass
     except:
-        print("Failed to generate preview for {} ({})".format(name,path))
+        print("Failed to generate preview/{} for {} ({})".format(folder,id,path))
         return None
+
+
+
+
+
+
+

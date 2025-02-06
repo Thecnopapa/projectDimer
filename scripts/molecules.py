@@ -83,11 +83,13 @@ class PDB(BioObject):
         self.monomers = []
         self.dimers = []
 
-    def get_monomers(self):
+    def get_monomers(self, as_reference=False):
         if len(self.monomers) == 0 or True:
             self.monomers = []
             for chain in self.structure.get_chains():
                 if len(chain) > 200:
+                    if as_reference:
+                        return Reference(self.name, chain.id, chain)
                     self.monomers.append(Monomer(self.name, chain.id, chain))
         return self.monomers
 

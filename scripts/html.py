@@ -121,35 +121,36 @@ def monomer_collapsible(info):
 
 
 def object_collapsible(self):
-    c = "<button type=\")button\" class=\"collapsible\">{}</button>\n".format(self.id)
+    if "super_data" in self.__dict__ and self.super_data is not None:
+        c = "<button type=\")button\" class=\"collapsible\">{}</button>\n".format(html(self.id,bold=True, new_line=False))
+    else:
+        c = "<button type=\")button\" class=\"collapsible\">{}</button>\n".format(self.id)
     c += "<div class=\"content\">\n"
-    c += "<div class=\"row\">\n"
-    c += "<div class=\"column\">\n"
-    c += "<p>\n"
-    c += html(self.id, header=1, bold=True)
-    c += html("pdb: ", emphasis = True, new_line=False)
-    c += html(html_link(self.path), emphasis=True, insert=True)
-    if "super_data" in self.__dict__:
-        if self.super_data is not None:
-            c += html("Superposition details:", header=2)
-            c += html("Best fit: <b>{}</b>".format(self.super_data[0]), header=3)
-            super_data = self.super_data[1]
-            c += html("RMSD: {}".format(super_data["rmsd"]), in_list=True)
-            c += html("Identity: {}%".format(round(super_data["identity"]*100)), in_list=True)
-            c += html("Coverage: {}% of self".format(round(super_data["coverage"][0])), in_list=True)
-            c += html("Coverage: {}% of reference".format(round(super_data["coverage"][1])), in_list=True)
-    c += "</p>\n"
-    c += "</div>\n" # Column
-    c += "<div class=\"column\">\n"
-    c += html("Cleaned PDB", header=4)
-    c += html_link(self.path,html_image(os.path.join("../previews/cleaned", "{}.png".format(self.id)), self.id,150,150))
-    c += "</div>\n"  # Column
+    c +=    "<div class=\"row\">\n"
+    c +=        "<div class=\"column\">\n"
+    c +=            "<p>\n"
+    c +=            html(self.id, header=1, bold=True)
+    c +=            html("pdb: ", emphasis = True, new_line=False)
+    c +=            html(html_link(self.path), emphasis=True, insert=True)
+    c +=            "</p>\n"
+    c +=        "</div>\n" # Column
+    c +=    "<div class=\"column\">\n"
+    c +=    html("Cleaned PDB", header=2)
+    c +=    html_link(self.path,html_image(os.path.join("../previews/cleaned", "{}.png".format(self.id)), self.id,300,300))
+    c +=    "</div>\n"  # Column
     if "super_data" in self.__dict__:
         if self.super_data is not None:
             c += "<div class=\"column\">\n"
-            c += html("Superposed PDB", header=4)
+            c += html("Superposed PDB", header=2)
             c += html_link(self.path,
-                           html_image(os.path.join("../previews/supers", "{}_X_{}.png".format(self.id, self.super_data[0])), self.id, 150, 150))
+                           html_image(os.path.join("../previews/supers", "{}_X_{}.png".format(self.id, self.super_data[0])), self.id, 300, 300))
+            #c += html("Superposition details:", header=2)
+            c += html("Best fit: <b>{}</b>".format(self.super_data[0]), header=3)
+            super_data = self.super_data[1]
+            c += html("RMSD: {}".format(super_data["rmsd"]), in_list=True)
+            c += html("Identity: {}%".format(round(super_data["identity"] * 100)), in_list=True)
+            c += html("Coverage: {}% of self".format(round(super_data["coverage"][0])), in_list=True)
+            c += html("Coverage: {}% of reference".format(round(super_data["coverage"][1])), in_list=True)
             c += "</div>\n"  # Column
 
     c += "</div>\n" # Row
@@ -169,10 +170,10 @@ def build_html_from_df(df, obj):
         pass
     with open(file_path, "a") as f:
         f.write(head(df_name))
-        f.write(java())
-        f.write(style())
         for item in data.itertuples(name="item"):
             f.write(obj(item))
+        f.write(java())
+        f.write(style())
 
 
 def build_html_from_objects(objects, name="objects"):
@@ -181,10 +182,11 @@ def build_html_from_objects(objects, name="objects"):
         pass
     with open(file_path, "a") as f:
         f.write(head(name))
-        f.write(java())
-        f.write(style())
+
         for obj in objects:
             f.write(object_collapsible(obj))
+        f.write(style())
+        f.write(java())
 
 
 
@@ -223,11 +225,10 @@ if __name__ == "__main__":
         from pyMol import generate_preview
         progress = ProgressBar(len(monomers))
         for monomer in monomers:
-            if not "preview" in monomer.__dict__.keys() or force_previews:
-                #print(monomer.__dict__.keys())
-                #print1("generating for", monomer.id)
-                monomer.previews = {"cleaned": generate_preview(monomer.path, "cleaned")}
-                monomer.preview["superposed"] = generate_preview(monomer.super_path, "supers")
+            if not "previews" in monomer.__dict__.keys() or force_previews:
+                monomer.previews = {"cleaned": generate_preview(monomer.path, "cleaned", state=1, id=monomer.id)}
+                if monomer.super_data is not None:
+                    monomer.previews["superposed"] = generate_preview(monomer.super_path, "supers", state=0, id=monomer.id)
             progress.add()
         eprint("Previews generated")
 

@@ -45,7 +45,7 @@ from imports import load_from_files
 from molecules import Reference, PDB
 references = load_from_files(root.references,
                              pickle_extension= ".reference",
-                             get_monomer=True,
+                             is_reference=True,
                              ignore_selection = True,
                              force_reload = PROCESS_ALL)
 if LARGE_DATASET:

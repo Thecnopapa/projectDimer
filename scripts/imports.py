@@ -4,7 +4,7 @@ import os
 from globals import root, local, vars
 from utilities import *
 
-from molecules import PDB, Monomer
+from molecules import PDB, Monomer,Reference
 
 
 
@@ -27,10 +27,11 @@ def load_pickles(folder, extension = (".pickle"), ignore_selection = False):
                 p.restore_dfs()
                 pickles.append(p)
                 progress.add()
+    pickles.sort(key = lambda p: p.id)
     return pickles
 
 
-def load_from_files(pdb_folder = root.experimental, obj = PDB, ignore_selection = False, pickle_folder = "molecules",get_monomer = False, pickle_extension = ".molecule", pdb_extension = (".pdb", ".pdb1", ".cif"), force_reload=False):
+def load_from_files(pdb_folder = root.experimental, obj = PDB, ignore_selection = False, pickle_folder = "molecules",is_reference = False, pickle_extension = ".molecule", pdb_extension = (".pdb", ".pdb1", ".cif"), force_reload=False):
     sprint("Loading pdbs, force reload:", force_reload)
     print1("Loading only:", vars.do_only)
     loaded = []
@@ -45,10 +46,10 @@ def load_from_files(pdb_folder = root.experimental, obj = PDB, ignore_selection 
                 if len(vars.do_only) > 0:
                     selection = vars.do_only.split(" ")
             if file.endswith(pdb_extension) and (selection is None or file.split(".")[0] in selection):
-                object = obj(os.path.join(pdb_folder, file))
-                if get_monomer:
-                    object = object.get_monomers()[0]
-                loaded.append(object)
+                obj = obj(os.path.join(pdb_folder, file))
+                if is_reference:
+                    obj = obj.get_monomers(as_reference=True)
+                loaded.append(obj)
             progress.add()
     print1("{} objects loaded:".format(len(loaded)))
     for obj in loaded:
