@@ -17,7 +17,7 @@ def load_pickles(folder, extension = (".pickle"), ignore_selection = False):
     if folder in local.list():
         print("Files found:", len(os.listdir(local[folder])))
         progress = ProgressBar(len(os.listdir(local[folder])))
-        for file in os.listdir(local[folder]):
+        for file in sorted(os.listdir(local[folder])):
             selection = None
             if "do_only" in vars and not ignore_selection:
                 if len(vars.do_only) > 0:
@@ -26,21 +26,24 @@ def load_pickles(folder, extension = (".pickle"), ignore_selection = False):
                 p = unpickle(os.path.join(local[folder],file))
                 p.restore_dfs()
                 pickles.append(p)
-                progress.add()
+            progress.add(info=file)
     pickles.sort(key = lambda p: p.id)
     return pickles
 
 
 def load_from_files(pdb_folder = root.experimental, load_class = PDB, ignore_selection = False, pickle_folder = "molecules",is_reference = False, pickle_extension = ".molecule", pdb_extension = (".pdb", ".pdb1", ".cif"), force_reload=False):
     sprint("Loading pdbs, force reload:", force_reload)
-    print1("Loading only:", vars.do_only)
+    try:
+        print1("Loading only:", vars.do_only)
+    except:
+        pass
     loaded = []
     if not force_reload:
         loaded = load_pickles(pickle_folder, pickle_extension, ignore_selection=ignore_selection)
     if len(loaded) == 0:
         print1("No saved pickles found, importing from:", pdb_folder)
         progress = ProgressBar(len(os.listdir(pdb_folder)))
-        for file in os.listdir(pdb_folder):
+        for file in sorted(os.listdir(pdb_folder)):
             selection = None
             if "do_only" in vars and not ignore_selection:
                 if len(vars.do_only) > 0:
@@ -120,12 +123,16 @@ def download_pdbs(list_path, save_folder, terminal = False):
 
 
 def pickle(list):
+    progress = ProgressBar(len(list))
     for item in list:
         item.pickle()
+        progress.add()
 
 def export(list):
+    progress = ProgressBar(len(list))
     for item in list:
         item.export()
+        progress.add()
 
 
 

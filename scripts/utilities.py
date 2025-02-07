@@ -59,7 +59,7 @@ class ProgressBar:
         self.start = start
         self.current = start
         try:
-            self.width = shutil.get_terminal_size()[0] - 15
+            self.width = shutil.get_terminal_size()[0] - 10
         except:
             self.width = 19
         self.style = style
@@ -82,10 +82,12 @@ class ProgressBar:
 
     def update(self, end="\r", info = ""):
         progress = int(self.current * 100 // self.total)
-        progress_scaled = int(progress * self.width //100)
+
         if len(info) > 0:
             info+= " "
         percentage = "|{}{}%".format(info,add_front_0(progress, digits=3, zero = " "))
+        bar_width = self.width - len(percentage)
+        progress_scaled = int(progress * bar_width //100)
         bar = "|{}>".format(self.style * progress_scaled)
-        blank = " " * (self.width - len(bar))
+        blank = " " * (self.width - len(bar)- len(percentage))
         print("{}{}{}".format(bar, blank, percentage), end = end)

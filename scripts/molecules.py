@@ -95,14 +95,13 @@ class PDB(BioObject):
 
     def get_dimers(self):
         done = []
-        if len(self.dimers) == 0 or True:
-            self.dimers = []
-            if len(self.monomers) >= 2:
-                for monomer1 in self.monomers:
-                    for monomer2 in self.monomers:
-                        if monomer2.id != monomer1.id and monomer2.id not in done:
-                            self.dimers.append(Dimer(monomer1, monomer2))
-                    done.append(monomer1.id)
+        self.dimers = []
+        if len(self.monomers) >= 2:
+            for monomer1 in self.monomers:
+                for monomer2 in self.monomers:
+                    if monomer2.id != monomer1.id and monomer2.id not in done:
+                        self.dimers.append(Dimer(monomer1, monomer2))
+                done.append(monomer1.id)
         return self.dimers
 
 
@@ -232,16 +231,18 @@ class Dimer(BioObject):
 
         self.failed_entries = []
 
-
-
         if monomer1.super_path is None or monomer2.super_path is None or monomer1.super_path == "" or monomer2.super_path == "":
             vars.failed_df.loc[len(vars.failed_df)] = [self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)]
             self.failed_entries.append([self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)])
             self.incomplete = True
         else:
-            self.original_structure, self.replaced_structure, self.merged_structure = self.merge_structures(monomer1, monomer2)
+            self.original_structure, self.replaced_structure, self.merged_structure = self.merge_structures()
 
-    def merge_structures(self, monomer1, monomer2):
+    def merge_structures(self):
+
+        monomer1 = self.monomer1
+        monomer2 = self.monomer2
+
         print1("Merging monomers:", monomer1, monomer2)
         structureA = PDBParser(QUIET=True).get_structure(monomer1.id, monomer1.super_path)
         structureB = PDBParser(QUIET=True).get_structure(monomer2.id, monomer2.super_path)
@@ -266,6 +267,13 @@ class Dimer(BioObject):
         merged_structure = Structure.Structure(self.id + "_m")
         merged_structure.add(originalA)
         merged_structure.add(replacedA)
+
+        monomer1.replaced = PDBParser(QUIET=True).get_structure(monomer1.id+"_r", monomer1.super_path)[1].get_list()[0]
+        monomer2.replaced = PDBParser(QUIET=True).get_structure(monomer2.id+"_r", monomer1.super_path)[1].get_list()[0]
+
+        monomer1.replaced.detach_parent()
+        monomer2.replaced.detach_parent()
+
 
         return original_structure, replaced_structure, merged_structure
 

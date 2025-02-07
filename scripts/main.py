@@ -22,9 +22,9 @@ from imports import pickle, export
 
 
 # Some essential variables
-PROCESS_ALL = True # Ignore saved pickles and generate everything from scratch
+PROCESS_ALL = False # Ignore saved pickles and generate everything from scratch
 LARGE_DATASET = True # Delete all saved data previously to avoid errors
-DO_ONLY = "1ERE" # Names of pdbs to be processed (CAPS sensitive, separated by space) e.g "5N10 1M2Z"
+DO_ONLY = "" # Names of pdbs to be processed (CAPS sensitive, separated by space) e.g "5N10 1M2Z"
 
 
 # Set up
@@ -88,7 +88,7 @@ tprint("Superposing monomers")
 progress = ProgressBar(len(monomers))
 for monomer in monomers:
     monomer.superpose(references, force_superpose = PROCESS_ALL)
-    progress.add()
+    progress.add(info=monomer.id)
 pickle(monomers)
 save_dfs()
 eprint("Monomers superposed")
@@ -106,11 +106,12 @@ eprint("Dimers loaded")
 tprint("Processing dimers")
 progress = ProgressBar(len(dimers))
 for dimer in dimers:
-    dimer
+    #dimer
     progress.add()
 pickle(dimers)
 save_dfs()
 eprint("Dimers processed")
+
 
 
 
