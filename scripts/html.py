@@ -154,7 +154,7 @@ def object_collapsible(self, online=False):
             c += html(html_link(self.super_path), emphasis=True, insert=True)
             c += html("Best fit: <b>{}</b>".format(self.super_data[0]), header=3)
             super_data = self.super_data[1]
-            c += html("RMSD: {}".format(super_data["rmsd"]), in_list=True)
+            c += html("RMSD: {} Å".format(super_data["rmsd"]), in_list=True)
             c += html("Identity: {}%".format(round(super_data["identity"] * 100)), in_list=True)
             c += html("Coverage: {}% of self".format(round(super_data["coverage"][0])), in_list=True)
             c += html("Coverage: {}% of reference".format(round(super_data["coverage"][1])), in_list=True)

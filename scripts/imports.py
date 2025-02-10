@@ -124,11 +124,13 @@ def download_pdbs(list_path, save_folder, terminal = False):
 
 def pickle(list):
     progress = ProgressBar(len(list))
+    sprint("Pickling...")
     for item in list:
         item.pickle()
         progress.add()
 
 def export(list):
+    sprint("Exporting...")
     progress = ProgressBar(len(list))
     for item in list:
         item.export()

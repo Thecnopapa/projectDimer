@@ -13,8 +13,6 @@ from Bio.PDB import PDBParser, MMCIFParser, PDBIO, StructureBuilder, Structure, 
 def get_contact_res(self, use_replaced = True, radius=1.4, n_points=100):
 
 
-
-
     if use_replaced:
         if not "replaced_structure" in self.__dict__.keys():
             print(self.id, "has no replaced_structure")
@@ -26,10 +24,8 @@ def get_contact_res(self, use_replaced = True, radius=1.4, n_points=100):
         print(structure1, structure2, dimer_structure)
         print(structure1.get_full_id(), structure2.get_full_id(), dimer_structure.get_full_id())
 
-    if self.monomer1.super_data[0] == self.monomer2.super_data[0]:
-        self.best_fit = self.monomer1.super_data[0]
+    if self.monomer1.best_fit == self.monomer2.best_fit and self.monomer1.best_fit is not None:
         sr = SASA.ShrakeRupley(n_points=n_points, probe_radius=radius)
-
 
         sr.compute(structure1,level="R")
         sr.compute(structure2,level="R")
@@ -63,9 +59,8 @@ def get_contact_res(self, use_replaced = True, radius=1.4, n_points=100):
             #print(sasa_df.loc[i])
 
     else:
-        print("Best fits are not the same:",self.monomer1.super_data[0], self.monomer1.super_data[0])
+        print("Best fits are not the same:",self.monomer1.best_fit, self.monomer1.best_fit)
         self.sasa_df = None
-        self.best_fit = None
         return None
 
     if len(sasa_df) > 0:
@@ -148,8 +143,10 @@ if __name__ == "__main__":
             except:
                 pass
             '''
-            if dimer.best_fit is not None and dimer.best_fit != "Missmatch":
+            if dimer.best_fit == reference.name:
+                print(len(ref_df),len(dimer.sasa_df["diff1"]), len(dimer.sasa_df["diff2"]))
                 ref_df[dimer.monomer1.id] = dimer.sasa_df["diff1"]
+                ref_df[dimer.monomer2.id] = dimer.sasa_df["diff2"]
             progress.add(info=dimer.id)
 
         print(ref_df)
