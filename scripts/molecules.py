@@ -129,6 +129,7 @@ class Monomer(BioObject):
         self.rotations = {}
         self.super_path = None
         self.super_data = None
+        self.best_fit= None
         self.previews = None
 
         self.raw_monomers_entries = []
@@ -201,6 +202,7 @@ class Monomer(BioObject):
                 pass
         if len(finalists) > 0:
             self.super_data = finalists[np.argmax(criteria)]
+            self.best_fit = self.super_data[0]
             data = self.super_data[1]
             contents = [self.id,self.super_data[0], data["coverage"][0], data["coverage"][1], data["rmsd"], round(data["identity"]*100)]
             contents.extend(data["t_matrix"].values())
@@ -230,6 +232,11 @@ class Dimer(BioObject):
         self.incomplete = False
 
         self.failed_entries = []
+
+        if monomer1.best_fit == monomer2.best_fit:
+            self.best_fit = monomer1.best_fit
+        else:
+            self.best_fit = "Missmatch"
 
         if monomer1.super_path is None or monomer2.super_path is None or monomer1.super_path == "" or monomer2.super_path == "":
             vars.failed_df.loc[len(vars.failed_df)] = [self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)]

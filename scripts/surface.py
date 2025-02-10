@@ -138,7 +138,7 @@ if __name__ == "__main__":
                 print(dimer.best_fit == reference.id)
                 if dimer.best_fit == reference.id:
                     print(dimer.sasa_df["diff1"])
-                    print(dimer.sasa_df["diff2"])'''
+                    print(dimer.sasa_df["diff2"])
             try:
                 ref_df.at[i, dimer.monomer1.id] = dimer.sasa_df["diff1"].tolist()
             except:
@@ -147,6 +147,9 @@ if __name__ == "__main__":
                 ref_df.at[i, dimer.monomer2.id] = dimer.sasa_df["diff2"].tolist()
             except:
                 pass
+            '''
+            if dimer.best_fit is not None and dimer.best_fit != "Missmatch":
+                ref_df[dimer.monomer1.id] = dimer.sasa_df["diff1"]
             progress.add(info=dimer.id)
 
         print(ref_df)
