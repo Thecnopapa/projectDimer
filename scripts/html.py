@@ -91,7 +91,7 @@ def style():
     return contents
 
 
-def monomer_collapsible(info):
+def monomer_collapsible_basic(info):
     #print(info)
     c = "<button type=\")button\" class=\"collapsible\">{}</button>\n".format(info.ID)
     c += "<div class=\"content\">\n"
@@ -123,7 +123,7 @@ def firebase_link(folder,file, type="previews"):
 #https://stackoverflow.com/questions/72037182/how-do-i-get-url-with-token-of-uploaded-file-to-firebase-storage
 
 
-def object_collapsible(self, online=False):
+def monomer_collapsible(self, online=False):
     if online:
         preview_path = "https://firebasestorage.googleapis.com/v0/b/{}/o/previews/".format('iv-projectb.firebasestorage.app')
     else:
@@ -167,6 +167,49 @@ def object_collapsible(self, online=False):
 
 
 
+def dimer_collapsible(self, online=False):
+    if online:
+        preview_path = "https://firebasestorage.googleapis.com/v0/b/{}/o/previews/".format('iv-projectb.firebasestorage.app')
+    else:
+        preview_path = local.previews+"/"
+    if "super_data" in self.__dict__ and self.super_data is not None:
+        c = "<button type=\")button\" class=\"collapsible\">{}</button>\n".format(html(self.id,bold=True, new_line=False))
+    else:
+        c = "<button type=\")button\" class=\"collapsible\">{}</button>\n".format(self.id)
+    c += "<div class=\"content\">\n"
+    c +=    "<div class=\"row\">\n"
+    c +=        "<div class=\"column\">\n"
+    c +=            "<p>\n"
+    c +=            html(self.id, header=1, bold=True)
+    c +=            html("https://www.rcsb.org/structure/{}".format(self.monomer1.name), emphasis = True)
+    c +=            "</p>\n"
+    c +=        "</div>\n" # Column
+    c +=    "<div class=\"column\">\n"
+    #c +=    html("Cleaned PDB", header=2)
+    #c +=    html_link(local.sessions+ "/cleaned_sessions/" +"{}.pse".format(self.id),html_image(preview_path+ "cleaned/" +"{}.png".format(self.id), self.id,300,300))
+    #c +=    html(html_link(self.path), emphasis=True, insert=True)
+    #c +=    "</div>\n"  # Column
+    if "replaced" in self.__dict__:
+        if self.super_data is not None:
+            c += "<div class=\"column\">\n"
+            c += html("Superposed PDB", header=2)
+            c += html_link(local.sessions + "/supers_sessions/{}_x_{}.pse".format(self.id, self.super_data[0]),
+                           html_image(os.path.join("{}supers".format(preview_path), "{}_x_{}.png".format(self.id, self.super_data[0])), self.id, 300, 300))
+            c += html(html_link(self.super_path), emphasis=True, insert=True)
+            c += html("Best fit: <b>{}</b>".format(self.super_data[0]), header=3)
+            super_data = self.super_data[1]
+            c += html("RMSD: {} Å".format(super_data["rmsd"]), in_list=True)
+            c += html("Identity: {}%".format(round(super_data["identity"] * 100)), in_list=True)
+            c += html("Coverage: {}% of self".format(round(super_data["coverage"][0])), in_list=True)
+            c += html("Coverage: {}% of reference".format(round(super_data["coverage"][1])), in_list=True)
+            c += "</div>\n"  # Column
+
+    c += "</div>\n" # Row
+    c += "</div>\n" # Content
+
+    return c
+
+
 
 def build_html_from_df(df, obj):
     data = pd.read_csv(os.path.join(root.dataframes, df))
@@ -183,14 +226,14 @@ def build_html_from_df(df, obj):
         f.write(style())
 
 
-def build_html_from_objects(objects, name="objects", online=False):
+def build_html_from_objects(objects, name="objects", online=False, collapsible=monomer_collapsible):
     file_path = os.path.join(root.other, "{}.html".format(name))
     with open(file_path, "w") as f:
         pass
     with open(file_path, "a") as f:
         f.write(head(name))
         for obj in objects:
-            f.write(object_collapsible(obj, online=online))
+            f.write(collapsible(obj, online=online))
         f.write(style())
         f.write(java())
 
@@ -206,9 +249,11 @@ def build_html_from_objects(objects, name="objects", online=False):
 
 if __name__ == "__main__":
 
-    GENERATE_PREVIEWS = False
-    force_previews = True
+    GENERATE_PREVIEWS = True
+    force_previews = False
 
+    MONOMERS = True
+    DIMERS = False
 
     import globals
 
@@ -219,38 +264,61 @@ if __name__ == "__main__":
         globals.set_local("/localdata/iain/_local/projectB")
     from globals import root, local, vars
 
-    build_html_from_df("monomers_df.csv", obj=monomer_collapsible)
+    local["previews"] = "previews"
+    local["sessions"] = "sessions"
 
-    # Load/Generate monomer files
-    tprint("Loading monomers")
-    from imports import load_monomers
-    monomers = load_monomers()
-    eprint("Monomers loaded")
+    if MONOMERS:
+        build_html_from_df("monomers_df.csv", obj=monomer_collapsible_basic)
 
-    tprint("Building html")
-    build_html_from_objects(monomers, name="monomers")
-    build_html_from_objects(monomers, name="monomers_online", online=True)
-    eprint("HTML built")
+        # Load/Generate monomer files
+        tprint("Loading monomers")
+        from imports import load_monomers
+        monomers = load_monomers()
+        eprint("Monomers loaded")
+
+        tprint("Building html")
+        build_html_from_objects(monomers, name="monomers")
+        build_html_from_objects(monomers, name="monomers_online", online=True)
+        eprint("HTML built")
+
+        if GENERATE_PREVIEWS:
+            tprint("Generating previews")
+            from pyMol import generate_preview
+
+            progress = ProgressBar(len(monomers))
+            for monomer in monomers:
+                if not "previews" in monomer.__dict__.keys() or force_previews:
+                    monomer.previews = {"cleaned": generate_preview(monomer.path, "cleaned", state=1, id=monomer.id)}
+                    if "super_data" in monomer.__dict__.keys():
+                        if monomer.super_data is not None:
+                            monomer.previews["superposed"] = generate_preview(monomer.super_path, "supers", state=0,
+                                                                              id=monomer.id, save_session=True)
+                progress.add(info=monomer.id)
+            eprint("Previews generated")
+
+            from imports import pickle
+            print("Pickling...")
+            pickle(monomers)
+            print("Done")
+
+    if DIMERS:
+        tprint("Loading dimers")
+        from imports import load_dimers
+        dimers = load_dimers()
+        eprint("Dimers loaded")
+
+        tprint("Building html")
+        build_html_from_objects(dimers, name="dimers", collapsible=dimer_collapsible)
+        eprint("HTML built")
+
+        from imports import pickle
+
+        print("Pickling...")
+        pickle(dimers)
+        print("Done")
 
 
 
 
-    if GENERATE_PREVIEWS:
-        tprint("Generating previews")
-        from pyMol import generate_preview
-        progress = ProgressBar(len(monomers))
-        for monomer in monomers:
-            if not "previews" in monomer.__dict__.keys() or force_previews:
-                monomer.previews = {"cleaned": generate_preview(monomer.path, "cleaned", state=1, id=monomer.id)}
-                if "super_data" in monomer.__dict__.keys():
-                    if monomer.super_data is not None:
-                        monomer.previews["superposed"] = generate_preview(monomer.super_path, "supers", state=0, id=monomer.id, save_session=True)
-            progress.add(info=monomer.id)
-        eprint("Previews generated")
 
 
-
-    from imports import pickle
-    print("Pickling...")
-    pickle(monomers)
-    print("Done")
