@@ -15,14 +15,14 @@ def get_contact_res(self, use_replaced = True, radius=1.4, n_points=100):
 
     if use_replaced:
         if not "replaced_structure" in self.__dict__.keys():
-            print(self.id, "has no replaced_structure")
+            print1(self.id, "has no replaced_structure")
             return None
-        print(self.replaced_structure.get_list()[0].get_list())
+        #print(self.replaced_structure.get_list()[0].get_list())
         structure1 = self.monomer1.replaced
         structure2 = self.monomer1.replaced
         dimer_structure = self.replaced_structure.get_list()[0]
-        print(structure1, structure2, dimer_structure)
-        print(structure1.get_full_id(), structure2.get_full_id(), dimer_structure.get_full_id())
+        #print(structure1, structure2, dimer_structure)
+        #print(structure1.get_full_id(), structure2.get_full_id(), dimer_structure.get_full_id())
 
     if self.monomer1.best_fit == self.monomer2.best_fit and self.monomer1.best_fit is not None:
         sr = SASA.ShrakeRupley(n_points=n_points, probe_radius=radius)
@@ -142,11 +142,6 @@ if __name__ == "__main__":
         progress.add(info = dimer.id)
     eprint("SASAs calculated")
 
-    from imports import pickle
-    print("Pickling...")
-    pickle(dimers)
-    print("Done")
-
 
     sprint("loading references")
     from imports import load_from_files
@@ -195,41 +190,78 @@ if __name__ == "__main__":
     eprint("SASAs merged")
 
 
+
+    tprint("Comparing contacts")
+    progress = ProgressBar(len(dimers))
+    for dimer in dimers:
+        progress.add(info = dimer.id)
+        sprint(dimer.id, dimer.best_fit)
+        if dimer.best_fit != "GR":
+            continue
+
+        ref_df_name = "{}_reference_clusters.csv".format(dimer.best_fit)
+        ref_df_path = os.path.join(root.dataframes, ref_df_name)
+        if not ref_df_name in os.listdir(root.dataframes):
+                import_X_df(os.path.join(root.dataframes,"{}_reference_clusters_raw.csv".format(dimer.best_fit)),
+                            "{}_reference_clusters".format(dimer.best_fit))
+        ref_df = pd.read_csv(ref_df_path)
+
+        groups =[]
+        print(ref_df.columns)
+        print(len(ref_df.columns))
+        n_groups = (len(ref_df.columns)-1) / 2
+        print(n_groups % 2)
+        assert n_groups % 2 == 0
+
+        sasaA = dimer.sasa_df[["ID", "is_contact1"]]
+        sasaB = dimer.sasa_df[["ID", "is_contact2"]]
+
+        ref_nums = ref_df["ResNum"]
+        print(ref_nums)
+        for group in range(int(n_groups)):
+            ref_sasaA = ref_df.iloc[:,[0,group*2+1]]
+            ref_sasaB = ref_df.iloc[:,[0,group*2+2]]
+
+            total_len= len(ref_sasaA)
+
+            AA = [0,0]
+            AB = [0,0]
+            BA = [0,0]
+            BB = [0,0]
+            for ref_num in ref_nums:
+                print(ref_num)
+                sA = sasaA.loc[sasaA["ID"]==ref_num].iloc[:,1].values[0]
+                sB = sasaB.loc[sasaB["ID"]==ref_num].iloc[:,1].values[0]
+                rsA = ref_sasaA.loc[ref_sasaA["ResNum"] == ref_num].iloc[:,1].values[0]
+                rsB = ref_sasaB.loc[ref_sasaB["ResNum"] == ref_num].iloc[:,1].values[0]
+                if sA == rsA:
+                    AA[0] +=1
+                else:
+                    AA[1] +=1
+                if sB == rsB:
+                    BB[0] +=1
+                else:
+                    BB[1] +=1
+                if sA == rsB:
+                    AB[0] +=1
+                else:
+                    AB[1] +=1
+                if sB == rsA:
+                    BA[0] +=1
+                else:
+                    BA[1] +=1
+
+
+        print1(AA, BB, AB, BA)
+
+
+    eprint("Contacts compared")
+
+
     from imports import pickle
     print("Pickling...")
     pickle(dimers)
     print("Done")
-
-
-
-    for dimer in dimers:
-        if dimer.best_fit != "GR":
-            break
-        ref_df_name = "{}_reference_cluster.csv".format(dimer.best_fit)
-        ref_df = pd.read_csv(os.path.join(root.dataframes, ref_df_name), index_col=0)
-
-        groups =[]
-        n_groups = len(ref_df.columns)-1 /2
-        assert n_groups % 2 == 0
-
-        sasaA = dimer.sasa_df["is_contact1"]
-        sasaB = dimer.sasa_df["is_contact2"]
-
-        ref_nums = ref_df["ResNum"]
-        for group in range(int(n_groups)):
-            ref_sasaA = ref_df.iloc[:,group*2+1]
-            ref_sasaB = ref_df.iloc[:,group*2+2]
-
-            total_len= len(ref_sasaA)
-
-
-            for ref_num in ref_nums:
-                print(sasaA[ref_num], sasaB[ref_num], ref_sasaA[ref_num], ref_sasaB[ref_num])
-
-
-
-
-
 
 
 
