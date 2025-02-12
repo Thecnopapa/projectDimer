@@ -5,7 +5,7 @@ from globals import root, local, vars
 import numpy as np
 import pandas as pd
 
-from visualisation import generate_charts
+
 
 
 def save_dfs():
@@ -16,7 +16,11 @@ def save_dfs():
                 if "df" in key:
                     print1("Saving {}.csv".format(key))
                     value.to_csv(os.path.join(root.dataframes,f"{key}.csv"), header = True, index=False)
-            generate_charts()
+            try:
+                from visualisation import generate_charts
+                generate_charts()
+            except:
+                sprint("Charts not generated")
 
 
 def create_dfs(references):
