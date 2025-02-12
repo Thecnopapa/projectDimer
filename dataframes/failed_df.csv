@@ -1,7 +1,6 @@
 ID,stage,error,details
 <<<<<<< HEAD
 <<<<<<< HEAD
-<<<<<<< HEAD
 =======
 1FM6_D,monomer,No coverage,"No reference meets coverage (80%)[(76.47058823529412, 83.2), (70.58823529411765, 79.66804979253112), (76.10294117647058, 81.17647058823529), (43.75, 28.743961352657006)]"
 1FM6_X,monomer,No coverage,"No reference meets coverage (80%)[(75.36764705882352, 82.0), (71.32352941176471, 80.49792531120332), (75.0, 80.0), (41.17647058823529, 27.053140096618357)]"
@@ -1339,5 +1338,3 @@ ID,stage,error,details
 8xs8_AB,dimer,Missing superposition,"At least one superposition is missing, A:, B:"
 8xsb_AB,dimer,Missing superposition,"At least one superposition is missing, A:, B:"
 >>>>>>> 640b7c3 (Added framework for dimer HTML)
-=======
->>>>>>> c211e42 (Fixed online HTML)

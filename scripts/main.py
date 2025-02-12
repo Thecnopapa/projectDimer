@@ -4,30 +4,20 @@
 import os
 import pandas as pd
 from utilities import *
-import platform
+
 
 # Initialise globals
 import globals
-<<<<<<< HEAD
-=======
-globals.set_root(os.path.dirname(os.path.dirname(__file__)))
->>>>>>> c211e42 (Fixed online HTML)
 if os.name == "nt":
     globals.set_root("../")
     globals.set_local("C:/Users/iainv/localdata/_local/projectB")
 elif os.name == "posix":
-<<<<<<< HEAD
     import platform
     if "aarch" in platform.platform():
         globals.set_local("localdata/projectB")
         globals.set_root("projectB")
     else:
         globals.set_root("../")
-=======
-    if "aarch" in platform.platform():
-        globals.set_local("/home/user/localdata")
-    else:
->>>>>>> c211e42 (Fixed online HTML)
         globals.set_local("/localdata/iain/_local/projectB")
 
 
@@ -94,19 +84,10 @@ eprint("Monomers loaded")
 # Align references to monomers
 tprint("Aligning monomers")
 progress = ProgressBar(len(monomers))
-<<<<<<< HEAD
 for monomer in monomers:
     pass
     #monomer.sequence_align(references, force_align = PROCESS_ALL)
     progress.add()
-=======
-try:
-    for monomer in monomers:
-        monomer.sequence_align(references, force_align = PROCESS_ALL)
-        progress.add()
-except:
-    sprint("Alignments could not be prduced")
->>>>>>> c211e42 (Fixed online HTML)
 pickle(monomers)
 save_dfs()
 eprint("Monomers aligned")

@@ -46,7 +46,6 @@ class BioObject:
             self.structure = MMCIFParser(QUIET=True).get_structure(self.name[:4], self.path)
         else:
             self.structure = PDBParser(QUIET=True).get_structure(self.name[:4], self.path)
-<<<<<<< HEAD
         if len(self.structure.get_list()) >0:
             for model in self.structure.get_list()[1:]:
                 self.structure.__delitem__(model.id)
@@ -55,16 +54,6 @@ class BioObject:
                     for atom in residue.get_list():
                         if atom.name != "CA":
                             residue.__delitem__(atom.id)
-=======
-        for model in self.structure.get_list()[1:]:
-            self.structure.__delitem__(model.id)
-        print(self.id, self.structure.get_list())
-        for chain in self.structure.get_list()[0].get_list():
-            for residue in chain.get_list():
-                for atom in residue.get_list():
-                    if atom.name != "CA":
-                        residue.__delitem__(atom.id)
->>>>>>> c211e42 (Fixed online HTML)
 
 
     def export(self, subfolder = None, in_structure = None, extra_id = ""):
@@ -150,20 +139,12 @@ class Monomer(BioObject):
         self.failed_entries = []
         self.monomers_entries = []
 
-<<<<<<< HEAD
         #self.sequence = clean_string(get_sequence(self.structure))
-=======
-        self.sequence = None
->>>>>>> c211e42 (Fixed online HTML)
         self.scores = None
 
 
     def sequence_align(self, references, force_align = False):
         from alignments import create_aligner
-<<<<<<< HEAD
-=======
-        self.sequence = clean_string(get_sequence(self.structure))
->>>>>>> c211e42 (Fixed online HTML)
         if self.scores is None or force_align:
             if len(self.sequence) > 0 :
                 aligner = create_aligner(matrix="BLOSUM62")

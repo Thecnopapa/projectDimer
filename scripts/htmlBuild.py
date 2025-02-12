@@ -1,11 +1,11 @@
 import os
-import platform
+
 
 
 from globals import root, local, vars
 from utilities import *
 import pandas as pd
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 
 def html(string, new_line=True, paragraph=False, bold=False, header:int=None, italic=False, in_list=False,
@@ -59,17 +59,16 @@ def html_link(url, text=None):
         text = url
     return html("<a href=\"{}\"> {}</a>".format(url, text))
 
-def html_image(url, text=None, width=None, height=None, online=False):
+def html_image(url, text=None, width=None, height=None):
     if text is None:
         text = url
-    if not online:
-        url = os.path.abspath(url)
+    url = os.path.abspath(url)
     w = h = ""
     if width is not None:
         w = " width=\"{}\"".format(width)
     if height is not None:
         h = " height=\"{}\"".format(height)
-    return "<img src=\"{}\" alt=\"{}\"{}{}><br>".format(url, text,h,w)
+    return "<img src=\"{}\" alt=\"{}\"{}{}>".format(url, text,h,w)
 
 def head(title):
     contents = "<head>\n"
@@ -144,20 +143,14 @@ def monomer_collapsible(self, online=False):
     c +=        "</div>\n" # Column
     c +=    "<div class=\"column\">\n"
     c +=    html("Cleaned PDB", header=2)
-    if online:
-        c+= html_image(firebase_link("cleaned",self.name.lower()+"_"+self.chain+".png"),width=300,online=True)
-    else:
-        c +=    html_link(local.sessions+ "/cleaned_sessions/" +"{}.pse".format(self.id),html_image(preview_path+ "cleaned/" +"{}.png".format(self.id), self.id,300,300))
+    c +=    html_link(local.sessions+ "/cleaned_sessions/" +"{}.pse".format(self.id),html_image(preview_path+ "cleaned/" +"{}.png".format(self.id), self.id,300,300))
     c +=    html(html_link(self.path), emphasis=True, insert=True)
     c +=    "</div>\n"  # Column
     if "super_data" in self.__dict__:
         if self.super_data is not None:
             c += "<div class=\"column\">\n"
             c += html("Superposed PDB", header=2)
-            if online:
-                c+=  html_image(firebase_link("supers", "{}_x_{}.png".format(self.id, self.super_data[0])),width=300,online=True)
-            else:
-                c += html_link(local.sessions + "/supers_sessions/{}_x_{}.pse".format(self.id, self.super_data[0]),
+            c += html_link(local.sessions + "/supers_sessions/{}_x_{}.pse".format(self.id, self.super_data[0]),
                            html_image(os.path.join("{}supers".format(preview_path), "{}_x_{}.png".format(self.id, self.super_data[0])), self.id, 300, 300))
             c += html(html_link(self.super_path), emphasis=True, insert=True)
             c += html("Best fit: <b>{}</b>".format(self.super_data[0]), header=3)
@@ -269,22 +262,19 @@ def build_html_from_objects(objects, name="objects", online=False, collapsible=m
 
 if __name__ == "__main__":
 
-    GENERATE_PREVIEWS = False
+    GENERATE_PREVIEWS = True
     force_previews = True
 
-    MONOMERS = True
+    MONOMERS = False
     DIMERS = True
 
     import globals
 
-    globals.set_root(os.path.dirname(os.path.dirname(__file__)))
+    globals.set_root("../")
     if os.name == "nt":
         globals.set_local("C:/Users/iainv/localdata/_local/projectB")
     elif os.name == "posix":
-        if "aarch" in platform.platform():
-            globals.set_local("/home/user/localdata")
-        else:
-            globals.set_local("/localdata/iain/_local/projectB")
+        globals.set_local("/localdata/iain/_local/projectB")
     from globals import root, local, vars
 
     local["previews"] = "previews"
