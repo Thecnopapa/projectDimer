@@ -1,6 +1,7 @@
 ID,name,chain,rmsd_AR,align_len_AR,rmsd_ER,align_len_ER,rmsd_GR,align_len_GR,rmsd_PHBEACH,align_len_PHBEACH
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 1A52_A,1A52,A,1.327,208,0.682,220,1.569,208,4.207,99
 1A52_B,1A52,B,1.408,209,0.656,220,1.544,207,4.197,99
@@ -4577,3 +4578,5 @@ PHBEACH_A,PHBEACH,A,4.017,93,4.803,104,3.864,89,0.0,414
 9bqe_B,9bqe,B,1.377,187,0.587,204,1.499,185,4.113,75
 9cwn_A,9cwn,A,2.028,204,1.914,195,1.908,205,4.082,105
 >>>>>>> 640b7c3 (Added framework for dimer HTML)
+=======
+>>>>>>> c211e42 (Fixed online HTML)
