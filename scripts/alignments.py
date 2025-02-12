@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import Bio.Align as Align
 from Bio.Align import substitution_matrices
-from Bio.Align._pairwisealigner import PairwiseAligner
+from Bio.Align.PairwiseAligner import PairwiseAligner
 from Bio.Seq import Seq
 
 d3to1 = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',

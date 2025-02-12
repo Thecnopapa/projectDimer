@@ -8,15 +8,23 @@ from utilities import *
 
 # Initialise globals
 import globals
-globals.set_root("../")
 if os.name == "nt":
+    globals.set_root("../")
     globals.set_local("C:/Users/iainv/localdata/_local/projectB")
 elif os.name == "posix":
-    globals.set_local("/localdata/iain/_local/projectB")
+    import platform
+    if "aarch" in platform.platform():
+        globals.set_local("localdata/projectB")
+        globals.set_root("projectB")
+    else:
+        globals.set_root("../")
+        globals.set_local("/localdata/iain/_local/projectB")
 
 
 # Imports that need globals initialised:
 from globals import root, local, vars
+print(local.list())
+print(root.list())
 from dataframes import save_dfs, create_dfs
 from imports import pickle, export
 
@@ -29,13 +37,14 @@ DO_ONLY = "" # Names of pdbs to be processed (CAPS sensitive, separated by space
 
 # Set up
 vars["do_only"] = DO_ONLY
+print(local.list())
 
 
 # Download large dataset
 tprint("Downloading large data")
 from imports import download_pdbs
 if "many_pdbs" not in local.list() and LARGE_DATASET:
-    download_pdbs(os.path.join(root.pdb_lists,"list_1500v2"), "many_pdbs")
+    download_pdbs(os.path.join(root.pdb_lists,"list_1500"), "many_pdbs", terminal = True)
 eprint("Large data downloaded")
 
 
@@ -76,7 +85,8 @@ eprint("Monomers loaded")
 tprint("Aligning monomers")
 progress = ProgressBar(len(monomers))
 for monomer in monomers:
-    monomer.sequence_align(references, force_align = PROCESS_ALL)
+    pass
+    #monomer.sequence_align(references, force_align = PROCESS_ALL)
     progress.add()
 pickle(monomers)
 save_dfs()

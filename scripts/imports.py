@@ -53,7 +53,7 @@ def load_from_files(pdb_folder = root.experimental, load_class = PDB, ignore_sel
                 if is_reference:
                     obj = obj.get_monomers(as_reference=True)
                 loaded.append(obj)
-            progress.add()
+            progress.add(info=file)
     print1("{} objects loaded:".format(len(loaded)))
     for obj in loaded:
         print2(obj)
@@ -109,6 +109,7 @@ def download_pdbs(list_path, save_folder, terminal = False):
     if not terminal:
         import wget
         counter =0
+        print(pdb_links)
         with open(pdb_links, "r") as f:
             for line in f:
                 print2("({}/{})".format(counter,len(pdb_list)),line)

@@ -6,7 +6,10 @@ from utilities import *
 if os.name == 'nt':
     globals.vars["gesamt"] = "C:/Program Files/CCP4-9/CCP4/bin/gesamt.exe"
 if os.name == 'posix':
-    globals.vars["gesamt"] = "/xtal/ccp4/ccp4-9/bin/gesamt"
+    if "aarch" in platform.platfirm():
+        globals.vars["gesamt"] = "~/bin/gesamt"
+    else:
+        globals.vars["gesamt"] = "/xtal/ccp4/ccp4-9/bin/gesamt"
 
 def superpose_single(id, fixed, moving):
     import subprocess
