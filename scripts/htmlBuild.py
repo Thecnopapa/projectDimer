@@ -119,7 +119,7 @@ def monomer_collapsible_basic(info):
 
 def firebase_link(folder,file, type="previews"):
     storageBucket = 'iv-projectb.firebasestorage.app'
-    firebase_storageURL = 'https://firebasestorage.googleapis.com/v0/b/{}/o/{}/{}/{}?alt=media'.format(storageBucket,type, folder,file)
+    firebase_storageURL = 'https://firebasestorage.googleapis.com/v0/b/{}/o/{}%2F{}%2F{}?alt=media'.format(storageBucket,type, folder,file)
     return firebase_storageURL
 #https://stackoverflow.com/questions/72037182/how-do-i-get-url-with-token-of-uploaded-file-to-firebase-storage
 
