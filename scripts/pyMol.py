@@ -78,11 +78,7 @@ def generate_preview(path, folder="", state = 0,save_session=True):
         pymol_save_session(name, local[folder+"_sessions"])
     preview_path = pymol_save_small(name, local[folder], dpi=50, height=150, width=150)
     return preview_path
-    try:
-        pass
-    except:
-        print("Failed to generate preview/{} for {} ({})".format(folder,id,path))
-        return None
+
 
 
 
