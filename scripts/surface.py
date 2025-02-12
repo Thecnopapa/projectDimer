@@ -77,7 +77,7 @@ def import_X_df(path, name):
     df = pd.read_csv(path, header=0)
     df.replace("X", True, inplace=True)
     df.fillna(False, inplace=True)
-    print(df)
+    #print(df)
     new_path = os.path.join(root.dataframes, name+".csv")
     df.to_csv(new_path, index=False)
     return new_path
@@ -125,6 +125,7 @@ if __name__ == "__main__":
 
 
     FORCE_SASA = False
+    FORCE_SIMILARITY = False
 
     tprint("Loading dimers")
     from imports import load_dimers
@@ -195,29 +196,39 @@ if __name__ == "__main__":
     progress = ProgressBar(len(dimers))
     for dimer in dimers:
         progress.add(info = dimer.id)
-        sprint(dimer.id, dimer.best_fit)
         if dimer.best_fit != "GR":
             continue
-
+        if "best_match" in dimer.__dict__.keys() and not FORCE_SIMILARITY:
+            continue
+        sprint(dimer.id, dimer.best_fit)
         ref_df_name = "{}_reference_clusters.csv".format(dimer.best_fit)
         ref_df_path = os.path.join(root.dataframes, ref_df_name)
         if not ref_df_name in os.listdir(root.dataframes):
+            try:
                 import_X_df(os.path.join(root.dataframes,"{}_reference_clusters_raw.csv".format(dimer.best_fit)),
                             "{}_reference_clusters".format(dimer.best_fit))
+            except:
+                sprint("Reference df (raw or processed) not found")
+                print1(ref_df_name)
+                print2(ref_df_path)
+                print2(os.path.join(root.dataframes,"{}_reference_clusters_raw.csv".format(dimer.best_fit)))
+                continue
+
         ref_df = pd.read_csv(ref_df_path)
 
         groups =[]
-        print(ref_df.columns)
-        print(len(ref_df.columns))
+        #print(ref_df.columns)
+        #print(len(ref_df.columns))
         n_groups = (len(ref_df.columns)-1) / 2
-        print(n_groups % 2)
+        #print(n_groups % 2)
         assert n_groups % 2 == 0
 
         sasaA = dimer.sasa_df[["ID", "is_contact1"]]
         sasaB = dimer.sasa_df[["ID", "is_contact2"]]
 
+        similarities = []
+
         ref_nums = ref_df["ResNum"]
-        print(ref_nums)
         for group in range(int(n_groups)):
             ref_sasaA = ref_df.iloc[:,[0,group*2+1]]
             ref_sasaB = ref_df.iloc[:,[0,group*2+2]]
@@ -229,7 +240,7 @@ if __name__ == "__main__":
             BA = [0,0]
             BB = [0,0]
             for ref_num in ref_nums:
-                print(ref_num)
+                print(group, ref_num, end = "\r")
                 sA = sasaA.loc[sasaA["ID"]==ref_num].iloc[:,1].values[0]
                 sB = sasaB.loc[sasaB["ID"]==ref_num].iloc[:,1].values[0]
                 rsA = ref_sasaA.loc[ref_sasaA["ResNum"] == ref_num].iloc[:,1].values[0]
@@ -251,10 +262,16 @@ if __name__ == "__main__":
                 else:
                     BA[1] +=1
 
-
-        print1(AA, BB, AB, BA)
-
-
+            per1 = (AA[0]/(AA[0]+AA[1]) + BB[0]/(BB[0]+BB[1]))/2
+            per2 = (AB[0]/(AA[0]+AA[1]) + BA[0]/(BB[0]+BB[1]))/2
+            inverse = False
+            if per2 > per1:
+                inverse = True
+            similarities.append((group+1, max([per1,per2]), inverse))
+            print1(similarities[-1][0], round(similarities[-1][1]*100) ,"%")
+        best_match = max(similarities, key= lambda x: x[1])
+        print("Best match for {}: {}, with {}% similarity, inverse: {}\n".format(dimer.id, best_match[0], round(100*best_match[1]), best_match[2]))
+        dimer.best_match = best_match
     eprint("Contacts compared")
 
 
@@ -263,6 +280,12 @@ if __name__ == "__main__":
     pickle(dimers)
     print("Done")
 
+    tprint("Classification to df")
+    classified_df = pd.DataFrame(columns = ["ID","Best_Fit", "Best_Match", "Similarity", "Inverse"])
+    for dimer in dimers:
+        if "best_match" in dimer.__dict__.keys():
+            classified_df.loc[len(classified_df)] = [dimer.id, dimer.best_fit, dimer.best_match[0], round(dimer.best_match[1]*100),dimer.best_match[2]]
+    classified_df.to_csv(os.path.join(root.dataframes, "classified_df.csv"))
 
 
 
