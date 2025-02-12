@@ -92,7 +92,7 @@ def style():
     return contents
 
 
-def monomer_collapsible_basic(info):
+def monomer_collapsible(info):
     #print(info)
     c = "<button type=\")button\" class=\"collapsible\">{}</button>\n".format(info.ID)
     c += "<div class=\"content\">\n"
@@ -124,7 +124,7 @@ def firebase_link(folder,file, type="previews"):
 #https://stackoverflow.com/questions/72037182/how-do-i-get-url-with-token-of-uploaded-file-to-firebase-storage
 
 
-def monomer_collapsible(self, online=False):
+def object_collapsible(self, online=False):
     if online:
         preview_path = "https://firebasestorage.googleapis.com/v0/b/{}/o/previews/".format('iv-projectb.firebasestorage.app')
     else:
@@ -168,6 +168,7 @@ def monomer_collapsible(self, online=False):
 
 
 
+<<<<<<< HEAD
 def dimer_collapsible(self, online=False):
     if online:
         preview_path = "https://firebasestorage.googleapis.com/v0/b/{}/o/previews/".format('iv-projectb.firebasestorage.app')
@@ -221,6 +222,8 @@ def dimer_collapsible(self, online=False):
     return c
 
 
+=======
+>>>>>>> parent of bbd4068 (Added framework for dimer HTML)
 
 def build_html_from_df(df, obj):
     data = pd.read_csv(os.path.join(root.dataframes, df))
@@ -237,15 +240,19 @@ def build_html_from_df(df, obj):
         f.write(style())
 
 
+<<<<<<< HEAD
 
 def build_html_from_objects(objects, name="objects", online=False, collapsible=monomer_collapsible):
+=======
+def build_html_from_objects(objects, name="objects", online=False):
+>>>>>>> parent of bbd4068 (Added framework for dimer HTML)
     file_path = os.path.join(root.other, "{}.html".format(name))
     with open(file_path, "w") as f:
         pass
     with open(file_path, "a") as f:
         f.write(head(name))
         for obj in objects:
-            f.write(collapsible(obj, online=online))
+            f.write(object_collapsible(obj, online=online))
         f.write(style())
         f.write(java())
 
@@ -262,11 +269,17 @@ def build_html_from_objects(objects, name="objects", online=False, collapsible=m
 
 if __name__ == "__main__":
 
+<<<<<<< HEAD
     GENERATE_PREVIEWS = True
     force_previews = True
 
     MONOMERS = False
     DIMERS = True
+=======
+    GENERATE_PREVIEWS = False
+    force_previews = True
+
+>>>>>>> parent of bbd4068 (Added framework for dimer HTML)
 
     import globals
 
@@ -277,12 +290,15 @@ if __name__ == "__main__":
         globals.set_local("/localdata/iain/_local/projectB")
     from globals import root, local, vars
 
-    local["previews"] = "previews"
-    local["sessions"] = "sessions"
+    build_html_from_df("monomers_df.csv", obj=monomer_collapsible)
 
-    if MONOMERS:
-        build_html_from_df("monomers_df.csv", obj=monomer_collapsible_basic)
+    # Load/Generate monomer files
+    tprint("Loading monomers")
+    from imports import load_monomers
+    monomers = load_monomers()
+    eprint("Monomers loaded")
 
+<<<<<<< HEAD
         # Load/Generate monomer files
         tprint("Loading monomers")
         from imports import load_monomers
@@ -346,9 +362,32 @@ if __name__ == "__main__":
             print("Pickling...")
             pickle(dimers)
             print("Done")
+=======
+    tprint("Building html")
+    build_html_from_objects(monomers, name="monomers")
+    build_html_from_objects(monomers, name="monomers_online", online=True)
+    eprint("HTML built")
+>>>>>>> parent of bbd4068 (Added framework for dimer HTML)
 
 
 
 
+    if GENERATE_PREVIEWS:
+        tprint("Generating previews")
+        from pyMol import generate_preview
+        progress = ProgressBar(len(monomers))
+        for monomer in monomers:
+            if not "previews" in monomer.__dict__.keys() or force_previews:
+                monomer.previews = {"cleaned": generate_preview(monomer.path, "cleaned", state=1, id=monomer.id)}
+                if "super_data" in monomer.__dict__.keys():
+                    if monomer.super_data is not None:
+                        monomer.previews["superposed"] = generate_preview(monomer.super_path, "supers", state=0, id=monomer.id, save_session=True)
+            progress.add(info=monomer.id)
+        eprint("Previews generated")
 
 
+
+    from imports import pickle
+    print("Pickling...")
+    pickle(monomers)
+    print("Done")
