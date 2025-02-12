@@ -208,7 +208,7 @@ def dimer_collapsible(self, online=False):
     c +=            "<p>\n"
     c +=            html("Replaced", header=2, bold=True)
     c +=            html_image(self.previews["replaced"], width=300)
-    c +=            html("Best Match: group", self.best_match[0], header=3)
+    c +=            html("Best Match: group {}".format(self.best_match[0]), header=3)
     c +=            html_image(os.path.join(root.GR_groups, "group_{}.png".format(self.best_match[0])), width=300)
 
     c +=            "</p>\n"
