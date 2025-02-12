@@ -56,10 +56,11 @@ class BioObject:
                             residue.__delitem__(atom.id)
 
 
-    def export(self, subfolder = None, structure = None, extra_id = ""):
+    def export(self, subfolder = None, in_structure = None, extra_id = ""):
         exporting = PDBIO()
-        if structure is None:
+        if in_structure is None:
             structure = self.structure
+        else: structure = in_structure
         exporting.set_structure(structure)
         local["exports"] = "exports"
         os.makedirs(local.exports, exist_ok=True)
@@ -70,7 +71,9 @@ class BioObject:
         os.makedirs(path, exist_ok=True)
         path = os.path.join(path, self.id+extra_id+".pdb")
         exporting.save(path)
-        self.path = path
+        if in_structure is None:
+            self.path = path
+        return path
 
 class PDB(BioObject):
     pickle_extension = '.molecule'
@@ -287,9 +290,9 @@ class Dimer(BioObject):
 
     def export(self):
         if not self.incomplete:
-            super().export(subfolder="dimers_original", structure=self.original_structure)
-            super().export(subfolder="dimers_replaced", structure=self.replaced_structure, extra_id="_replaced")
-            super().export(subfolder="dimers_merged", structure=self.merged_structure, extra_id="_merged")
+            self.original_path = super().export(subfolder="dimers_original", in_structure=self.original_structure)
+            self.replaced_path = super().export(subfolder="dimers_replaced", in_structure=self.replaced_structure, extra_id="_replaced")
+            self.merged_path = super().export(subfolder="dimers_merged", in_structure=self.merged_structure, extra_id="_merged")
 
 
 

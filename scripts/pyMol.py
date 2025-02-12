@@ -9,21 +9,21 @@ from globals import root, local, vars
 import pymol
 
 
-def pymol_colour_everything(num_states=2):
+def pymol_colour_everything(start_at=0):
     # List of available colours
     colours = ['green', 'cyan', 'red', 'yellow', 'violet','blue',
                'salmon', 'lime', 'pink', 'slate', 'magenta', 'orange', 'marine',
                'olive', 'purple', 'teal', 'forest', 'firebrick', 'chocolate',
                'wheat', 'white', 'grey']
     ncolours = len(colours)
-    pymol.cmd.count_states("(all)")
+    num_states = pymol.cmd.count_states("(all)")
     # Loop over objects
     i = 0
     for obj in get_all_obj():
         for state in range(1,num_states):
-            pymol.cmd.color(colours[i], obj+" and state "+str(state))
+            pymol.cmd.color(colours[i+start_at], obj+" and state "+str(state))
             i += 1
-            if i == ncolours:
+            if i >= ncolours:
                 i = 0
 
 def pymol_start(show=False, quiet=True):
@@ -62,7 +62,7 @@ def pymol_save_session(file_name, folder):
 def get_all_obj():
     return pymol.cmd.get_names(type='objects')
 
-def generate_preview(path, folder="", state = 0,id = "",save_session=True):
+def generate_preview(path, folder="", state = 0,save_session=True):
     if save_session:
         local[folder+"_sessions"] = "sessions/{}_sessions".format(folder)
     local[folder] = "previews/{}".format(folder)
@@ -70,7 +70,10 @@ def generate_preview(path, folder="", state = 0,id = "",save_session=True):
     pymol_reset()
     pymol_load_path(path, state=state)
     pymol.cmd.orient("(all)")
-    pymol_colour_everything(2)
+    if state == 0:
+        pymol_colour_everything()
+    else:
+        pymol_colour_everything(start_at=state-1)
     if save_session:
         pymol_save_session(name, local[folder+"_sessions"])
     preview_path = pymol_save_small(name, local[folder], dpi=50, height=150, width=150)
