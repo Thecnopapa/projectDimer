@@ -245,21 +245,21 @@ if __name__ == "__main__":
                 sB = sasaB.loc[sasaB["ID"]==ref_num].iloc[:,1].values[0]
                 rsA = ref_sasaA.loc[ref_sasaA["ResNum"] == ref_num].iloc[:,1].values[0]
                 rsB = ref_sasaB.loc[ref_sasaB["ResNum"] == ref_num].iloc[:,1].values[0]
-                if sA == rsA:
+                if sA and rsA:
                     AA[0] +=1
-                else:
+                elif sA or rsA:
                     AA[1] +=1
-                if sB == rsB:
+                if sB and rsB:
                     BB[0] +=1
-                else:
+                elif sB or rsB:
                     BB[1] +=1
-                if sA == rsB:
+                if sA and rsB:
                     AB[0] +=1
-                else:
+                elif sA or rsB:
                     AB[1] +=1
-                if sB == rsA:
+                if sB and rsA:
                     BA[0] +=1
-                else:
+                elif sB or rsA:
                     BA[1] +=1
 
             per1 = (AA[0]/(AA[0]+AA[1]) + BB[0]/(BB[0]+BB[1]))/2
@@ -286,6 +286,7 @@ if __name__ == "__main__":
         if "best_match" in dimer.__dict__.keys():
             classified_df.loc[len(classified_df)] = [dimer.id, dimer.best_fit, dimer.best_match[0], round(dimer.best_match[1]*100),dimer.best_match[2]]
     classified_df.to_csv(os.path.join(root.dataframes, "classified_df.csv"))
+    eprint("Classification to df done")
 
 
 
