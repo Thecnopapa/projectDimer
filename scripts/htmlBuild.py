@@ -269,7 +269,7 @@ def build_html_from_objects(objects, name="objects", online=False, collapsible=m
 
 if __name__ == "__main__":
 
-    GENERATE_PREVIEWS = False
+    GENERATE_PREVIEWS = True
     force_previews = True
 
     MONOMERS = True
