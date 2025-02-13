@@ -15,15 +15,17 @@
             PDB list
         </div>
         <hr>
-        <div class="list_element" id="1235">
-            <button class="list_button"> 1234 </button>
-            <div class="list_children">
-                <button class="children_button" onclick="getDataFromMolecule(this)"  name="A - B"> A - D</button>
-                <button class="children_button" onclick="getDataFromMolecule(this)"  name ="C - D"> C - D</button>
+        <div id="pdb_list">
+            <div class="list_element" id="1234">
+                <button class="list_button"> 1234 </button>
+                <div class="list_children">
+                    <button class="children_button" onclick="getDataFromMolecule(this)"  name="1234_AB"> A - D</button>
+                    <button class="children_button" onclick="getDataFromMolecule(this)"  name ="1234_CD"> C - D</button>
 
+                </div>
             </div>
+            <!-- list here -->
         </div>
-
     </div>
     <div id="right_panel">
         <div id="data_panel">
@@ -38,9 +40,17 @@
     </div>
 
 </div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.1.2/papaparse.js"></script>
+</body>
+
 <script>
     function getDataFromMolecule(button) {
-        document.getElementById("ID").innerHTML = button.parentElement.parentElement.id+ " " +button.name;
+        document.getElementById("ID").innerHTML = button.name;
+        var id = button.name;
+        var chain1 = id.substring(id.length() - 2);
+        var chain2 = id.substring(id.length() - 1);
+        console.log(id +chain1+chain2);
     }
 
 
@@ -68,11 +78,20 @@
 
     #left_panel {
         flex: 10%;
-        background-color: blue;
+        background-color: rgba(244, 205, 126);
         height: 100%;
         align-items: center;
         margin-left: auto;
         margin-right: auto;
+        overflow: clip
+
+    }
+    #pdb_list {
+        height: 100%;
+        width: 100%;
+        overflow: scroll;
+        scroll-behavior: smooth;
+
     }
 
     #right_panel > .panel_header {
@@ -81,13 +100,13 @@
 
     #right_panel {
         flex: 90%;
-        background-color: red;
+        background-color: rgba(6, 44, 31, 0.84);
         height: 100%;
         display: flex;
     }
     #data_panel {
         flex: 20%;
-        background-color: green;
+        background-color: rgba(244, 205, 126, 0.4);
     }
     #main_panel {
         flex: 80%;
@@ -139,11 +158,11 @@
         width: 100%;
         text-align: right;
         font-weight: bold;
-        font-size: 1em;
+        font-size: 1.5em;
     }
 
 </style>
-</body>
+
 </html>
 
 

@@ -259,7 +259,29 @@ def build_html_from_objects(objects, name="objects", online=False, collapsible=m
 
 
 
+def build_dynamic_dimers(dimers):
+    with open(os.path.join(root.other, "dynamic_test.html"), "r") as template:
+        before, after = template.read().split("<!-- list here -->")
+        middle = []
 
+    print(dimers)
+    names = set()
+    dimers.sort(key=lambda x: x.name)
+    for d in dimers:
+        print(d.name)
+        names.add(d.name)
+    names = list(names)
+    names.sort()
+    if len(names) > 0:
+        for name in names:
+            middle.append("<div class=\"list_element\" id=\"{}\">\n".format(name)+
+                          "<button class=\"list_button\">{}</button>\n".format(name) +
+                          "<div class=\"list_children\">\n")
+            for di in filter(lambda x: x.name == name, dimers):
+                middle.append("<button class=\"children_button\" onclick=\"getDataFromMolecule(this)\"  name =\"{}\"> {} - {} </button>\n".format(di.id, di.monomer1.chain, di.monomer2.chain))
+            middle.append("</div>\n</div>\n" )
+    with open(os.path.join(root.other, "dynamic_test_built.html"), "w") as build:
+        build.write(before+"".join(middle)+after)
 
 
 
@@ -269,10 +291,10 @@ def build_html_from_objects(objects, name="objects", online=False, collapsible=m
 
 if __name__ == "__main__":
 
-    GENERATE_PREVIEWS = True
+    GENERATE_PREVIEWS = False
     force_previews = True
 
-    MONOMERS = True
+    MONOMERS = False
     DIMERS = True
 
     import globals
@@ -311,11 +333,11 @@ if __name__ == "__main__":
             progress = ProgressBar(len(monomers))
             for monomer in monomers:
                 if not "previews" in monomer.__dict__.keys() or force_previews:
-                    monomer.previews = {"cleaned": generate_preview(monomer.path, "cleaned", state=1, id=monomer.id)}
+                    monomer.previews = {"cleaned": generate_preview(monomer.path, "cleaned", state=1)}
                     if "super_data" in monomer.__dict__.keys():
                         if monomer.super_data is not None:
                             monomer.previews["superposed"] = generate_preview(monomer.super_path, "supers", state=0,
-                                                                              id=monomer.id, save_session=True)
+                                                                               save_session=True)
                 progress.add(info=monomer.id)
             eprint("Previews generated")
 
@@ -334,6 +356,10 @@ if __name__ == "__main__":
         build_html_from_objects(dimers, name="dimers", collapsible=dimer_collapsible)
         eprint("HTML built")
 
+        build_dynamic_dimers(dimers)
+
+
+
         if GENERATE_PREVIEWS:
 
             tprint("Generating previews")
@@ -347,9 +373,6 @@ if __name__ == "__main__":
                         dimer.previews["merged"] = generate_preview(dimer.merged_path, "merged", state=0)
                 progress.add(info=dimer.id)
             eprint("Previews generated")
-
-
-
 
             from imports import pickle
 
