@@ -1,7 +1,7 @@
 import os
 
 
-from globals import root, local, vars
+from Globals import root, local, vars
 from utilities import *
 
 from molecules import PDB, Monomer,Reference

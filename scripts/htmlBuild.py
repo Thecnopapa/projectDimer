@@ -2,7 +2,7 @@ import os
 import platform
 
 
-from globals import root, local, vars
+from Globals import root, local, vars
 from utilities import *
 import pandas as pd
 #import matplotlib.pyplot as plt
@@ -297,17 +297,17 @@ if __name__ == "__main__":
     MONOMERS = False
     DIMERS = True
 
-    import globals
+    import Globals
 
-    globals.set_root(os.path.dirname(os.path.dirname(__file__)))
+    Globals.set_root(os.path.dirname(os.path.dirname(__file__)))
     if os.name == "nt":
-        globals.set_local("C:/Users/iainv/localdata/_local/projectB")
+        Globals.set_local("C:/Users/iainv/localdata/_local/projectB")
     elif os.name == "posix":
         if "aarch" in platform.platform():
-            globals.set_local("/home/user/localdata")
+            Globals.set_local("/home/user/localdata")
         else:
-            globals.set_local("/localdata/iain/_local/projectB")
-    from globals import root, local, vars
+            Globals.set_local("/localdata/iain/_local/projectB")
+    from Globals import root, local, vars
 
     local["previews"] = "previews"
     local["sessions"] = "sessions"

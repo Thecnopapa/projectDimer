@@ -1,6 +1,6 @@
 import os
 from utilities import *
-from globals import root, local, vars
+from Globals import root, local, vars
 import numpy as np
 import pandas as pd
 
@@ -112,14 +112,14 @@ def iterate_over_dimers(df, start_col = 2):
 
 if __name__ == "__main__":
 
-    import globals
+    import Globals
 
-    globals.set_root("../")
+    Globals.set_root("../")
     if os.name == "nt":
-        globals.set_local("C:/Users/iainv/localdata/_local/projectB")
+        Globals.set_local("C:/Users/iainv/localdata/_local/projectB")
     elif os.name == "posix":
-        globals.set_local("/localdata/iain/_local/projectB")
-    from globals import root, local, vars
+        Globals.set_local("/localdata/iain/_local/projectB")
+    from Globals import root, local, vars
 
 
     FORCE_SASA = False
@@ -256,7 +256,12 @@ if __name__ == "__main__":
 
                 classified_df.loc[len(classified_df)] = [dimer_id, ref_name, best_match[0],
                                                          round(best_match[1] * 100), best_match[2]]
-    classified_df.to_csv(os.path.join(root.dataframes, "classified_df.csv"))
+                if "dimers" in locals() or "dimers" in globals():
+                    for dimer in dimers:
+                        if dimer.id == dimer_id:
+                            dimer.best_match = best_match
+
+        classified_df.to_csv(os.path.join(root.dataframes, "classified_df.csv"))
 
     quit()
 

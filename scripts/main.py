@@ -7,21 +7,21 @@ from utilities import *
 import platform
 
 # Initialise globals
-import globals
-globals.set_root(os.path.dirname(os.path.dirname(__file__)))
+import Globals
+Globals.set_root(os.path.dirname(os.path.dirname(__file__)))
 
 if os.name == "nt":
-    globals.set_local("C:/Users/iainv/localdata/_local/projectB")
+    Globals.set_local("C:/Users/iainv/localdata/_local/projectB")
 
 elif os.name == "posix":
     if "aarch" in platform.platform():
-        globals.set_local("/home/user/localdata/projectB")
+        Globals.set_local("/home/user/localdata/projectB")
     else:
-        globals.set_local("/localdata/iain/_local/projectB")
+        Globals.set_local("/localdata/iain/_local/projectB")
 
 
 # Imports that need globals initialised:
-from globals import root, local, vars
+from Globals import root, local, vars
 from dataframes import save_dfs, create_dfs
 from imports import pickle, export
 

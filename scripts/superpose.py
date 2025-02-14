@@ -1,6 +1,6 @@
 import os
-import globals
-from globals import *
+import Globals
+from Globals import *
 from utilities import *
 
 if os.name == 'nt':

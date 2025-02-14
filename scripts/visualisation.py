@@ -1,5 +1,5 @@
 import os
-from globals import root, local, vars
+from Globals import root, local, vars
 from utilities import *
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -59,13 +59,13 @@ def generate_html():
 
 
 if __name__ == "__main__":
-    import globals
-    globals.set_root("../")
+    import Globals
+    Globals.set_root("../")
     if os.name == "nt":
-        globals.set_local("C:/Users/iainv/localdata/_local/projectB")
+        Globals.set_local("C:/Users/iainv/localdata/_local/projectB")
     elif os.name == "posix":
-        globals.set_local("/localdata/iain/_local/projectB")
-    from globals import root, local, vars
+        Globals.set_local("/localdata/iain/_local/projectB")
+    from Globals import root, local, vars
 
     generate_charts()
 
