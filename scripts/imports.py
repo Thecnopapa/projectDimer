@@ -15,7 +15,7 @@ def load_pickles(folder, extension = (".pickle"), ignore_selection = False):
         print2("Loading only:", vars.do_only)
     pickles = []
     if folder in local.list():
-        print("Files found:", len(os.listdir(local[folder])))
+        print2("Files found:", len(os.listdir(local[folder])))
         progress = ProgressBar(len(os.listdir(local[folder])))
         for file in sorted(os.listdir(local[folder])):
             selection = None

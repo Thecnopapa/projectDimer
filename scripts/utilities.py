@@ -91,3 +91,27 @@ class ProgressBar:
         bar = "|{}>".format(self.style * progress_scaled)
         blank = " " * (self.width - len(bar)- len(percentage))
         print("{}{}{}".format(bar, blank, percentage), end = end)
+
+
+
+def clean_list(strings:list, delimiter=" ", format="float", allow=["."]):
+    cleaned = []
+    for string in strings:
+        list = string.split(delimiter)
+        # print(list)
+        for e in list:
+            # print("e:", e)
+            c = clean_string(e, allow=allow)
+            # print("clean:",c)
+            if c != "":
+                if format == "integer":
+                    c = int(c)
+                elif format == "float":
+                    c = float(c)
+                elif format == "bool":
+                    if c == "False":
+                        c = False
+                    elif c == "True":
+                        c = True
+                cleaned.append(c)
+    return cleaned
