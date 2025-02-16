@@ -259,16 +259,17 @@ def build_html_from_objects(objects, name="objects", online=False, collapsible=m
 
 
 
-def build_dynamic_dimers(dimers):
-    with open(os.path.join(root.other, "dynamic_test.html"), "r") as template:
+def build_dynamic_dimers(dimers, deploy = False):
+    sprint("Dimers: {}, upload: {}".format(len(dimers), deploy))
+    with open(os.path.join(root.other, "dynamic_template_dimers.html"), "r") as template:
         before, after = template.read().split("<!-- list here -->")
         middle = []
 
-    print(dimers)
+    #print(dimers)
     names = set()
     dimers.sort(key=lambda x: x.name)
     for d in dimers:
-        print(d.name)
+        #print(d.name)
         names.add(d.name)
     names = list(names)
     names.sort()
@@ -280,13 +281,13 @@ def build_dynamic_dimers(dimers):
             for di in filter(lambda x: x.name == name, dimers):
                 middle.append("<button class=\"children_button\" onclick=\"getDataFromMolecule(this)\"  name =\"{}\"> {} - {} </button>\n".format(di.id, di.monomer1.chain, di.monomer2.chain))
             middle.append("</div>\n</div>\n" )
-    with open(os.path.join(root.webapp, "index.html"), "w") as build:
+    build_path = os.path.join(root.public, "index.html")
+    with open(build_path, "w") as build:
         build.write(before+"".join(middle)+after)
-        try:
-            import subprocess
-            subprocess.run(["firebase", "deploy", "--only", "hosting:dimers"])
-        except:
-            print("Deployment failed")
+    print1("HTML built and saved to {}".format(build_path))
+    if deploy:
+        import firebase
+        firebase.update_app(root.webapp, "dimers")
 
 
 
@@ -302,16 +303,9 @@ if __name__ == "__main__":
     MONOMERS = False
     DIMERS = True
 
-    import Globals
+    import setup
 
-    Globals.set_root(os.path.dirname(os.path.dirname(__file__)))
-    if os.name == "nt":
-        Globals.set_local("C:/Users/iainv/localdata/_local/projectB")
-    elif os.name == "posix":
-        if "aarch" in platform.platform():
-            Globals.set_local("/home/user/localdata")
-        else:
-            Globals.set_local("/localdata/iain/_local/projectB")
+
     from Globals import root, local, vars
 
     local["previews"] = "previews"
@@ -357,12 +351,13 @@ if __name__ == "__main__":
         dimers = load_dimers()
         eprint("Dimers loaded")
 
-        tprint("Building html")
+        tprint("Building static html")
         build_html_from_objects(dimers, name="dimers", collapsible=dimer_collapsible)
         eprint("HTML built")
 
-        build_dynamic_dimers(dimers)
-
+        tprint("Building dynamic html")
+        build_dynamic_dimers(dimers, deploy=True)
+        eprint("HTML built")
 
 
         if GENERATE_PREVIEWS:
