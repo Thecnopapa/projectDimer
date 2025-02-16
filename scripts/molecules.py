@@ -310,8 +310,8 @@ class Dimer(BioObject):
     def export(self):
         if not self.incomplete:
             self.original_path = super().export(subfolder="dimers_original", in_structure=self.original_structure)
-            self.replaced_path = super().export(subfolder="dimers_replaced", in_structure=self.replaced_structure, extra_id="_replaced")
-            self.merged_path = super().export(subfolder="dimers_merged", in_structure=self.merged_structure, extra_id="_merged")
+            self.replaced_path = super().export(subfolder="dimers_replaced", in_structure=self.replaced_structure)
+            self.merged_path = super().export(subfolder="dimers_merged", in_structure=self.merged_structure)
 
 
     def summary(self):

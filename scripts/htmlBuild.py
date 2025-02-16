@@ -176,10 +176,6 @@ def monomer_collapsible(self, online=False):
 
 
 def dimer_collapsible(self, online=False):
-    if online:
-        preview_path = "https://firebasestorage.googleapis.com/v0/b/{}/o/previews/".format('iv-projectb.firebasestorage.app')
-    else:
-        preview_path = local.previews+"/"
     if not "best_match" in self.__dict__:
         return ""
     if self.best_match is None:
@@ -199,32 +195,22 @@ def dimer_collapsible(self, online=False):
     c +=        "<div class=\"column\">\n" # Column 2
     c +=            "<p>\n"
     c +=            html("Original", header=2, bold=True)
-    try:
-        c +=            html_image(self.previews["original"], width=300)
-    except:
-        pass
+    c +=            html_image(os.path.join(local.original, self.id+".png"), width=300)
     c +=            "</p>\n"
     c +=        "</div>\n" # /Column 2
 
     c +=        "<div class=\"column\">\n" # Column 3
     c +=            "<p>\n"
     c +=            html("Merged", header=2, bold=True)
-    try:
-        c +=            html_image(self.previews["merged"], width=300)
-    except:
-        pass
+    c +=            html_image(os.path.join(local.merged,self.id+".png"), width=300)
     c +=            html("Best fit: {}/{}".format(self.monomer1.best_fit, self.monomer2.best_fit), header=3)
-
     c +=            "</p>\n"
     c +=        "</div>\n"  # /Column 3
 
     c +=        "<div class=\"column\">\n"  # Column 4
     c +=            "<p>\n"
     c +=            html("Replaced", header=2, bold=True)
-    try:
-        c +=            html_image(self.previews["replaced"], width=300)
-    except:
-        pass
+    c +=            html_image(os.path.join(local.replaced, self.id+".png"), width=300)
     c +=            html("Best Match: group {}".format(self.best_match[0]), header=3)
     c +=            html_image(os.path.join(root.GR_groups, "group_{}.png".format(self.best_match[0])), width=300)
 
@@ -378,12 +364,13 @@ if __name__ == "__main__":
             from pyMol import generate_preview
             progress = ProgressBar(len(dimers))
             for dimer in dimers:
-                if "best_match" in dimer.__dict__:
-                    if dimer.best_match is not None:
-                        if not "previews" in dimer.__dict__ or force_previews:
-                            dimer.previews = {"original": generate_preview(dimer.original_path, "original", state=0)}
-                            dimer.previews["replaced"] = generate_preview(dimer.replaced_path, "replaced", state=0)
-                            dimer.previews["merged"] = generate_preview(dimer.merged_path, "merged", state=0)
+                if not "previews" in dimer.__dict__ or force_previews:
+                    dimer.export()
+                    #print(dimer.__dict__.keys())
+                    if "original_path" in dimer.__dict__:
+                        dimer.previews = {"original": generate_preview(dimer.original_path, "original", state=0)}
+                        dimer.previews["replaced"] = generate_preview(dimer.replaced_path, "replaced", state=0)
+                        dimer.previews["merged"] = generate_preview(dimer.merged_path, "merged", state=0)
                 progress.add(info=dimer.id)
             eprint("Previews generated")
 

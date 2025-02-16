@@ -31,7 +31,7 @@ def load_pickles(folder, extension = (".pickle"), ignore_selection = False):
     return pickles
 
 
-def load_from_files(pdb_folder = root.experimental, load_class = PDB, ignore_selection = False, pickle_folder = "molecules",is_reference = False, pickle_extension = ".molecule", pdb_extension = (".pdb", ".pdb1", ".cif"), force_reload=False):
+def load_from_files(pdb_folder, load_class = PDB, ignore_selection = False, pickle_folder = "molecules",is_reference = False, pickle_extension = ".molecule", pdb_extension = (".pdb", ".pdb1", ".cif"), force_reload=False):
     sprint("Loading pdbs, force reload:", force_reload)
     try:
         print1("Loading only:", vars.do_only)
@@ -141,5 +141,22 @@ def export(list):
         item.export()
         progress.add()
 
+
+if __name__ == "__main__":
+    import setup
+    from Globals import *
+
+    imported = {}
+    for folder in os.listdir(local.pickles):
+        sprint("Extracting {}...".format(folder))
+        progress = ProgressBar(len(os.listdir(os.path.join(local.pickles, folder))))
+        if os.path.isdir(os.path.join(local.pickles, folder)):
+            for file in os.listdir(os.path.join(local.pickles, folder)):
+                if os.path.isfile(os.path.join(local.pickles, folder, file)):
+                    try:
+                        imported[folder].append(unpickle(os.path.join(local.pickles, folder, file)))
+                    except:
+                        imported[folder] = [unpickle(os.path.join(local.pickles, folder, file))]
+                    progress.add(info=file)
 
 

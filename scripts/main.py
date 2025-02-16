@@ -46,7 +46,7 @@ references = load_from_files(root.references,
 if LARGE_DATASET:
     molecules = load_from_files(local.many_pdbs, force_reload = PROCESS_ALL)
 else:
-    molecules = load_from_files(force_reload = PROCESS_ALL)
+    molecules = load_from_files(local.experimental, force_reload = PROCESS_ALL)
 pickle(molecules)
 eprint("Files loaded")
 

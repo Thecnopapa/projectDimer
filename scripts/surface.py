@@ -13,7 +13,7 @@ def get_contact_res(self, use_replaced = True, radius=1.4, n_points=100):
 
     if use_replaced:
         if not "replaced_structure" in self.__dict__.keys():
-            print1(self.id, "has no replaced_structure")
+            print1(self.id, "has no replaced_structure\n")
             return None
         #print(self.replaced_structure.get_list()[0].get_list())
         structure1 = self.monomer1.replaced
@@ -59,7 +59,7 @@ def get_contact_res(self, use_replaced = True, radius=1.4, n_points=100):
             #print(sasa_df.loc[i])
 
     else:
-        print("Best fits are not the same:",self.monomer1.best_fit, self.monomer1.best_fit)
+        print("Best fits are not the same:",self.monomer1.best_fit, self.monomer1.best_fit, "\n")
         self.sasa_df = None
         return None
 
@@ -132,7 +132,6 @@ if __name__ == "__main__":
     for dimer in dimers:
         if "sasa_df" not in dimer.__dict__.keys() or FORCE_SASA:
             get_contact_res(dimer)
-            print("")
         progress.add(info = dimer.id)
     eprint("SASAs calculated")
 
