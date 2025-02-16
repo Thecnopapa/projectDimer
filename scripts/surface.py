@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 import Bio.PDB
-from Bio.PDB import PDBParser, MMCIFParser, PDBIO, StructureBuilder, Structure, SASA
+from Bio.PDB import SASA
 
 
 def get_contact_res(self, use_replaced = True, radius=1.4, n_points=100):
@@ -33,12 +33,12 @@ def get_contact_res(self, use_replaced = True, radius=1.4, n_points=100):
         sr.compute(dimer_structure.get_list()[0],level="R")
         for res1 in dimer_structure.get_list()[0].get_list():
             sasas1.append(res1.sasa)
-        print(sasas1)
+        #print(sasas1)
 
         sr.compute(dimer_structure.get_list()[1],level="R")
         for res2 in dimer_structure.get_list()[1].get_list():
             sasas2.append(res2.sasa)
-        print(sasas2)
+        #print(sasas2)
 
         sr.compute(dimer_structure,level="R")
         for res1D, res2D in zip(dimer_structure.get_list()[0].get_list(), dimer_structure.get_list()[1].get_list()):
@@ -52,7 +52,7 @@ def get_contact_res(self, use_replaced = True, radius=1.4, n_points=100):
         sasa_df = pd.DataFrame(columns=["ID", "name", "sasa1", "sasa2", "sasa1_dimer", "sasa2_dimer", "diff1", "diff2", "is_contact1", "is_contact2"])
 
 
-        print(len(sasas1), len(sasas2), len(sasas1D), len(sasas2D))
+        #print(len(sasas1), len(sasas2), len(sasas1D), len(sasas2D))
         for i, (sasa1, sasa2, sasa1D,sasa2D) in enumerate(zip(sasas1, sasas2, sasas1D, sasas2D)):
             #print(i, sasa1, sasa2, sasa1D, sasa2D)
             sasa_df.loc[i] = [self.replaced_structure.get_list()[0].get_list()[0].get_list()[i].id[1], structure1.get_list()[i].resname, sasa1, sasa2, sasa1D, sasa2D, sasa1-sasa1D, sasa2-sasa2D,(sasa1-sasa1D) >0, (sasa2-sasa2D) >0 ]
@@ -112,18 +112,13 @@ def iterate_over_dimers(df, start_col = 2):
 
 if __name__ == "__main__":
 
-    import Globals
+    import setup
 
-    Globals.set_root("../")
-    if os.name == "nt":
-        Globals.set_local("C:/Users/iainv/localdata/_local/projectB")
-    elif os.name == "posix":
-        Globals.set_local("/localdata/iain/_local/projectB")
     from Globals import root, local, vars
 
 
-    FORCE_SASA = False
-    FORCE_SIMILARITY = False
+    FORCE_SASA = True
+    FORCE_SIMILARITY = True
 
     tprint("Loading dimers")
     from imports import load_dimers

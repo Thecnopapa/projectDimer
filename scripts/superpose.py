@@ -79,10 +79,6 @@ def superpose_single(id, fixed, moving):
             l = line.split(":")
             data["ccp4_angles"]["translation"] = [float(i) for i in l[1].split()]
 
-
-
-
-
         centroid_lines -=1
     return data
 

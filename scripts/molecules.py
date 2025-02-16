@@ -259,6 +259,7 @@ class Dimer(BioObject):
             self.best_fit = monomer1.best_fit
         else:
             self.best_fit = "Missmatch"
+        self.best_match = None
 
         if monomer1.super_path is None or monomer2.super_path is None or monomer1.super_path == "" or monomer2.super_path == "":
             vars.failed_df.loc[len(vars.failed_df)] = [self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)]
@@ -311,6 +312,23 @@ class Dimer(BioObject):
             self.original_path = super().export(subfolder="dimers_original", in_structure=self.original_structure)
             self.replaced_path = super().export(subfolder="dimers_replaced", in_structure=self.replaced_structure, extra_id="_replaced")
             self.merged_path = super().export(subfolder="dimers_merged", in_structure=self.merged_structure, extra_id="_merged")
+
+
+    def summary(self):
+        try:
+            data = {
+                "id": self.id,
+                "name": self.name,
+                "chain1": self.monomer1.chain,
+                "chain2": self.monomer2.chain,
+                "best_fit": self.best_fit,
+                "best_match": self.best_match,
+                "link": "https://files.rcsb.org/download/{}.pdb".format(self.name),
+            }
+        except:
+            data = {"id": self.id,
+                    "name": self.name}
+        return data
 
 
 

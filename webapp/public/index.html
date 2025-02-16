@@ -4546,30 +4546,30 @@
 
         </div>
     </div>
+
     <div id="right_panel">
         <div id="data_panel">
             <div class="panel_header" id="ID">
                 I am a PDB
             </div>
             <hr>
+            <div id="dimer_id">
+                Here goes my data
+            </div>
         </div>
+
         <div id="main_panel">
             I am the main panel
         </div>
+        <img src=".png" id="main_figure" height="50%" alt="Main Figure"></img>
     </div>
 
 </div>
 </body>
 
-<script>
-    function getDataFromMolecule(button) {
-        document.getElementById("ID").innerHTML = button.name;
-        var id = button.name;
-        var chain1 = id.substring(id.length() - 2);
-        var chain2 = id.substring(id.length() - 1);
-        console.log(id +chain1+chain2);
-    }
 
+
+<script>
 
     var coll = document.getElementsByClassName("list_button");
     var i;
@@ -4583,9 +4583,67 @@
             content.style.maxHeight = content.scrollHeight + "px";
         }
     });
-}
+    }
+</script>
+<script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore-compat.js"></script>
+
+<script>
+    console.log("hiii")
+    import { initializeApp } from "firebase/app";
+    import { getFirestore } from "firebase/firestore";
+    console.log("hi")
+
+    // See: https://support.google.com/firebase/answer/7015592
+    const firebaseConfig = {
+        apiKey: "AIzaSyBbB1tGHNblvRNQuotdkjQtq1QHglI0h9c",
+        authDomain: "iv-projectb.firebaseapp.com",
+        projectId: "iv-projectb",
+        storageBucket: "iv-projectb.firebasestorage.app",
+        messagingSenderId: "231897345103",
+        appId: "1:231897345103:web:5ca83f33f0885eb9b90e3a",
+        measurementId: "G-P4C7ME27W0"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+
+
+    // Initialize Cloud Firestore and get a reference to the service
+    const db = getFirestore(app);
+
+
+    import { doc, getDoc } from "firebase/firestore";
+    const docRef = doc(db, "dimers", "1234_AB");
+    const docSnap = await getDoc(docRef);
+    console.log("bye")
+    if (docSnap.exists()) {
+      console.log("Document data:", docSnap.data());
+    } else {
+      // docSnap.data() will be undefined in this case
+      console.log("No such document!");
+    }
+
 
 </script>
+
+<script>
+
+    function getDataFromMolecule(button) {
+        document.getElementById("ID").innerHTML = button.name;
+        var id = button.name;
+        console.log(id);
+        document.getElementById("dimer_id").src = id;
+
+    }
+</script>
+
+<script>
+    import { doc, getDoc } from "firebase/firestore";
+
+
+</script>
+
 
 <style>
     #main {

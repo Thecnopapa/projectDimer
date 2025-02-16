@@ -2,7 +2,7 @@ import shutil
 import time
 
 def tprint(*strings, head=10, style="#", end="\n", sep=" "):  # Print section title
-    width = shutil.get_terminal_size()[0] - 10
+    width = shutil.get_terminal_size()[0]
     string = " ".join(strings)
     tail = width - head - len(string)
     print("\n{}{}{}{}{}".format(style*head, sep, string,sep, style*tail), end=end)
@@ -59,7 +59,7 @@ class ProgressBar:
         self.start = start
         self.current = start
         try:
-            self.width = shutil.get_terminal_size()[0] - 10
+            self.width = shutil.get_terminal_size()[0]
         except:
             self.width = 19
         self.style = style

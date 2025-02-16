@@ -182,6 +182,8 @@ def dimer_collapsible(self, online=False):
         preview_path = local.previews+"/"
     if not "best_match" in self.__dict__:
         return ""
+    if self.best_match is None:
+        return ""
 
     c = "<button type=\")button\" class=\"collapsible\">{}</button>".format(html(self.id,bold=True))
 
@@ -197,15 +199,20 @@ def dimer_collapsible(self, online=False):
     c +=        "<div class=\"column\">\n" # Column 2
     c +=            "<p>\n"
     c +=            html("Original", header=2, bold=True)
-    c +=            html_image(self.previews["original"], width=300)
-
+    try:
+        c +=            html_image(self.previews["original"], width=300)
+    except:
+        pass
     c +=            "</p>\n"
     c +=        "</div>\n" # /Column 2
 
     c +=        "<div class=\"column\">\n" # Column 3
     c +=            "<p>\n"
     c +=            html("Merged", header=2, bold=True)
-    c +=            html_image(self.previews["merged"], width=300)
+    try:
+        c +=            html_image(self.previews["merged"], width=300)
+    except:
+        pass
     c +=            html("Best fit: {}/{}".format(self.monomer1.best_fit, self.monomer2.best_fit), header=3)
 
     c +=            "</p>\n"
@@ -214,7 +221,10 @@ def dimer_collapsible(self, online=False):
     c +=        "<div class=\"column\">\n"  # Column 4
     c +=            "<p>\n"
     c +=            html("Replaced", header=2, bold=True)
-    c +=            html_image(self.previews["replaced"], width=300)
+    try:
+        c +=            html_image(self.previews["replaced"], width=300)
+    except:
+        pass
     c +=            html("Best Match: group {}".format(self.best_match[0]), header=3)
     c +=            html_image(os.path.join(root.GR_groups, "group_{}.png".format(self.best_match[0])), width=300)
 
@@ -297,8 +307,10 @@ def build_dynamic_dimers(dimers, deploy = False):
 
 if __name__ == "__main__":
 
-    GENERATE_PREVIEWS = False
+    GENERATE_PREVIEWS = True
     force_previews = True
+
+    UPLOAD_DATA = False
 
     MONOMERS = False
     DIMERS = True
@@ -367,10 +379,11 @@ if __name__ == "__main__":
             progress = ProgressBar(len(dimers))
             for dimer in dimers:
                 if "best_match" in dimer.__dict__:
-                    if not "previews" in dimer.__dict__ or force_previews:
-                        dimer.previews = {"original": generate_preview(dimer.original_path, "original", state=0)}
-                        dimer.previews["replaced"] = generate_preview(dimer.replaced_path, "replaced", state=0)
-                        dimer.previews["merged"] = generate_preview(dimer.merged_path, "merged", state=0)
+                    if dimer.best_match is not None:
+                        if not "previews" in dimer.__dict__ or force_previews:
+                            dimer.previews = {"original": generate_preview(dimer.original_path, "original", state=0)}
+                            dimer.previews["replaced"] = generate_preview(dimer.replaced_path, "replaced", state=0)
+                            dimer.previews["merged"] = generate_preview(dimer.merged_path, "merged", state=0)
                 progress.add(info=dimer.id)
             eprint("Previews generated")
 
@@ -379,6 +392,16 @@ if __name__ == "__main__":
             print("Pickling...")
             pickle(dimers)
             print("Done")
+
+
+        if UPLOAD_DATA:
+            eprint("Uploading data")
+            progress = ProgressBar(len(dimers))
+            from firebase import data_to_firestore
+            for dimer in dimers:
+                data_to_firestore("dimers", dimer.id, dimer.summary())
+                progress.add(info=dimer.id)
+            eprint("Data uploaded")
 
 
 

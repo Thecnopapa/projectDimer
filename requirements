@@ -1,0 +1,8 @@
+conda create -n projectB python=3.12
+
+conda install conda-forge::biopython
+conda install -c conda-forge -c schrodinger pymol-bundle
+conda install pandas matplotlib unidecode
+pip install subprocess
+pip install firebase
+
