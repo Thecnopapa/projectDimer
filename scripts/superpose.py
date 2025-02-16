@@ -15,7 +15,7 @@ def superpose_single(id, fixed, moving):
     #print(id)
     out_path =  os.path.join(local["super_raw"], id + ".pdb")
     super_line = [Globals.vars.gesamt, fixed, moving, "-o", out_path ]
-    print(super_line)
+    #print(super_line)
     gesamt_out = subprocess.run(super_line, capture_output=True, text=True)
     if "do_only" in vars:
         if not(len(vars.do_only) == 0 or vars.do_only is None):

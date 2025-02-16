@@ -16,7 +16,6 @@ def setup(local_path=None):
 
 
 
-
 if os.name == "nt":
     setup("C:/Users/iainv/localdata/projectB")
 elif "cri4" in __file__:
