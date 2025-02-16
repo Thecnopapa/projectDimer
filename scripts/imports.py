@@ -89,23 +89,28 @@ def load_dimers(molecules = None, folder = "dimers", extension = ".dimer",force_
         print2(obj)
     return loaded
 
-def download_pdbs(list_path, save_folder, terminal = False):
-
+def download_pdbs(list_path:str=None , save_folder=None, pdb_list:list = None, terminal = True):
     sprint("Downloading PDBs:")
-
     local[save_folder] = save_folder
-    pdb_list = []
-    with open(list_path, "r") as f:
-        for line in f:
-            pdb_list.extend(line.split(","))
+    if list_path is not None:
+        pdb_list = []
+        with open(list_path, "r") as f:
+            for line in f:
+                pdb_list.extend(line.split(","))
+        pdb_links = list_path + "_links.txt"
+    elif pdb_list is not None:
+        pdb_links = os.path.join(root.pdb_lists, "temp_list_links.txt")
+    else:
+        print("Please provide either a list or a path to a PDB list")
+        return
     #print(pdb_list)
     print1("{} pdbs for download".format(len(pdb_list)))
-    pdb_links = list_path+"_links.txt"
     open(pdb_links, "w")
     with open(pdb_links, "a") as f:
         for pdb in pdb_list:
             f.write("https://files.rcsb.org/download/{}.pdb\n".format(pdb))
     print1("Links saved at {}".format(pdb_links))
+
     if not terminal:
         import wget
         counter =0
@@ -121,7 +126,6 @@ def download_pdbs(list_path, save_folder, terminal = False):
     else:
         import subprocess
         subprocess.run(["wget","-i", pdb_links, "-P", local[save_folder]])
-
 
 def pickle(list):
     progress = ProgressBar(len(list))

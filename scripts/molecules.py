@@ -42,10 +42,24 @@ class BioObject:
     def parse_structure(self, parse_original = False):
         if self.path is None or parse_original:
             self.path = self.o_path
-        if self.path.endswith('.cif'):
-            self.structure = MMCIFParser(QUIET=True).get_structure(self.name[:4], self.path)
-        else:
-            self.structure = PDBParser(QUIET=True).get_structure(self.name[:4], self.path)
+        try:
+            if self.path.endswith('.cif'):
+                self.structure = MMCIFParser(QUIET=True).get_structure(self.name[:4], self.path)
+            else:
+                self.structure = PDBParser(QUIET=True).get_structure(self.name[:4], self.path)
+        except:
+            from scripts.imports import download_pdbs
+            print1("Could not parse {}".format(self.path))
+            import subprocess
+            subprocess.run(["rm", self.path])
+            print2("Re-downloading {}".format(self.name))
+            download_pdbs(save_folder=os.path.dirname(self.path), pdb_list=[self.name])
+            try:
+
+                self.structure = PDBParser(QUIET=True).get_structure(self.name[:4], self.path)
+            except:
+                print2("Could not parse redownloaded {}".format(self.path))
+            return False
         if len(self.structure.get_list()) >0: # TODO: Should add to failed df <<<
             for model in self.structure.get_list()[1:]:
                 self.structure.__delitem__(model.id)
@@ -54,6 +68,7 @@ class BioObject:
                     for atom in residue.get_list():
                         if atom.name != "CA":
                             residue.__delitem__(atom.id)
+        return True
 
 
     def export(self, subfolder = None, in_structure = None, extra_id = ""):
@@ -81,7 +96,7 @@ class PDB(BioObject):
     def __init__(self, path):
         self.o_path = path
         self.name = self.id = clean_string(os.path.basename(path).split(".")[0], allow = ["_"])
-        self.parse_structure()
+        self.complete = self.parse_structure()
         self.export()
         self.monomers = []
         self.dimers = []

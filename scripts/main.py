@@ -6,19 +6,8 @@ import pandas as pd
 from utilities import *
 import platform
 
-# Initialise globals
-import Globals
-Globals.set_root(os.path.dirname(os.path.dirname(__file__)))
-
-if os.name == "nt":
-    Globals.set_local("C:/Users/iainv/localdata/_local/projectB")
-
-elif os.name == "posix":
-    if "aarch" in platform.platform():
-        Globals.set_local("/home/user/localdata/projectB")
-    else:
-        Globals.set_local("/localdata/iain/_local/projectB")
-
+# Setup paths and globals
+import setup
 
 # Imports that need globals initialised:
 from Globals import root, local, vars

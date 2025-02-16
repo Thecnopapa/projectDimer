@@ -2,14 +2,11 @@ import os
 import Globals
 from Globals import *
 from utilities import *
-
+import platform
 if os.name == 'nt':
-    globals.vars["gesamt"] = "C:/Program Files/CCP4-9/CCP4/bin/gesamt.exe"
-if os.name == 'posix':
-    if "aarch" in platform.platfirm():
-        globals.vars["gesamt"] = "~/bin/gesamt"
-    else:
-        globals.vars["gesamt"] = "/xtal/ccp4/ccp4-9/bin/gesamt"
+    Globals.vars["gesamt"] = "C:/Program Files/CCP4-9/CCP4/bin/gesamt.exe"
+else:
+    Globals.vars["gesamt"] = "gesamt"
 
 def superpose_single(id, fixed, moving):
     import subprocess
@@ -17,8 +14,8 @@ def superpose_single(id, fixed, moving):
     os.makedirs(local.super_raw, exist_ok=True)
     #print(id)
     out_path =  os.path.join(local["super_raw"], id + ".pdb")
-    super_line = [globals.vars.gesamt, fixed, moving, "-o", out_path ]
-    #print(super_line)
+    super_line = [Globals.vars.gesamt, fixed, moving, "-o", out_path ]
+    print(super_line)
     gesamt_out = subprocess.run(super_line, capture_output=True, text=True)
     if "do_only" in vars:
         if not(len(vars.do_only) == 0 or vars.do_only is None):
