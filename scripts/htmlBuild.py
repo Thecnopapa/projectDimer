@@ -280,8 +280,13 @@ def build_dynamic_dimers(dimers):
             for di in filter(lambda x: x.name == name, dimers):
                 middle.append("<button class=\"children_button\" onclick=\"getDataFromMolecule(this)\"  name =\"{}\"> {} - {} </button>\n".format(di.id, di.monomer1.chain, di.monomer2.chain))
             middle.append("</div>\n</div>\n" )
-    with open(os.path.join(root.other, "dynamic_test_built.html"), "w") as build:
+    with open(os.path.join(root.webapp, "index.html"), "w") as build:
         build.write(before+"".join(middle)+after)
+        try:
+            import subprocess
+            subprocess.run(["firebase", "deploy", "--only", "hosting:dimers"])
+        except:
+            print("Deployment failed")
 
 
 
