@@ -68,14 +68,22 @@
 </script>
 <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore-compat.js"></script>
+<script src="./test.js" type="module"></script>
 
 <script>
-    console.log("hiii")
-    import { initializeApp } from "firebase/app";
-    import { getFirestore } from "firebase/firestore";
-    console.log("hi")
 
-    // See: https://support.google.com/firebase/answer/7015592
+    function getDataFromMolecule(button) {
+        document.getElementById("ID").innerHTML = button.name;
+        var id = button.name;
+        console.log(id);
+        document.getElementById("dimer_id").src = id;
+        document.getElementById("main_figure").src = 'https://firebasestorage.googleapis.com/v0/b/iv-projectb.firebasestorage.app/o/previews%2Foriginal%2F'+id+'.png?alt=media';
+
+    }
+</script>
+
+<script>
+        // See: https://support.google.com/firebase/answer/7015592
     const firebaseConfig = {
         apiKey: "AIzaSyBbB1tGHNblvRNQuotdkjQtq1QHglI0h9c",
         authDomain: "iv-projectb.firebaseapp.com",
@@ -94,7 +102,7 @@
     const db = getFirestore(app);
 
 
-    import { doc, getDoc } from "firebase/firestore";
+
     const docRef = doc(db, "dimers", "1234_AB");
     const docSnap = await getDoc(docRef);
     console.log("bye")
@@ -104,26 +112,6 @@
       // docSnap.data() will be undefined in this case
       console.log("No such document!");
     }
-
-
-</script>
-
-<script>
-
-    function getDataFromMolecule(button) {
-        document.getElementById("ID").innerHTML = button.name;
-        var id = button.name;
-        console.log(id);
-        document.getElementById("dimer_id").src = id;
-        document.getElementById("main_figure").src = 'https://firebasestorage.googleapis.com/v0/b/iv-projectb.firebasestorage.app/o/previews%2Foriginal%2F'+id+'.png?alt=media';
-
-    }
-</script>
-
-<script>
-    import { doc, getDoc } from "firebase/firestore";
-
-
 </script>
 
 

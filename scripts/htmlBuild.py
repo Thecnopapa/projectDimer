@@ -297,6 +297,7 @@ if __name__ == "__main__":
     force_previews = True
 
     UPLOAD_DATA = False
+    deploy = False
 
     MONOMERS = False
     DIMERS = True
@@ -354,7 +355,7 @@ if __name__ == "__main__":
         eprint("HTML built")
 
         tprint("Building dynamic html")
-        build_dynamic_dimers(dimers, deploy=True)
+        build_dynamic_dimers(dimers, deploy=deploy)
         eprint("HTML built")
 
 

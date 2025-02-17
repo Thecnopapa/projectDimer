@@ -141,6 +141,13 @@ def export(list):
         item.export()
         progress.add()
 
+def import_references():
+    sprint("loading references")
+    return load_from_files(root.references,
+                                 pickle_extension=".reference",
+                                 is_reference=True,
+                                 ignore_selection=True,
+                                 force_reload=False)
 
 if __name__ == "__main__":
     import setup

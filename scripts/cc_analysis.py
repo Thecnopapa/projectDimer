@@ -336,7 +336,7 @@ with open(args.infile, newline='') as infile:
     #    infile_parsed = csv.reader(infile_raw, delimiter=' ')
     # Convert values to correct types and store as tuples.
     for line in infile:
-        dataset_a_num, dataset_b_num, pairwise_cc = line.split()
+        _,_,dataset_a_num, dataset_b_num, pairwise_cc = line.split(",")
         parsed_info.append((int(dataset_a_num),
                             int(dataset_b_num),
                             float(pairwise_cc)))

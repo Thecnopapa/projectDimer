@@ -4,5 +4,11 @@ conda install conda-forge::biopython
 conda install -c conda-forge -c schrodinger pymol-bundle
 conda install pandas matplotlib unidecode
 pip install subprocess
-pip install firebase
+
+
+# Firebase:
+pip install firebase-admin
+
+curl -sL https://firebase.tools | bash
+firebase login
 
