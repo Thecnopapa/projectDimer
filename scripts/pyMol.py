@@ -76,7 +76,7 @@ def generate_preview(path, folder="", state = 0,save_session=True):
         pymol_colour_everything(start_at=state-1)
     if save_session:
         pymol_save_session(name, local[folder+"_sessions"])
-    preview_path = pymol_save_small(name, local[folder], dpi=50, height=150, width=150)
+    preview_path = pymol_save_small(name.upper(), local[folder], dpi=50, height=150, width=150)
     return preview_path
 
 

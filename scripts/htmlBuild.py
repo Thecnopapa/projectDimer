@@ -293,7 +293,7 @@ def build_dynamic_dimers(dimers, deploy = False):
 
 if __name__ == "__main__":
 
-    GENERATE_PREVIEWS = True
+    GENERATE_PREVIEWS = False
     force_previews = True
 
     UPLOAD_DATA = False
