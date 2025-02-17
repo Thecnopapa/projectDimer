@@ -167,7 +167,7 @@ def clusterize_cc(reference, force=False, n_clusters = 20):
 
     model = KMeans(n_clusters=n_clusters)
     model.fit(cc_out.loc[:, ["1", "2", "3"]])
-    pred = model.fit(cc_out.loc[:, ["1", "2", "3"]])
+    #pred = model.fit(cc_out.loc[:, ["1", "2", "3"]])
 
     #print(model.cluster_centers_)
     for n in range(len(cc_out)):
@@ -222,7 +222,7 @@ def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centr
         from maths import get_closest_point, points_to_line
         cluster_centres = pd.read_csv(os.path.join(root.dataframes, "{}_cluster_centres.csv".format(reference.name)),index_col=0,header=None)
         print(cluster_centres.columns)
-        ax.scatter(cluster_centres.loc[3], cluster_centres.loc[2], color="black")
+        ax.scatter(cluster_centres.loc[:,3].values, cluster_centres.loc[:,2].values, color="black")
 
         centres = []
         for centre in cluster_centres.itertuples():
