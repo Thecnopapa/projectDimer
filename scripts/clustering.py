@@ -22,6 +22,9 @@ def generate_sm(reference, force=False):
 
     sm_ssd = pd.DataFrame(columns=["dimer1", "dimer2", "index1", "index2", "similarity"])
     n_dimers = len(sasas_df.columns) - 2
+    if n_dimers <2:
+        print1("Not enough dimers in {} dataframe".format(reference.name))
+        return
     n_res = len(sasas_df)
     progress = ProgressBar(n_dimers * n_dimers)
     index1 = 0
@@ -34,7 +37,7 @@ def generate_sm(reference, force=False):
             if id2 in ["ResNum", "ResName"]:
                 continue
             index2 += 1
-            if id1 == id2:
+            if index2 <= index1:
                 continue
             similarity1 = 0
             similarity2 = 0
@@ -55,7 +58,7 @@ def generate_sm(reference, force=False):
             similarity = similarity / n_res
             #print(id1, id2, similarity)
             sm_ssd.loc[len(sm_ssd)] = id1, id2,index1,index2, similarity
-            progress.add()
+            progress.add(info="time")
     print(sm_ssd)
     sm_ssd.to_csv(os.path.join(root.dataframes, '{}_sm_ssd.csv'.format(reference.name)),header=False, index=False)
 
@@ -70,7 +73,11 @@ def cc_analysis(reference, dimensions=3, force =False):
         return
 
     sm_ssd_path = os.path.join(root.dataframes, "{}_sm_ssd.csv".format(reference.name))
-    sm_ssd = pd.read_csv(sm_ssd_path, index_col=None, header=None)
+    try:
+        sm_ssd = pd.read_csv(sm_ssd_path, index_col=None, header=None)
+    except:
+        print1("Error parsing {}, might be empy".format(sm_ssd_path))
+        return
     #print(sm_ssd)
     if len(sm_ssd.columns) != 5:
         print1("SM Must be 5 columns wide (id1, id2, index1, index2, similarity)")
@@ -142,22 +149,27 @@ def cc_analysis(reference, dimensions=3, force =False):
 
 
 def clusterize_cc(reference, force=False, n_clusters = 20):
-    cc_out_name = "{}_cc_output.csv".format(reference.name)
-    if cc_out_name in os.listdir(root.dataframes) and not force:
+    cc_clustered_name = "{}_cc_clustered.csv".format(reference.name)
+    if cc_clustered_name in os.listdir(root.dataframes) and not force:
         print1("Skipping CC clustering for {}".format(reference.name))
         return
 
     sprint("Clustering {}".format(reference.name))
-    from sklearn.cluster import OPTICS, KMeans
+    from sklearn.cluster import KMeans
 
-    cc_out = pd.read_csv(os.path.join(root.dataframes, cc_out_name), index_col=0)
+    cc_out_path = os.path.join(root.dataframes, "{}_cc_output.csv".format(reference.name))
+    try:
+        cc_out = pd.read_csv(cc_out_path, index_col=0)
+    except:
+        print1("Error parsing {}, might be empy".format(cc_out_path))
+        return
 
 
     model = KMeans(n_clusters=n_clusters)
     model.fit(cc_out.loc[:, ["1", "2", "3"]])
     pred = model.fit(cc_out.loc[:, ["1", "2", "3"]])
 
-    # print(model.cluster_centers_)
+    print(model.cluster_centers_)
     for n in range(len(cc_out)):
         cluster = model.labels_[n]
         cc_out.loc[n, "cluster"] = cluster
@@ -170,7 +182,7 @@ def clusterize_cc(reference, force=False, n_clusters = 20):
     cluster_centres_path = os.path.join(root.dataframes, "{}_cluster_centres.csv".format(reference.name))
     cluster_centres_df = pd.DataFrame(model.cluster_centers_)
     cluster_centres_df.to_csv(cluster_centres_path, index=False)
-    cc_out.to_csv(os.path.join(root.dataframes,cc_out_name))
+    cc_out.to_csv(os.path.join(root.dataframes,cc_clustered_name))
 
 
 
@@ -202,40 +214,40 @@ def plot_cc(reference, force=False, dimensions = 3, labels = True):
     texts = []
 
     if "{}_cluster_centres.csv".format(reference.name) in os.listdir(root.dataframes):
-            from maths import get_closest_point, points_to_line
-            cluster_centres = pd.read_csv(os.path.join(root.dataframes, "{}_cluster_centres.csv".format(reference.name)))
-            #print(cluster_centres)
-            ax.scatter(cluster_centres["2"], cluster_centres["1"], color="black")
+        from maths import get_closest_point, points_to_line
+        cluster_centres = pd.read_csv(os.path.join(root.dataframes, "{}_cluster_centres.csv".format(reference.name)))
+        #print(cluster_centres)
+        ax.scatter(cluster_centres["2"], cluster_centres["1"], color="black")
 
-            centres = []
-            for centre in cluster_centres.itertuples():
-                # print(centre[0])
-                # print(centre[1:])
-                centres.append(centre[1:])
-                # print(centre[0],centre[2],centre[3])
+        centres = []
+        for centre in cluster_centres.itertuples():
+            # print(centre[0])
+            # print(centre[1:])
+            centres.append(centre[1:])
+            # print(centre[0],centre[2],centre[3])
 
-            lines = []
-            # print("points")
-            n = 0
+        lines = []
+        # print("points")
+        n = 0
 
-            for point in cc_out[["1", "2", "3"]].itertuples():
-                # print(point)
-                point = point[1:]
-                # print("point:", point)
-                closest = get_closest_point(point, centres)
-                # print("closest:",closest)
+        for point in cc_out[["1", "2", "3"]].itertuples():
+            # print(point)
+            point = point[1:]
+            # print("point:", point)
+            closest = get_closest_point(point, centres)
+            # print("closest:",closest)
 
-                lines.append(points_to_line(closest, point))
-                # print("point to line:", points_to_line(closest,point))
-                # lines[str(n)] = line
+            lines.append(points_to_line(closest, point))
+            # print("point to line:", points_to_line(closest,point))
+            # lines[str(n)] = line
 
-            # print("lines")
-            # print(lines)
-            for line in lines:
-                # print(line)
-                ax.plot(line[2], line[1], c="black")
-            # scripts.Mpl.plot_lines(lines, ax)
-            # ax.plot(data=lines(lines[2],lines[1]))
+        # print("lines")
+        # print(lines)
+        for line in lines:
+            # print(line)
+            ax.plot(line[2], line[1], c="black")
+        # scripts.Mpl.plot_lines(lines, ax)
+        # ax.plot(data=lines(lines[2],lines[1]))
         for centre in cluster_centres.itertuples():
             texts.append(ax.annotate(centre[0], (centre[3],centre[2]), size=10))
 
@@ -270,15 +282,7 @@ def plot_cc(reference, force=False, dimensions = 3, labels = True):
                 arrowprops=dict(arrowstyle="->", color='blue', lw=0.5))
     fig.tight_layout()
     print2("Saving at {}".format(figure_path))
-    fig.show(block=False)
-    if "show" in mode:
-        fig.show(block=True)
-    elif "skip" not in mode:
-
-    if "save"in mode:
-        fig.savefig(os.path.join(folder_path, fig_name))
-        fig.savefig(os.path.join(figure_dir_folder,fig_name))
-    #plt.close()
+    fig.savefig(figure_path, dpi=300)
 
 
 
@@ -293,7 +297,7 @@ def plot_cc(reference, force=False, dimensions = 3, labels = True):
 if __name__ == "__main__":
 
     FORCE_SM = False
-    FORCE_CC = True
+    FORCE_CC = False
     FORCE_CLUSTER = True
     FORCE_PLOT = False
 

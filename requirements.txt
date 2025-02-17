@@ -1,0 +1,8 @@
+pandas~=2.2.3
+firebase-admin~=6.6.0
+numpy~=2.2.1
+scipy~=1.14.1
+pymol~=3.0.4
+biopython~=1.85
+firebase~=4.0.1
+matplotlib~=3.10.0

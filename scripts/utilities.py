@@ -69,6 +69,8 @@ class ProgressBar:
         if self.current == self.total:
             self.finish()
         else:
+            if info == "time":
+                self.update(info="{}s".format(round(time.perf_counter() - self.start_time)))
             self.update(info=info)
 
     def restart(self,total=None):
@@ -78,7 +80,7 @@ class ProgressBar:
 
     def finish(self):
         self.update(end="\n")
-        print("Completed in {} seconds".format(round(time.perf_counter() - self.start_time), 2))
+        print("Completed in {} seconds".format(round(time.perf_counter() - self.start_time, 2)))
 
     def update(self, end="\r", info = ""):
         progress = int(self.current * 100 // self.total)

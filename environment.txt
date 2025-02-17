@@ -1,0 +1,16 @@
+conda create -n projectB python=3.12
+
+conda install conda-forge::biopython
+conda install -c conda-forge -c schrodinger pymol-bundle
+conda install pandas matplotlib unidecode scikit-learn
+
+pip install subprocess adjustText
+
+
+
+# Firebase:
+pip install firebase-admin
+
+curl -sL https://firebase.tools | bash
+firebase login
+
