@@ -7,6 +7,9 @@
 - Run `main.py`
 
 
+## Current clustering for GR
+![GR_cc_clustered.png](images/cc/GR_cc.png)
+
 ## Current Data distribution:
 ![monomers_df.png](charts/monomers_df.png)
 ![failed_df.png](charts/failed_df.png)
