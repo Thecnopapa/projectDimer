@@ -181,15 +181,15 @@ def clusterize_cc(reference, force=False, n_clusters = 20):
 
     cluster_centres_path = os.path.join(root.dataframes, "{}_cluster_centres.csv".format(reference.name))
     cluster_centres_df = pd.DataFrame(model.cluster_centers_)
-    #print(cluster_centres_df)
-    cluster_centres_df.to_csv(cluster_centres_path, index=False,header=None)
+    print(cluster_centres_df)
+    cluster_centres_df.to_csv(cluster_centres_path,header=None)
     cc_out.to_csv(os.path.join(root.dataframes,cc_clustered_name))
 
 
 
 
 
-def plot_cc(reference, force=False, dimensions = 3, labels = True, adjust=False):
+def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centres=True, adjust=False):
     print1("Plotting 2D: {}".format(reference.name))
 
     root["cc"] = "images/cc"
@@ -220,14 +220,14 @@ def plot_cc(reference, force=False, dimensions = 3, labels = True, adjust=False)
     if "{}_cluster_centres.csv".format(reference.name) in os.listdir(root.dataframes):
         print2("Plotting cluster centres")
         from maths import get_closest_point, points_to_line
-        cluster_centres = pd.read_csv(os.path.join(root.dataframes, "{}_cluster_centres.csv".format(reference.name)),header=None)
+        cluster_centres = pd.read_csv(os.path.join(root.dataframes, "{}_cluster_centres.csv".format(reference.name)),index_col=0,header=None)
         print(cluster_centres.columns)
-        ax.scatter(cluster_centres.loc[2], cluster_centres.loc[1], color="black")
+        ax.scatter(cluster_centres.loc[3], cluster_centres.loc[2], color="black")
 
         centres = []
         for centre in cluster_centres.itertuples():
-            # print(centre[0])
-            # print(centre[1:])
+            print(centre[0])
+            print(centre[1:])
             centres.append(centre[1:])
             # print(centre[0],centre[2],centre[3])
 
@@ -253,8 +253,9 @@ def plot_cc(reference, force=False, dimensions = 3, labels = True, adjust=False)
             ax.plot(line[2], line[1], c="black")
         # scripts.Mpl.plot_lines(lines, ax)
         # ax.plot(data=lines(lines[2],lines[1]))
-        for centre in cluster_centres.itertuples():
-            texts.append(ax.annotate(centre[0], (centre[3],centre[2]), size=10))
+        if labels_centres:
+            for centre in cluster_centres.itertuples():
+                texts.append(ax.annotate(centre[0], (centre[3],centre[2]), size=10))
 
     else:
         print2("centres ({}_cluster_centres.csv) not found".format(reference.name))
@@ -331,7 +332,7 @@ if __name__ == "__main__":
     for reference in references:
         cc_analysis(reference, force=FORCE_CC)
         clusterize_cc(reference, force=FORCE_CLUSTER)
-        plot_cc(reference, force=FORCE_PLOT)
+        plot_cc(reference,labels=False, labels_centres=False, force=FORCE_PLOT)
     eprint("CC analysis")
 
 
