@@ -62,7 +62,7 @@ def generate_sm(reference, force=False):
 
 
 
-def cc_analysis(reference, dimensions=3, force =False   ):
+def cc_analysis(reference, dimensions=3, force =False):
     sprint("CC analysis for {}".format(reference.name))
 
     if "{}_cc_output.csv".format(reference.name) in os.listdir(root.dataframes) and not force:
@@ -70,125 +70,182 @@ def cc_analysis(reference, dimensions=3, force =False   ):
         return
 
     sm_ssd_path = os.path.join(root.dataframes, "{}_sm_ssd.csv".format(reference.name))
-    sm_ssd = pd.read_csv(sm_ssd_path, index_col=0)
-    print(sm_ssd)
-    if len(sm_ssd) >= 6:
-        ## CC analysis
-        import subprocess
+    sm_ssd = pd.read_csv(sm_ssd_path, index_col=None, header=None)
+    #print(sm_ssd)
+    if len(sm_ssd.columns) != 5:
+        print1("SM Must be 5 columns wide (id1, id2, index1, index2, similarity)")
+        print2("Current:", len(sm_ssd.columns))
+        return
 
-        cc_path = os.path.join(root.scripts, "cc_analysis.py")
-        cc_line = ["python", cc_path, str(dimensions), sm_ssd_path]  # Currently uses correlation matrix
-        print1("cc_line:")
-        print2(" ".join(cc_line))
-        cc_std = subprocess.run(cc_line,
-                                capture_output=True,
-                                text=True)
-        print(cc_std.stdout)
-        print(cc_std.stderr)
-        # print(cc_std.stdout.split("\n"))
-        out = []
-        for l in cc_std.stdout.split("\n"):
-            l = l.strip().split(" ")
-            for i in l:
-                if i == "":
-                    l.remove(i)
-            # print(pd.to_numeric(l))
-            if len(l) == 3:
-                l.append("0")
-                out.append(l)
-            elif len(l) == 4:
-                out.append(l)
-            # print(l)
-        # print("-")
-        # print(out)
-        # print("-")
+    if len(sm_ssd) < 6:
+        print1("Not enough values for cc analysis, min: 6, current: {}".format(len(sm_ssd)))
+        return
+    ## CC analysis
+    import subprocess
 
-        cc_out = pd.DataFrame(out, columns=["index", "1", "2", "3"])
-        # print(cc_out)
+    cc_path = os.path.join(root.scripts, "cc_analysis.py")
+    cc_line = ["python", cc_path, str(dimensions), sm_ssd_path]  # Currently uses correlation matrix
+    print1("cc_line:")
+    print2(" ".join(cc_line))
 
+    cc_std = subprocess.run(cc_line,
+                            capture_output=True,
+                            text=True)
+    #print(cc_std.stdout)
+    #print(cc_std.stderr)
+    # print(cc_std.stdout.split("\n"))
+    out = []
+    for l in cc_std.stdout.split("\n"):
+        l = l.strip().split(" ")
+        for i in l:
+            if i == "":
+                l.remove(i)
+        # print(pd.to_numeric(l))
+        if len(l) == 3:
+            l.append("0")
+            out.append(l)
+        elif len(l) == 4:
+            out.append(l)
+        # print(l)
+    # print("-")
+    # print(out)
+    # print("-")
 
-        for i in cc_out.columns:
-            if i == "index":
-                cc_out["index"] = pd.to_numeric(cc_out["index"], downcast='integer', errors='coerce')
-            else:
-                cc_out[i] = pd.to_numeric(cc_out[i], downcast='float', errors='coerce')
-
-        cc_out_path = os.path.join(root.dataframes, "{}_cc_output.csv".format(reference.name))
-        cc_out.to_csv(cc_out_path, index=False, header=True)
-
-        print1("CC output:")
-        print2(cc_out_path)
-        print(cc_out, "\n")
+    #print(out)
+    cc_out = pd.DataFrame(out, columns=["index", "1", "2", "3"])
 
 
+    for i in cc_out.columns:
+        if i == "index":
+            cc_out["index"] = pd.to_numeric(cc_out["index"], downcast='integer', errors='coerce')
+        else:
+            cc_out[i] = pd.to_numeric(cc_out[i], downcast='float', errors='coerce')
+    print(cc_out)
+    cc_out["id"] = pd.read_csv(os.path.join(root.dataframes, "{}_sasas.csv".format(reference.name)), index_col=0).columns[2:]
 
-def plot_cc(reference, force=False, dimensions = 3):
+    classified_df = pd.read_csv(os.path.join(root.dataframes, "classified_df.csv"), index_col=0)
+    classified_ids = classified_df["ID"].values
+    groups = []
+    for row in cc_out.itertuples():
+        if row.id in classified_ids:
+            groups.append(classified_df[classified_df["ID"]==row.id].Best_Match.values[0])
+        else:
+            groups.append("na")
+    cc_out["group"] = groups
+
+    cc_out_path = os.path.join(root.dataframes, "{}_cc_output.csv".format(reference.name))
+    cc_out.to_csv(cc_out_path, index=False, header=True)
+
+    print1("CC output:")
+    print2(cc_out_path)
+    print(cc_out, "\n")
+
+
+def clusterize_cc(reference, force=False, n_clusters = 20):
+    cc_out_name = "{}_cc_output.csv".format(reference.name)
+    if cc_out_name in os.listdir(root.dataframes) and not force:
+        print1("Skipping CC clustering for {}".format(reference.name))
+        return
+
+    sprint("Clustering {}".format(reference.name))
+    from sklearn.cluster import OPTICS, KMeans
+
+    cc_out = pd.read_csv(os.path.join(root.dataframes, cc_out_name), index_col=0)
+
+
+    model = KMeans(n_clusters=n_clusters)
+    model.fit(cc_out.loc[:, ["1", "2", "3"]])
+    pred = model.fit(cc_out.loc[:, ["1", "2", "3"]])
+
+    # print(model.cluster_centers_)
+    for n in range(len(cc_out)):
+        cluster = model.labels_[n]
+        cc_out.loc[n, "cluster"] = cluster
+        new_colour = "".join(["C", str(cluster)])
+        # print(new_colour)
+        if new_colour == "C":
+            new_colour = "black"
+        cc_out.loc[n, "colour"] = new_colour
+
+    cluster_centres_path = os.path.join(root.dataframes, "{}_cluster_centres.csv".format(reference.name))
+    cluster_centres_df = pd.DataFrame(model.cluster_centers_)
+    cluster_centres_df.to_csv(cluster_centres_path, index=False)
+    cc_out.to_csv(os.path.join(root.dataframes,cc_out_name))
+
+
+
+
+
+def plot_cc(reference, force=False, dimensions = 3, labels = True):
     print1("Plotting 2D: {}".format(reference.name))
+
+    root["cc"] = "images/cc"
+    figure_path = os.path.join(root.cc, "{}_cc.png")
+    if figure_path in os.listdir(root.cc) and not force:
+        return
+
     import matplotlib.pyplot as plt
     from adjustText import adjust_text
 
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111)
-    root["cc"] = "images/cc"
-    figure_path = os.path.join(root.cc, "{}_cc.png")
+
+    cc_out = pd.read_csv(os.path.join(root.dataframes, "{}_cc_output.csv".format(reference.name)))
+
 
     if dimensions == 2:
         ax.scatter(cc_out["1"], cc_out["2"], c=cc_out["colour"])
     elif dimensions == 3:
         ax.scatter(cc_out["3"], cc_out["2"],c=cc_out["colour"])
     ax.scatter(0, 0, color='red')
-    for file in os.listdir(folder_path):
-        #print(file)
-        if "cluster_centres" in file:
-            cluster_centres = pd.read_csv(os.path.join(folder_path, file))
-            #print(cluster_centres)
-            break
-        else:
-            continue
-        print("centres (.csv) not found")
-        quit()
-
-    ax.scatter(cluster_centres["2"],cluster_centres["1"], color="black")
-
-    centres = []
-    for centre in cluster_centres.itertuples():
-        #print(centre[0])
-        #print(centre[1:])
-        centres.append(centre[1:])
-        #print(centre[0],centre[2],centre[3])
-
-
-    lines = []
-    #print("points")
-    n = 0
-
-    for point in cc_out[["1","2","3"]].itertuples():
-        #print(point)
-        point = point[1:]
-        #print("point:", point)
-        closest = get_closest_point(point,centres)
-        #print("closest:",closest)
-
-
-        lines.append(points_to_line(closest,point))
-        #print("point to line:", points_to_line(closest,point))
-        #lines[str(n)] = line
-
-    #print("lines")
-    #print(lines)
-    for line in lines:
-        #print(line)
-        ax.plot(line[2],line[1], c="black")
-    #scripts.Mpl.plot_lines(lines, ax)
-    #ax.plot(data=lines(lines[2],lines[1]))
-
-
-    method = kwargs["method"]
-    mode = kwargs["plot_mode"]
 
     texts = []
-    for centre in cluster_centres.itertuples():
-        texts.append(ax.annotate(centre[0], (centre[3],centre[2]), size=10))
+
+    if "{}_cluster_centres.csv".format(reference.name) in os.listdir(root.dataframes):
+            from maths import get_closest_point, points_to_line
+            cluster_centres = pd.read_csv(os.path.join(root.dataframes, "{}_cluster_centres.csv".format(reference.name)))
+            #print(cluster_centres)
+            ax.scatter(cluster_centres["2"], cluster_centres["1"], color="black")
+
+            centres = []
+            for centre in cluster_centres.itertuples():
+                # print(centre[0])
+                # print(centre[1:])
+                centres.append(centre[1:])
+                # print(centre[0],centre[2],centre[3])
+
+            lines = []
+            # print("points")
+            n = 0
+
+            for point in cc_out[["1", "2", "3"]].itertuples():
+                # print(point)
+                point = point[1:]
+                # print("point:", point)
+                closest = get_closest_point(point, centres)
+                # print("closest:",closest)
+
+                lines.append(points_to_line(closest, point))
+                # print("point to line:", points_to_line(closest,point))
+                # lines[str(n)] = line
+
+            # print("lines")
+            # print(lines)
+            for line in lines:
+                # print(line)
+                ax.plot(line[2], line[1], c="black")
+            # scripts.Mpl.plot_lines(lines, ax)
+            # ax.plot(data=lines(lines[2],lines[1]))
+        for centre in cluster_centres.itertuples():
+            texts.append(ax.annotate(centre[0], (centre[3],centre[2]), size=10))
+
+    else:
+        print2("centres ({}_cluster_centres.csv) not found".format(reference.name))
+
+
+
+
+
     #print(cc_out.iloc[0])
     for n in range(len(cc_out)):
         index = cc_out["index"][n]
@@ -199,27 +256,25 @@ def plot_cc(reference, force=False, dimensions = 3):
         else:
             X = cc_out["1"][n]
             Y = cc_out["2"][n]
-        if kwargs["labels"]:
+        if labels:
             texts.append(
                 ax.annotate(cc_out.loc[:, "cluster"][n], (X, Y)))  # ax.annotate(labels[n]
         '''else:
             texts.append(
                 ax.annotate(df.loc[:, "ID"][n], (X, Y)))  # ax.annotate(labels[n]'''
 
-    n_clusters_str = add_front_0(kwargs["n_clusters"])
 
-    ax.set_title("number of clusters: {}".format(n_clusters_str))
+    ax.set_title("CC analysis + Kmeans for {}".format(reference.name))
     adjust_text(texts, autoalign='y',
                 only_move={'points': 'y', 'text': 'y'}, force_points=0.15,
                 arrowprops=dict(arrowstyle="->", color='blue', lw=0.5))
     fig.tight_layout()
-    print2("Saving at {}".format(folder_path))
-    fig_name = "cc_plot_2D_{}_{}_{}.png".format(len(df), method, n_clusters_str )
-    print2(fig_name)
+    print2("Saving at {}".format(figure_path))
+    fig.show(block=False)
     if "show" in mode:
         fig.show(block=True)
     elif "skip" not in mode:
-        fig.show(block=False)
+
     if "save"in mode:
         fig.savefig(os.path.join(folder_path, fig_name))
         fig.savefig(os.path.join(figure_dir_folder,fig_name))
@@ -239,6 +294,7 @@ if __name__ == "__main__":
 
     FORCE_SM = False
     FORCE_CC = True
+    FORCE_CLUSTER = True
     FORCE_PLOT = False
 
     FORCE_ALL = False
@@ -263,6 +319,7 @@ if __name__ == "__main__":
     tprint("CC analysis")
     for reference in references:
         cc_analysis(reference, force=FORCE_CC)
+        clusterize_cc(reference, force=FORCE_CLUSTER)
         #plot_cc(reference, force=FORCE_PLOT)
     eprint("CC analysis")
 
