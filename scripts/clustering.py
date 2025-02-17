@@ -169,41 +169,45 @@ def clusterize_cc(reference, force=False, n_clusters = 20):
     model.fit(cc_out.loc[:, ["1", "2", "3"]])
     pred = model.fit(cc_out.loc[:, ["1", "2", "3"]])
 
-    print(model.cluster_centers_)
+    #print(model.cluster_centers_)
     for n in range(len(cc_out)):
         cluster = model.labels_[n]
-        cc_out.loc[n, "cluster"] = cluster
+        cc_out.loc[n+1, "cluster"] = cluster
         new_colour = "".join(["C", str(cluster)])
-        # print(new_colour)
+
         if new_colour == "C":
             new_colour = "black"
-        cc_out.loc[n, "colour"] = new_colour
+        cc_out.loc[n+1, "colour"] = new_colour
 
     cluster_centres_path = os.path.join(root.dataframes, "{}_cluster_centres.csv".format(reference.name))
     cluster_centres_df = pd.DataFrame(model.cluster_centers_)
-    cluster_centres_df.to_csv(cluster_centres_path, index=False)
+    #print(cluster_centres_df)
+    cluster_centres_df.to_csv(cluster_centres_path, index=False,header=None)
     cc_out.to_csv(os.path.join(root.dataframes,cc_clustered_name))
 
 
 
 
 
-def plot_cc(reference, force=False, dimensions = 3, labels = True):
+def plot_cc(reference, force=False, dimensions = 3, labels = True, adjust=False):
     print1("Plotting 2D: {}".format(reference.name))
 
     root["cc"] = "images/cc"
-    figure_path = os.path.join(root.cc, "{}_cc.png")
+    figure_path = os.path.join(root.cc, "{}_cc.png".format(reference.name))
     if figure_path in os.listdir(root.cc) and not force:
         return
 
     import matplotlib.pyplot as plt
-    from adjustText import adjust_text
+
 
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111)
 
-    cc_out = pd.read_csv(os.path.join(root.dataframes, "{}_cc_output.csv".format(reference.name)))
-
+    try:
+        cc_out = pd.read_csv(os.path.join(root.dataframes, "{}_cc_clustered.csv".format(reference.name)))
+    except:
+        print1("Error parsing {}, might be empy".format(figure_path))
+        return
 
     if dimensions == 2:
         ax.scatter(cc_out["1"], cc_out["2"], c=cc_out["colour"])
@@ -214,10 +218,11 @@ def plot_cc(reference, force=False, dimensions = 3, labels = True):
     texts = []
 
     if "{}_cluster_centres.csv".format(reference.name) in os.listdir(root.dataframes):
+        print2("Plotting cluster centres")
         from maths import get_closest_point, points_to_line
-        cluster_centres = pd.read_csv(os.path.join(root.dataframes, "{}_cluster_centres.csv".format(reference.name)))
-        #print(cluster_centres)
-        ax.scatter(cluster_centres["2"], cluster_centres["1"], color="black")
+        cluster_centres = pd.read_csv(os.path.join(root.dataframes, "{}_cluster_centres.csv".format(reference.name)),header=None)
+        print(cluster_centres.columns)
+        ax.scatter(cluster_centres.loc[2], cluster_centres.loc[1], color="black")
 
         centres = []
         for centre in cluster_centres.itertuples():
@@ -277,9 +282,11 @@ def plot_cc(reference, force=False, dimensions = 3, labels = True):
 
 
     ax.set_title("CC analysis + Kmeans for {}".format(reference.name))
-    adjust_text(texts, autoalign='y',
-                only_move={'points': 'y', 'text': 'y'}, force_points=0.15,
-                arrowprops=dict(arrowstyle="->", color='blue', lw=0.5))
+    if adjust:
+        from adjustText import adjust_text
+        adjust_text(texts, autoalign='y',
+                    only_move={'points': 'y', 'text': 'y'}, force_points=0.15,
+                    arrowprops=dict(arrowstyle="->", color='blue', lw=0.5))
     fig.tight_layout()
     print2("Saving at {}".format(figure_path))
     fig.savefig(figure_path, dpi=300)
@@ -299,7 +306,7 @@ if __name__ == "__main__":
     FORCE_SM = False
     FORCE_CC = False
     FORCE_CLUSTER = True
-    FORCE_PLOT = False
+    FORCE_PLOT = True
 
     FORCE_ALL = False
 
@@ -324,7 +331,7 @@ if __name__ == "__main__":
     for reference in references:
         cc_analysis(reference, force=FORCE_CC)
         clusterize_cc(reference, force=FORCE_CLUSTER)
-        #plot_cc(reference, force=FORCE_PLOT)
+        plot_cc(reference, force=FORCE_PLOT)
     eprint("CC analysis")
 
 
