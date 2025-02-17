@@ -2,9 +2,11 @@
 **Iain Visa** @ IBMB-CSIC
 ## Instructions:
 
-- Set the working directory to `../projectB`
+- Install dependencies from `requirements`
 
 - Run `main.py`
+- Run `surface.py`
+- Run `clustering.py`
 
 
 ## Current clustering for GR
