@@ -59,7 +59,7 @@ def get_contact_res(self, use_replaced = True, radius=1.4, n_points=100):
             #print(sasa_df.loc[i])
 
     else:
-        print("Best fits are not the same:",self.monomer1.best_fit, self.monomer1.best_fit, "\n")
+        print("Best fits are not the same:",self.monomer1.best_fit, self.monomer2.best_fit, "\n")
         self.sasa_df = None
         return None
 
@@ -237,7 +237,7 @@ if __name__ == "__main__":
                             BA[1] +=1
 
                     per1 = (AA[0]/(AA[0]+AA[1]) + BB[0]/(BB[0]+BB[1]))/2
-                    per2 = (AB[0]/(AA[0]+AA[1]) + BA[0]/(BB[0]+BB[1]))/2
+                    per2 = (AB[0]/(AB[0]+AB[1]) + BA[0]/(BA[0]+BA[1]))/2
                     inverse = False
                     if per2 > per1:
                         inverse = True

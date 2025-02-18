@@ -28,6 +28,7 @@ def generate_sm(reference, force=False):
     n_res = len(sasas_df)
     progress = ProgressBar(n_dimers * n_dimers)
     index1 = 0
+    from maths import difference_between_boolean_pairs
     for id1, contacts1 in zip(sasas_df.columns, sasas_df._iter_column_arrays()):
         if id1 in ["ResNum", "ResName"]:
             continue
@@ -39,23 +40,18 @@ def generate_sm(reference, force=False):
             index2 += 1
             if index2 <= index1:
                 continue
-            similarity1 = 0
-            similarity2 = 0
+            total_diffX = 0
+            total_diffx = 0
             for res in range(n_res):
                 c1a, c1b = clean_list([contacts1[res]], delimiter=",", format="bool")
                 c2a, c2b = clean_list([contacts2[res]], delimiter=",", format="bool")
 
-                if c1a == c2a:
-                    similarity1 += 0.5
-                if c1b == c2b:
-                    similarity1 += 0.5
-                if c1a == c2b:
-                    similarity2 += 0.5
-                if c1b == c2a:
-                    similarity2 += 0.5
+                diffX, diffx =difference_between_boolean_pairs(c1a,c1b,c2a,c2b)
+                total_diffX += diffX
+                total_diffx += diffx
 
-            similarity = max(similarity1, similarity2)
-            similarity = similarity / n_res
+            similarity = max(total_diffX, total_diffx)
+            #similarity = similarity / n_res
             #print(id1, id2, similarity)
             sm_ssd.loc[len(sm_ssd)] = id1, id2,index1,index2, similarity
             progress.add(info="time")

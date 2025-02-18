@@ -225,5 +225,12 @@ def rotation_matrix_from_vectors(vec1, vec2):
 
 
 
+def difference_between_boolean_pairs(A1, A2, B1, B2):
+    diffX = 0
+    diffx = 0
+
+
+    return diffX, diffx
+
 
 
