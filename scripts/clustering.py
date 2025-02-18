@@ -40,19 +40,31 @@ def generate_sm(reference, force=False):
             index2 += 1
             if index2 <= index1:
                 continue
-            total_diffX = 0
-            total_diffx = 0
+            diffX = [0,0]
+            diffx = [0,0]
             for res in range(n_res):
                 c1a, c1b = clean_list([contacts1[res]], delimiter=",", format="bool")
                 c2a, c2b = clean_list([contacts2[res]], delimiter=",", format="bool")
 
-                diffX, diffx =difference_between_boolean_pairs(c1a,c1b,c2a,c2b)
-                total_diffX += diffX
-                total_diffx += diffx
+                resX, resx =difference_between_boolean_pairs(c1a,c1b,c2a,c2b)
+                diffX[0] += resX[0]
+                diffX[1] += resX[1]
+                diffx[0] += resx[0]
+                diffx[1] += resx[1]
 
-            similarity = max(total_diffX, total_diffx)
+            if diffX[0] != 0:
+                diffX = diffX[0]/diffX[1]
+            else:
+                diffX = 0
+
+            if diffx[0] != 0:
+                diffx = diffx[0]/diffx[1]
+            else:
+                diffx = 0
+
+            similarity = max(diffX, diffx)
             #similarity = similarity / n_res
-            #print(id1, id2, similarity)
+            print(id1, id2, round(similarity,2))
             sm_ssd.loc[len(sm_ssd)] = id1, id2,index1,index2, similarity
             progress.add(info="time")
     print(sm_ssd)

@@ -199,6 +199,7 @@ if __name__ == "__main__":
             ref_nums = ref_df["ResNum"]
 
             progress = ProgressBar(n_dimers)
+            from maths import difference_between_boolean_pairs
             for c in range(n_dimers):
                 dimer_sasas = sasa_df.iloc[:, [0, c + 2]]
                 dimer_id = sasa_df.columns[c+2]
@@ -208,10 +209,8 @@ if __name__ == "__main__":
                     ref_sasaB = ref_df.iloc[:, [0, group * 2 + 2]]
                     total_len = len(ref_sasaA)
 
-                    AA = [0, 0]
-                    AB = [0, 0]
-                    BA = [0, 0]
-                    BB = [0, 0]
+                    diffX = [0, 0]
+                    diffx = [0, 0]
 
                     for ref_num in ref_nums:
                         print(group, ref_num, end = "\r")
@@ -219,30 +218,27 @@ if __name__ == "__main__":
                         sA, sB = clean_list([dimer_sasas.loc[dimer_sasas["ResNum"]==ref_num].values[0,1]], delimiter=",", format="bool")
                         rsA = ref_sasaA.loc[ref_sasaA["ResNum"] == ref_num].iloc[:,1].values[0]
                         rsB = ref_sasaB.loc[ref_sasaB["ResNum"] == ref_num].iloc[:,1].values[0]
-                        if sA and rsA:
-                            AA[0] +=1
-                        elif sA or rsA:
-                            AA[1] +=1
-                        if sB and rsB:
-                            BB[0] +=1
-                        elif sB or rsB:
-                            BB[1] +=1
-                        if sA and rsB:
-                            AB[0] +=1
-                        elif sA or rsB:
-                            AB[1] +=1
-                        if sB and rsA:
-                            BA[0] +=1
-                        elif sB or rsA:
-                            BA[1] +=1
 
-                    per1 = (AA[0]/(AA[0]+AA[1]) + BB[0]/(BB[0]+BB[1]))/2
-                    per2 = (AB[0]/(AB[0]+AB[1]) + BA[0]/(BA[0]+BA[1]))/2
+                        resX, resx = difference_between_boolean_pairs(sA, sB, rsA, rsB)
+                        diffX[0] += resX[0]
+                        diffX[1] += resX[1]
+                        diffx[0] += resx[0]
+                        diffx[1] += resx[1]
+
+                    if diffX[0] != 0:
+                        diffX = diffX[0] / diffX[1]
+                    else:
+                        diffX = 0
+                    if diffx[0] != 0:
+                        diffx = diffx[0] / diffx[1]
+                    else:
+                        diffx = 0
+
                     inverse = False
-                    if per2 > per1:
+                    if diffx > diffX:
                         inverse = True
-                    similarities.append((group+1, max([per1,per2]), inverse))
-                    print1(similarities[-1][0], round(similarities[-1][1]*100) ,"%")
+                    similarities.append((group+1, max([diffX,diffx]), inverse))
+                    print1(similarities[-1][0], round(similarities[-1][1],2))
                 best_match = max(similarities, key= lambda x: x[1])
                 print("Best match for {}: {}, with {}% similarity, inverse: {}\n".format(dimer_id, best_match[0],
                                                                                          round(100 * best_match[1]),

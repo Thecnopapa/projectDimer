@@ -226,9 +226,26 @@ def rotation_matrix_from_vectors(vec1, vec2):
 
 
 def difference_between_boolean_pairs(A1, A2, B1, B2):
-    diffX = 0
-    diffx = 0
+    diffX = [0,0] # Matches / Total
+    diffx = [0,0]
 
+    if A1 or B1:
+        diffX[1] += 0.5
+        if A1 == B1:
+            diffX[0] += 0.5
+    if A2 or B2:
+        diffX[1] += 0.5
+        if A2 == B2:
+            diffX[0] += 0.5
+
+    if A1 or B2:
+        diffx[1] += 0.5
+        if A1 == B2:
+            diffx[0] += 0.5
+    if A2 or B1:
+        diffx[1] += 0.5
+        if A2 == B1:
+            diffx[0] += 0.5
 
     return diffX, diffx
 
