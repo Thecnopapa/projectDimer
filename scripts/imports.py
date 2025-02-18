@@ -1,6 +1,6 @@
 import os
 
-
+import numpy as np
 from Globals import root, local, vars
 from utilities import *
 
@@ -16,12 +16,18 @@ def load_pickles(folder, extension = (".pickle"), ignore_selection = False):
     pickles = []
     if folder in local.list():
         print2("Files found:", len(os.listdir(local[folder])))
+        selection = None
+        if "do_only" in vars and not ignore_selection:
+            if type(vars.do_only) is str:
+                selection = vars.do_only.split(" ")
+            elif type(vars.do_only) is list:
+                selection = vars.do_only
+        print(selection)
+        if selection is not None:
+            print2("Selection:", selection, "\n")
+
         progress = ProgressBar(len(os.listdir(local[folder])))
         for file in sorted(os.listdir(local[folder])):
-            selection = None
-            if "do_only" in vars and not ignore_selection:
-                if len(vars.do_only) > 0:
-                    selection = vars.do_only.split(" ")
             if file.endswith(extension) and (selection is None or file.split(".")[0] in selection):
                 p = unpickle(os.path.join(local[folder],file))
                 p.restore_dfs()
@@ -46,8 +52,10 @@ def load_from_files(pdb_folder, load_class = PDB, ignore_selection = False, pick
         for file in sorted(os.listdir(pdb_folder)):
             selection = None
             if "do_only" in vars and not ignore_selection:
-                if len(vars.do_only) > 0:
+                if vars.do_only is str:
                     selection = vars.do_only.split(" ")
+                elif vars.do_only is list:
+                    selection = vars.do_only
             if file.endswith(pdb_extension) and (selection is None or file.split(".")[0] in selection):
                 obj = load_class(os.path.join(pdb_folder, file))
                 if is_reference:

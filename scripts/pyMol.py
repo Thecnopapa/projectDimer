@@ -44,7 +44,7 @@ def pymol_reset():
     pymol.cmd.delete("All")
 
 def pymol_load_name(file_name, folder):
-    pymol.cmd.load(os.path.join(local[folder], file_name),file_name)
+    pymol.cmd.load(folder,file_name)
 
 def pymol_load_path(path, state = 0):
     pymol.cmd.load(path,os.path.basename(path))
@@ -79,9 +79,20 @@ def generate_preview(path, folder="", state = 0,save_session=True):
     preview_path = pymol_save_small(name.upper(), local[folder], dpi=50, height=150, width=150)
     return preview_path
 
+def pymol_align_all():
+    all_obj = pymol.cmd.get_names(type='objects')
+    print(all_obj)
+    obj1 = all_obj[0]
+    for obj2 in all_obj:
+        if obj2 != obj1:
+            pymol_align__obj(obj1, obj2)
+            print("aligned:", obj1, obj2)
+    pymol.cmd.orient("(all)")
 
 
-
+def pymol_align__obj(obj1, obj2):
+    pymol.cmd.align(obj2, obj1)
+    pymol.cmd.orient("(all)")
 
 
 

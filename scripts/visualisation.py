@@ -1,4 +1,6 @@
 import os
+import sys
+
 from Globals import root, local, vars
 from utilities import *
 import pandas as pd
@@ -59,15 +61,89 @@ def generate_html():
 
 
 if __name__ == "__main__":
-    import Globals
-    Globals.set_root("../")
-    if os.name == "nt":
-        Globals.set_local("C:/Users/iainv/localdata/_local/projectB")
-    elif os.name == "posix":
-        Globals.set_local("/localdata/iain/_local/projectB")
+    tprint("Visualising data")
+    import setup
     from Globals import root, local, vars
+    from imports import *
 
-    generate_charts()
+    import sys
+
+    sprint("Argvs:")
+    print(sys.argv)
+
+
+    if ("dimer" in sys.argv[1] or "dimers" in sys.argv[1]) and len(sys.argv[2:]) != 0:
+        vars["do_only"] = sys.argv[2:]
+        dimers = load_dimers()
+        tprint("Showing dimers")
+        for dimer in dimers:
+            sprint(dimer.id)
+            for key, item in dimer.__dict__.items():
+                if type(item) == list :
+                    print1(key,":")
+                    for i in item:
+                        print2(i)
+                if type(item) == (str or int or float or bool):
+                    print1(key,":",item)
+                if type(item) == dict:
+                    print1(key, ":")
+                    for k, v in item.items():
+                        print2(k,":",v)
+                if "molecules" in str(type(item)):
+                    print1(key, ":", item)
+
+
+
+
+    elif ("cluster" in sys.argv[1] or "clusters" in sys.argv[1]):
+        tprint("Showing clusters")
+        classified_df = pd.read_csv(os.path.join(root.dataframes, "classified_df.csv"),index_col=0)
+        if len(sys.argv[2:]) == 0:
+            print(classified_df.sort_values("Best_Match").to_string())
+
+
+        elif len(sys.argv[2:]) == 1:
+            print(type(sys.argv[2]))
+            filtered_df =classified_df[classified_df["Best_Match"] == int(sys.argv[2])]
+            print(filtered_df.to_string())
+
+            selection = input("Select indexes to display:\n >>")
+            from pyMol import *
+
+            pymol_start(show=True)
+            if selection == "all":
+
+                for name in filtered_df["ID"].values:
+                    print(name)
+                    file_path = os.path.join(local.dimers_merged, name+"_merged.pdb")
+                    pymol_load_path(file_path)
+                pymol_align_all()
+
+
+
+
+
+    eprint("Done visualising")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
