@@ -64,14 +64,15 @@ class ProgressBar:
             self.width = 19
         self.style = style
 
-    def add(self, increment=1, info = ""):
+    def add(self, increment=1, info = "", show_time = False):
         self.current += increment
         if self.current == self.total:
             self.finish()
         else:
-            if info == "time":
-                self.update(info="{}s".format(round(time.perf_counter() - self.start_time)))
-            self.update(info=info)
+            if show_time:
+                info = info + "|{}s".format(round(time.perf_counter() - self.start_time))
+            else:
+                self.update(info=info)
 
     def restart(self,total=None):
         self.current = self.start
@@ -87,7 +88,7 @@ class ProgressBar:
 
         if len(info) > 0:
             info+= " "
-        percentage = "|{}{}%".format(info,add_front_0(progress, digits=3, zero = " "))
+        percentage = "|{}|{}%".format(info,add_front_0(progress, digits=3, zero = " "))
         bar_width = self.width - len(percentage)
         progress_scaled = int(progress * bar_width //100)
         bar = "|{}>".format(self.style * progress_scaled)

@@ -64,9 +64,9 @@ def generate_sm(reference, force=False):
 
             similarity = max(diffX, diffx)
             #similarity = similarity / n_res
-            print(id1, id2, round(similarity,2))
+            #print(id1, id2, round(similarity,2))
             sm_ssd.loc[len(sm_ssd)] = id1, id2,index1,index2, similarity
-            progress.add(info="time")
+            progress.add(info="{} {} {}". format(id1, id2, similarity), show_time = True)
     print(sm_ssd)
     sm_ssd.to_csv(os.path.join(root.dataframes, '{}_sm_ssd.csv'.format(reference.name)),header=False, index=False)
 
@@ -304,29 +304,14 @@ def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centr
 
 
 
+def clustering(FORCE_ALL = False, FORCE_SM = True, FORCE_CC = True, FORCE_CLUSTER = True, FORCE_PLOT = True):
 
-
-
-
-
-
-if __name__ == "__main__":
-
-    FORCE_SM = False
-    FORCE_CC = False
-    FORCE_CLUSTER = True
-    FORCE_PLOT = True
-
-    FORCE_ALL = False
-
-
-
-    import setup
-    from Globals import root, local, vars
 
     if FORCE_ALL:
         FORCE_SM = True
         FORCE_CC = True
+        FORCE_CLUSTER = True
+        FORCE_PLOT = True
 
     from imports import import_references
     references = import_references()
@@ -345,6 +330,25 @@ if __name__ == "__main__":
 
 
     eprint("Done")
+
+
+
+if __name__ == "__main__":
+
+
+
+
+    import setup
+    from Globals import root, local, vars
+
+    clustering(FORCE_ALL = False,
+               FORCE_SM = False,
+               FORCE_CC = True,
+               FORCE_CLUSTER = True,
+               FORCE_PLOT = True
+               )
+
+
 
 
                 

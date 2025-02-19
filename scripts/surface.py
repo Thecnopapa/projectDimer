@@ -59,13 +59,18 @@ def get_contact_res(self, use_replaced = True, radius=1.4, n_points=100):
             #print(sasa_df.loc[i])
 
     else:
-        print("Best fits are not the same:",self.monomer1.best_fit, self.monomer2.best_fit, "\n")
+        print1("{}: Best fits are not the same: {} / {}".format(self.id, self.monomer1.best_fit, self.monomer2.best_fit, "\n"))
         self.sasa_df = None
         return None
 
     if len(sasa_df) > 0:
         self.sasa_df = sasa_df
+        if (True in sasa_df["is_contact1"].values or True in sasa_df["is_contact2"].values):
+            self.no_contacts = True
+        else:
+            self.no_contacts = False
         return sasa_df
+
     else:
         self.sasa_df = None
         return None
@@ -80,17 +85,6 @@ def import_X_df(path, name):
     df.to_csv(new_path, index=False)
     return new_path
 
-def compare_to_reference(sasa_df_path, reference_df_path):
-    sasa_df = pd.read_csv(sasa_df_path, index_col=0)
-    reference_df = pd.read_csv(reference_df_path,index_col=0)
-    iterate_over_dimers(sasa_df, start_col=2)
-
-def iterate_over_dimers(df, start_col = 2):
-    resnums = df["ResNum"]
-    df_dimersA = df.iloc[:,start_col::2]
-    df_dimersB = df.iloc[:,(start_col+1)::2]
-    for i in range(len(df_dimersB.columns)):
-        dimers.append(df_dimersA.iloc[:,i], df_dimersB.iloc[:,i])
 
 
 
@@ -98,27 +92,8 @@ def iterate_over_dimers(df, start_col = 2):
 
 
 
+def surface(FORCE_SASA = True, FORCE_SIMILARITY = True):
 
-
-
-
-
-
-
-
-
-
-
-
-if __name__ == "__main__":
-
-    import setup
-
-    from Globals import root, local, vars
-
-
-    FORCE_SASA = True
-    FORCE_SIMILARITY = True
 
     tprint("Loading dimers")
     from imports import load_dimers
@@ -234,6 +209,7 @@ if __name__ == "__main__":
                     else:
                         diffx = 0
 
+
                     inverse = False
                     if diffx > diffX:
                         inverse = True
@@ -259,4 +235,22 @@ if __name__ == "__main__":
         print("Pickling...")
         pickle(dimers)
         print("Done")
+
+
+
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+
+    import setup
+
+    from Globals import root, local, vars
+
+    surface(FORCE_SASA=True, FORCE_SIMILARITY=True)
 

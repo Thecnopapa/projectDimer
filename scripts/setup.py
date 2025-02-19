@@ -1,10 +1,11 @@
 import os, platform
 
-def setup(local_path=None):
+def setup(local_path=None, deepness_of_script =2):
 
     import Globals
-
-    root = os.path.dirname(os.path.dirname(__file__))
+    root = __file__
+    for i in range(deepness_of_script):
+        root = os.path.dirname(root)
     os.chdir(root)
     Globals.set_root(os.getcwd())
     if local_path is None:
@@ -22,3 +23,5 @@ elif "cri4" in __file__:
     setup("/localdata/iain/_local/projectB")
 else:
     setup()
+
+

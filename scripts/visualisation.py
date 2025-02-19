@@ -107,12 +107,17 @@ if __name__ == "__main__":
             filtered_df =classified_df[classified_df["Best_Match"] == int(sys.argv[2])]
             print(filtered_df.to_string())
 
-            selection = input("Select indexes to display:\n >>")
+            selection = input("Select similarity threshold to display (\"all\" or int), not inclusive:\n >>")
             from pyMol import *
 
             pymol_start(show=True)
-            if selection == "all":
+            if len(selection) > 0:
+                if selection == "all":
+                    threshold = -1
+                else:
+                    threshold = int(selection)
 
+                filtered_df = filtered_df[filtered_df["Similarity"] > threshold]
                 for name in filtered_df["ID"].values:
                     print(name)
                     file_path = os.path.join(local.dimers_merged, name+"_merged.pdb")
