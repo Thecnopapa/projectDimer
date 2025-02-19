@@ -71,8 +71,7 @@ class ProgressBar:
         else:
             if show_time:
                 info = info + "|{}s".format(round(time.perf_counter() - self.start_time))
-            else:
-                self.update(info=info)
+            self.update(info=info)
 
     def restart(self,total=None):
         self.current = self.start
@@ -88,7 +87,7 @@ class ProgressBar:
 
         if len(info) > 0:
             info+= " "
-        percentage = "|{}|{}%".format(info,add_front_0(progress, digits=3, zero = " "))
+        percentage = "|{}|{}%".format(info,add_front_0(progress, digits=3, zero = "0"))
         bar_width = self.width - len(percentage)
         progress_scaled = int(progress * bar_width //100)
         bar = "|{}>".format(self.style * progress_scaled)
@@ -118,3 +117,22 @@ def clean_list(strings:list, delimiter=" ", format="float", allow=["."]):
                         c = True
                 cleaned.append(c)
     return cleaned
+
+
+
+class thinking_bar(ProgressBar):
+    def __init__(self, style="="):
+        self.start_time = time.perf_counter()
+        try:
+            self.width = shutil.get_terminal_size()[0]-2
+        except:
+            self.width = 19
+        self.style = style
+
+    def update(self, end="\r", info = ""):
+
+        blank1 = ""
+
+
+        percentage = "|{}".format(info)
+        print("{}{}".format(bar, percentage), end = end)

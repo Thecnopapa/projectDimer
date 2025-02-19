@@ -40,3 +40,19 @@ def create_dfs(references):
     for reference in references:
         columns_alignment.extend(["score_" + reference.name])
     vars["alignments_df"] = pd.DataFrame(columns=columns_alignment)
+
+def load_failed_dfs():
+    sprint("Loading failed dataframes...")
+    for file in os.listdir(root.dataframes):
+        if "failed" in file:
+            vars[file.split(".")[0]] = pd.read_csv(os.path.join(root.dataframes, file))
+
+
+
+
+
+
+
+
+
+

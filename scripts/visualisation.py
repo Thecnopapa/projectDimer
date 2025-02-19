@@ -95,8 +95,8 @@ if __name__ == "__main__":
 
 
 
-    elif ("cluster" in sys.argv[1] or "clusters" in sys.argv[1]):
-        tprint("Showing clusters")
+    elif ("clusters-eva" in sys.argv[1]):
+        tprint("Showing clusters vs eva data")
         classified_df = pd.read_csv(os.path.join(root.dataframes, "classified_df.csv"),index_col=0)
         if len(sys.argv[2:]) == 0:
             print(classified_df.sort_values("Best_Match").to_string())
@@ -108,27 +108,82 @@ if __name__ == "__main__":
             print(filtered_df.to_string())
 
             selection = input("Select similarity threshold to display (\"all\" or int), not inclusive:\n >>")
-            from pyMol import *
 
-            pymol_start(show=True)
             if len(selection) > 0:
+
+
                 if selection == "all":
                     threshold = -1
                 else:
                     threshold = int(selection)
 
                 filtered_df = filtered_df[filtered_df["Similarity"] > threshold]
-                for name in filtered_df["ID"].values:
-                    print(name)
-                    file_path = os.path.join(local.dimers_merged, name+"_merged.pdb")
-                    pymol_load_path(file_path)
-                pymol_align_all()
+                if len(filtered_df) > 0:
+                    from pyMol import *
+                    pymol_start(show=True)
+                    chains_to_align = []
+                    for row in filtered_df.itertuples():
+                        print1(row.ID)
+                        file_path = os.path.join(local.dimers_merged, row.ID+"_merged.pdb")
+                        pymol_load_path(file_path)
+                        if row.Inverse:
+                            chains_to_align.append(row.ID[-1])
+                        else:
+                            chains_to_align.append(row.ID[-2])
+                    pymol_set_state(2)
+                    pymol_align_chains(chains_to_align)
+                    pymol_align_all()
+                    #pymol_colour_all("chainbows")
+
+                else:
+                    print1("No matches found")
+
+    elif ("clusters-cc" in sys.argv[1]):
+        tprint("Showing clusters CC + Kmeans")
+        print(sys.argv)
+        if len(sys.argv[2:]) >0:
+            reference_name = sys.argv[2]
+        else:
+            reference_name = "GR"
 
 
+        sprint("Showing results for: {}".format(reference_name))
+
+        clustered_df = pd.read_csv(os.path.join(root.dataframes, "{}_cc_clustered.csv".format(reference_name)), index_col=0).sort_values("cluster")
+
+        print(clustered_df.to_string())
+        selection = input("Select cluster to display: ([eva/cc]) [int], not inclusive:\n >>")
+
+        if type(selection) is list:
+            if "eva" in selection[0]:
+                filtered_df = clustered_df[clustered_df["group"] == int(selection[1])]
+            elif "cc" in selection[1]:
+                filtered_df = clustered_df[clustered_df["cluster"] == int(selection[1])]
+            else:
+                filtered_df = clustered_df[clustered_df["cluster"] == int(selection[1])]
+        else:
+            filtered_df = clustered_df[clustered_df["cluster"] == int(selection)]
+        print(selection)
+        print(filtered_df.to_string())
 
 
+        if len(filtered_df) > 0:
+            from pyMol import *
 
-    eprint("Done visualising")
+            pymol_start(show=True)
+            for row in filtered_df.itertuples():
+                print1(row.id)
+                file_path = os.path.join(local.dimers_merged, row.id + "_merged.pdb")
+                pymol_load_path(file_path)
+            pymol_set_state(2)
+            pymol_align_all()
+            # pymol_colour_all("chainbows")
+
+        else:
+            print1("No matches found")
+
+
+    eprint("Done visualising\n\n")
 
 
 

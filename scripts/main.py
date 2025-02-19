@@ -50,8 +50,6 @@ def main(PROCESS_ALL = False, LARGE_DATASET = True, DO_ONLY = ""):
     # Create dataframes
     sprint("Creating dataframes")
     create_dfs(references)
-    for df in os.listdir(root.dataframes):
-        print1(df)
     print1("Dataframes created")
 
 

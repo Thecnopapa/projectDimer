@@ -78,5 +78,7 @@ class Variable:
 
     def values(self):
         return list(self.vars.values())
+
+
 vars = Variable()
 

@@ -1,4 +1,6 @@
 import os
+
+
 from utilities import *
 from Globals import root, local, vars
 import numpy as np
@@ -13,7 +15,7 @@ def get_contact_res(self, use_replaced = True, radius=1.4, n_points=100):
 
     if use_replaced:
         if not "replaced_structure" in self.__dict__.keys():
-            print1(self.id, "has no replaced_structure\n")
+            print1("{}: has no replaced_structure".format(self.id))
             return None
         #print(self.replaced_structure.get_list()[0].get_list())
         structure1 = self.monomer1.replaced
@@ -65,10 +67,11 @@ def get_contact_res(self, use_replaced = True, radius=1.4, n_points=100):
 
     if len(sasa_df) > 0:
         self.sasa_df = sasa_df
-        if (True in sasa_df["is_contact1"].values or True in sasa_df["is_contact2"].values):
-            self.no_contacts = True
-        else:
+        if True in sasa_df["is_contact1"].values or True in sasa_df["is_contact2"].values:
             self.no_contacts = False
+            print1("{}: No contacts found".format(self.id))
+        else:
+            self.no_contacts = True
         return sasa_df
 
     else:
@@ -100,7 +103,8 @@ def surface(FORCE_SASA = True, FORCE_SIMILARITY = True):
     dimers = load_dimers()
     eprint("Dimers loaded")
 
-
+    from dataframes import load_failed_dfs
+    load_failed_dfs()
 
     tprint("Calculating SASAs")
     progress = ProgressBar(len(dimers))
@@ -133,8 +137,11 @@ def surface(FORCE_SASA = True, FORCE_SIMILARITY = True):
 
         for dimer in dimers:
             if dimer.best_fit == reference.name:
-                print(len(ref_df),len(dimer.sasa_df["diff1"]), len(dimer.sasa_df["diff2"]))
-                ref_df[dimer.id] = list(zip(dimer.sasa_df["is_contact1"], dimer.sasa_df["is_contact2"]))
+                if not dimer.no_contacts:
+                    print(len(ref_df),len(dimer.sasa_df["diff1"]), len(dimer.sasa_df["diff2"]))
+                    ref_df[dimer.id] = list(zip(dimer.sasa_df["is_contact1"], dimer.sasa_df["is_contact2"]))
+                else:
+                    print1("{} has no contacts". format(dimer.id))
             progress.add(info=dimer.id)
 
         print(ref_df)

@@ -86,14 +86,31 @@ def pymol_align_all():
     for obj2 in all_obj:
         if obj2 != obj1:
             pymol_align__obj(obj1, obj2)
-            print("aligned:", obj1, obj2)
     pymol.cmd.orient("(all)")
 
 
 def pymol_align__obj(obj1, obj2):
     pymol.cmd.align(obj2, obj1)
+    print3("aligned:", obj1, obj2)
     pymol.cmd.orient("(all)")
 
 
+def pymol_align_chains(chains_to_align):
+    all_obj = pymol.cmd.get_names(type='objects')
+    print1(all_obj)
+    obj1, chain1 = all_obj[0], chains_to_align[0]
+    sele1 = "{} and c. {}".format(obj1, chain1)
+    for obj2, chain2 in zip(all_obj, chains_to_align):
+        if obj2 != obj1:
+            sele2 = "{} and c. {}".format(obj2, chain2)
+            pymol_align__obj(sele1, sele2)
 
+
+
+
+def pymol_set_state(state):
+    pymol.cmd.set("state", state)
+
+def pymol_colour_all(colour):
+    pymol.cmd.color(colour, "(all)")
 

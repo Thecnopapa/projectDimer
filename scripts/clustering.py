@@ -26,12 +26,14 @@ def generate_sm(reference, force=False):
         print1("Not enough dimers in {} dataframe".format(reference.name))
         return
     n_res = len(sasas_df)
-    progress = ProgressBar(n_dimers * n_dimers)
+
+    progress = ProgressBar(n_dimers)
     index1 = 0
     from maths import difference_between_boolean_pairs
     for id1, contacts1 in zip(sasas_df.columns, sasas_df._iter_column_arrays()):
         if id1 in ["ResNum", "ResName"]:
             continue
+        progress.add(info="{}". format(id1), show_time = True)
         index1 += 1
         index2 = 0
         for id2, contacts2 in zip(sasas_df.columns, sasas_df._iter_column_arrays()):
@@ -66,7 +68,6 @@ def generate_sm(reference, force=False):
             #similarity = similarity / n_res
             #print(id1, id2, round(similarity,2))
             sm_ssd.loc[len(sm_ssd)] = id1, id2,index1,index2, similarity
-            progress.add(info="{} {} {}". format(id1, id2, similarity), show_time = True)
     print(sm_ssd)
     sm_ssd.to_csv(os.path.join(root.dataframes, '{}_sm_ssd.csv'.format(reference.name)),header=False, index=False)
 
@@ -172,7 +173,8 @@ def clusterize_cc(reference, force=False, n_clusters = 20):
         print1("Error parsing {}, might be empy".format(cc_out_path))
         return
 
-
+    if len(cc_out) < 30 and len(cc_out) > 6:
+        n_clusters = 5
     model = KMeans(n_clusters=n_clusters)
     model.fit(cc_out.loc[:, ["1", "2", "3"]])
     #pred = model.fit(cc_out.loc[:, ["1", "2", "3"]])
@@ -230,7 +232,7 @@ def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centr
         from maths import get_closest_point, points_to_line
         cluster_centres = pd.read_csv(os.path.join(root.dataframes, "{}_cluster_centres.csv".format(reference.name)),index_col=0,header=None)
         print(cluster_centres.columns)
-        ax.scatter(cluster_centres.loc[:,3].values, cluster_centres.loc[:,2].values, color="black")
+        ax.scatter(cluster_centres.loc[:,3].values, cluster_centres.loc[:,2].values, color="black", marker=".")
 
         centres = []
         for centre in cluster_centres.itertuples():
@@ -316,6 +318,9 @@ def clustering(FORCE_ALL = False, FORCE_SM = True, FORCE_CC = True, FORCE_CLUSTE
     from imports import import_references
     references = import_references()
 
+    from dataframes import load_failed_dfs
+    load_failed_dfs()
+
     tprint("Similarity analysis")
     for reference in references:
         generate_sm(reference, force=FORCE_SM)
@@ -325,7 +330,7 @@ def clustering(FORCE_ALL = False, FORCE_SM = True, FORCE_CC = True, FORCE_CLUSTE
     for reference in references:
         cc_analysis(reference, force=FORCE_CC)
         clusterize_cc(reference, force=FORCE_CLUSTER)
-        plot_cc(reference,labels=False, labels_centres=False, force=FORCE_PLOT)
+        plot_cc(reference,labels=False, labels_centres=True, force=FORCE_PLOT)
     eprint("CC analysis")
 
 
