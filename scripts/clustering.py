@@ -1,4 +1,8 @@
 import os
+from itertools import count
+
+from numpy.ma.extras import average
+
 from utilities import *
 from Globals import root, local, vars
 import numpy as np
@@ -333,8 +337,58 @@ def clustering(FORCE_ALL = False, FORCE_SM = True, FORCE_CC = True, FORCE_CLUSTE
         plot_cc(reference,labels=False, labels_centres=True, force=FORCE_PLOT)
     eprint("CC analysis")
 
+    tprint("Comparing to Eva")
+    gr_df = pd.read_csv(os.path.join(root.dataframes, "GR_cc_clustered.csv"))
+    if "BALL_SIZE" in vars:
+        scores = calculate_scores_GR(gr_df, vars.BALL_SIZE)
+    else:
+        scores = calculate_scores_GR(gr_df)
+    print1("Scores: cc: {}, eva: {}".format(scores[0], scores[1]))
+    eprint("Compared successfully")
+
 
     eprint("Done")
+
+def get_cluster_score(df, primary, secondary):
+    scores = []
+    for cluster in df[primary].unique():
+        print1(cluster)
+        f_df = df[df[primary] == cluster]
+        cluster_total = len(f_df)
+        counts = []
+        group_list = f_df[secondary].tolist()
+        groups = set(group_list)
+
+        for unique_group in groups:
+            c = group_list.count(unique_group)
+            counts.append(c)
+            print2(unique_group, c)
+        maximum = max(counts)
+        score = maximum / cluster_total
+        scores.append(score)
+        print3("Score:", round(score, 2))
+    av_score = sum(scores) / len(scores)
+    return av_score, scores
+
+
+
+def calculate_scores_GR(df, size="undefined"):
+    if "scores_df.csv" in os.listdir(root.dataframes):
+        scores_df = pd.read_csv(os.path.join(root.dataframes, "scores_df.csv"), index_col=0)
+    else:
+        scores_df = pd.DataFrame(columns = ["size", "cc_score", "eva_score", "cc_values", "eva_values" ])
+
+    print(scores_df)
+
+    cc_scores = get_cluster_score(df, primary="cluster", secondary="group")
+    eva_scores = get_cluster_score(df, primary="group", secondary="cluster")
+    scores_df.loc[len(scores_df)]= [size, cc_scores[0], eva_scores[0], cc_scores[1], eva_scores[1]]
+    print(scores_df)
+    scores_df.to_csv(os.path.join(root.dataframes, "scores_df.csv"))
+    return cc_scores, eva_scores
+
+
+
 
 
 
@@ -348,9 +402,9 @@ if __name__ == "__main__":
 
     clustering(FORCE_ALL = False,
                FORCE_SM = False,
-               FORCE_CC = True,
-               FORCE_CLUSTER = True,
-               FORCE_PLOT = True
+               FORCE_CC = False,
+               FORCE_CLUSTER = False,
+               FORCE_PLOT = False
                )
 
 

@@ -62,6 +62,19 @@ def generate_html():
 
 if __name__ == "__main__":
     tprint("Visualising data")
+
+
+    available_commands = ["dimer", "dimers", "clustr"]
+    if len(sys.argv) < 2:
+        print1("Command not provided. Available:")
+        print2("dimer/dimers [dimer id] / eg. dimer [1M2Z_AD]")
+        print2("clusters-eva")
+        print2("clusters-cc")
+        print2("clusters-scores")
+        quit()
+
+
+
     import setup
     from Globals import root, local, vars
     from imports import *
@@ -70,6 +83,7 @@ if __name__ == "__main__":
 
     sprint("Argvs:")
     print(sys.argv)
+
 
 
     if ("dimer" in sys.argv[1] or "dimers" in sys.argv[1]) and len(sys.argv[2:]) != 0:
@@ -152,7 +166,7 @@ if __name__ == "__main__":
         clustered_df = pd.read_csv(os.path.join(root.dataframes, "{}_cc_clustered.csv".format(reference_name)), index_col=0).sort_values("cluster")
 
         print(clustered_df.to_string())
-        selection = input("Select cluster to display: ([eva/cc]) [int], not inclusive:\n >>")
+        selection = input("Select cluster to display [int]:\n >>")
 
         if type(selection) is list:
             if "eva" in selection[0]:
@@ -161,8 +175,10 @@ if __name__ == "__main__":
                 filtered_df = clustered_df[clustered_df["cluster"] == int(selection[1])]
             else:
                 filtered_df = clustered_df[clustered_df["cluster"] == int(selection[1])]
-        else:
+        elif len(selection) > 0:
             filtered_df = clustered_df[clustered_df["cluster"] == int(selection)]
+        else:
+            quit()
         print(selection)
         print(filtered_df.to_string())
 
@@ -181,7 +197,19 @@ if __name__ == "__main__":
 
         else:
             print1("No matches found")
+    elif ("clusters-scores" in sys.argv[1]):
 
+        from clustering import calculate_scores_GR
+        calculate_scores_GR(pd.read_csv(os.path.join(root.dataframes, "GR_cc_clustered.csv"), index_col=0).sort_values("cluster"))
+
+
+    else:
+        print1("Command not recognised. Available:")
+        print2("dimer/dimers [dimer id] / eg. dimer [1M2Z_AD]")
+        print2("clusters-eva")
+        print2("clusters-cc")
+        print2("clusters-scores")
+        quit()
 
     eprint("Done visualising\n\n")
 

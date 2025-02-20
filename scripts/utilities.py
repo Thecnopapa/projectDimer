@@ -1,6 +1,9 @@
 import shutil
 import time
 
+from scipy.optimize import direct
+
+
 def tprint(*strings, head=10, style="#", end="\n", sep=" "):  # Print section title
     width = shutil.get_terminal_size()[0] -2
     string = " ".join(strings)
@@ -52,8 +55,13 @@ def add_front_0(string, digits=2, zero = "0"):
     ret += string
     return ret
 
+
+
+
+
+
 class ProgressBar:
-    def __init__(self, total, style="=", start=0):
+    def __init__(self, total=100, style="=", start=0):
         self.start_time = time.perf_counter()
         self.total = total
         self.start = start
@@ -87,12 +95,14 @@ class ProgressBar:
 
         if len(info) > 0:
             info+= " "
-        percentage = "|{}|{}%".format(info,add_front_0(progress, digits=3, zero = "0"))
+        percentage = "|{}|{}%".format(info,add_front_0(progress, digits=2, zero = "0"))
         bar_width = self.width - len(percentage)
         progress_scaled = int(progress * bar_width //100)
         bar = "|{}>".format(self.style * progress_scaled)
         blank = " " * (self.width - len(bar)- len(percentage))
         print("{}{}{}".format(bar, blank, percentage), end = end)
+
+
 
 
 
@@ -120,19 +130,59 @@ def clean_list(strings:list, delimiter=" ", format="float", allow=["."]):
 
 
 
-class thinking_bar(ProgressBar):
-    def __init__(self, style="="):
-        self.start_time = time.perf_counter()
-        try:
-            self.width = shutil.get_terminal_size()[0]-2
-        except:
-            self.width = 19
-        self.style = style
+class ThinkingBar(ProgressBar):
+    def __init__(self, style="=", length = 10):
+        super().__init__(style=style)
+        self.tick = 0
+        self.length = length
+
+    def update(self, end="\r", info = ""):
+        self.current = 0
+        start = self.tick
+        percentage = "|{}".format(info)
+        blank1 = "|" + " "*start
+        bar = "{}>".format(self.style * self.length)
+        leftover = self.width - len(blank1) - len(bar)- len(percentage)
+        if leftover >= 0:
+            blank2 =  " "* leftover
+            print("{}{}{}{}".format(blank1, bar, blank2, percentage), end=end)
+        else:
+            bar1 = "|" + bar[leftover:]
+            bar2 = bar[:leftover]
+            blank = " "*(self.width - len(bar1) - len(bar2)- len(percentage))
+            print("{}{}{}{}".format(bar1, blank, bar2, percentage), end=end)
+        self.tick += 1
+        if leftover < -self.length:
+            self.tick = 0
+
+
+class BlinkingBar(ThinkingBar):
+    from threading import Thread
+    thread = Thread()
+    thread.target
+    def __init__(self,side="right", style="o", length = 10):
+
+        super().__init__(style=style, length=length)
+        self.side = side
+        self.direction = "right"
+        self.length += len(style)
 
     def update(self, end="\r", info = ""):
 
-        blank1 = ""
+        if self.direction == "right":
+            self.tick += 1
+        else:
+            self.tick -= 1
+        if self.tick <= 0:
+            self.direction = "right"
+        if self.tick >= self.length:
+            self.direction = "left"
 
 
-        percentage = "|{}".format(info)
-        print("{}{}".format(bar, percentage), end = end)
+
+
+if __name__ == "__main__":
+    progress = ThinkingBar()
+    while True:
+        progress.add(show_time=True)
+        time.sleep(0.1)

@@ -95,7 +95,7 @@ def import_X_df(path, name):
 
 
 
-def surface(FORCE_SASA = True, FORCE_SIMILARITY = True):
+def surface(FORCE_SASA = True, FORCE_SIMILARITY = True, BALL_SIZE = 1.4):
 
 
     tprint("Loading dimers")
@@ -110,7 +110,7 @@ def surface(FORCE_SASA = True, FORCE_SIMILARITY = True):
     progress = ProgressBar(len(dimers))
     for dimer in dimers:
         if "sasa_df" not in dimer.__dict__.keys() or FORCE_SASA:
-            get_contact_res(dimer)
+            get_contact_res(dimer, radius=BALL_SIZE)
         progress.add(info = dimer.id)
     eprint("SASAs calculated")
 
@@ -259,5 +259,14 @@ if __name__ == "__main__":
 
     from Globals import root, local, vars
 
-    surface(FORCE_SASA=True, FORCE_SIMILARITY=True)
+    #### BALL SIZE TESTING ###
+    ball_sizes = [1.7, 1.8, 1.9, 2.0]
+    for n in ball_sizes:
+        vars["BALL_SIZE"] = n
+        surface(FORCE_SASA=True, FORCE_SIMILARITY=True, BALL_SIZE=n)
+        from clustering import clustering
+        clustering(FORCE_ALL = True)
+    #### BALL SIZE TESTING ###
+
+    surface(FORCE_SASA=True, FORCE_SIMILARITY=True, BALL_SIZE =1.4)
 
