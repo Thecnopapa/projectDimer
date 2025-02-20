@@ -1,7 +1,6 @@
 import shutil
 import time
 
-from scipy.optimize import direct
 
 
 def tprint(*strings, head=10, style="#", end="\n", sep=" "):  # Print section title
@@ -156,10 +155,15 @@ class ThinkingBar(ProgressBar):
             self.tick = 0
 
 
+#### In development ###
+def start_blinking():
+    global blinking_thread
+    #from threading import Th
+    #blinking_thread = Thread
+
 class BlinkingBar(ThinkingBar):
     from threading import Thread
-    thread = Thread()
-    thread.target
+    thread = None
     def __init__(self,side="right", style="o", length = 10):
 
         super().__init__(style=style, length=length)
@@ -177,8 +181,7 @@ class BlinkingBar(ThinkingBar):
             self.direction = "right"
         if self.tick >= self.length:
             self.direction = "left"
-
-
+### In development ###
 
 
 if __name__ == "__main__":

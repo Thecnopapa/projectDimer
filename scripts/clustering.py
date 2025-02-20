@@ -179,7 +179,7 @@ def clusterize_cc(reference, force=False, n_clusters = 20):
 
     if len(cc_out) < 30 and len(cc_out) > 6:
         n_clusters = 5
-    model = KMeans(n_clusters=n_clusters)
+    model = KMeans(n_clusters=n_clusters, random_state=6, algorithm="elkan")
     model.fit(cc_out.loc[:, ["1", "2", "3"]])
     #pred = model.fit(cc_out.loc[:, ["1", "2", "3"]])
 
