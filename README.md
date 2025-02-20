@@ -8,7 +8,7 @@
 ## To see data/results 
 - Run `visualisation.py` with the following commands:
   * `dimer`/s + the dimer id, e.g. `1M2Z_AB'
-  * `clusters-eva' to see clusters from Eva's classification
+  * `clusters-eva` to see clusters from Eva's classification
   * `clusters-cc` to see clusters from CC analysis + KMeans
   * `clusters-score`/s to see how (GR only) clusters compare between methods
 
