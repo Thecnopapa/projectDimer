@@ -1,0 +1,11 @@
+import os
+from utilities import *
+
+
+def automatic_push_to_branch(target="auto", force = True):
+  import subprocess
+  if target == "main":
+    sprint("Are you crazy? don't push to main automatically")
+    return
+  git_line = ["git", "checkout", ]
+  subprocess.run
