@@ -2,7 +2,7 @@
 **Iain Visa** @ IBMB-CSIC
 ## Instructions:
 
-- Install dependencies from `requirements`
+- Install dependencies from `environment.txt`
 - Run `main.py`
 
 ## To see data/results 
