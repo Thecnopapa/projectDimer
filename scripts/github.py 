@@ -49,3 +49,5 @@ def automatic_push_to_branch(target="auto", force = True, message="automated com
   except:
     print1("Push failed")
     return
+
+  print1("Automated git push successfull")
