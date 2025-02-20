@@ -51,3 +51,7 @@ def automatic_push_to_branch(target="auto", force = True, message="automated com
     return
 
   print1("Automated git push successfull")
+
+
+if __name__ == "__main__":
+  automatic_push_to_branch(target="test")
