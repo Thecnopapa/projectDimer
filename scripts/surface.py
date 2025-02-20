@@ -125,7 +125,6 @@ def surface(FORCE_SASA = True, FORCE_SIMILARITY = True, BALL_SIZE = 1.4):
 
 
     tprint("Merging SASAs")
-    progress = ProgressBar(len(dimers))
     for reference in references:
         print("Reference:", reference.name)
         ref_data={"ResNum": [],
@@ -135,6 +134,7 @@ def surface(FORCE_SASA = True, FORCE_SIMILARITY = True, BALL_SIZE = 1.4):
             ref_data["ResName"].append(res.resname)
         ref_df = pd.DataFrame(data=ref_data)
 
+        progress = ProgressBar(len(dimers))
         for dimer in dimers:
             if dimer.best_fit == reference.name:
                 if not dimer.no_contacts:
