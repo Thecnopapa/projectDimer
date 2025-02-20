@@ -17,7 +17,7 @@ def automatic_push_to_branch(target="auto", force = True, message="automated com
   git_switch = ["git", "switch", "-C", target]
   git_add = ["git", "add", "-a", "*"]
   git_commit = ["git", "commit", "-a", "-m", message]
-  git_push = ["git", "push", "origin", target
+  git_push = ["git", "push", "origin", target, "--force"]
   try:
     print1("Switching branch")
     print2(" ".join(git_switch))
