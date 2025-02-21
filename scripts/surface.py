@@ -10,7 +10,7 @@ import Bio.PDB
 from Bio.PDB import SASA
 
 
-def get_contact_res(self, use_replaced = True, radius=1.4, n_points=100):
+def get_contact_res(self, use_replaced = True, radius=1.6, n_points=100):
 
 
     if use_replaced:
@@ -259,14 +259,14 @@ if __name__ == "__main__":
 
     from Globals import root, local, vars
 
-    #### BALL SIZE TESTING ###
+    ''''#### BALL SIZE TESTING ###
     ball_sizes = [1.3, 1.4, 1.5, 1.6,1.7, 1.8, 1.9, 2.0]
     for n in ball_sizes:
         vars["BALL_SIZE"] = n
         surface(FORCE_SASA=True, FORCE_SIMILARITY=True, BALL_SIZE=n)
         from clustering import clustering
         clustering(FORCE_ALL = True)
-    #### BALL SIZE TESTING ###
+    #### BALL SIZE TESTING ###'''
 
-    surface(FORCE_SASA=True, FORCE_SIMILARITY=True, BALL_SIZE =1.4)
+    surface(FORCE_SASA=True, FORCE_SIMILARITY=True, BALL_SIZE =1.6)
 
