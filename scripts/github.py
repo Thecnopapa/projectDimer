@@ -56,3 +56,4 @@ def automatic_push_to_branch(target="auto", force = True, message="automated com
 
 if __name__ == "__main__":
   automatic_push_to_branch(target="test")
+  print("Done")
