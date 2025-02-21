@@ -60,6 +60,25 @@ def generate_html():
     pass
 
 
+def show_objects(obj_list):
+    for obj in obj_list:
+            sprint(obj.id)
+            for key, item in obj.__dict__.items():
+                if type(item) == list:
+                    print1(key,":")
+                    for i in item:
+                        print2(i)
+                if type(item) == (str or int or float or bool):
+                    print1(key,":",item)
+                if type(item) == dict:
+                    print1(key, ":")
+                    for k, v in item.items():
+                        print2(k,":",v)
+                if "molecules" in str(type(item)):
+                    print1(key, ":", item)
+
+
+
 if __name__ == "__main__":
     tprint("Visualising data")
 
@@ -90,23 +109,19 @@ if __name__ == "__main__":
         vars["do_only"] = sys.argv[2:]
         dimers = load_dimers()
         tprint("Showing dimers")
-        for dimer in dimers:
-            sprint(dimer.id)
-            for key, item in dimer.__dict__.items():
-                if type(item) == list :
-                    print1(key,":")
-                    for i in item:
-                        print2(i)
-                if type(item) == (str or int or float or bool):
-                    print1(key,":",item)
-                if type(item) == dict:
-                    print1(key, ":")
-                    for k, v in item.items():
-                        print2(k,":",v)
-                if "molecules" in str(type(item)):
-                    print1(key, ":", item)
+        show_objects(dimers)
 
+    elif ("monomer" in sys.argv[1] or "monomers" in sys.argv[1]) and len(sys.argv[2:]) != 0:
+        vars["do_only"] = sys.argv[2:]
+        monomers = load_monomers()
+        tprint("Showing monomers")
+        show_objects(monomers)
 
+    elif ("molecule" in sys.argv[1] or "molecules" in sys.argv[1] or "pdbs" in sys.argv[1]) and len(sys.argv[2:]) != 0:
+        vars["do_only"] = sys.argv[2:]
+        molecules = load_from_files(local.many_pdbs)
+        tprint("Showing molecules")
+        show_objects(molecules)
 
 
     elif ("clusters-eva" in sys.argv[1]):

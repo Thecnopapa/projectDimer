@@ -1,7 +1,7 @@
 import os, sys
 from utilities import *
 from Globals import root, local, vars
-import np as np
+import numpy as np
 import pandas as pd
 
 
@@ -120,3 +120,7 @@ if __name__ == "__main__":
 
 
     from imports import load_from_files
+    molecules = load_from_files(local.many_pdbs)
+    for molecule in molecules:
+        molecule.generate_fractional()
+        print(molecule.fractional)
