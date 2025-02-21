@@ -130,7 +130,9 @@ class PDB(BioObject):
 
 
 
-
+class FracBPDB(PDB):
+    pickle_extension = '.frac'
+    pickle_folder = "fractionals"
 
 
 

@@ -14,10 +14,11 @@ def automatic_push_to_branch(target="auto", force = True, message="automated com
     sprint("Missing target")
     return
 
-  git_switch = ["git", "checkout", "-C", target]
-  git_add = ["git", "add", "-a", "*"]
+  #git_switch = ["git", "switch", "-C", target]
+  git_switch = ["git", "checkout", "-b", target]
+  git_add = ["git", "add", "*"]
   git_commit = ["git", "commit", "-a", "-m", message]
-  git_push = ["git", "push", "-u", "origin", target, "--force"]
+  git_push = ["git", "push", "-u", "origin/{} ", target, "--force"]
   try:
     print1("Switching branch")
     print2(" ".join(git_switch))
