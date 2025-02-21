@@ -100,6 +100,7 @@ class PDB(BioObject):
         self.export()
         self.monomers = []
         self.dimers = []
+        self.fractional = None
         try:
             from symmetries import get_crystal
             self.card = get_crystal(self.o_path)
@@ -119,21 +120,31 @@ class PDB(BioObject):
     def get_dimers(self):
         done = []
         self.dimers = []
+        if len(self.monomers) == 0:
+            self.get_monomers()
         if len(self.monomers) >= 2:
             for monomer1 in self.monomers:
                 for monomer2 in self.monomers:
                     if monomer2.id != monomer1.id and monomer2.id not in done:
                         self.dimers.append(Dimer(monomer1, monomer2))
                 done.append(monomer1.id)
+
         return self.dimers
 
+    def export_fracional(self):
+        if self.fractional is None:
+            self.generate_fractional()
+        self.fractional_path = self.export(subfolder="fracional", in_structure=self.fractional, extra_id="_fractional")
+        return self.fractional_path
 
 
+    def generate_fractional(self):
+        # TODO structure -> fractional coords
+        self.fractional = None
+        return self.fractional
 
-class FracBPDB(PDB):
-    pickle_extension = '.frac'
-    pickle_folder = "fractionals"
-
+    def get_dimers_with_symmetries(self):
+        pass
 
 
 

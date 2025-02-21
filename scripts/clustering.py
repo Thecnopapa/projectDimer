@@ -436,5 +436,5 @@ if __name__ == "__main__":
                DIMENSIONS=5,
                )
     from github import automatic_push_to_branch
-    automatic_push_to_branch(target="auto")
+    #automatic_push_to_branch(target="auto")
             
