@@ -15,7 +15,15 @@ def setup(local_path=None, deepness_of_script =2):
 
 
 
-
+try:
+    import inspect
+    for frame in inspect.stack()[1:]:
+        if frame.filename[0] != '<':
+            importing_file = frame.filename
+            break
+    print('\33]0;{}\a'.format(os.path.basename(importing_file)), end='', flush=True)
+except:
+    pass
 
 if os.name == "nt":
     setup("C:/Users/iainv/localdata/projectB")
@@ -23,5 +31,6 @@ elif "cri4" in __file__:
     setup("/localdata/iain/_local/projectB")
 else:
     setup()
+
 
 

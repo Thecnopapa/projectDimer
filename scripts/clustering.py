@@ -121,10 +121,10 @@ def cc_analysis(reference, dimensions=3, force =False):
             if i == "":
                 l.remove(i)
         # print(pd.to_numeric(l))
-        if len(l) == 3:
+        if len(l)-1  == 2:
             l.append("0")
             out.append(l)
-        elif len(l) == 4:
+        elif len(l) >= 3:
             out.append(l)
         # print(l)
     # print("-")
@@ -132,7 +132,10 @@ def cc_analysis(reference, dimensions=3, force =False):
     # print("-")
 
     #print(out)
-    cc_out = pd.DataFrame(out, columns=["index", "1", "2", "3"])
+    cols = ["index"]
+    for n in range(dimensions):
+        cols.append(str(n+1))
+    cc_out = pd.DataFrame(out, columns=cols)
 
 
     for i in cc_out.columns:
@@ -161,7 +164,7 @@ def cc_analysis(reference, dimensions=3, force =False):
     print(cc_out, "\n")
 
 
-def clusterize_cc(reference, force=False, n_clusters = 20):
+def clusterize_cc(reference, force=False, n_clusters = 20, dimensions=3):
     cc_clustered_name = "{}_cc_clustered.csv".format(reference.name)
     if cc_clustered_name in os.listdir(root.dataframes) and not force:
         print1("Skipping CC clustering for {}".format(reference.name))
@@ -180,7 +183,10 @@ def clusterize_cc(reference, force=False, n_clusters = 20):
     if len(cc_out) < 30 and len(cc_out) > 6:
         n_clusters = 5
     model = KMeans(n_clusters=n_clusters, random_state=6, algorithm="elkan")
-    model.fit(cc_out.loc[:, ["1", "2", "3"]])
+    cols = []
+    for n in range(dimensions):
+        cols.append(str(n + 1))
+    model.fit(cc_out.loc[:, cols])
     #pred = model.fit(cc_out.loc[:, ["1", "2", "3"]])
 
     #print(model.cluster_centers_)
@@ -195,7 +201,7 @@ def clusterize_cc(reference, force=False, n_clusters = 20):
 
     cluster_centres_path = os.path.join(root.dataframes, "{}_cluster_centres.csv".format(reference.name))
     cluster_centres_df = pd.DataFrame(model.cluster_centers_)
-    print(cluster_centres_df)
+    #print(cluster_centres_df)
     cluster_centres_df.to_csv(cluster_centres_path,header=None)
     cc_out.to_csv(os.path.join(root.dataframes,cc_clustered_name))
 
@@ -207,10 +213,14 @@ def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centr
     print1("Plotting 2D: {}".format(reference.name))
 
     root["cc"] = "images/cc"
-    figure_path = os.path.join(root.cc, "{}_cc.png".format(reference.name))
-    if figure_path in os.listdir(root.cc) and not force:
+    figure_name ="{}_cc.png".format(reference.name)
+    figure_path = os.path.join(root.cc,figure_name )
+    if figure_name in os.listdir(root.cc) and not force:
+        print2("Figure {} already exists".format(figure_name))
         return
-
+    if dimensions > 3:
+        print2("Plotting more than 3 dimensions not currently supported")
+        return
     import matplotlib.pyplot as plt
 
 
@@ -310,7 +320,7 @@ def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centr
 
 
 
-def clustering(FORCE_ALL = False, FORCE_SM = True, FORCE_CC = True, FORCE_CLUSTER = True, FORCE_PLOT = True):
+def clustering(FORCE_ALL = False, FORCE_SM = True, FORCE_CC = True, FORCE_CLUSTER = True, FORCE_PLOT = True, DIMENSIONS = 3):
 
 
     if FORCE_ALL:
@@ -332,17 +342,17 @@ def clustering(FORCE_ALL = False, FORCE_SM = True, FORCE_CC = True, FORCE_CLUSTE
 
     tprint("CC analysis")
     for reference in references:
-        cc_analysis(reference, force=FORCE_CC)
-        clusterize_cc(reference, force=FORCE_CLUSTER)
+        cc_analysis(reference, force=FORCE_CC, dimensions=DIMENSIONS)
+        clusterize_cc(reference, force=FORCE_CLUSTER, dimensions=DIMENSIONS)
         plot_cc(reference,labels=False, labels_centres=True, force=FORCE_PLOT)
     eprint("CC analysis")
 
     tprint("Comparing to Eva")
     gr_df = pd.read_csv(os.path.join(root.dataframes, "GR_cc_clustered.csv"))
     if "BALL_SIZE" in vars:
-        scores = calculate_scores_GR(gr_df, vars.BALL_SIZE)
+        scores = calculate_scores_GR(gr_df, vars.BALL_SIZE+"_"+DIMENSIONS)
     else:
-        scores = calculate_scores_GR(gr_df)
+        scores = calculate_scores_GR(gr_df,str(DIMENSIONS))
     print1("Scores: cc: {}, eva: {}".format(scores[0], scores[1]))
     eprint("Compared successfully")
 
@@ -372,17 +382,17 @@ def get_cluster_score(df, primary, secondary):
 
 
 
-def calculate_scores_GR(df, size="undefined"):
+def calculate_scores_GR(df, name="undefined"):
     if "scores_df.csv" in os.listdir(root.dataframes):
         scores_df = pd.read_csv(os.path.join(root.dataframes, "scores_df.csv"), index_col=0)
     else:
-        scores_df = pd.DataFrame(columns = ["size", "cc_score", "eva_score", "cc_values", "eva_values" ])
+        scores_df = pd.DataFrame(columns = ["label", "cc_score", "eva_score", "cc_values", "eva_values" ])
 
     print(scores_df)
 
     cc_scores = get_cluster_score(df, primary="cluster", secondary="group")
     eva_scores = get_cluster_score(df, primary="group", secondary="cluster")
-    scores_df.loc[len(scores_df)]= [size, cc_scores[0], eva_scores[0], cc_scores[1], eva_scores[1]]
+    scores_df.loc[len(scores_df)]= [name, cc_scores[0], eva_scores[0], cc_scores[1], eva_scores[1]]
     print(scores_df)
     scores_df.to_csv(os.path.join(root.dataframes, "scores_df.csv"))
     return cc_scores, eva_scores
@@ -400,15 +410,24 @@ if __name__ == "__main__":
     import setup
     from Globals import root, local, vars
 
-    clustering(FORCE_ALL = False,
-               FORCE_SM = False,
-               FORCE_CC = False,
-               FORCE_CLUSTER = False,
-               FORCE_PLOT = False
+
+
+
+    #### DIMENSION TESTING ###
+    dimensions = [4,5,6,7,8,9,10]
+    for n in dimensions:
+        clustering(FORCE_SM = False,
+                   FORCE_CC = True,
+                   FORCE_CLUSTER = True,
+                   FORCE_PLOT=False,
+                   DIMENSIONS=n
+                   )
+    #### DIMENSION TESTING ###
+
+    clustering(FORCE_ALL=False,
+               FORCE_SM=False,
+               FORCE_CC=False,
+               FORCE_CLUSTER=False,
+               FORCE_PLOT=False
                )
-
-
-
-
-                
             
