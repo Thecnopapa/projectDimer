@@ -12,11 +12,56 @@ import setup
 #from cri4.iain.borges-arcimboldo.ARCIMBOLDO_FULL import SELSLIB2
 
 
-sys.path.append("/cri4/iain/borges-arcimboldo")
-sys.path.append("/cri4/iain/borges-arcimboldo/ARCIMBOLDO_FULL")
-import ARCIMBOLDO_FULL
-import SELSLIB2
-from ARCIMBOLDO_FULL import SELSLIB2
+
+
+def get_crystal(file_path):
+
+    print1("Parsing crystalcard from", file_path)
+
+    def line_contents_no_blank(line):
+        l = line.split(" ")
+        for c in l:
+            if c == "" or c == "\n":
+                l.remove(c)
+        return l
+
+    cryst1 = ""
+    origx1 = ""
+    origx2 = ""
+    origx3 = ""
+    scale1 = ""
+    scale2 = ""
+    scale3 = ""
+
+    with open(file_path, "r") as file:  # Open the file in question
+        for line in file:  # Check every line for the keywords
+            if "CRYST1" in line: cryst1 = line
+            if "ORIGX1" in line: origx1 = line_contents_no_blank(line)
+            if "ORIGX2" in line: origx2 = line_contents_no_blank(line)
+            if "ORIGX3" in line: origx3 = line_contents_no_blank(line)
+            if "SCALE1" in line: scale1 = line_contents_no_blank(line)
+            if "SCALE2" in line: scale2 = line_contents_no_blank(line)
+            if "SCALE3" in line: scale3 = line_contents_no_blank(line)
+    if cryst1 == "":
+        return None
+    crystal = {
+        "a": float(clean_string(cryst1[7:16])),
+        "b": float(clean_string(cryst1[16:25])),
+        "c": float(clean_string(cryst1[25:34])),
+        "alpha": float(clean_string(cryst1[34:41])),
+        "beta": float(clean_string(cryst1[41:48])),
+        "gamma": float(clean_string(cryst1[48:55])),
+        "group": line_contents_no_blank(cryst1[55:67])[0:4],
+        "Z": clean_string(cryst1[67:70]),
+        "ori1": origx1[1:5],
+        "ori2": origx2[1:5],
+        "ori3": origx3[1:5],
+        "scale1": scale1[1:5],
+        "scale2": scale2[1:5],
+        "scale3": scale3[1:5],
+    }
+    return crystal
+
 
 
 def convertFromOrthToFrac(x, y, z, cell_dim, parameters):
@@ -107,3 +152,13 @@ def convertFromFracToOrth(t1, t2, t3, cell_dim, parameters):
     tx = (t1 - ty * parameters["vvz"] - tz * parameters["uuz"]) / parameters["vvy"]
 
     return tx, ty, tz, parameters
+
+
+
+if __name__ == "__main__":
+
+    import setup
+    from Globals import *
+
+
+    from imports import load_from_files

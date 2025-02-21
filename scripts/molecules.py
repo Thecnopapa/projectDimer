@@ -100,6 +100,11 @@ class PDB(BioObject):
         self.export()
         self.monomers = []
         self.dimers = []
+        try:
+            from symmetries import get_crystal
+            self.card = get_crystal(self.o_path)
+        except:
+            self.card = None
 
     def get_monomers(self, as_reference=False):
         if len(self.monomers) == 0 or True:

@@ -14,9 +14,9 @@ def tprint(*strings, head=10, style="#", end="\n", sep=" "):  # Print section ti
 def eprint(*strings, head=10, style = "^", sep=" "):  # Print end of section
     tprint(*strings, head=head, style=style, end="\n\n", sep=sep)
 
-def sprint(*strings): # Print Subtitle
+def sprint(*strings,**kwargs): # Print Subtitle
     str_strings = map(str, strings)
-    print("\n #", " ".join(str_strings))
+    print("\n #", " ".join(str_strings),**kwargs)
 
 def print1(*strings, space=2, end="\n"): # Print with 1 indent
     str_strings = []
@@ -29,11 +29,11 @@ def print1(*strings, space=2, end="\n"): # Print with 1 indent
     #str_strings = map(str, strings)
     print("{}> {}".format(" " * space, " ".join(str_strings), end=end))
 
-def print2(*strings): # Print with 2 indents
-    print1(strings, space=4)
+def print2(*strings, **kwargs): # Print with 2 indents
+    print1(strings, space=4, **kwargs)
 
-def print3(*strings):
-    print1(strings, space=6)
+def print3(*strings, **kwargs):
+    print1(strings, space=6, **kwargs)
 
 
 def clean_string(string, allow=(".", "_")):

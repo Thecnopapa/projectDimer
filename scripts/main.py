@@ -145,10 +145,6 @@ if __name__ == "__main__":
 
     from clustering import clustering
     clustering(FORCE_ALL=False,
-               FORCE_SM=False,
-               FORCE_CC=False,
-               FORCE_CLUSTER=False,
-               FORCE_PLOT=False
                )
 
 

@@ -95,7 +95,7 @@ def import_X_df(path, name):
 
 
 
-def surface(FORCE_SASA = True, FORCE_SIMILARITY = True, BALL_SIZE = 1.4):
+def surface(FORCE_SASA = True, FORCE_SIMILARITY = True, BALL_SIZE = 1.6):
 
 
     tprint("Loading dimers")

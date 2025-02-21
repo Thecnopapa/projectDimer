@@ -320,7 +320,7 @@ def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centr
 
 
 
-def clustering(FORCE_ALL = False, FORCE_SM = True, FORCE_CC = True, FORCE_CLUSTER = True, FORCE_PLOT = True, DIMENSIONS = 3):
+def clustering(FORCE_ALL = False, FORCE_SM = True, FORCE_CC = True, FORCE_CLUSTER = True, FORCE_PLOT = True, DIMENSIONS = 3, ONLY_GR=False):
 
 
     if FORCE_ALL:
@@ -331,6 +331,9 @@ def clustering(FORCE_ALL = False, FORCE_SM = True, FORCE_CC = True, FORCE_CLUSTE
 
     from imports import import_references
     references = import_references()
+    for reference in references:
+        if ONLY_GR and reference.name == "GR":
+            references = [reference]
 
     from dataframes import load_failed_dfs
     load_failed_dfs()
@@ -344,7 +347,7 @@ def clustering(FORCE_ALL = False, FORCE_SM = True, FORCE_CC = True, FORCE_CLUSTE
     for reference in references:
         cc_analysis(reference, force=FORCE_CC, dimensions=DIMENSIONS)
         clusterize_cc(reference, force=FORCE_CLUSTER, dimensions=DIMENSIONS)
-        plot_cc(reference,labels=False, labels_centres=True, force=FORCE_PLOT)
+        plot_cc(reference,labels=False, labels_centres=True, force=FORCE_PLOT, dimensions=DIMENSIONS)
     eprint("CC analysis")
 
     tprint("Comparing to Eva")
@@ -413,21 +416,25 @@ if __name__ == "__main__":
 
 
 
-    #### DIMENSION TESTING ###
-    dimensions = [4,5,6,7,8,9,10]
+    '''#### DIMENSION TESTING ###
+    dimensions = [3,4,5,6,7,8,9,10]
     for n in dimensions:
         clustering(FORCE_SM = False,
                    FORCE_CC = True,
                    FORCE_CLUSTER = True,
                    FORCE_PLOT=False,
-                   DIMENSIONS=n
+                   DIMENSIONS=n,
+                   ONLY_GR = True
                    )
-    #### DIMENSION TESTING ###
+    #### DIMENSION TESTING ###'''
 
     clustering(FORCE_ALL=False,
                FORCE_SM=False,
-               FORCE_CC=False,
-               FORCE_CLUSTER=False,
-               FORCE_PLOT=False
+               FORCE_CC=True,
+               FORCE_CLUSTER=True,
+               FORCE_PLOT=True,
+               DIMENSIONS=5,
                )
+    from github import automatic_push_to_branch
+    automatic_push_to_branch(target="auto")
             
