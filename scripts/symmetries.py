@@ -93,7 +93,8 @@ def get_crystal(file_path):
 
 
 
-def convertFromOrthToFrac(x, y, z, parameters):
+def convertFromOrthToFrac(orth_coords, parameters):
+    x, y, z = orth_coords
 
     nx = (x * parameters["vvy"]) + (y * parameters["vvz"]) + (z * parameters["uuz"])
     ny = (y * parameters["uuy"]) + (z * parameters["vv"])
@@ -122,5 +123,9 @@ if __name__ == "__main__":
     from imports import load_from_files
     molecules = load_from_files(local.many_pdbs)
     for molecule in molecules:
+        print(molecule.id)
+        molecule.read_card()
         molecule.generate_fractional()
+        molecule.export_fractional()
         print(molecule.fractional)
+        molecule.pickle()

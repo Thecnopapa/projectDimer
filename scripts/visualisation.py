@@ -63,12 +63,14 @@ def generate_html():
 def show_objects(obj_list):
     for obj in obj_list:
             sprint(obj.id)
+            print(obj.__dict__)
             for key, item in obj.__dict__.items():
+                #print(str(type(item)))
                 if type(item) == list:
                     print1(key,":")
                     for i in item:
                         print2(i)
-                if type(item) == (str or int or float or bool):
+                if type(item) in (str, int, float,  bool):
                     print1(key,":",item)
                 if type(item) == dict:
                     print1(key, ":")
@@ -76,6 +78,10 @@ def show_objects(obj_list):
                         print2(k,":",v)
                 if "molecules" in str(type(item)):
                     print1(key, ":", item)
+                if "Bio" in str(type(item)):
+                    print1(key, ":", item)
+                if item is None:
+                    print1(key, ":", "None")
 
 
 

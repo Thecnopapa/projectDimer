@@ -102,11 +102,16 @@ class PDB(BioObject):
         self.dimers = []
         self.fractional = None
         self.fractional_path = None
+        self.card = None
+        self.read_card()
+    
+    def read_card(self):
+        from symmetries import get_crystal
         try:
-            from symmetries import get_crystal
-            self.card = get_crystal(self.o_path)
+           self.card = get_crystal(self.o_path)
         except:
             self.card = None
+        return self.card
 
     def get_monomers(self, as_reference=False):
         if len(self.monomers) == 0 or True:
@@ -132,7 +137,7 @@ class PDB(BioObject):
 
         return self.dimers
 
-    def export_fracional(self):
+    def export_fractional(self):
         if self.fractional is None:
             self.generate_fractional()
         if self.fractional is None:
@@ -143,8 +148,25 @@ class PDB(BioObject):
 
     def generate_fractional(self):
         # TODO structure -> fractional coords
+        if self.card is None:
+            return None
+        from symmetries import calculate_parameters
+        parameters = calculate_parameters(self.card)
         from copy import deepcopy
+        if self.structure is None:
+            return None
         self.fractional = deepcopy(self.structure)
+        from symmetries import convertFromOrthToFrac
+        for atom in self.fractional.get_atoms():
+            if atom.is_disordered():
+                for d_atom in atom:
+                    print("dis", d_atom.coord, end=" -> ")
+                    d_atom.coord=convertFromOrthToFrac(d_atom.coord, parameters)
+                    print(d_atom.coord)
+            else:
+                print(atom.coord, end=" -> ")
+                atom.coord=convertFromOrthToFrac(atom.coord, parameters)
+                print(atom.coord)
         return self.fractional
 
     def get_dimers_with_symmetries(self):
