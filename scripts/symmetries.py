@@ -114,6 +114,61 @@ def convertFromFracToOrth(t1, t2, t3, parameters):
 
 
 
+def generate_displaced_copy(original, distance = 99.5):
+    if pdb is None:
+        return None
+    from copy import deepcopy
+    displaced = deepcopy(original)
+    for atom in displaced.get_atoms():
+        if atom.is_disordered():
+            for d_atom in atom:
+                d_atom.coord = [x+distance for x in d_atom.coord]
+        else:
+            atom.coord = [x+distance for x in atom.coord]
+    return displaced
+
+def find_nesrest_neighbours(original, displaced, params):
+
+    o_atoms = original.get_atoms()
+    d_atoms = displaced.get_atoms()
+
+
+    assert len(o_atoms) == len(d_atoms)
+    
+    a = params["A"]
+    b = params["B"]
+    c = params["C"]
+    c_a = params["c_a"]
+    c_b = params["c_b"]
+    c_g = params["c_g"]
+
+    
+    for o_atom, d_atom in zip(o_atoms, d_atoms):
+        deltaX = ((d_atom[0] - d_atom[0]) % 1) - 0.5
+        deltaY = ((d_atom[1] - d_atom[1]) % 1) - 0.5
+        deltaZ = ((d_atom[2] - d_atom[2]) % 1) - 0.5
+        d2 = a^2*deltaX^2 +b^2*deltaY^2 + c^2*deltaZ^2 +2*b*c*c_a*deltaY*deltaZ +2*a*c*c_b*deltaX*deltaZ +2*a*b*c_g*deltaX*deltaY
+
+        if d_atom.is_disordered():
+            # might not be 100% accurate but placeholder for now
+            assert o_atom.is_disordered() and d_atom.is_disordered()
+            for dis_d in d_atom:
+                dis_d.coord[0] = atom.coord[0] + deltaX
+                dis_d.coord[1] = atom.coord[1] + deltaY
+                dis_d.coord[2] = atom.coord[2] + deltaZ
+
+        else:
+            d_atom.coord[0] = atom.coord[0] + deltaX
+            d_atom.coord[1] = atom.coord[1] + deltaY
+            d_atom.coord[2] = atom.coord[2] + deltaZ
+
+    return displaced
+
+
+
+
+
+
 if __name__ == "__main__":
 
     import setup
