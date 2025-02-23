@@ -103,14 +103,17 @@ class PDB(BioObject):
         self.fractional = None
         self.fractional_path = None
         self.card = None
+        self.params = None
         self.read_card()
     
     def read_card(self):
-        from symmetries import get_crystal
+        from symmetries import get_crystal, calculate_parameters
         try:
            self.card = get_crystal(self.o_path)
+           self.params = calculate_parameters(self.card)
         except:
             self.card = None
+            self.params = None
         return self.card
 
     def get_monomers(self, as_reference=False):
@@ -144,14 +147,19 @@ class PDB(BioObject):
             return None
         self.fractional_path = self.export(subfolder="fracional", in_structure=self.fractional, extra_id="_fractional")
         return self.fractional_path
-
+    
+    def export_neighbour(self):
+        if self.neighbour is None:
+            self.get_neighbour()
+        if self.neighbour is None:
+            return None
+        self.neighbour_path = self.export(subfolder="neighbour", in_structure=self.neighbour, extra_id="_neighbour")
+        return self.neighbour_path
 
     def generate_fractional(self):
-        # TODO structure -> fractional coords
-        if self.card is None:
+        if self.params is None:
             return None
-        from symmetries import calculate_parameters
-        parameters = calculate_parameters(self.card)
+    
         from copy import deepcopy
         if self.structure is None:
             return None
@@ -161,18 +169,31 @@ class PDB(BioObject):
             if atom.is_disordered():
                 for d_atom in atom:
                     print("dis", d_atom.coord, end=" -> ")
-                    d_atom.coord=convertFromOrthToFrac(d_atom.coord, parameters)
+                    d_atom.coord=convertFromOrthToFrac(d_atom.coord, self.params)
                     print(d_atom.coord)
             else:
                 print(atom.coord, end=" -> ")
-                atom.coord=convertFromOrthToFrac(atom.coord, parameters)
+                atom.coord=convertFromOrthToFrac(atom.coord, self.params)
                 print(atom.coord)
         return self.fractional
 
-    def get_dimers_with_symmetries(self):
-        pass
-
-
+    def get_neighbour(self):
+        if self.params is None or self.fractional is None:
+            return None
+        from symmetries import find_nearest_neighbour,  convertFromFracToOrth
+        fractional_neighbour = find_nearest_neighbour(self.fractional,self.params)
+        for atom in fractional_neighbour.get_atoms():
+            if atom.is_disordered():
+                for d_atom in atom:
+                    print("dis", d_atom.coord, end=" -> ")
+                    d_atom.coord=convertFromFracToOrth(d_atom.coord, self.params)
+                    print(d_atom.coord)
+            else:
+                print(atom.coord, end=" -> ")
+                atom.coord=convertFromFracToOrth(atom.coord, self.params)
+                print(atom.coord)
+        self.neighbour = fractional_neighbour
+        return self.neighbour
 
 
 class Monomer(BioObject):

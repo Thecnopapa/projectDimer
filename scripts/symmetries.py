@@ -104,7 +104,8 @@ def convertFromOrthToFrac(orth_coords, parameters):
 
 
 
-def convertFromFracToOrth(t1, t2, t3, parameters):
+def convertFromFracToOrth(frac_coords, parameters):
+    t1, t2, t3 = frac_coords
 
     tz = t3 / parameters["uu"]
     ty = (t2 - tz * parameters["vv"]) / parameters["uuy"]
@@ -115,7 +116,7 @@ def convertFromFracToOrth(t1, t2, t3, parameters):
 
 
 def generate_displaced_copy(original, distance = 99.5):
-    if pdb is None:
+    if original is None:
         return None
     from copy import deepcopy
     displaced = deepcopy(original)
@@ -127,13 +128,15 @@ def generate_displaced_copy(original, distance = 99.5):
             atom.coord = [x+distance for x in atom.coord]
     return displaced
 
-def find_nesrest_neighbours(original, displaced, params):
+def find_nearest_neighbour(original,  params):
+    
+    displaced = generate_displaced_copy(original)
 
     o_atoms = original.get_atoms()
     d_atoms = displaced.get_atoms()
 
 
-    assert len(o_atoms) == len(d_atoms)
+    assert sum(1 for _ in o_atoms) == sum(1 for _ in d_atoms)
     
     a = params["A"]
     b = params["B"]
@@ -183,4 +186,8 @@ if __name__ == "__main__":
         molecule.generate_fractional()
         molecule.export_fractional()
         print(molecule.fractional)
+
+        molecule.get_neighbour()
+        molecule.export_neighbour()
+        print(molecule.neighbour)
         molecule.pickle()
