@@ -18,7 +18,7 @@ def sprint(*strings,**kwargs): # Print Subtitle
     str_strings = map(str, strings)
     print("\n #", " ".join(str_strings),**kwargs)
 
-def print1(*strings, space=2, end="\n"): # Print with 1 indent
+def print1(*strings, space=2, **kwargs): # Print with 1 indent
     str_strings = []
     for string in strings:
         if type(string) == list or type(string) == tuple:
@@ -27,13 +27,16 @@ def print1(*strings, space=2, end="\n"): # Print with 1 indent
         else:
             str_strings.append(str(string))
     #str_strings = map(str, strings)
-    print("{}> {}".format(" " * space, " ".join(str_strings), end=end))
+    print("{}> {}".format(" " * space, " ".join(str_strings), **kwargs))
 
 def print2(*strings, **kwargs): # Print with 2 indents
     print1(strings, space=4, **kwargs)
 
 def print3(*strings, **kwargs):
     print1(strings, space=6, **kwargs)
+
+def print4(*strings, **kwargs):
+    print1(strings, space=8, **kwargs)
 
 
 def clean_string(string, allow=(".", "_")):

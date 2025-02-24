@@ -159,7 +159,9 @@ class PDB(BioObject):
         if self.neighbour is None:
             print3("Neighbour not found")
             return None
-        self.neighbour.add(self.structure[0].copy())
+        original_model = self.structure[0].copy()
+        original_model.id = 1
+        #self.neighbour.add(original_model)
         self.neighbour_path = self.export(subfolder="neighbour", in_structure=self.neighbour, extra_id="_neighbour")
         return self.neighbour_path
 
@@ -176,13 +178,13 @@ class PDB(BioObject):
         for atom in self.fractional.get_atoms():
             if atom.is_disordered():
                 for d_atom in atom:
-                    print("dis", d_atom.coord, end=" -> ")
+                    #print("dis", d_atom.coord, end=" -> ")
                     d_atom.coord=convertFromOrthToFrac(d_atom.coord, self.params)
-                    print(d_atom.coord)
+                    #print(d_atom.coord)
             else:
-                print(atom.coord, end=" -> ")
+                #print(atom.coord, end=" -> ")
                 atom.coord=convertFromOrthToFrac(atom.coord, self.params)
-                print(atom.coord)
+                #print(atom.coord)
         return self.fractional
 
     def get_neighbour(self):
@@ -195,13 +197,13 @@ class PDB(BioObject):
         for atom in fractional_neighbour.get_atoms():
             if atom.is_disordered():
                 for d_atom in atom:
-                    print("dis", d_atom.coord, end=" -> ")
+                    #print("dis", d_atom.coord, end=" -> ")
                     d_atom.coord=convertFromFracToOrth(d_atom.coord, self.params)
-                    print(d_atom.coord)
+                    #print(d_atom.coord)
             else:
-                print(atom.coord, end=" -> ")
+                #print(atom.coord, end=" -> ")
                 atom.coord=convertFromFracToOrth(atom.coord, self.params)
-                print(atom.coord)
+                #print(atom.coord)
         self.neighbour = fractional_neighbour
         return self.neighbour
 
