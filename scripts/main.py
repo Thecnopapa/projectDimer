@@ -46,7 +46,7 @@ def main(PROCESS_ALL = False, LARGE_DATASET = True, DO_ONLY = ""):
     pickle(molecules)
     eprint("Files loaded")
 
-
+    quit()
     # Create dataframes
     sprint("Creating dataframes")
     create_dfs(references)
@@ -68,11 +68,12 @@ def main(PROCESS_ALL = False, LARGE_DATASET = True, DO_ONLY = ""):
         for monomer in monomers:
             monomer.sequence_align(references, force_align = PROCESS_ALL)
             progress.add()
+        pickle(monomers)
+        save_dfs()
+        eprint("Monomers aligned")
     except:
-        sprint("Alignments could not be prduced")
-    pickle(monomers)
-    save_dfs()
-    eprint("Monomers aligned")
+        sprint("Alignments could not be produced")
+
 
 
     # Superpose references to monomers
@@ -136,7 +137,7 @@ if __name__ == "__main__":
          LARGE_DATASET = True, # Use a large dataset (delete all local data previously to avoid errors)
          DO_ONLY = "" # ( list of strings / string) Names of pdbs to be processed (CAPS sensitive, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"
          )
-
+    quit()
 
     from surface import surface
     surface(FORCE_SASA=True,

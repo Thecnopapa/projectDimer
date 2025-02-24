@@ -94,7 +94,7 @@ class ProgressBar:
 
         if len(info) > 0:
             info+= " "
-        percentage = "|{}|{}%".format(info,add_front_0(progress, digits=2, zero = "0"))
+        percentage = "|{}|{}%".format(info,add_front_0(progress, digits=3, zero = " "))
         bar_width = self.width - len(percentage)
         progress_scaled = int(progress * bar_width //100)
         bar = "|{}>".format(self.style * progress_scaled)

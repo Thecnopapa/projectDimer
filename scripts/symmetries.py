@@ -12,6 +12,22 @@ import setup
 #from cri4.iain.borges-arcimboldo.ARCIMBOLDO_FULL import SELSLIB2
 
 
+def get_space_group(card):
+    from spaceGroups import dictio_space_groups
+    new_group = None
+    raw_group = " ".join(card["group"]).strip()
+    print(raw_group, end=" -> ")
+    for key, group in dictio_space_groups.items():
+        if raw_group == group["symbol"]:
+            new_group = group["symbol"]
+            new_key = key
+            break
+    if new_group is None:
+        print("None")
+        quit()
+    else:
+        print(new_group)
+    return new_group, new_key
 
 def get_cell_dim(card):
     return [card["a"], card["b"], card["c"], card["alpha"], card["beta"], card["gamma"]]
@@ -115,59 +131,101 @@ def convertFromFracToOrth(frac_coords, parameters):
 
 
 
-def generate_displaced_copy(original, distance = 99.5):
+def generate_displaced_copy(original, distance = 99.5, rotation = None):
+    print2("Generating displaced copy")
     if original is None:
         return None
-    from copy import deepcopy
-    displaced = deepcopy(original)
-    for atom in displaced.get_atoms():
+    displaced = original.copy()
+
+    if rotation is None:
+        for atom in displaced.get_atoms():
+            if atom.is_disordered():
+                for d_atom in atom:
+                    d_atom.coord = [x+distance for x in d_atom.coord]
+            else:
+                atom.coord = [x+distance for x in atom.coord]
+    else:
+        rot = rotation["rot"]
+        tra = rotation["tra"]
+        for atom in displaced.get_atoms():
+            if atom.is_disordered():
+                for d_atom in atom:
+                    x, y, z = d_atom.coord
+                    nx = (rot[0][0] * x) + (rot[0][1] * y) + (rot[0][2] * z) + tra[0]+distance
+                    ny = (rot[1][0] * x) + (rot[1][1] * y) + (rot[1][2] * z) + tra[1]+distance
+                    nz = (rot[2][0] * x) + (rot[2][1] * y) + (rot[2][2] * z) + tra[2]+distance
+                    d_atom.coord = [nx, ny, nz]
+            else:
+                x, y, z = atom.coord
+                nx = (rot[0][0] * x) + (rot[0][1] * y) + (rot[0][2] * z) + tra[0]*distance
+                ny = (rot[1][0] * x) + (rot[1][1] * y) + (rot[1][2] * z) + tra[1]*distance
+                nz = (rot[2][0] * x) + (rot[2][1] * y) + (rot[2][2] * z) + tra[2]*distance
+                atom.coord = [nx,ny,nz]
+
+    return displaced
+
+def find_nearest_neighbour(original, params, key):
+    print1("Finding nearest neighbour")
+    print2("Space group:", key)
+    from spaceGroups import dictio_space_groups
+    rotation_set = dictio_space_groups[key]
+    min_d2 = 0.1
+    for op_number, operation in rotation_set["symops"].items():
+
+        displaced = generate_displaced_copy(original, rotation=operation)
+
+        assert sum(1 for _ in original.get_atoms()) == sum(1 for _ in displaced.get_atoms())
+
+        a = params["A"]
+        b = params["B"]
+        c = params["C"]
+        c_a = params["c_a"]
+        c_b = params["c_b"]
+        c_g = params["c_g"]
+
+
+        for o_atom, d_atom in zip(original.get_atoms(), displaced.get_atoms()):
+            print(d_atom, o_atom)
+            deltaX = ((d_atom.coord[0] - o_atom.coord[0]) % 1) - 0.5
+            deltaY = ((d_atom.coord[1] - o_atom.coord[1]) % 1) - 0.5
+            deltaZ = ((d_atom.coord[2] - o_atom.coord[2]) % 1) - 0.5
+            print(deltaX, deltaY, deltaZ)
+
+            d2 = a**2*deltaX**2 +b**2*deltaY**2 + c**2*deltaZ**2 +2*b*c*c_a*deltaY*deltaZ +2*a*c*c_b*deltaX*deltaZ +2*a*b*c_g*deltaX*deltaY
+
+            if d2 >= min_d2:
+
+                try:
+                    if d2 < o_atom.d2[0]:
+                        o_atom.d2 = (d2, op_number)
+                except:
+                    o_atom.d2 = (d2, op_number)
+
+    neighbour = original.copy()
+    for atom in neighbour.get_atoms():
+
         if atom.is_disordered():
             for d_atom in atom:
-                d_atom.coord = [x+distance for x in d_atom.coord]
-        else:
-            atom.coord = [x+distance for x in atom.coord]
-    return displaced
-
-def find_nearest_neighbour(original,  params):
-    
-    displaced = generate_displaced_copy(original)
-
-    o_atoms = original.get_atoms()
-    d_atoms = displaced.get_atoms()
-
-
-    assert sum(1 for _ in o_atoms) == sum(1 for _ in d_atoms)
-    
-    a = params["A"]
-    b = params["B"]
-    c = params["C"]
-    c_a = params["c_a"]
-    c_b = params["c_b"]
-    c_g = params["c_g"]
-
-    
-    for o_atom, d_atom in zip(o_atoms, d_atoms):
-        deltaX = ((d_atom[0] - d_atom[0]) % 1) - 0.5
-        deltaY = ((d_atom[1] - d_atom[1]) % 1) - 0.5
-        deltaZ = ((d_atom[2] - d_atom[2]) % 1) - 0.5
-        d2 = a^2*deltaX^2 +b^2*deltaY^2 + c^2*deltaZ^2 +2*b*c*c_a*deltaY*deltaZ +2*a*c*c_b*deltaX*deltaZ +2*a*b*c_g*deltaX*deltaY
-
-        if d_atom.is_disordered():
-            # might not be 100% accurate but placeholder for now
-            assert o_atom.is_disordered() and d_atom.is_disordered()
-            for dis_d in d_atom:
-                dis_d.coord[0] = atom.coord[0] + deltaX
-                dis_d.coord[1] = atom.coord[1] + deltaY
-                dis_d.coord[2] = atom.coord[2] + deltaZ
+                d_atom.coord = coord_operation(d_atom.coord, key, atom.d2[1])
 
         else:
-            d_atom.coord[0] = atom.coord[0] + deltaX
-            d_atom.coord[1] = atom.coord[1] + deltaY
-            d_atom.coord[2] = atom.coord[2] + deltaZ
+            atom.coord = coord_operation(atom.coord, key, atom.d2[1])
 
-    return displaced
+    return neighbour
 
+def coord_operation(coord, key, op_n):
+    from spaceGroups import dictio_space_groups
+    rotation = dictio_space_groups[key]
+    print(rotation)
+    operation = rotation["symops"][op_n]
+    rot = operation["rot"]
+    tra = operation["tra"]
 
+    x, y, z = coord
+    nx = (rot[0][0] * x) + (rot[0][1] * y) + (rot[0][2] * z) + tra[0]
+    ny = (rot[1][0] * x) + (rot[1][1] * y) + (rot[1][2] * z) + tra[1]
+    nz = (rot[2][0] * x) + (rot[2][1] * y) + (rot[2][2] * z) + tra[2]
+    return nx, ny, nz
 
 
 
@@ -179,15 +237,17 @@ if __name__ == "__main__":
 
 
     from imports import load_from_files
-    molecules = load_from_files(local.many_pdbs)
+    molecules = load_from_files(local.many_pdbs, force_reload =False)
+    tprint("Generating symmetries...")
     for molecule in molecules:
-        print(molecule.id)
-        molecule.read_card()
+        sprint(molecule.id)
         molecule.generate_fractional()
         molecule.export_fractional()
-        print(molecule.fractional)
+        print2(molecule.fractional)
 
         molecule.get_neighbour()
         molecule.export_neighbour()
-        print(molecule.neighbour)
+        print2(molecule.neighbour)
         molecule.pickle()
+
+    eprint("Symmetries generated")

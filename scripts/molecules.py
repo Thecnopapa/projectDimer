@@ -104,16 +104,19 @@ class PDB(BioObject):
         self.fractional_path = None
         self.card = None
         self.params = None
+        self.space_group = None
         self.read_card()
     
     def read_card(self):
-        from symmetries import get_crystal, calculate_parameters
+        from symmetries import get_crystal, calculate_parameters, get_space_group
         try:
            self.card = get_crystal(self.o_path)
            self.params = calculate_parameters(self.card)
+           self.space_group = get_space_group(self.card)
         except:
             self.card = None
             self.params = None
+            self.space_group = None
         return self.card
 
     def get_monomers(self, as_reference=False):
@@ -141,29 +144,34 @@ class PDB(BioObject):
         return self.dimers
 
     def export_fractional(self):
+        print2("Exporting fractional")
         if self.fractional is None:
             self.generate_fractional()
         if self.fractional is None:
             return None
-        self.fractional_path = self.export(subfolder="fracional", in_structure=self.fractional, extra_id="_fractional")
+        self.fractional_path = self.export(subfolder="fractional", in_structure=self.fractional, extra_id="_fractional")
         return self.fractional_path
     
     def export_neighbour(self):
+        print2("Exporting neighbour")
         if self.neighbour is None:
             self.get_neighbour()
         if self.neighbour is None:
+            print3("Neighbour not found")
             return None
+        self.neighbour.add(self.structure[0].copy())
         self.neighbour_path = self.export(subfolder="neighbour", in_structure=self.neighbour, extra_id="_neighbour")
         return self.neighbour_path
 
     def generate_fractional(self):
+        print1("Generating fractional")
         if self.params is None:
             return None
     
-        from copy import deepcopy
+
         if self.structure is None:
             return None
-        self.fractional = deepcopy(self.structure)
+        self.fractional = self.structure.copy()
         from symmetries import convertFromOrthToFrac
         for atom in self.fractional.get_atoms():
             if atom.is_disordered():
@@ -178,10 +186,12 @@ class PDB(BioObject):
         return self.fractional
 
     def get_neighbour(self):
+        print1("Getting neighbour")
         if self.params is None or self.fractional is None:
+            print("Params or fractional not found:", self.params,self.fractional)
             return None
         from symmetries import find_nearest_neighbour,  convertFromFracToOrth
-        fractional_neighbour = find_nearest_neighbour(self.fractional,self.params)
+        fractional_neighbour = find_nearest_neighbour(self.fractional,self.params, self.space_group[1])
         for atom in fractional_neighbour.get_atoms():
             if atom.is_disordered():
                 for d_atom in atom:
