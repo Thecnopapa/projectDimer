@@ -132,7 +132,7 @@ def convertFromFracToOrth(frac_coords, parameters):
 
 
 def generate_displaced_copy(original, distance = 99.5, rotation = None):
-    print2("Generating displaced copy")
+    print4("Generating displaced copy")
     if original is None:
         return None
     displaced = original.copy()
@@ -157,9 +157,9 @@ def generate_displaced_copy(original, distance = 99.5, rotation = None):
                     d_atom.coord = [nx, ny, nz]
             else:
                 x, y, z = atom.coord
-                nx = (rot[0][0] * x) + (rot[0][1] * y) + (rot[0][2] * z) + tra[0]*distance
-                ny = (rot[1][0] * x) + (rot[1][1] * y) + (rot[1][2] * z) + tra[1]*distance
-                nz = (rot[2][0] * x) + (rot[2][1] * y) + (rot[2][2] * z) + tra[2]*distance
+                nx = (rot[0][0] * x) + (rot[0][1] * y) + (rot[0][2] * z) + tra[0]+distance
+                ny = (rot[1][0] * x) + (rot[1][1] * y) + (rot[1][2] * z) + tra[1]+distance
+                nz = (rot[2][0] * x) + (rot[2][1] * y) + (rot[2][2] * z) + tra[2]+distance
                 atom.coord = [nx,ny,nz]
 
     return displaced
@@ -169,10 +169,10 @@ def find_nearest_neighbour(original, params, key):
     print2("Space group:", key)
     from spaceGroups import dictio_space_groups
     rotation_set = dictio_space_groups[key]
-    min_d2 = 0.1
+    min_d2 = 1
     for op_number, operation in rotation_set["symops"].items():
-
-        displaced = generate_displaced_copy(original, rotation=operation)
+        print3("Symmetry operation:", op_number)
+        displaced = generate_displaced_copy(original, distance= 0, rotation=operation)
 
         assert sum(1 for _ in original.get_atoms()) == sum(1 for _ in displaced.get_atoms())
 
@@ -185,25 +185,34 @@ def find_nearest_neighbour(original, params, key):
 
 
         for o_atom, d_atom in zip(original.get_atoms(), displaced.get_atoms()):
-            print(d_atom, o_atom)
-            deltaX = ((d_atom.coord[0] - o_atom.coord[0]) % 1) - 0.5
-            deltaY = ((d_atom.coord[1] - o_atom.coord[1]) % 1) - 0.5
-            deltaZ = ((d_atom.coord[2] - o_atom.coord[2]) % 1) - 0.5
-            print(deltaX, deltaY, deltaZ)
+            #print(d_atom, o_atom)
+            deltaX = ((d_atom.coord[0] - o_atom.coord[0]) % 1)# - 0.5
+            deltaY = ((d_atom.coord[1] - o_atom.coord[1]) % 1)# - 0.5
+            deltaZ = ((d_atom.coord[2] - o_atom.coord[2]) % 1)# - 0.5
+            #print4("Distances:",deltaX, deltaY, deltaZ)
 
-            d2 = a**2*deltaX**2 +b**2*deltaY**2 + c**2*deltaZ**2 +2*b*c*c_a*deltaY*deltaZ +2*a*c*c_b*deltaX*deltaZ +2*a*b*c_g*deltaX*deltaY
+            d2 = (a**2)*(deltaX**2) + (b**2)*(deltaY**2) + (c**2)*(deltaZ**2) +2*b*c*c_a*deltaY*deltaZ +2*a*c*c_b*deltaX*deltaZ +2*a*b*c_g*deltaX*deltaY
 
             if d2 >= min_d2:
-
                 try:
                     if d2 < o_atom.d2[0]:
                         o_atom.d2 = (d2, op_number)
+                        print4("D2:", d2)
+                    else:
+                        print4("D2:", d2, end="\r")
                 except:
                     o_atom.d2 = (d2, op_number)
+                    print4("D2:", d2)
+            else:
+                print4("D2: identity", end="\r")
 
     neighbour = original.copy()
     for atom in neighbour.get_atoms():
-
+        try:
+            atom.d2
+        except:
+            atom.d2 = (0, 1)
+        atom.bfactor = atom.d2[1]
         if atom.is_disordered():
             for d_atom in atom:
                 d_atom.coord = coord_operation(d_atom.coord, key, atom.d2[1])
@@ -216,7 +225,7 @@ def find_nearest_neighbour(original, params, key):
 def coord_operation(coord, key, op_n):
     from spaceGroups import dictio_space_groups
     rotation = dictio_space_groups[key]
-    print(rotation)
+    #print(rotation)
     operation = rotation["symops"][op_n]
     rot = operation["rot"]
     tra = operation["tra"]
