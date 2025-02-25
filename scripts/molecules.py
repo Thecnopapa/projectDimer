@@ -1,6 +1,4 @@
 import os
-
-
 from utilities import *
 from Globals import root, local, vars
 from Bio.PDB import PDBParser, MMCIFParser, PDBIO, StructureBuilder, Structure
@@ -186,8 +184,9 @@ class PDB(BioObject):
         if self.params is None or self.fractional is None:
             print("Params or fractional not found:", self.params,self.fractional)
             return None
-        from symmetries import find_nearest_neighbour,  convertFromFracToOrth
-        fractional_neighbour = find_nearest_neighbour(self.fractional,self.params, self.space_group[1])
+        from symmetries import find_nearest_neighbour,  convertFromFracToOrth, find_nearest_neighbour_by_chain
+        #fractional_neighbour = find_nearest_neighbour(self.fractional,self.params, self.space_group[1])
+        fractional_neighbour = find_nearest_neighbour_by_chain(self.fractional,self.params, self.space_group[1])
         if fractional_neighbour is None:
             self.neighbour = None
             return None

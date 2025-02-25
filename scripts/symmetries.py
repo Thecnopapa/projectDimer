@@ -255,6 +255,103 @@ def coord_add(coord, deltas):
     return [nx, ny, nz]
 
 
+def find_nearest_neighbour_by_chain(original, params, key):
+    print1("Finding nearest neighbour")
+    print2("Space group:", key)
+    from spaceGroups import dictio_space_groups
+    rotation_set = dictio_space_groups[key]
+    min_d2 = 0
+    if len(rotation_set["symops"].items()) <= 1:
+        return None
+
+
+    for op_number, operation in rotation_set["symops"].items():
+        print3("Symmetry operation:", op_number)
+
+        displaced = generate_displaced_copy(original, distance= 99.5, rotation=operation)
+
+        assert sum(1 for _ in original.get_atoms()) == sum(1 for _ in displaced.get_atoms())
+
+        a = params["A"]
+        b = params["B"]
+        c = params["C"]
+        c_a = params["c_a"]
+        c_b = params["c_b"]
+        c_g = params["c_g"]
+
+        for chain in original[0].get_chains():
+            if sum([1 for _ in chain.get_residues()]) < 50:
+                continue
+            print(chain)
+
+            from maths import find_com
+            com = find_com(chain.get_atoms())
+            #print("COM:", com)
+
+            for o_atom, d_atom in zip(original.get_atoms(), displaced.get_atoms()):
+                if op_number == 1 and o_atom.get_full_id()[2] == chain.id:
+                    continue
+                #print(d_atom, o_atom)
+                '''deltaX = ((d_atom.coord[0] - o_atom.coord[0]) % 1) - 0.5
+                deltaY = ((d_atom.coord[1] - o_atom.coord[1]) % 1) - 0.5
+                deltaZ = ((d_atom.coord[2] - o_atom.coord[2]) % 1) - 0.5'''
+                deltaX = ((d_atom.coord[0] - com[0]) % 1) - 0.5
+                deltaY = ((d_atom.coord[1] - com[1]) % 1) - 0.5
+                deltaZ = ((d_atom.coord[2] - com[2]) % 1) - 0.5
+                #print4("Distances:",deltaX, deltaY, deltaZ)
+
+                d2 = (a**2)*(deltaX**2) + (b**2)*(deltaY**2) + (c**2)*(deltaZ**2) +2*b*c*c_a*deltaY*deltaZ +2*a*c*c_b*deltaX*deltaZ +2*a*b*c_g*deltaX*deltaY
+                #print3(d2)
+                if d2 >= min_d2:
+                    try:
+                        if d2 < o_atom.d2[chain.id][0]:
+                            o_atom.d2[chain.id] =  [d2, op_number, (deltaX,deltaY,deltaZ)]
+                            #print4("D2:", d2)
+                        else:
+                            #print4("D2:", d2, end="\r")
+                            pass
+                    except:
+                        o_atom.d2 = {chain.id: [d2, op_number, (deltaX,deltaY,deltaZ)]}
+                        #print4("D2:", d2)
+                else:
+                    #print4("D2: identity", end="\r")
+                    pass
+
+
+
+
+
+    neighbour = original.copy()
+    for i, chain in enumerate(neighbour.get_chains()):
+        new_model = neighbour[0].copy()
+        new_model.id += i+1
+        neighbour.add(new_model)
+
+        from maths import find_com
+        com = find_com(chain.get_atoms())
+
+
+        for atom in new_model.get_atoms():
+            try:
+                atom.d2[chain.id]
+            except:
+                print("Atom", atom.id,"has no d2:")#, atom.__dict__)
+                atom.d2[chain.id] = [0, 1, (0,0,0)]
+
+            atom.bfactor = atom.d2[chain.id][1]
+            if atom.is_disordered():
+                for d_atom in atom:
+                    d_atom.coord = coord_add(com, atom.d2[chain.id][2])
+
+            else:
+                atom.coord = coord_add(com, atom.d2[chain.id][2])
+    return neighbour
+
+
+
+
+
+
 
 if __name__ == "__main__":
 
