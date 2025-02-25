@@ -246,7 +246,7 @@ if __name__ == "__main__":
 
 
     from imports import load_from_files
-    molecules = load_from_files(local.many_pdbs, force_reload =False)
+    molecules = load_from_files(local.many_pdbs, force_reload =True)
     tprint("Generating symmetries...")
     for molecule in molecules:
         sprint(molecule.id)
