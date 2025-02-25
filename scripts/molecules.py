@@ -153,8 +153,8 @@ class PDB(BioObject):
         if self.neighbour is None:
             print3("Neighbour not found")
             return None
-        original_model = self.structure[0].copy()
-        original_model.id = 1
+        #original_model = self.structure[0].copy()
+        #original_model.id = 1
         #self.neighbour.add(original_model)
         self.neighbour_path = self.export(subfolder="neighbour", in_structure=self.neighbour, extra_id="_neighbour")
         return self.neighbour_path
@@ -180,6 +180,7 @@ class PDB(BioObject):
         return self.fractional
 
     def get_neighbour(self):
+        sprint(self.id)
         print1("Getting neighbour")
         if self.params is None or self.fractional is None:
             print("Params or fractional not found:", self.params,self.fractional)
