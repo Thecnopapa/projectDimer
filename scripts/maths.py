@@ -198,10 +198,19 @@ def points_to_line(start,end):
     return list(zip(start,end))
 
 def find_com(atoms):
+    import types
+    if isinstance(atoms, types.GeneratorType):
+        atoms = list(atoms)
     com = [0, 0, 0]
     for atom in atoms:
-        com += atom.coord
-    return com / len(atoms)
+        #print(com, atom.coord)
+        com[0] += atom.coord[0]
+        com[1] += atom.coord[1]
+        com[2] += atom.coord[2]
+    com[0] /= len(atoms)
+    com[1] /= len(atoms)
+    com[2] /= len(atoms)
+    return com
 
 
 

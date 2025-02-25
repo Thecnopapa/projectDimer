@@ -169,10 +169,14 @@ def find_nearest_neighbour(original, params, key):
     print2("Space group:", key)
     from spaceGroups import dictio_space_groups
     rotation_set = dictio_space_groups[key]
-    min_d2 = 1
+    min_d2 = 0
+    if len(rotation_set["symops"].items()) <= 1:
+        return None
     for op_number, operation in rotation_set["symops"].items():
         print3("Symmetry operation:", op_number)
-        displaced = generate_displaced_copy(original, distance= 0, rotation=operation)
+        if op_number == 1:
+            continue
+        displaced = generate_displaced_copy(original, distance= 99.5, rotation=operation)
 
         assert sum(1 for _ in original.get_atoms()) == sum(1 for _ in displaced.get_atoms())
 
@@ -183,28 +187,35 @@ def find_nearest_neighbour(original, params, key):
         c_b = params["c_b"]
         c_g = params["c_g"]
 
-
+        from maths import find_com
+        com = find_com(original.get_atoms())
+        #print("COM:", com)
         for o_atom, d_atom in zip(original.get_atoms(), displaced.get_atoms()):
             #print(d_atom, o_atom)
-            deltaX = ((d_atom.coord[0] - o_atom.coord[0]) % 1)# - 0.5
-            deltaY = ((d_atom.coord[1] - o_atom.coord[1]) % 1)# - 0.5
-            deltaZ = ((d_atom.coord[2] - o_atom.coord[2]) % 1)# - 0.5
+            '''deltaX = ((d_atom.coord[0] - o_atom.coord[0]) % 1) - 0.5
+            deltaY = ((d_atom.coord[1] - o_atom.coord[1]) % 1) - 0.5
+            deltaZ = ((d_atom.coord[2] - o_atom.coord[2]) % 1) - 0.5'''
+            deltaX = ((d_atom.coord[0] - com[0]) % 1) - 0.5
+            deltaY = ((d_atom.coord[1] - com[1]) % 1) - 0.5
+            deltaZ = ((d_atom.coord[2] - com[2]) % 1) - 0.5
             #print4("Distances:",deltaX, deltaY, deltaZ)
 
             d2 = (a**2)*(deltaX**2) + (b**2)*(deltaY**2) + (c**2)*(deltaZ**2) +2*b*c*c_a*deltaY*deltaZ +2*a*c*c_b*deltaX*deltaZ +2*a*b*c_g*deltaX*deltaY
-
+            #print3(d2)
             if d2 >= min_d2:
                 try:
                     if d2 < o_atom.d2[0]:
-                        o_atom.d2 = (d2, op_number)
-                        print4("D2:", d2)
+                        o_atom.d2 = (d2, op_number, (deltaX,deltaY,deltaZ))
+                        #print4("D2:", d2)
                     else:
-                        print4("D2:", d2, end="\r")
+                        #print4("D2:", d2, end="\r")
+                        pass
                 except:
-                    o_atom.d2 = (d2, op_number)
-                    print4("D2:", d2)
+                    o_atom.d2 = (d2, op_number, (deltaX,deltaY,deltaZ))
+                    #print4("D2:", d2)
             else:
-                print4("D2: identity", end="\r")
+                #print4("D2: identity", end="\r")
+                pass
 
     neighbour = original.copy()
     for atom in neighbour.get_atoms():
@@ -215,10 +226,10 @@ def find_nearest_neighbour(original, params, key):
         atom.bfactor = atom.d2[1]
         if atom.is_disordered():
             for d_atom in atom:
-                d_atom.coord = coord_operation(d_atom.coord, key, atom.d2[1])
+                d_atom.coord = coord_add(com, atom.d2[2])
 
         else:
-            atom.coord = coord_operation(atom.coord, key, atom.d2[1])
+            atom.coord = coord_add(com, atom.d2[2])
 
     return neighbour
 
@@ -236,6 +247,12 @@ def coord_operation(coord, key, op_n):
     nz = (rot[2][0] * x) + (rot[2][1] * y) + (rot[2][2] * z) + tra[2]
     return nx, ny, nz
 
+def coord_add(coord, deltas):
+    x, y, z = coord
+    nx = x + deltas[0]
+    ny = y + deltas[1]
+    nz = z + deltas[2]
+    return [nx, ny, nz]
 
 
 
@@ -246,7 +263,7 @@ if __name__ == "__main__":
 
 
     from imports import load_from_files
-    molecules = load_from_files(local.many_pdbs, force_reload =True)
+    molecules = load_from_files(local.many_pdbs, force_reload =False)
     tprint("Generating symmetries...")
     for molecule in molecules:
         sprint(molecule.id)

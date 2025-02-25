@@ -146,16 +146,12 @@ class PDB(BioObject):
     def export_fractional(self):
         print2("Exporting fractional")
         if self.fractional is None:
-            self.generate_fractional()
-        if self.fractional is None:
             return None
         self.fractional_path = self.export(subfolder="fractional", in_structure=self.fractional, extra_id="_fractional")
         return self.fractional_path
     
     def export_neighbour(self):
         print2("Exporting neighbour")
-        if self.neighbour is None:
-            self.get_neighbour()
         if self.neighbour is None:
             print3("Neighbour not found")
             return None
@@ -169,8 +165,6 @@ class PDB(BioObject):
         print1("Generating fractional")
         if self.params is None:
             return None
-    
-
         if self.structure is None:
             return None
         self.fractional = self.structure.copy()
@@ -194,6 +188,9 @@ class PDB(BioObject):
             return None
         from symmetries import find_nearest_neighbour,  convertFromFracToOrth
         fractional_neighbour = find_nearest_neighbour(self.fractional,self.params, self.space_group[1])
+        if fractional_neighbour is None:
+            self.neighbour = None
+            return None
         for atom in fractional_neighbour.get_atoms():
             if atom.is_disordered():
                 for d_atom in atom:
