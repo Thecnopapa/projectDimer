@@ -60,28 +60,44 @@ def generate_html():
     pass
 
 
-def show_objects(obj_list):
+def show_objects(obj_list, args):
     for obj in obj_list:
-            sprint(obj.id)
-            print(obj.__dict__)
+        sprint(obj.id)
+        print(obj.__dict__)
+        for key, item in obj.__dict__.items():
+            #print(str(type(item)))
+            if type(item) == list:
+                print1(key,":")
+                for i in item:
+                    print2(i)
+            if type(item) in (str, int, float,  bool):
+                print1(key,":",item)
+            if type(item) == dict:
+                print1(key, ":")
+                for k, v in item.items():
+                    print2(k,":",v)
+            if "molecules" in str(type(item)):
+                print1(key, ":", item)
+            if "Bio" in str(type(item)):
+                print1(key, ":", item)
+            if item is None:
+                print1(key, ":", "None")
+        if "pymol" in args:
+            from pyMol import pymol_start, pymol_load_path, pymol_format
+            pymol_start(show=True)
             for key, item in obj.__dict__.items():
-                #print(str(type(item)))
-                if type(item) == list:
-                    print1(key,":")
-                    for i in item:
-                        print2(i)
-                if type(item) in (str, int, float,  bool):
-                    print1(key,":",item)
-                if type(item) == dict:
-                    print1(key, ":")
-                    for k, v in item.items():
-                        print2(k,":",v)
-                if "molecules" in str(type(item)):
-                    print1(key, ":", item)
-                if "Bio" in str(type(item)):
-                    print1(key, ":", item)
-                if item is None:
-                    print1(key, ":", "None")
+                if type(item) == str:
+                    if item.endswith(".pdb") and not "fractional" in item:
+                        if "many_pdbs" in item:
+                            pymol_load_path(item, os.path.basename(item)+"_original")
+                        elif "pdb_molecules" in item:
+                            pymol_load_path(item, os.path.basename(item) + "_processed")
+                        else:
+                            pymol_load_path(item)
+                        pymol_format("surface", "neighbour", "all")
+                        pymol_format("mesh", "original", "all")
+                        pymol_format("mesh", "processed", "all")
+
 
 
 
@@ -111,23 +127,23 @@ if __name__ == "__main__":
 
 
 
-    if ("dimer" in sys.argv[1] or "dimers" in sys.argv[1]) and len(sys.argv[2:]) != 0:
+    if "dimer" in sys.argv[1] and len(sys.argv[2:]) != 0:
         vars["do_only"] = sys.argv[2:]
         dimers = load_dimers()
         tprint("Showing dimers")
-        show_objects(dimers)
+        show_objects(dimers, sys.argv[2:])
 
-    elif ("monomer" in sys.argv[1] or "monomers" in sys.argv[1]) and len(sys.argv[2:]) != 0:
+    elif "monomer" in sys.argv[1] and len(sys.argv[2:]) != 0:
         vars["do_only"] = sys.argv[2:]
         monomers = load_monomers()
         tprint("Showing monomers")
-        show_objects(monomers)
+        show_objects(monomers, sys.argv[2:])
 
-    elif ("molecule" in sys.argv[1] or "molecules" in sys.argv[1] or "pdbs" in sys.argv[1]) and len(sys.argv[2:]) != 0:
+    elif ("molecule" in sys.argv[1] or "pdb" in sys.argv[1]) and len(sys.argv[2:]) != 0:
         vars["do_only"] = sys.argv[2:]
         molecules = load_from_files(local.many_pdbs)
         tprint("Showing molecules")
-        show_objects(molecules)
+        show_objects(molecules, sys.argv[2:])
 
 
     elif ("clusters-eva" in sys.argv[1]):

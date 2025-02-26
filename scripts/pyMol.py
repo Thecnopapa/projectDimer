@@ -46,9 +46,29 @@ def pymol_reset():
 def pymol_load_name(file_name, folder):
     pymol.cmd.load(folder,file_name)
 
-def pymol_load_path(path, state = 0):
-    pymol.cmd.load(path,os.path.basename(path))
+def pymol_load_path(path,  name=None, state = -1,):
+    if name is None:
+        pymol.cmd.load(path,os.path.basename(path))
+    else:
+        pymol.cmd.load(path,name)
     pymol.cmd.set("state", state)
+
+def pymol_hide(sele, hide = None):
+    all_reprs = ["lines","spheres","mesh","ribbon","cartoon","sticks","dots","surface","labels","nonbonded","nb_spheres"]
+    if hide is not None:
+        if hide is "all":
+            hide = " ".join(all_reprs)
+        pymol.cmd.hide(representation=hide, selection=sele)
+
+def pymol_format(representation,identifier="", hide="all"):
+    for obj in get_all_obj():
+        if identifier in obj:
+            pymol_hide(obj, hide=hide)
+            pymol.cmd.show(representation=representation, selection=obj)
+
+def pymol_colour():
+    pass
+
 
 def pymol_save_small(file_name, folder, dpi=300, height=100, width=100, save_session=None):
     image_path = os.path.join(folder, file_name+".png")
