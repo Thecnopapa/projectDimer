@@ -352,6 +352,19 @@ def find_nearest_neighbour_by_chain(original, params, key, orth_struct):
     return neighbour
 
 
+def check_matching_coords(subset, target):
+    bool_list = []
+    for atom1 in subset:
+        for atom2 in target:
+            if atom1.id == atom2.id:
+                if atom1.coord == atom2.coord:
+                    bool_list.apoend(True)
+                else:
+                    bool_list.append(False)
+                break
+    matching = not (False in bool_list)
+    return matching, bool_list
+
 
 def reconstruct_relevant_neighbours(neighbour):
     print1("Reconstructing relevant neighbours")
@@ -370,9 +383,26 @@ def reconstruct_relevant_neighbours(neighbour):
         print2(chain, model)
         operations = list(set([atom.bfactor for atom in model.get_atoms()]))
         for i, op in enumerate(operations):
-            operations[i] = (op, sum([1 for atom in model.get_atoms() if atom.bfactor == op]))
+            num_atoms = sum([1 for atom in model.get_atoms() if atom.bfactor == op])
+            num_contacts = {}
+            for c in list(set([atom.get_full_id()[2] for atom in model.get_atoms() if atom.bfactor == op])):
+                n=0
+                for atom in model.get_atoms():
+                    if atom.bfactor != op or atom.get_full_id()[2] != c:
+                        continue
+                    for c_atom in chain.get_atoms():
+                        from maths import distance
+                        if distance(atom.coord, c_atom.coord) <= 8:
+                            n += 1
+                            break
+                num_contacts[c] = n
+            operations[i] = (op, num_atoms, num_contacts)
         print3("Operations:", operations)
 
+
+        for op in operations:
+            pass
+                
 
     return dimers
 
