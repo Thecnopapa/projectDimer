@@ -201,16 +201,19 @@ def find_com(atoms):
     import types
     if isinstance(atoms, types.GeneratorType):
         atoms = list(atoms)
-    com = [0, 0, 0]
+    x = 0
+    y = 0
+    z = 0
     for atom in atoms:
         #print(com, atom.coord)
-        com[0] += atom.coord[0]
-        com[1] += atom.coord[1]
-        com[2] += atom.coord[2]
-    com[0] /= len(atoms)
-    com[1] /= len(atoms)
-    com[2] /= len(atoms)
-    return com
+        x += atom.coord[0]
+        y += atom.coord[1]
+        z += atom.coord[2]
+    x /= len(atoms)
+    y /= len(atoms)
+    z /= len(atoms)
+    #print(len(atoms), end = " -> ")
+    return x, y, z
 
 
 

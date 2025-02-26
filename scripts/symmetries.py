@@ -255,7 +255,7 @@ def coord_add(coord, deltas):
     return [nx, ny, nz]
 
 
-def find_nearest_neighbour_by_chain(original, params, key):
+def find_nearest_neighbour_by_chain(original, params, key, orth_struct):
     print1("Finding nearest neighbour")
     print2("Space group:", key)
     from spaceGroups import dictio_space_groups
@@ -265,9 +265,9 @@ def find_nearest_neighbour_by_chain(original, params, key):
         return None
 
     chains = []
-    for chain in original.get_chains():
+    for chain, orth_chain in zip(original.get_chains(), orth_struct.get_chains()):
         if sum([1 for _ in chain.get_residues()]) >= 100:
-            chains.append(chain)
+            chains.append((chain, orth_chain))
 
     print2(chains)
 
@@ -285,12 +285,19 @@ def find_nearest_neighbour_by_chain(original, params, key):
         c_b = params["c_b"]
         c_g = params["c_g"]
 
-        for chain in chains:
+        for chain, orth_chain in chains:
             print3(chain)
 
             from maths import find_com
             try:
-                com = find_com(chain.get_atoms())
+                orth_com = find_com(orth_chain.get_atoms())
+                com = convertFromOrthToFrac(orth_com, params)
+                print2("COM:", [round(x, 2) for x in com], [round(x, 2) for x in orth_com])
+                #com = find_com(chain.get_atoms())
+                #print(com)
+                #print(convertFromOrthToFrac(find_com(orth_chain.get_atoms()), params))
+
+
             except:
                 print(chain, sum([1 for _ in chain.get_atoms()]))
                 #print(chain.__dict__)
@@ -301,7 +308,7 @@ def find_nearest_neighbour_by_chain(original, params, key):
             for o_atom, d_atom in zip(original.get_atoms(), displaced.get_atoms()):
                 if op_number == 1 and o_atom.get_full_id()[2] == chain.id:
                     continue
-                #print(d_atom, o_atom)
+
                 '''deltaX = ((d_atom.coord[0] - o_atom.coord[0]) % 1) - 0.5
                 deltaY = ((d_atom.coord[1] - o_atom.coord[1]) % 1) - 0.5
                 deltaZ = ((d_atom.coord[2] - o_atom.coord[2]) % 1) - 0.5'''
@@ -318,20 +325,20 @@ def find_nearest_neighbour_by_chain(original, params, key):
                     o_atom.d2 = {}
                 #print(o_atom.d2.keys(), chain.id, )
                 if chain.id in o_atom.d2.keys():
-                    #print(d2, o_atom.d2[chain.id][0])
+                    #print3(d2, o_atom.d2[chain.id][0])
                     if d2 < o_atom.d2[chain.id][0]:
                             o_atom.d2[chain.id] =  [d2, op_number, (deltaX,deltaY,deltaZ)]
-                            #print4("D2:", d2)
+                            print4("D2:", d2)
                 else:
                     o_atom.d2[chain.id] = [d2, op_number, (deltaX,deltaY,deltaZ)]
-                    #print4("D2:", d2)
+                    print4("D2:", d2)
 
 
 
     print2("Generating neighbour")
     neighbour = original.copy()
     i = 1
-    for chain in chains:
+    for chain, orth_chain in chains:
         new_model = original[0].copy()
         new_model.id += i
         neighbour.add(new_model)
@@ -339,15 +346,18 @@ def find_nearest_neighbour_by_chain(original, params, key):
         print3(chain, new_model.id)
 
         from maths import find_com
-        com = find_com(chain.get_atoms())
+        orth_com = find_com(orth_chain.get_atoms())
+        com = convertFromOrthToFrac(orth_com, params)
+        print2("COM:", [round(x, 2) for x in com], [round(x, 2) for x in orth_com])
 
 
         for atom in new_model.get_atoms():
-            try:
+            #atom.d2[chain.id]
+            '''try:
                 atom.d2[chain.id]
             except:
                 #print("Atom", atom.id,"has no d2:")#, atom.__dict__)
-                atom.d2[chain.id] = [0, 1, (0,0,0)]
+                atom.d2[chain.id] = [0, 1, (0,0,0)]'''
 
             #print(atom.d2[chain.id])
             atom.bfactor = atom.d2[chain.id][1]
@@ -358,6 +368,25 @@ def find_nearest_neighbour_by_chain(original, params, key):
             else:
                 atom.coord = coord_add(com, atom.d2[chain.id][2])
     return neighbour
+
+def reconstruct_relevant_neighbours(neighbour):
+    print1("Reconstructing relevant neighbours")
+    if neighbour is None:
+        return None
+    dimers = []
+    original = neighbour[0]
+
+    chains = []
+    for chain in original.get_chains():
+        if sum([1 for _ in chain.get_residues()]) >= 100:
+            chains.append(chain)
+    print2(chains)
+
+    for chain in chains:
+        model = neighbour[chains.index(chain)+1]
+        print(chain,model)
+
+    return dimers
 
 
 
@@ -371,20 +400,14 @@ if __name__ == "__main__":
     import setup
     from Globals import *
 
-    #vars["do_only"] = ["1M2Z"]
+    #vars["do_only"] = ["9CWN"]
 
     from imports import load_from_files
     molecules = load_from_files(local.many_pdbs, force_reload =False)
     tprint("Generating symmetries...")
     for molecule in molecules:
         sprint(molecule.id)
-        molecule.generate_fractional()
-        molecule.export_fractional()
-        print2(molecule.fractional)
-
-        molecule.get_neighbour()
-        molecule.export_neighbour()
-        print2(molecule.neighbour)
+        molecule.get_all_dimers()
         molecule.pickle()
 
     eprint("Symmetries generated")

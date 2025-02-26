@@ -138,6 +138,17 @@ class PDB(BioObject):
                     if monomer2.id != monomer1.id and monomer2.id not in done:
                         self.dimers.append(Dimer(monomer1, monomer2))
                 done.append(monomer1.id)
+        return self.dimers
+
+
+    def get_all_dimers(self, force = False):
+        done = []
+        self.dimers = []
+        self.generate_fractional()
+        self.get_neighbour()
+        from symmetries import reconstruct_relevant_neighbours
+        dimer_list = reconstruct_relevant_neighbours(self.neighbour)
+        print(dimer_list)
 
         return self.dimers
 
@@ -177,9 +188,10 @@ class PDB(BioObject):
                 #print(atom.coord, end=" -> ")
                 atom.coord=convertFromOrthToFrac(atom.coord, self.params)
                 #print(atom.coord)
+        self.export_fractional()
         return self.fractional
 
-    def get_neighbour(self):
+    def get_neighbour(self, force = False):
         sprint(self.id)
         print1("Getting neighbour")
         if self.params is None or self.fractional is None:
@@ -187,7 +199,8 @@ class PDB(BioObject):
             return None
         from symmetries import find_nearest_neighbour,  convertFromFracToOrth, find_nearest_neighbour_by_chain
         #fractional_neighbour = find_nearest_neighbour(self.fractional,self.params, self.space_group[1])
-        fractional_neighbour = find_nearest_neighbour_by_chain(self.fractional,self.params, self.space_group[1])
+        fractional_neighbour = find_nearest_neighbour_by_chain(self.fractional,self.params, self.space_group[1], self.structure)
+
         if fractional_neighbour is None:
             self.neighbour = None
             return None
@@ -202,6 +215,7 @@ class PDB(BioObject):
                 atom.coord=convertFromFracToOrth(atom.coord, self.params)
                 #print(atom.coord)
         self.neighbour = fractional_neighbour
+        self.export_neighbour()
         return self.neighbour
 
 
