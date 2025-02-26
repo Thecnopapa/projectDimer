@@ -351,6 +351,8 @@ def find_nearest_neighbour_by_chain(original, params, key, orth_struct):
                 atom.coord = coord_add(chain.com, atom.d2[chain.id][2])
     return neighbour
 
+
+
 def reconstruct_relevant_neighbours(neighbour):
     print1("Reconstructing relevant neighbours")
     if neighbour is None:
@@ -362,11 +364,15 @@ def reconstruct_relevant_neighbours(neighbour):
     for chain in original.get_chains():
         if sum([1 for _ in chain.get_residues()]) >= 100:
             chains.append(chain)
-    print2(chains)
 
     for chain in chains:
         model = neighbour[chains.index(chain)+1]
-        print(chain,model)
+        print2(chain, model)
+        operations = list(set([atom.bfactor for atom in model.get_atoms()]))
+        for i, op in enumerate(operations):
+            operations[i] = (op, sum([1 for atom in model.get_atoms() if atom.bfactor == op]))
+        print3("Operations:", operations)
+
 
     return dimers
 
@@ -382,7 +388,7 @@ if __name__ == "__main__":
     import setup
     from Globals import *
 
-    #vars["do_only"] = ["9CWN"]
+    vars["do_only"] = ["1M2Z"]
 
     from imports import load_from_files
     molecules = load_from_files(local.many_pdbs, force_reload =False)
