@@ -365,7 +365,7 @@ def clustering(FORCE_ALL = False, FORCE_SM = True, FORCE_CC = True, FORCE_CLUSTE
 def get_cluster_score(df, primary, secondary):
     scores = []
     for cluster in df[primary].unique():
-        print1(cluster)
+        #print1(cluster)
         f_df = df[df[primary] == cluster]
         cluster_total = len(f_df)
         counts = []
@@ -375,29 +375,29 @@ def get_cluster_score(df, primary, secondary):
         for unique_group in groups:
             c = group_list.count(unique_group)
             counts.append(c)
-            print2(unique_group, c)
+            #print2(unique_group, c)
         maximum = max(counts)
         score = maximum / cluster_total
         scores.append(score)
-        print3("Score:", round(score, 2))
+        #print3("Score:", round(score, 2))
     av_score = sum(scores) / len(scores)
     return av_score, scores
 
 
 
-def calculate_scores_GR(df, name="undefined"):
+def calculate_scores_GR(df, name="undefined", save = True):
     if "scores_df.csv" in os.listdir(root.dataframes):
         scores_df = pd.read_csv(os.path.join(root.dataframes, "scores_df.csv"), index_col=0)
     else:
         scores_df = pd.DataFrame(columns = ["label", "cc_score", "eva_score", "cc_values", "eva_values" ])
-
-    print(scores_df)
-
+    if not save:
+        name = "current"
     cc_scores = get_cluster_score(df, primary="cluster", secondary="group")
     eva_scores = get_cluster_score(df, primary="group", secondary="cluster")
     scores_df.loc[len(scores_df)]= [name, cc_scores[0], eva_scores[0], cc_scores[1], eva_scores[1]]
-    print(scores_df)
-    scores_df.to_csv(os.path.join(root.dataframes, "scores_df.csv"))
+    print(scores_df[["label", "cc_score", "eva_score"]])
+    if save:
+        scores_df.to_csv(os.path.join(root.dataframes, "scores_df.csv"))
     return cc_scores, eva_scores
 
 

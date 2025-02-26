@@ -83,21 +83,33 @@ def show_objects(obj_list, args):
             if item is None:
                 print1(key, ":", "None")
         if "pymol" in args:
-            from pyMol import pymol_start, pymol_load_path, pymol_format
+            from pyMol import pymol_start, pymol_load_path, pymol_format, pymol_set_state
             pymol_start(show=True)
             for key, item in obj.__dict__.items():
                 if type(item) == str:
                     if item.endswith(".pdb") and not "fractional" in item:
                         if "many_pdbs" in item:
                             pymol_load_path(item, os.path.basename(item)+"_original")
-                        elif "pdb_molecules" in item:
+                        elif "pdb_" in item:
                             pymol_load_path(item, os.path.basename(item) + "_processed")
                         else:
                             pymol_load_path(item)
-                        pymol_format("surface", "neighbour", "all")
-                        pymol_format("mesh", "original", "all")
-                        pymol_format("mesh", "processed", "all")
+                        pymol_format("surface", "neighbour", "all", colour="rainbow", spectrum="b")
+                        pymol_format("mesh", "original", "all", colour="white")
+                        pymol_format("mesh", "processed", "all", colour="white")
+                        pymol_set_state(1)
 
+
+def print_available_commands():
+    sprint("Available commands:")
+    print1("To show saved data, add \"pymol\" to load structures in pymol")
+    print2("molecule + ID e.g 1M2Z")
+    print2("monomer + ID e.g 1M2Z_A")
+    print2("dimer + ID e.g 1M2Z_AD")
+    print1("To show clustering data:")
+    print2("clusters-eva")
+    print2("clusters-cc + [reference_name] e.g. GR (includes all data from clusters-eva)")
+    print2("clusters-score (only for GR)")
 
 
 
@@ -105,13 +117,10 @@ if __name__ == "__main__":
     tprint("Visualising data")
 
 
-    available_commands = ["dimer", "dimers", "clustr"]
     if len(sys.argv) < 2:
-        print1("Command not provided. Available:")
-        print2("dimer/s [dimer id] / eg. dimer [1M2Z_AD]")
-        print2("clusters-eva")
-        print2("clusters-cc")
-        print2("clusters-score/s")
+        sprint("Command not provided")
+        print_available_commands()
+        eprint("Done visualising")
         quit()
 
 
@@ -154,7 +163,7 @@ if __name__ == "__main__":
 
 
         elif len(sys.argv[2:]) == 1:
-            print(type(sys.argv[2]))
+            #print(type(sys.argv[2]))
             filtered_df =classified_df[classified_df["Best_Match"] == int(sys.argv[2])]
             print(filtered_df.to_string())
 
@@ -203,12 +212,12 @@ if __name__ == "__main__":
         clustered_df = pd.read_csv(os.path.join(root.dataframes, "{}_cc_clustered.csv".format(reference_name)), index_col=0).sort_values("cluster")
 
         print(clustered_df.to_string())
-        selection = input("Select cluster to display [int]:\n >>")
+        selection = input("Select cluster to display [cc/eva] + int:\n >>")
 
         if type(selection) is list:
             if "eva" in selection[0]:
                 filtered_df = clustered_df[clustered_df["group"] == int(selection[1])]
-            elif "cc" in selection[1]:
+            elif "cc" in selection[0]:
                 filtered_df = clustered_df[clustered_df["cluster"] == int(selection[1])]
             else:
                 filtered_df = clustered_df[clustered_df["cluster"] == int(selection[1])]
@@ -234,21 +243,18 @@ if __name__ == "__main__":
 
         else:
             print1("No matches found")
-    elif "clusters-scores" in sys.argv[1] or "clusters-score" in sys.argv[1]:
+
+    elif "cluster-score" in sys.argv[1] or "clusters-score" in sys.argv[1]:
 
         from clustering import calculate_scores_GR
-        calculate_scores_GR(pd.read_csv(os.path.join(root.dataframes, "GR_cc_clustered.csv"), index_col=0).sort_values("cluster"))
+        calculate_scores_GR(pd.read_csv(os.path.join(root.dataframes, "GR_cc_clustered.csv"), index_col=0).sort_values("cluster"), save=False)
 
 
     else:
-        print1("Command not recognised. Available:")
-        print2("dimer/s [dimer id] / eg. dimer [1M2Z_AD]")
-        print2("clusters-eva")
-        print2("clusters-cc")
-        print2("clusters-score/s")
-        quit()
+        print_available_commands()
 
-    eprint("Done visualising\n\n")
+
+    eprint("Done visualising")
 
 
 

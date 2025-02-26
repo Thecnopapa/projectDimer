@@ -44,7 +44,7 @@ def pymol_reset():
     pymol.cmd.delete("All")
 
 def pymol_load_name(file_name, folder):
-    pymol.cmd.load(folder,file_name)
+    pymol.cmd.load(os.path.join(folder,file_name), file_name)
 
 def pymol_load_path(path,  name=None, state = -1,):
     if name is None:
@@ -60,14 +60,25 @@ def pymol_hide(sele, hide = None):
             hide = " ".join(all_reprs)
         pymol.cmd.hide(representation=hide, selection=sele)
 
-def pymol_format(representation,identifier="", hide="all"):
+def pymol_format(representation,identifier="", hide="all", colour = None, spectrum=None):
     for obj in get_all_obj():
         if identifier in obj:
             pymol_hide(obj, hide=hide)
             pymol.cmd.show(representation=representation, selection=obj)
+            if colour is not None:
+                pymol_colour(colour, obj=obj, spectrum=spectrum)
 
-def pymol_colour():
-    pass
+
+def pymol_colour(colour, obj = "(all)", sele = None, spectrum=None):
+    if sele is not None:
+        sele_str = "({} and {})".format(obj,sele)
+    else:
+        sele_str = "({})".format(obj)
+    if spectrum is not None:
+        pymol.cmd.spectrum(spectrum, colour, sele_str)
+    else:
+        print("colouring", sele_str, colour)
+        pymol.cmd.colour(colour, sele_str)
 
 
 def pymol_save_small(file_name, folder, dpi=300, height=100, width=100, save_session=None):
