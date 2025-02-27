@@ -430,14 +430,14 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
     for chain in chains:
         model = neighbour[chains.index(chain)+1]
         print2(chain, model)
-        operations = list(set([atom.bfactor for atom in model.get_atoms()]))
+        operations = list(set([atom.d2[chain.id][1] for atom in model.get_atoms()]))
         for i, op in enumerate(operations):
-            num_atoms = sum([1 for atom in model.get_atoms() if atom.bfactor == op])
+            num_atoms = sum([1 for atom in model.get_atoms() if atom.d2[chain.id][1] == op])
             num_contacts = {}
-            for c in list(set([atom.get_full_id()[2] for atom in model.get_atoms() if atom.bfactor == op])):
+            for c in list(set([atom.get_full_id()[2] for atom in model.get_atoms() if atom.d2[chain.id][1] == op])):
                 n=0
                 for atom in model.get_atoms():
-                    if atom.bfactor != op or atom.get_full_id()[2] != c:
+                    if atom.d2[chain.id][1] != op or atom.get_full_id()[2] != c:
                         continue
                     atom.is_contact = False
                     for c_atom in chain.get_atoms():
@@ -465,7 +465,7 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                 print5(new_chain)
 
                 if new_chain is not None:
-                    model_atoms = [atom for atom in model.get_atoms() if atom.bfactor == op[0] and atom.is_contact]
+                    model_atoms = [atom for atom in model.get_atoms() if atom.d2[chain.id][0] == op[0] and atom.is_contact]
                     '''deltas = list([atom.d2[new_chain.id][3] for atom in model_atoms])
                     [print(d) for d in deltas]'''
                     fractional = entity_to_frac(new_chain, params)
@@ -477,7 +477,7 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                     matching = check_matching_coords(model_atoms, new_chain.get_atoms())
                     print4(matching)
                     from molecules import BioObject
-                    mates.append(BioObject.export(self, "mates", new_chain, "_mate_{}_{}_{}".format(chain.id, id,op[0] )))
+                    mates.append(BioObject.export(self, "mates", new_chain, "_mate_{}_{}_{}".format(chain.id, op[0], id)))
 
 
     return mates
