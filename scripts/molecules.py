@@ -200,22 +200,13 @@ class PDB(BioObject):
             return None
         from symmetries import find_nearest_neighbour,  convertFromFracToOrth, find_nearest_neighbour_by_chain
         #fractional_neighbour = find_nearest_neighbour(self.fractional,self.params, self.space_group[1])
-        fractional_neighbour = find_nearest_neighbour_by_chain(self.fractional,self.params, self.space_group[1], self.structure)
+        neighbour = find_nearest_neighbour_by_chain(self.fractional,self.params, self.space_group[1], self.structure)
 
-        if fractional_neighbour is None:
+        if neighbour is None:
             self.neighbour = None
             return None
-        for atom in fractional_neighbour.get_atoms():
-            if atom.is_disordered():
-                for d_atom in atom:
-                    #print("dis", d_atom.coord, end=" -> ")
-                    d_atom.coord=convertFromFracToOrth(d_atom.coord, self.params)
-                    #print(d_atom.coord)
-            else:
-                #print(atom.coord, end=" -> ")
-                atom.coord=convertFromFracToOrth(atom.coord, self.params)
-                #print(atom.coord)
-        self.neighbour = fractional_neighbour
+        
+        self.neighbour = neighbour
         self.export_neighbour()
         return self.neighbour
 

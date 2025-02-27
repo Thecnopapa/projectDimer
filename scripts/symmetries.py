@@ -220,6 +220,7 @@ def find_nearest_neighbour(original, params, key):
         c_g = params["c_g"]
 
         from maths import find_com
+        # This shouldn't work, coms in fractional are distorted
         com = find_com(original.get_atoms())
         #print("COM:", com)
         for o_atom, d_atom in zip(original.get_atoms(), displaced.get_atoms()):
@@ -314,6 +315,7 @@ def find_nearest_neighbour_by_chain(original, params, key, orth_struct):
     chains = []
     for chain, orth_chain in zip(original.get_chains(), orth_struct.get_chains()):
         if sum([1 for _ in chain.get_residues()]) >= 100:
+            orth_chain.com = find_com(orth_chain.get_atoms())
             chain.orth_com = find_com(orth_chain.get_atoms())
             chain.com = convertFromOrthToFrac(chain.orth_com, params)
             print2("COM:", [round(x, 2) for x in chain.com], [round(x, 2) for x in chain.orth_com])
@@ -370,9 +372,10 @@ def find_nearest_neighbour_by_chain(original, params, key, orth_struct):
 
     print2("Generating neighbour")
     neighbour = original.copy()
+    neighbour = entity_to_orth(neighbour, params)
     i = 1
     for chain in chains:
-        new_model = original[0].copy()
+        new_model = neighbour[0].copy()
         new_model.id += i
         neighbour.add(new_model)
         i +=1
@@ -391,10 +394,10 @@ def find_nearest_neighbour_by_chain(original, params, key, orth_struct):
             atom.bfactor = atom.d2[chain.id][1]
             if atom.is_disordered():
                 for d_atom in atom:
-                    d_atom.coord = coord_add(chain.com, atom.d2[chain.id][2])
+                    d_atom.coord = coord_add(chain.orth_com, atom.d2[chain.id][3])
 
             else:
-                atom.coord = coord_add(chain.com, atom.d2[chain.id][2])
+                atom.coord = coord_add(chain.orth_com, atom.d2[chain.id][3])
     return neighbour
 
 
