@@ -38,6 +38,11 @@ def print3(*strings, **kwargs):
 def print4(*strings, **kwargs):
     print1(strings, space=8, **kwargs)
 
+def print5(*strings, **kwargs):
+    print1(strings, space=10, **kwargs)
+
+def print6(*strings, **kwargs):
+    print1(strings, space=12, **kwargs)
 
 def clean_string(string, allow=(".", "_")):
     from unidecode import unidecode

@@ -147,8 +147,9 @@ class PDB(BioObject):
         self.generate_fractional()
         self.get_neighbour()
         from symmetries import reconstruct_relevant_neighbours
-        dimer_list = reconstruct_relevant_neighbours(self.neighbour)
+        dimer_list = reconstruct_relevant_neighbours(self.neighbour, self.params, self.space_group[1])
         print(dimer_list)
+        self.mates = dimer_list # Temporary, for debug
 
         return self.dimers
 

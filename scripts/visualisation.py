@@ -66,7 +66,7 @@ def show_objects(obj_list, args):
         print(obj.__dict__)
         for key, item in obj.__dict__.items():
             #print(str(type(item)))
-            if type(item) == list:
+            if type(item) in (list, tuple, set):
                 print1(key,":")
                 for i in item:
                     print2(i)
@@ -94,10 +94,14 @@ def show_objects(obj_list, args):
                             pymol_load_path(item, os.path.basename(item) + "_processed")
                         else:
                             pymol_load_path(item)
-                        pymol_format("surface", "neighbour", "all", colour="rainbow", spectrum="b")
-                        pymol_format("mesh", "original", "all", colour="white")
-                        pymol_format("mesh", "processed", "all", colour="white")
-                        pymol_set_state(1)
+                if key == "mates":
+                    for mate in item:
+                        pymol_load_path(mate)
+
+            pymol_format("surface", "neighbour", "all", colour="rainbow", spectrum="b")
+            pymol_format("mesh", "original", "all", colour="white")
+            pymol_format("mesh", "processed", "all", colour="white")
+            pymol_set_state(1)
 
 
 def print_available_commands():
