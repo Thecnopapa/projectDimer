@@ -414,7 +414,7 @@ def check_matching_coords(subset, target):
     return matching, bool_list
 
 
-def reconstruct_relevant_neighbours(neighbour, params, key):
+def reconstruct_relevant_neighbours(self, neighbour, params, key):
     print1("Reconstructing relevant neighbours")
     if neighbour is None:
         return None
@@ -476,7 +476,8 @@ def reconstruct_relevant_neighbours(neighbour, params, key):
                     #print([atom.is_contact for atom in model_atoms])
                     matching = check_matching_coords(model_atoms, new_chain.get_atoms())
                     print4(matching)
-                    mates.append()
+                    from molecules import BioObject
+                    mates.append(BioObject.export(self, "mates", new_chain, "_mate_{}_{}_{}".format(chain.id, id,op[0] )))
 
 
     return mates
