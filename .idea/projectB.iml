@@ -6,7 +6,7 @@
       <excludeFolder url="file://$MODULE_DIR$/previews" />
       <excludeFolder url="file://$MODULE_DIR$/secure" />
     </content>
-    <orderEntry type="jdk" jdkName="py312np2" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="/home/iain/anaconda3" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

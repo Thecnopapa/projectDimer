@@ -56,7 +56,7 @@ def pymol_load_path(path,  name=None, state = -1,):
 def pymol_hide(sele, hide = None):
     all_reprs = ["lines","spheres","mesh","ribbon","cartoon","sticks","dots","surface","labels","nonbonded","nb_spheres"]
     if hide is not None:
-        if hide is "all":
+        if hide == "all":
             hide = " ".join(all_reprs)
         pymol.cmd.hide(representation=hide, selection=sele)
 

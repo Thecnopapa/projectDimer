@@ -198,8 +198,7 @@ class PDB(BioObject):
         if self.params is None or self.fractional is None:
             print("Params or fractional not found:", self.params,self.fractional)
             return None
-        from symmetries import find_nearest_neighbour,  convertFromFracToOrth, find_nearest_neighbour_by_chain
-        #fractional_neighbour = find_nearest_neighbour(self.fractional,self.params, self.space_group[1])
+        from symmetries import  convertFromFracToOrth, find_nearest_neighbour_by_chain
         neighbour = find_nearest_neighbour_by_chain(self.fractional,self.params, self.space_group[1], self.structure)
 
         if neighbour is None:

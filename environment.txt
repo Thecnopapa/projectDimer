@@ -1,4 +1,5 @@
-conda create -n projectB python=3.12
+conda create -n biop python=3.12
+conda activate biop
 
 conda install conda-forge::biopython
 conda install -c conda-forge -c schrodinger pymol-bundle

@@ -196,6 +196,11 @@ def generate_displaced_copy(original, distance = 99.5, rotation = None, reverse=
 
     return displaced
 
+def print_all_coords(entity):
+    for atom in entity.get_atoms():
+        print(atom.coord)
+
+'''
 def find_nearest_neighbour(original, params, key):
     print1("Finding nearest neighbour")
     print2("Space group:", key)
@@ -225,9 +230,9 @@ def find_nearest_neighbour(original, params, key):
         #print("COM:", com)
         for o_atom, d_atom in zip(original.get_atoms(), displaced.get_atoms()):
             #print(d_atom, o_atom)
-            '''deltaX = ((d_atom.coord[0] - o_atom.coord[0]) % 1) - 0.5
-            deltaY = ((d_atom.coord[1] - o_atom.coord[1]) % 1) - 0.5
-            deltaZ = ((d_atom.coord[2] - o_atom.coord[2]) % 1) - 0.5'''
+            #deltaX = ((d_atom.coord[0] - o_atom.coord[0]) % 1) - 0.5
+            #deltaY = ((d_atom.coord[1] - o_atom.coord[1]) % 1) - 0.5
+            #deltaZ = ((d_atom.coord[2] - o_atom.coord[2]) % 1) - 0.5
             deltaX = ((d_atom.coord[0] - com[0]) % 1) - 0.5
             deltaY = ((d_atom.coord[1] - com[1]) % 1) - 0.5
             deltaZ = ((d_atom.coord[2] - com[2]) % 1) - 0.5
@@ -265,6 +270,7 @@ def find_nearest_neighbour(original, params, key):
             atom.coord = coord_add(com, atom.d2[2])
 
     return neighbour
+'''
 
 def coord_operation_entity(entity, key, op_n):
     for atom in entity.get_atoms():
@@ -302,7 +308,7 @@ def get_operation(key,op_n):
     from spaceGroups import dictio_space_groups
     return dictio_space_groups[key]["symops"][op_n]
 
-def find_nearest_neighbour_by_chain(original, params, key, orth_struct):
+def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
     print1("Finding nearest neighbour")
     print2("Space group:", key)
     from spaceGroups import dictio_space_groups
@@ -313,7 +319,7 @@ def find_nearest_neighbour_by_chain(original, params, key, orth_struct):
 
     from maths import find_com
     chains = []
-    for chain, orth_chain in zip(original.get_chains(), orth_struct.get_chains()):
+    for chain, orth_chain in zip(fractional.get_chains(), orth_struct.get_chains()):
         if sum([1 for _ in chain.get_residues()]) >= 100:
             orth_chain.com = find_com(orth_chain.get_atoms())
             chain.orth_com = find_com(orth_chain.get_atoms())
@@ -326,9 +332,9 @@ def find_nearest_neighbour_by_chain(original, params, key, orth_struct):
     for op_number, operation in rotation_set["symops"].items():
         print2("Symmetry operation:", op_number)
 
-        displaced = generate_displaced_copy(original, distance= 99.5, rotation=operation)
+        displaced = generate_displaced_copy(fractional, distance= 99.5, rotation=operation)
 
-        assert sum(1 for _ in original.get_atoms()) == sum(1 for _ in displaced.get_atoms())
+        assert sum(1 for _ in fractional.get_atoms()) == sum(1 for _ in displaced.get_atoms())
 
         a = params["A"]
         b = params["B"]
@@ -340,7 +346,7 @@ def find_nearest_neighbour_by_chain(original, params, key, orth_struct):
         for chain in chains:
 
 
-            for o_atom, d_atom in zip(original.get_atoms(), displaced.get_atoms()):
+            for o_atom, d_atom in zip(fractional.get_atoms(), displaced.get_atoms()):
                 if op_number == 1 and o_atom.get_full_id()[2] == chain.id:
                     continue
 
@@ -371,8 +377,9 @@ def find_nearest_neighbour_by_chain(original, params, key, orth_struct):
 
 
     print2("Generating neighbour")
-    neighbour = original.copy()
+    neighbour = fractional.copy()
     neighbour = entity_to_orth(neighbour, params)
+
     i = 1
     for chain in chains:
         new_model = neighbour[0].copy()
@@ -392,12 +399,14 @@ def find_nearest_neighbour_by_chain(original, params, key, orth_struct):
 
             #print(atom.d2[chain.id])
             atom.bfactor = atom.d2[chain.id][1]
+            delta_orth = convertFromFracToOrth(atom.d2[chain.id][2], params)
             if atom.is_disordered():
                 for d_atom in atom:
-                    d_atom.coord = coord_add(chain.orth_com, atom.d2[chain.id][3])
+                    d_atom.coord = coord_add(chain.orth_com, delta_orth)
 
             else:
-                atom.coord = coord_add(chain.orth_com, atom.d2[chain.id][3])
+                atom.coord = coord_add(chain.orth_com, delta_orth)
+            #print_all_coords(neighbour)
     return neighbour
 
 
