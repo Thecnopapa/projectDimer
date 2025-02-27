@@ -118,6 +118,14 @@ def convertFromOrthToFrac(orth_coords, parameters):
 
     return nx, ny, nz
 
+def entity_to_frac(entity, params):
+    for atom in entity.get_atoms():
+        if atom.is_disordered():
+            for d_atom in atom:
+                d_atom.coord = convertFromOrthToFrac(d_atom.coord, params)
+        else:
+            atom.coord = convertFromOrthToFrac(atom.coord, params)
+    return entity
 
 
 def convertFromFracToOrth(frac_coords, parameters):
@@ -128,7 +136,14 @@ def convertFromFracToOrth(frac_coords, parameters):
     tx = (t1 - ty * parameters["vvz"] - tz * parameters["uuz"]) / parameters["vvy"]
 
     return tx, ty, tz
-
+def entity_to_orth(entity, params):
+    for atom in entity.get_atoms():
+        if atom.is_disordered():
+            for d_atom in atom:
+                d_atom.coord = convertFromFracToOrth(d_atom.coord, params)
+        else:
+            atom.coord = convertFromFracToOrth(atom.coord, params)
+    return entity
 
 
 def generate_displaced_copy(original, distance = 99.5, rotation = None):
@@ -232,6 +247,15 @@ def find_nearest_neighbour(original, params, key):
             atom.coord = coord_add(com, atom.d2[2])
 
     return neighbour
+
+def coord_operation_entity(entity, key, op_n):
+    for atom in entity.get_atoms():
+        if atom.is_disordered():
+            for d_atom in atom:
+                d_atom.coord = coord_operation(d_atom.coord, key, op_n)
+        else:
+            atom.coord = coord_operation(atom.coord, key, op_n)
+    return entity
 
 def coord_operation(coord, key, op_n):
     from spaceGroups import dictio_space_groups
