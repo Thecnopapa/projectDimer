@@ -394,9 +394,10 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
     print2("Generating neighbour")
     neighbour = fractional.copy()
     #neighbour = entity_to_orth(neighbour, params)
-    lines = []
+    all_lines = []
     i = 1
     for chain in chains:
+        lines = []
         new_model = neighbour[0].copy()
         new_model.id += i
         neighbour.add(new_model)
@@ -443,9 +444,10 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
                 #atom.coord = convertFromFracToOrth(atom.d2[chain.id][4], params)
             lines[-1].append(convertFromFracToOrth(atom.coord, params))
             #print(atom.coord)
+        all_lines.append(lines)
     neighbour = entity_to_orth(neighbour, params)
     #print_all_coords(neighbour)
-    return neighbour, lines
+    return neighbour, all_lines
 
 
 def check_matching_coords(subset, target):

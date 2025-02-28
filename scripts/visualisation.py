@@ -100,9 +100,13 @@ def show_objects(obj_list, args):
                         pymol_load_path(mate)
 
                 if key == "lines":
-                    for line in item:
-                        from pyMol import pymol_draw_line
-                        pymol_draw_line(*line)
+                    from pyMol import pymol_draw_line
+                    l = 2
+                    for line_set in item:
+                        name = "d_{}".format(l)
+                        for line in line_set:
+                            pymol_draw_line(line[0], line[1], state=l)
+                        l += 1
                 ###
 
             from pyMol import pymol_format, pymol_set_state, pymol_orient
