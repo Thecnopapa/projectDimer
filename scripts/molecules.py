@@ -103,7 +103,7 @@ class PDB(BioObject):
         self.card = None
         self.params = None
         self.space_group = None
-        self.read_card()
+
     
     def read_card(self):
         from symmetries import get_crystal, calculate_parameters, get_space_group
@@ -144,12 +144,18 @@ class PDB(BioObject):
     def get_all_dimers(self, force = False):
         done = []
         self.dimers = []
+        self.read_card()
         self.generate_fractional()
         self.get_neighbour()
         from symmetries import reconstruct_relevant_neighbours
-        dimer_list = reconstruct_relevant_neighbours(self, self.neighbour, self.params, key=self.space_group[1])
+
+        ### Development
+        dimer_list, lines = reconstruct_relevant_neighbours(self, self.neighbour, self.params, key=self.space_group[1])
         print(dimer_list)
         self.mates = dimer_list # Temporary, for debug
+        self.lines = lines
+        print(self.lines)
+        ###
 
         return self.dimers
 

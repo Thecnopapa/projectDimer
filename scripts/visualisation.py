@@ -83,7 +83,7 @@ def show_objects(obj_list, args):
             if item is None:
                 print1(key, ":", "None")
         if "pymol" in args:
-            from pyMol import pymol_start, pymol_load_path, pymol_format, pymol_set_state, pymol_orient, pymol_symmetries, pymol_group
+            from pyMol import pymol_start, pymol_load_path, pymol_symmetries, pymol_group
             pymol_start(show=True)
             for key, item in obj.__dict__.items():
                 if type(item) == str:
@@ -94,10 +94,18 @@ def show_objects(obj_list, args):
                             pymol_load_path(item, os.path.basename(item) + "_processed")
                         else:
                             pymol_load_path(item)
+                ### Development
                 if key == "mates":
                     for mate in item:
                         pymol_load_path(mate)
 
+                if key == "lines":
+                    for line in item:
+                        from pyMol import pymol_draw_line
+                        pymol_draw_line(*line)
+                ###
+
+            from pyMol import pymol_format, pymol_set_state, pymol_orient
             pymol_format("surface", "neighbour", "all", colour="rainbow", spectrum="b")
             pymol_format("mesh", "original", "all", colour="white")
             pymol_format("mesh", "processed", "all", colour="blue")

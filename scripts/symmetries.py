@@ -1,4 +1,5 @@
 import os, sys
+
 from utilities import *
 from Globals import root, local, vars
 import numpy as np
@@ -438,6 +439,7 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
         return None
     dimers = []
     mates = []
+    lines = []
     original = neighbour[0]
 
     chains = []
@@ -458,6 +460,10 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                     if atom.d2[chain.id][1] != op or atom.get_full_id()[2] != c:
                         continue
                     atom.is_contact = False
+                    ### Development
+                    from maths import add, sub_vectors
+                    lines.append([atom.coord, sub_vectors(atom.coord,convertFromFracToOrth(atom.d2[chain.id][2], params))])
+                    ###
                     for c_atom in chain.get_atoms():
                         from maths import distance
                         if distance(atom.coord, c_atom.coord) <= 8:
@@ -498,7 +504,7 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                     mates.append(BioObject.export(self, "mates", new_chain, "_mate_{}_{}_{}".format(chain.id, op[0], id)))
 
 
-    return mates
+    return mates, lines
 
 
 
