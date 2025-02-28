@@ -471,7 +471,7 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
     if neighbour is None:
         return None
     dimers = []
-    mates = []
+    all_mates = []
 
     original = neighbour[0]
 
@@ -509,7 +509,9 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
 
         for op in operations:
             print3(op)
+            s = 1
             for id, n_contacts in op[2].items():
+                mates = []
                 print4(id, n_contacts)
                 new_chain = None
                 if n_contacts < 4:
@@ -527,16 +529,24 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                     fractional = entity_to_frac(new_chain, params)
                     new_chain = generate_displaced_copy(fractional, distance = 0, rotation = get_operation(key, op[0]), reverse = False)
                     new_chain = entity_to_orth(new_chain, params)
+                    from Bio.PDB import Structure, Model
+                    new_structure = Structure.Structure("mate")
+                    for i in range(len(operations)):
+                        new_model = Model.Model(i)
+                        if i == s:
+                            new_model.add(new_chain)
+                        new_structure.add(new_model)
 
                     print4("N atoms in model:", len(model_atoms))
                     #print([atom.is_contact for atom in model_atoms])
                     matching = check_matching_coords(model_atoms, new_chain.get_atoms())
                     print4(matching)
                     from molecules import BioObject
-                    mates.append(BioObject.export(self, "mates", new_chain, "_mate_{}_{}_{}".format(chain.id, op[0], id)))
+                    mates.append(BioObject.export(self, "mates", new_structure, "_mate_{}_{}_{}".format(chain.id, op[0], id)))
+            all_mates.append(mates)
+            s +=1
 
-
-    return mates
+    return all_mates
 
 
 

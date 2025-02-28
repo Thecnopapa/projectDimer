@@ -96,14 +96,16 @@ def show_objects(obj_list, args):
                             pymol_load_path(item)
                 ### Development
                 if key == "mates":
-                    for mate in item:
-                        pymol_load_path(mate)
+                    s = 2
+                    for mate_set in item:
+                        for mate in mate_set:
+                            pymol_load_path(mate, state=s)
+                        s += 1
 
                 if key == "lines":
                     from pyMol import pymol_draw_line
                     l = 2
                     for line_set in item:
-                        name = "d_{}".format(l)
                         for line in line_set:
                             pymol_draw_line(line[0], line[1], state=l)
                         l += 1
