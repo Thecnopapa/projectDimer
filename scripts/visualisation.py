@@ -106,7 +106,7 @@ def show_objects(obj_list, args):
                 ###
 
             from pyMol import pymol_format, pymol_set_state, pymol_orient
-            pymol_format("surface", "neighbour", "all", colour="rainbow", spectrum="b")
+            pymol_format("spheres", "neighbour", "all", colour="rainbow", spectrum="b")
             pymol_format("mesh", "original", "all", colour="white")
             pymol_format("mesh", "processed", "all", colour="blue")
             pymol_set_state(1)

@@ -148,17 +148,17 @@ def entity_to_orth(entity, params):
     return entity
 
 
-def generate_displaced_copy(original, distance = 99.5, rotation = None, reverse=True):
+def generate_displaced_copy(original, distance = 99.5, rotation = None, reverse=False):
     print3("Generating displaced copy")
     if original is None:
         return None
     displaced = original.copy()
 
     try:
-        print(x for x in distance)
+        _ = [x for x in distance]
     except:
         distance = [distance] * 3
-    print(distance)
+    print4(distance)
 
     if rotation is None:
         for atom in displaced.get_atoms():
@@ -368,6 +368,9 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
                 deltaX = ((d_atom.coord[0] - chain.com[0]) % 1) - 0.5
                 deltaY = ((d_atom.coord[1] - chain.com[1]) % 1) - 0.5
                 deltaZ = ((d_atom.coord[2] - chain.com[2]) % 1) - 0.5
+                new_coordX = d_atom.coord[0] + rel_deltaX
+                new_coordY = d_atom.coord[1] + rel_deltaY
+                new_coordZ = d_atom.coord[2] + rel_deltaZ
                 #print4("Distances:",deltaX, deltaY, deltaZ)
 
                 d2 = (a**2)*(deltaX**2) + (b**2)*(deltaY**2) + (c**2)*(deltaZ**2) +2*b*c*c_a*deltaY*deltaZ +2*a*c*c_b*deltaX*deltaZ +2*a*b*c_g*deltaX*deltaY
@@ -380,17 +383,17 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
                 if chain.id in o_atom.d2.keys():
                     #print3(d2, o_atom.d2[chain.id][0])
                     if d2 < o_atom.d2[chain.id][0]:
-                            o_atom.d2[chain.id] =  [d2, op_number, (deltaX,deltaY,deltaZ), (rel_deltaX, rel_deltaY, rel_deltaZ)]
+                            o_atom.d2[chain.id] =  [d2, op_number, (deltaX,deltaY,deltaZ), (rel_deltaX, rel_deltaY, rel_deltaZ), (new_coordX, new_coordY, new_coordZ)]
                             #print4("D2:", d2)
                 else:
-                    o_atom.d2[chain.id] = [d2, op_number, (deltaX,deltaY,deltaZ), (rel_deltaX, rel_deltaY, rel_deltaZ)]
+                    o_atom.d2[chain.id] = [d2, op_number, (deltaX,deltaY,deltaZ), (rel_deltaX, rel_deltaY, rel_deltaZ), (new_coordX, new_coordY, new_coordZ)]
                     #print4("D2:", d2)
 
 
 
     print2("Generating neighbour")
     neighbour = fractional.copy()
-    neighbour = entity_to_orth(neighbour, params)
+    #neighbour = entity_to_orth(neighbour, params)
     lines = []
     i = 1
     for chain in chains:
@@ -405,10 +408,10 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
             ### Development
             from maths import add, sub_vectors
             # lines.append([atom.coord, sub_vectors(atom.coord,convertFromFracToOrth(atom.d2[chain.id][2], params))])
-            print(atom.coord)
+            #print(atom.coord)
             #lines.append((convertFromFracToOrth(atom.coord, params),
             #              sub_vectors(convertFromFracToOrth(atom.coord, params), convertFromFracToOrth(atom.d2[chain.id][3], params))))
-            lines.append((atom.coord, sub_vectors(atom.coord, atom.d2[chain.id][3])))
+            #lines.append((atom.coord, sub_vectors(atom.coord, atom.d2[chain.id][3])))
             # print(lines[-1])
 
             ###
@@ -425,17 +428,22 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
             orth_delta = convertFromFracToOrth(atom.d2[chain.id][2], params)
             delta = atom.d2[chain.id][2]
             rel_delta = atom.d2[chain.id][3]
+            #print(atom.d2[chain.id][4])
+            lines.append([convertFromFracToOrth(atom.coord, params)])
             if atom.is_disordered():
                 for d_atom in atom:
-                    d_atom.coord = coord_add(chain.orth_com, orth_delta)
+                    #d_atom.coord = coord_add(chain.orth_com, orth_delta)
                     #d_atom.coord = coord_operation(d_atom.coord, key, atom.d2[chain.id][1])
-                    #d_atom.coord = coord_add(d_atom.coord, rel_delta)
+                    d_atom.coord = coord_add(d_atom.coord, rel_delta)
+                    #d_atom.coord = convertFromFracToOrth(atom.d2[chain.id][4], params)
             else:
-                atom.coord = coord_add(chain.orth_com, orth_delta)
+                #atom.coord = coord_add(chain.orth_com, orth_delta)
                 #atom.coord = coord_operation(atom.coord, key, atom.d2[chain.id][1])
-                #atom.coord = coord_add(atom.coord, rel_delta)
-
-    #neighbour = entity_to_orth(neighbour, params)
+                atom.coord = coord_add(atom.coord, rel_delta)
+                #atom.coord = convertFromFracToOrth(atom.d2[chain.id][4], params)
+            lines[-1].append(convertFromFracToOrth(atom.coord, params))
+            #print(atom.coord)
+    neighbour = entity_to_orth(neighbour, params)
     #print_all_coords(neighbour)
     return neighbour, lines
 
