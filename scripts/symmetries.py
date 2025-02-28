@@ -525,9 +525,12 @@ if __name__ == "__main__":
     from imports import load_from_files
     molecules = load_from_files(local.many_pdbs, force_reload =False)
     tprint("Generating symmetries...")
+    progress = ProgressBar(len(molecules))
     for molecule in molecules:
         sprint(molecule.id)
         molecule.get_all_dimers()
         molecule.pickle()
+        progress.add(info=molecule.id)
+
 
     eprint("Symmetries generated")
