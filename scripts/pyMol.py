@@ -162,7 +162,7 @@ def pymol_group(identifier = "sym", name = "symmetries"):
     pymol.cmd.group(name, " ".join(group))
 
 def pymol_draw_line(coord1, coord2):
-    print("Distance between:", coord1, "and", coord2)
+    #print("Distance between:", coord1, "and", coord2)
     pymol.cmd.pseudoatom("tmp1", pos=coord1)
     pymol.cmd.pseudoatom("tmp2", pos=coord2)
     pymol.cmd.distance("d", "tmp1","tmp2")

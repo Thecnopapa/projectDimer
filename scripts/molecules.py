@@ -150,11 +150,9 @@ class PDB(BioObject):
         from symmetries import reconstruct_relevant_neighbours
 
         ### Development
-        dimer_list, lines = reconstruct_relevant_neighbours(self, self.neighbour, self.params, key=self.space_group[1])
+        dimer_list = reconstruct_relevant_neighbours(self, self.neighbour, self.params, key=self.space_group[1])
         print(dimer_list)
         self.mates = dimer_list # Temporary, for debug
-        self.lines = lines
-        print(self.lines)
         ###
 
         return self.dimers
@@ -205,8 +203,8 @@ class PDB(BioObject):
             print("Params or fractional not found:", self.params,self.fractional)
             return None
         from symmetries import  convertFromFracToOrth, find_nearest_neighbour_by_chain
-        neighbour = find_nearest_neighbour_by_chain(self.fractional,self.params, self.space_group[1], self.structure)
-
+        neighbour, lines = find_nearest_neighbour_by_chain(self.fractional,self.params, self.space_group[1], self.structure)
+        self.lines = lines
         if neighbour is None:
             self.neighbour = None
             return None

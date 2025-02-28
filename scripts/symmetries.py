@@ -274,16 +274,16 @@ def find_nearest_neighbour(original, params, key):
     return neighbour
 '''
 
-def coord_operation_entity(entity, key, op_n):
+def coord_operation_entity(entity, key, op_n, reverse = False):
     for atom in entity.get_atoms():
         if atom.is_disordered():
             for d_atom in atom:
-                d_atom.coord = coord_operation(d_atom.coord, key, op_n)
+                d_atom.coord = coord_operation(d_atom.coord, key, op_n, reverse=reverse)
         else:
-            atom.coord = coord_operation(atom.coord, key, op_n)
+            atom.coord = coord_operation(atom.coord, key, op_n, reverse=reverse)
     return entity
 
-def coord_operation(coord, key, op_n):
+def coord_operation(coord, key, op_n, reverse = False):
     from spaceGroups import dictio_space_groups
     rotation = dictio_space_groups[key]
     #print(rotation)
@@ -292,18 +292,27 @@ def coord_operation(coord, key, op_n):
     tra = operation["tra"]
 
     x, y, z = coord
-
-    nx = (rot[0][0] * x) + (rot[0][1] * y) + (rot[0][2] * z) + tra[0]
-    ny = (rot[1][0] * x) + (rot[1][1] * y) + (rot[1][2] * z) + tra[1]
-    nz = (rot[2][0] * x) + (rot[2][1] * y) + (rot[2][2] * z) + tra[2]
+    if reverse:
+        nx = (-rot[0][0] * x) + (-rot[0][1] * y) + (-rot[0][2] * z) - tra[0]
+        ny = (-rot[1][0] * x) + (-rot[1][1] * y) + (-rot[1][2] * z) - tra[1]
+        nz = (-rot[2][0] * x) + (-rot[2][1] * y) + (-rot[2][2] * z) - tra[2]
+    else:
+        nx = (rot[0][0] * x) + (rot[0][1] * y) + (rot[0][2] * z) + tra[0]
+        ny = (rot[1][0] * x) + (rot[1][1] * y) + (rot[1][2] * z) + tra[1]
+        nz = (rot[2][0] * x) + (rot[2][1] * y) + (rot[2][2] * z) + tra[2]
 
     return nx, ny, nz
 
-def coord_add(coord, deltas):
+def coord_add(coord, deltas, subtract = False):
     x, y, z = coord
-    nx = x + deltas[0]
-    ny = y + deltas[1]
-    nz = z + deltas[2]
+    if subtract:
+        nx = x - deltas[0]
+        ny = y - deltas[1]
+        nz = z - deltas[2]
+    else:
+        nx = x + deltas[0]
+        ny = y + deltas[1]
+        nz = z + deltas[2]
     return [nx, ny, nz]
 
 def get_operation(key,op_n):
@@ -382,7 +391,7 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
     print2("Generating neighbour")
     neighbour = fractional.copy()
     #neighbour = entity_to_orth(neighbour, params)
-
+    lines = []
     i = 1
     for chain in chains:
         new_model = neighbour[0].copy()
@@ -391,8 +400,16 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
         i +=1
         print3(chain, new_model.id)
 
-
         for atom in new_model.get_atoms():
+
+            ### Development
+            from maths import add, sub_vectors
+            # lines.append([atom.coord, sub_vectors(atom.coord,convertFromFracToOrth(atom.d2[chain.id][2], params))])
+            lines.append((atom.coord, sub_vectors(atom.coord, convertFromFracToOrth(atom.d2[chain.id][3], params))))
+            # print(lines[-1])
+
+            ###
+
             #atom.d2[chain.id]
             '''try:
                 atom.d2[chain.id]
@@ -404,17 +421,20 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
             atom.bfactor = atom.d2[chain.id][1]
             delta_orth = convertFromFracToOrth(atom.d2[chain.id][2], params)
             delta = atom.d2[chain.id][2]
+            rel_delta = atom.d2[chain.id][3]
             if atom.is_disordered():
                 for d_atom in atom:
                     d_atom.coord = coord_add(chain.com, delta)
                     #d_atom.coord = coord_operation(d_atom.coord, key, atom.d2[chain.id][1])
+                    #d_atom.coord = coord_add(d_atom.coord, rel_delta)
             else:
                 atom.coord = coord_add(chain.com, delta)
                 #atom.coord = coord_operation(atom.coord, key, atom.d2[chain.id][1])
+                #atom.coord = coord_add(atom.coord, rel_delta)
 
     neighbour = entity_to_orth(neighbour, params)
     #print_all_coords(neighbour)
-    return neighbour
+    return neighbour, lines
 
 
 def check_matching_coords(subset, target):
@@ -439,7 +459,7 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
         return None
     dimers = []
     mates = []
-    lines = []
+
     original = neighbour[0]
 
     chains = []
@@ -453,6 +473,7 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
         operations = list(set([atom.d2[chain.id][1] for atom in model.get_atoms()]))
         for i, op in enumerate(operations):
             num_atoms = sum([1 for atom in model.get_atoms() if atom.d2[chain.id][1] == op])
+            print(num_atoms)
             num_contacts = {}
             for c in list(set([atom.get_full_id()[2] for atom in model.get_atoms() if atom.d2[chain.id][1] == op])):
                 n=0
@@ -460,10 +481,7 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                     if atom.d2[chain.id][1] != op or atom.get_full_id()[2] != c:
                         continue
                     atom.is_contact = False
-                    ### Development
-                    from maths import add, sub_vectors
-                    lines.append([atom.coord, sub_vectors(atom.coord,convertFromFracToOrth(atom.d2[chain.id][2], params))])
-                    ###
+
                     for c_atom in chain.get_atoms():
                         from maths import distance
                         if distance(atom.coord, c_atom.coord) <= 8:
@@ -473,6 +491,7 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                 num_contacts[c] = n
             operations[i] = (op, num_atoms, num_contacts)
         print3("Operations:", operations)
+
 
 
         for op in operations:
@@ -504,7 +523,7 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                     mates.append(BioObject.export(self, "mates", new_chain, "_mate_{}_{}_{}".format(chain.id, op[0], id)))
 
 
-    return mates, lines
+    return mates
 
 
 
