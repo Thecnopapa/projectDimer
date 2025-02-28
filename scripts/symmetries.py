@@ -321,6 +321,7 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
     chains = []
     for chain, orth_chain in zip(fractional.get_chains(), orth_struct.get_chains()):
         if sum([1 for _ in chain.get_residues()]) >= 100:
+
             orth_chain.com = find_com(orth_chain.get_atoms())
             chain.orth_com = find_com(orth_chain.get_atoms())
             chain.com = convertFromOrthToFrac(chain.orth_com, params)
@@ -378,7 +379,7 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
 
     print2("Generating neighbour")
     neighbour = fractional.copy()
-    neighbour = entity_to_orth(neighbour, params)
+    #neighbour = entity_to_orth(neighbour, params)
 
     i = 1
     for chain in chains:
@@ -400,13 +401,17 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
             #print(atom.d2[chain.id])
             atom.bfactor = atom.d2[chain.id][1]
             delta_orth = convertFromFracToOrth(atom.d2[chain.id][2], params)
+            delta = atom.d2[chain.id][2]
             if atom.is_disordered():
                 for d_atom in atom:
-                    d_atom.coord = coord_add(chain.orth_com, delta_orth)
-
+                    d_atom.coord = coord_add(chain.com, delta)
+                    #d_atom.coord = coord_operation(d_atom.coord, key, atom.d2[chain.id][1])
             else:
-                atom.coord = coord_add(chain.orth_com, delta_orth)
-            #print_all_coords(neighbour)
+                atom.coord = coord_add(chain.com, delta)
+                #atom.coord = coord_operation(atom.coord, key, atom.d2[chain.id][1])
+
+    neighbour = entity_to_orth(neighbour, params)
+    print_all_coords(neighbour)
     return neighbour
 
 

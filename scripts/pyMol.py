@@ -1,6 +1,6 @@
 import os
 
-
+from pkg_resources import non_empty_lines
 
 from utilities import *
 from Globals import root, local, vars
@@ -45,13 +45,14 @@ def pymol_reset():
 
 def pymol_load_name(file_name, folder):
     pymol.cmd.load(os.path.join(folder,file_name), file_name)
+    return file_name
 
 def pymol_load_path(path,  name=None, state = -1,):
     if name is None:
-        pymol.cmd.load(path,os.path.basename(path))
-    else:
-        pymol.cmd.load(path,name)
+        name = os.path.basename(path)
+    pymol.cmd.load(path,name)
     pymol.cmd.set("state", state)
+    return name
 
 def pymol_hide(sele, hide = None):
     all_reprs = ["lines","spheres","mesh","ribbon","cartoon","sticks","dots","surface","labels","nonbonded","nb_spheres"]
@@ -90,6 +91,7 @@ def pymol_save_session(file_name, folder):
     path = os.path.join(folder, file_name + ".pse")
     pymol.cmd.save(path)
     return path
+
 def get_all_obj():
     return pymol.cmd.get_names(type='objects')
 
@@ -137,7 +139,10 @@ def pymol_align_chains(chains_to_align):
             pymol_align__obj(sele1, sele2)
 
 
-
+def pymol_symmetries(obj = None):
+    if obj is None:
+        obj = pymol.cmd.get_names(type='objects')[0]
+    pymol.cmd.symexp("sym", obj, obj, 6)
 
 def pymol_set_state(state):
     pymol.cmd.set("state", state)
@@ -145,3 +150,13 @@ def pymol_set_state(state):
 def pymol_colour_all(colour):
     pymol.cmd.color(colour, "(all)")
 
+def pymol_orient():
+    pymol.cmd.orient("(all)")
+
+def pymol_group(identifier = "sym", name = "symmetries"):
+    group = []
+    for obj in pymol.cmd.get_names(type='objects'):
+        if identifier in obj:
+            group.append(obj)
+
+    pymol.cmd.group(name, " ".join(group))

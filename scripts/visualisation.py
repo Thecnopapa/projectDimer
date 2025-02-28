@@ -83,13 +83,13 @@ def show_objects(obj_list, args):
             if item is None:
                 print1(key, ":", "None")
         if "pymol" in args:
-            from pyMol import pymol_start, pymol_load_path, pymol_format, pymol_set_state
+            from pyMol import pymol_start, pymol_load_path, pymol_format, pymol_set_state, pymol_orient, pymol_symmetries, pymol_group
             pymol_start(show=True)
             for key, item in obj.__dict__.items():
                 if type(item) == str:
                     if item.endswith(".pdb") and not "fractional" in item:
                         if "many_pdbs" in item:
-                            pymol_load_path(item, os.path.basename(item)+"_original")
+                            og = pymol_load_path(item, os.path.basename(item)+"_original")
                         elif "pdb_" in item:
                             pymol_load_path(item, os.path.basename(item) + "_processed")
                         else:
@@ -100,8 +100,14 @@ def show_objects(obj_list, args):
 
             pymol_format("surface", "neighbour", "all", colour="rainbow", spectrum="b")
             pymol_format("mesh", "original", "all", colour="white")
-            pymol_format("mesh", "processed", "all", colour="white")
+            pymol_format("mesh", "processed", "all", colour="blue")
             pymol_set_state(1)
+            pymol_orient()
+            try:
+                pymol_symmetries(og)
+                pymol_group()
+            except:
+                pass
 
 
 def print_available_commands():
