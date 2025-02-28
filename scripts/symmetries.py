@@ -16,17 +16,18 @@ def get_space_group(card):
     from spaceGroups import dictio_space_groups
     new_group = None
     raw_group = " ".join(card["group"]).strip()
-    print(raw_group, end=" -> ")
+    #print(raw_group, end=" -> ")
     for key, group in dictio_space_groups.items():
         if raw_group == group["symbol"]:
             new_group = group["symbol"]
             new_key = key
             break
     if new_group is None:
-        print("None")
+        print("Missing crystal group")
         quit()
     else:
-        print(new_group)
+        #print(new_group)
+        pass
     return new_group, new_key
 
 def get_cell_dim(card):
@@ -61,7 +62,7 @@ def calculate_parameters(card):
 
 def get_crystal(file_path):
 
-    print1("Parsing crystalcard from", file_path)
+    #print1("Parsing crystalcard from", file_path)
 
     def line_contents_no_blank(line):
         l = line.split(" ")
@@ -411,7 +412,7 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
                 #atom.coord = coord_operation(atom.coord, key, atom.d2[chain.id][1])
 
     neighbour = entity_to_orth(neighbour, params)
-    print_all_coords(neighbour)
+    #print_all_coords(neighbour)
     return neighbour
 
 
@@ -511,7 +512,15 @@ if __name__ == "__main__":
     import setup
     from Globals import *
 
-    vars["do_only"] = ["1M2Z"]
+
+    if len (sys.argv) > 2:
+        print(sys.argv[2:])
+        if sys.argv[2] == "all":
+            vars["do_only"] = []
+        else:
+            vars["do_only"] = sys.argv[2:]
+    else:
+        vars["do_only"] = ["1M2Z"]
 
     from imports import load_from_files
     molecules = load_from_files(local.many_pdbs, force_reload =False)
