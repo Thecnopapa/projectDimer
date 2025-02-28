@@ -163,8 +163,8 @@ def pymol_group(identifier = "sym", name = "symmetries"):
 
 def pymol_draw_line(coord1, coord2, name = "d", state = -1):
     #print("Distance between:", coord1, "and", coord2)
-    pymol.cmd.pseudoatom("tmp1", pos=coord1)
-    pymol.cmd.pseudoatom("tmp2", pos=coord2)
+    pymol.cmd.pseudoatom("tmp1", pos=coord1, state=state)
+    pymol.cmd.pseudoatom("tmp2", pos=coord2, state=state)
     pymol.cmd.distance(name, "tmp1","tmp2", state=state)
     pymol.cmd.delete("tmp1")
     pymol.cmd.delete("tmp2")

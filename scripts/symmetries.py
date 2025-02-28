@@ -456,7 +456,7 @@ def check_matching_coords(subset, target):
     for atom1 in subset:
         for atom2 in target:
             if atom1.id == atom2.id:
-                print([round(x) for x in atom1.coord], [round(x) for x in atom2.coord], distance(atom1.coord, atom2.coord),distance(atom1.coord, atom2.coord) <= 1 )
+                #print([round(x) for x in atom1.coord], [round(x) for x in atom2.coord], distance(atom1.coord, atom2.coord),distance(atom1.coord, atom2.coord) <= 1 )
                 if distance(atom1.coord, atom2.coord) <= 1:
                     bool_list.append(True)
                 else:
@@ -481,7 +481,8 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
             chains.append(chain)
 
     for chain in chains:
-        model = neighbour[chains.index(chain)+1]
+        m_n = chains.index(chain)+1
+        model = neighbour[m_n]
         print2(chain, model)
         operations = list(set([atom.d2[chain.id][1] for atom in model.get_atoms()]))
         for i, op in enumerate(operations):
@@ -505,13 +506,12 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
             operations[i] = (op, num_atoms, num_contacts)
         print3("Operations:", operations)
 
-
+        mates = []
 
         for op in operations:
             print3(op)
-            s = 1
             for id, n_contacts in op[2].items():
-                mates = []
+
                 print4(id, n_contacts)
                 new_chain = None
                 if n_contacts < 4:
@@ -522,29 +522,23 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                         break
                 print5(new_chain)
 
-                if new_chain is not None:
-                    model_atoms = [atom for atom in model.get_atoms() if atom.d2[chain.id][0] == op[0] and atom.is_contact]
-                    '''deltas = list([atom.d2[new_chain.id][3] for atom in model_atoms])
-                    [print(d) for d in deltas]'''
-                    fractional = entity_to_frac(new_chain, params)
-                    new_chain = generate_displaced_copy(fractional, distance = 0, rotation = get_operation(key, op[0]), reverse = False)
-                    new_chain = entity_to_orth(new_chain, params)
-                    from Bio.PDB import Structure, Model
-                    new_structure = Structure.Structure("mate")
-                    for i in range(len(operations)):
-                        new_model = Model.Model(i)
-                        if i == s:
-                            new_model.add(new_chain)
-                        new_structure.add(new_model)
+                if new_chain is None:
+                    continue
+                model_atoms = [atom for atom in model.get_atoms() if atom.d2[chain.id][0] == op[0] and atom.is_contact]
+                '''deltas = list([atom.d2[new_chain.id][3] for atom in model_atoms])
+                [print(d) for d in deltas]'''
+                fractional = entity_to_frac(new_chain, params)
+                new_chain = generate_displaced_copy(fractional, distance = 0, rotation = get_operation(key, op[0]), reverse = False)
+                new_chain = entity_to_orth(new_chain, params)
 
-                    print4("N atoms in model:", len(model_atoms))
-                    #print([atom.is_contact for atom in model_atoms])
-                    matching = check_matching_coords(model_atoms, new_chain.get_atoms())
-                    print4(matching)
-                    from molecules import BioObject
-                    mates.append(BioObject.export(self, "mates", new_structure, "_mate_{}_{}_{}".format(chain.id, op[0], id)))
-            all_mates.append(mates)
-            s +=1
+                print4("N atoms in model:", len(model_atoms))
+                #print([atom.is_contact for atom in model_atoms])
+                matching = check_matching_coords(model_atoms, new_chain.get_atoms())
+                print4(matching)
+                from molecules import BioObject
+                mates.append(BioObject.export(self, "mates", new_chain, "_mate_{}_{}_{}".format(chain.id, op[0], id)))
+
+        all_mates.append(mates)
 
     return all_mates
 

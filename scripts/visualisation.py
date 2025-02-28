@@ -63,8 +63,10 @@ def generate_html():
 def show_objects(obj_list, args):
     for obj in obj_list:
         sprint(obj.id)
-        print(obj.__dict__)
+        #print(obj.__dict__)
         for key, item in obj.__dict__.items():
+            if key in ["lines"]:
+                continue
             #print(str(type(item)))
             if type(item) in (list, tuple, set):
                 print1(key,":")
@@ -107,6 +109,7 @@ def show_objects(obj_list, args):
                     l = 2
                     for line_set in item:
                         for line in line_set:
+                            print(l,line)
                             pymol_draw_line(line[0], line[1], state=l)
                         l += 1
                 ###
