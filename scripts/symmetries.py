@@ -530,10 +530,20 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
 
                 if new_chain is None:
                     continue
-                model_atoms = [atom for atom in model.get_atoms() if atom.d2[chain.id][0] == op[0] and atom.is_contact]
+                model_atoms = [atom for atom in model.get_atoms() if atom.d2[chain.id][1] == op[0] and atom.is_contact]
                 '''deltas = list([atom.d2[new_chain.id][3] for atom in model_atoms])
-
                 [print(d) for d in deltas]'''
+                '''n=0
+                print(op)
+                for atom in model.get_atoms():
+                    print(atom.d2[chain.id])
+                    n+=1
+                    if n>= 2:
+                        break'''
+
+
+
+
                 print4("N atoms in model:", len(model_atoms))
                 fractional = entity_to_frac(new_chain, params)
                 #print_all_coords(fractional, 10)
