@@ -149,7 +149,7 @@ def entity_to_orth(entity, params):
 
 
 def generate_displaced_copy(original, distance = 99.5, rotation = None, reverse=False):
-    print3("Generating displaced copy")
+    print5("Generating displaced copy")
     if original is None:
         return None
     displaced = original.copy()
@@ -198,9 +198,15 @@ def generate_displaced_copy(original, distance = 99.5, rotation = None, reverse=
 
     return displaced
 
-def print_all_coords(entity):
+def print_all_coords(entity, head = None):
+    if head is None:
+        head = len(entity.get_atoms)
+    n = 0
     for atom in entity.get_atoms():
         print(atom.coord)
+        n += 1
+        if n >= head:
+            break
 
 '''
 def find_nearest_neighbour(original, params, key):
@@ -456,7 +462,7 @@ def check_matching_coords(subset, target):
     for atom1 in subset:
         for atom2 in target:
             if atom1.id == atom2.id:
-                #print([round(x) for x in atom1.coord], [round(x) for x in atom2.coord], distance(atom1.coord, atom2.coord),distance(atom1.coord, atom2.coord) <= 1 )
+                print([round(x) for x in atom1.coord], [round(x) for x in atom2.coord], distance(atom1.coord, atom2.coord),distance(atom1.coord, atom2.coord) <= 1 )
                 if distance(atom1.coord, atom2.coord) <= 1:
                     bool_list.append(True)
                 else:
@@ -526,17 +532,34 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                     continue
                 model_atoms = [atom for atom in model.get_atoms() if atom.d2[chain.id][0] == op[0] and atom.is_contact]
                 '''deltas = list([atom.d2[new_chain.id][3] for atom in model_atoms])
+
                 [print(d) for d in deltas]'''
+                print4("N atoms in model:", len(model_atoms))
                 fractional = entity_to_frac(new_chain, params)
+                #print_all_coords(fractional, 10)
+                print4("Normal mate")
                 new_chain = generate_displaced_copy(fractional, distance = 0, rotation = get_operation(key, op[0]), reverse = False)
                 new_chain = entity_to_orth(new_chain, params)
+                #print_all_coords(new_chain, 10)
 
-                print4("N atoms in model:", len(model_atoms))
                 #print([atom.is_contact for atom in model_atoms])
                 matching = check_matching_coords(model_atoms, new_chain.get_atoms())
-                print4(matching)
+                print5(matching)
                 from molecules import BioObject
                 mates.append(BioObject.export(self, "mates", new_chain, "_mate_{}_{}_{}".format(chain.id, op[0], id)))
+
+                ### Reverse
+                print4("Reverse mate")
+                #print_all_coords(fractional, 10)
+                reverse_chain = generate_displaced_copy(fractional, distance = -1, rotation = get_operation(key, op[0]), reverse = False)
+                #print_all_coords(reverse_chain, 10)
+                reverse_chain = entity_to_orth(reverse_chain, params)
+                #print_all_coords(reverse_chain, 10)
+                matching_reverse = check_matching_coords(model_atoms, reverse_chain.get_atoms())
+                print5(matching_reverse)
+                from molecules import BioObject
+                mates.append(BioObject.export(self, "mates", reverse_chain, "_mate_{}_{}_{}_reverse".format(chain.id, op[0], id)))
+
 
         all_mates.append(mates)
 
