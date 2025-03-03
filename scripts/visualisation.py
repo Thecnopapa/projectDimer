@@ -101,7 +101,8 @@ def show_objects(obj_list, args):
                     s = 2
                     for mate_set in item:
                         for mate in mate_set:
-                            pymol_load_path(mate, state=s)
+                            print(os.path.basename(mate))
+                            pymol_load_path(mate,os.path.basename(mate), state=s)
                         s += 1
 
                 if key == "lines":
@@ -109,7 +110,7 @@ def show_objects(obj_list, args):
                     l = 2
                     for line_set in item:
                         for line in line_set:
-                            print(l,line)
+                            #print(l,line)
                             pymol_draw_line(line[0], line[1], state=l)
                         l += 1
                 ###
@@ -120,6 +121,7 @@ def show_objects(obj_list, args):
             pymol_format("mesh", "processed", "all", colour="blue")
             pymol_set_state(1)
             pymol_orient()
+            pymol_group(identifier="reverse")
             try:
                 pymol_symmetries(og)
                 pymol_group()

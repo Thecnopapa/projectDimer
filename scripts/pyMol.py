@@ -153,8 +153,10 @@ def pymol_colour_all(colour):
 def pymol_orient():
     pymol.cmd.orient("(all)")
 
-def pymol_group(identifier = "sym", name = "symmetries"):
+def pymol_group(identifier = "sym", name = None):
     group = []
+    if name is None:
+        name = identifier
     for obj in pymol.cmd.get_names(type='objects'):
         if identifier in obj:
             group.append(obj)
