@@ -375,18 +375,26 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
                 deltaX = ((d_atom.coord[0] - chain.com[0]) % 1) - 0.5
                 deltaY = ((d_atom.coord[1] - chain.com[1]) % 1) - 0.5
                 deltaZ = ((d_atom.coord[2] - chain.com[2]) % 1) - 0.5
-                new_coordX = d_atom.coord[0] + rel_deltaX
-                new_coordY = d_atom.coord[1] + rel_deltaY
-                new_coordZ = d_atom.coord[2] + rel_deltaZ
-                print4("Distances:",deltaX, deltaY, deltaZ)
+                new_coordX = o_atom.coord[0] + rel_deltaX
+                new_coordY = o_atom.coord[1] + rel_deltaY
+                new_coordZ = o_atom.coord[2] + rel_deltaZ
+                print4("Distances:",new_coordX, new_coordY, new_coordZ, end = " -> ")
                 position = [0,0,0]
-                if deltaX >= 0:
-                    position[0] = 1
-                if deltaY >= 0:
+                if new_coordX > 1:
+                    position[0] = 1 
+                if new_coordY > 1:
                     position[1] = 1
-                if deltaZ >= 0:
+                if new_coordZ > 1:
                     position[2] = 1
+
+                if new_coordX < 0:
+                    position[0] = -1 
+                if new_coordY < 0:
+                    position[1] = -1
+                if new_coordZ < 0:
+                    position[2] = -1
                 position = tuple(position)
+                print(position)
 
                 d2 = (a**2)*(deltaX**2) + (b**2)*(deltaY**2) + (c**2)*(deltaZ**2) +2*b*c*c_a*deltaY*deltaZ +2*a*c*c_b*deltaX*deltaZ +2*a*b*c_g*deltaX*deltaY
                 #print3(d2)
@@ -459,13 +467,15 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
             if atom.is_disordered():
                 for d_atom in atom:
                     #d_atom.coord = coord_add(chain.orth_com, orth_delta)
-                    d_atom.coord = coord_operation(d_atom.coord, key, atom.d2[chain.id]["operation"])
-                    #d_atom.coord = coord_add(d_atom.coord, rel_delta)
+                    #d_atom.coord = coord_operation(d_atom.coord, key, atom.d2[chain.id]["operation"])
+                    #d_atom.coord = coord_add(d_atom.coord, atom.d2[chain.id]["position"])
+                    d_atom.coord = coord_add(d_atom.coord, rel_delta)
                     #d_atom.coord = convertFromFracToOrth(atom.d2[chain.id][4], params)
             else:
                 #atom.coord = coord_add(chain.orth_com, orth_delta)
-                atom.coord = coord_operation(atom.coord, key, atom.d2[chain.id]["operation"])
-                #atom.coord = coord_add(atom.coord, rel_delta)
+                #atom.coord = coord_operation(atom.coord, key, atom.d2[chain.id]["operation"])
+                #atom.coord = coord_add(atom.coord, atom.d2[chain.id]["position"])
+                atom.coord = coord_add(atom.coord, rel_delta)
                 #atom.coord = convertFromFracToOrth(atom.d2[chain.id][4], params)
             lines[-1].append(convertFromFracToOrth(atom.coord, params))
             #print(atom.coord)
@@ -567,7 +577,7 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                     pos_atoms = [atom for atom in model_atoms if atom.d2[chain.id]["position"] == pos]
                     print5("Atoms in {}: {}".format(pos, len(pos_atoms)))
 
-                    if len(pos_atoms) < -1:
+                    if len(pos_atoms) < 1:
                         print6("Less than 5 contacts ({})".format(len(pos_atoms)))
                         continue
 
@@ -575,7 +585,7 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                     fractional = entity_to_frac(new_chain, params)
                     #print_all_coords(fractional, 10)
                     print4("Normal mate")
-                    new_chain = generate_displaced_copy(fractional, distance = 0, rotation = get_operation(key, op[0]), reverse = False)
+                    new_chain = generate_displaced_copy(fractional, distance = pos, rotation = get_operation(key, op[0]), reverse = False)
                     new_chain = entity_to_orth(new_chain, params)
                     #print_all_coords(new_chain, 10)
 

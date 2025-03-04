@@ -27,7 +27,7 @@ def print1(*strings, space=2, **kwargs): # Print with 1 indent
         else:
             str_strings.append(str(string))
     #str_strings = map(str, strings)
-    print("{}> {}".format(" " * space, " ".join(str_strings), **kwargs))
+    print("{}> {}".format(" " * space, " ".join(str_strings)), **kwargs)
 
 def print2(*strings, **kwargs): # Print with 2 indents
     print1(strings, space=4, **kwargs)

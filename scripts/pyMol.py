@@ -153,6 +153,9 @@ def pymol_colour_all(colour):
 def pymol_orient():
     pymol.cmd.orient("(all)")
 
+def pymol_show_cell():
+    pymol.cmd.show("cell")
+
 def pymol_group(identifier = "sym", name = None):
     group = []
     if name is None:
