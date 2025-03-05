@@ -378,7 +378,9 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
                 new_coordX = o_atom.coord[0] + rel_deltaX
                 new_coordY = o_atom.coord[1] + rel_deltaY
                 new_coordZ = o_atom.coord[2] + rel_deltaZ
-                print4("Distances:",new_coordX, new_coordY, new_coordZ, end = " -> ")
+                if op_number == 3:
+                    print4("Distances (op: {}):". format(op_number),new_coordX, new_coordY, new_coordZ, end = " -> ")
+
                 position = [0,0,0]
                 if new_coordX > 1:
                     position[0] = 1 
@@ -387,14 +389,16 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
                 if new_coordZ > 1:
                     position[2] = 1
 
-                if new_coordX < 0:
-                    position[0] = -1 
-                if new_coordY < 0:
+                if new_coordX < -0:
+                    position[0] = -1
+                if new_coordY < -0:
                     position[1] = -1
-                if new_coordZ < 0:
+                if new_coordZ < -0:
                     position[2] = -1
+
                 position = tuple(position)
-                print(position)
+                if op_number == 3:
+                    print(position)
 
                 d2 = (a**2)*(deltaX**2) + (b**2)*(deltaY**2) + (c**2)*(deltaZ**2) +2*b*c*c_a*deltaY*deltaZ +2*a*c*c_b*deltaX*deltaZ +2*a*b*c_g*deltaX*deltaY
                 #print3(d2)
@@ -564,7 +568,7 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                 '''deltas = list([atom.d2[new_chain.id]["deltas"] for atom in model_atoms])
                 [print(d) for d in deltas]'''
                 positions = set(list([atom.d2[new_chain.id]["position"] for atom in model_atoms]))
-                #[print(d) for d in positions]
+                print4("Positions in model:", positions)
                 '''n=0
                 print(op)
                 for atom in model.get_atoms():
@@ -572,7 +576,8 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                     n+=1
                     if n>= 2:
                         break'''
-
+                
+                fractional = entity_to_frac(new_chain, params)
                 for pos in positions:
                     pos_atoms = [atom for atom in model_atoms if atom.d2[chain.id]["position"] == pos]
                     print5("Atoms in {}: {}".format(pos, len(pos_atoms)))
@@ -582,18 +587,18 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                         continue
 
 
-                    fractional = entity_to_frac(new_chain, params)
+                   
                     #print_all_coords(fractional, 10)
                     print4("Normal mate")
-                    new_chain = generate_displaced_copy(fractional, distance = pos, rotation = get_operation(key, op[0]), reverse = False)
-                    new_chain = entity_to_orth(new_chain, params)
-                    #print_all_coords(new_chain, 10)
+                    mate_chain = generate_displaced_copy(fractional, distance = pos, rotation = get_operation(key, op[0]), reverse = False)
+                    mate_chain = entity_to_orth(mate_chain, params)
+                    #print_all_coords(mate_chain, 10)
 
                     #print([atom.is_contact for atom in model_atoms])
-                    matching = check_matching_coords(pos_atoms, new_chain.get_atoms())
+                    matching = check_matching_coords(pos_atoms, mate_chain.get_atoms())
                     print5(matching)
                     from molecules import BioObject
-                    mates.append(BioObject.export(self, "mates", new_chain, "_mate_{}_{}_{}_{}".format(chain.id, op[0], id, pos)))
+                    mates.append(BioObject.export(self, "mates", mate_chain, "_mate_{}_{}_{}_{}".format(chain.id, op[0], id, pos)))
 
                     ### Reverse
                     '''print4("Reverse mate")
@@ -611,7 +616,6 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
         all_mates.append(mates)
 
     return all_mates
-
 
 
 
