@@ -209,77 +209,7 @@ def print_all_coords(entity, head = None):
         if n >= head:
             break
 
-'''
-def find_nearest_neighbour(original, params, key):
-    print1("Finding nearest neighbour")
-    print2("Space group:", key)
-    from spaceGroups import dictio_space_groups
-    rotation_set = dictio_space_groups[key]
-    min_d2 = 0
-    if len(rotation_set["symops"].items()) <= 1:
-        return None
-    for op_number, operation in rotation_set["symops"].items():
-        print3("Symmetry operation:", op_number)
-        if op_number == 1:
-            continue
-        displaced = generate_displaced_copy(original, distance= 99.5, rotation=operation)
 
-        assert sum(1 for _ in original.get_atoms()) == sum(1 for _ in displaced.get_atoms())
-
-        a = params["A"]
-        b = params["B"]
-        c = params["C"]
-        c_a = params["c_a"]
-        c_b = params["c_b"]
-        c_g = params["c_g"]
-
-        from maths import find_com
-        # This shouldn't work, coms in fractional are distorted
-        com = find_com(original.get_atoms())
-        #print("COM:", com)
-        for o_atom, d_atom in zip(original.get_atoms(), displaced.get_atoms()):
-            #print(d_atom, o_atom)
-            #deltaX = ((d_atom.coord[0] - o_atom.coord[0]) % 1) - 0.5
-            #deltaY = ((d_atom.coord[1] - o_atom.coord[1]) % 1) - 0.5
-            #deltaZ = ((d_atom.coord[2] - o_atom.coord[2]) % 1) - 0.5
-            deltaX = ((d_atom.coord[0] - com[0]) % 1) - 0.5
-            deltaY = ((d_atom.coord[1] - com[1]) % 1) - 0.5
-            deltaZ = ((d_atom.coord[2] - com[2]) % 1) - 0.5
-            #print4("Distances:",deltaX, deltaY, deltaZ)
-
-            d2 = (a**2)*(deltaX**2) + (b**2)*(deltaY**2) + (c**2)*(deltaZ**2) +2*b*c*c_a*deltaY*deltaZ +2*a*c*c_b*deltaX*deltaZ +2*a*b*c_g*deltaX*deltaY
-            #print3(d2)
-            if d2 >= min_d2:
-                try:
-                    if d2 < o_atom.d2[0]:
-                        o_atom.d2 = (d2, op_number, (deltaX,deltaY,deltaZ))
-                        #print4("D2:", d2)
-                    else:
-                        #print4("D2:", d2, end="\r")
-                        pass
-                except:
-                    o_atom.d2 = (d2, op_number, (deltaX,deltaY,deltaZ))
-                    #print4("D2:", d2)
-            else:
-                #print4("D2: identity", end="\r")
-                pass
-
-    neighbour = original.copy()
-    for atom in neighbour.get_atoms():
-        try:
-            atom.d2
-        except:
-            atom.d2 = (0, 1)
-        atom.bfactor = atom.d2[1]
-        if atom.is_disordered():
-            for d_atom in atom:
-                d_atom.coord = coord_add(com, atom.d2[2])
-
-        else:
-            atom.coord = coord_add(com, atom.d2[2])
-
-    return neighbour
-'''
 
 def coord_operation_entity(entity, key, op_n, reverse = False):
     for atom in entity.get_atoms():
@@ -431,24 +361,6 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
 
         for atom in new_model.get_atoms():
 
-            ### Development
-            from maths import add, sub_vectors
-            # lines.append([atom.coord, sub_vectors(atom.coord,convertFromFracToOrth(atom.d2[chain.id][2], params))])
-            #print(atom.coord)
-            #lines.append((convertFromFracToOrth(atom.coord, params),
-            #              sub_vectors(convertFromFracToOrth(atom.coord, params), convertFromFracToOrth(atom.d2[chain.id][3], params))))
-            #lines.append((atom.coord, sub_vectors(atom.coord, atom.d2[chain.id][3])))
-            # print(lines[-1])
-
-            ###
-
-            #atom.d2[chain.id]
-            '''try:
-                atom.d2[chain.id]
-            except:
-                #print("Atom", atom.id,"has no d2:")#, atom.__dict__)
-                atom.d2[chain.id] = [0, 1, (0,0,0)]'''
-
             #print(atom.d2[chain.id])
             atom.bfactor = atom.d2[chain.id]["operation"]
             orth_delta = convertFromFracToOrth(atom.d2[chain.id]["deltas"], params)
@@ -501,6 +413,7 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
         return None
     dimers = []
     all_mates = []
+    all_contacts = []
 
     original = neighbour[0]
 
@@ -515,6 +428,7 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
         print2("Chain:", chain, model)
         operations = list(set([atom.d2[chain.id]["operation"] for atom in model.get_atoms()]))
         mates = []
+        contacts = []
         from maths import distance
         from molecules import BioObject
         for i, op in enumerate(operations):
@@ -537,12 +451,15 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                     
 
                     num_contacts = 0
+                
                     for atom in op_atoms_by_pos_by_chain:
                         atom.is_contact = False
                         for o_atom in chain.get_atoms():
                             if distance(atom.coord, o_atom.coord) <= 8:
                                 atom.is_contact = True
                                 num_contacts += 1
+                                contacts.append([[np.float64(c) for c in o_atom.coord] , [[np.float64(c) for c in atom.coord] ])
+                                
                                 break
 
                     
@@ -576,98 +493,9 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
         remaining_ids.remove(chain.id)
 
         all_mates.append(mates)
+        all_contacts.append(contacts)
+    self.contacts = all_contacts
     return all_mates
-
-'''
-            continue
-
-            num_contacts = {}
-            for c in list(set([atom.get_full_id()[2] for atom in model.get_atoms() if atom.d2[chain.id]["operation"] == op])):
-                n=0
-                for atom in model.get_atoms():
-                    if atom.d2[chain.id]["operation"] != op or atom.get_full_id()[2] != c:
-                        continue
-                    atom.is_contact = False
-
-                    for c_atom in chain.get_atoms():
-                        from maths import distance
-                        if distance(atom.coord, c_atom.coord) <= 8:
-                            atom.is_contact = True
-                            n += 1
-                            break
-                num_contacts[c] = n
-            operations[i] = (op, num_atoms, num_contacts)
-            print3("Operation:", operations[i])
-
-            for id, n_contacts in op[2].items():
-
-                print4(id, n_contacts)
-                new_chain = None
-                #if n_contacts < 4:
-                    #continue
-                for c in chains:
-                    if c.id == id:
-                        new_chain = c.copy()
-                        break
-                print5(new_chain)
-
-                if new_chain is None:
-                    continue
-                model_atoms = [atom for atom in model.get_atoms() if atom.d2[chain.id]["operation"] == op[0] and atom.is_contact]
-                print4("N atoms in model:", len(model_atoms))
-                deltas = list([atom.d2[new_chain.id]["deltas"] for atom in model_atoms])
-                [print(d) for d in deltas]
-                positions = set(list([atom.d2[new_chain.id]["position"] for atom in model_atoms]))
-                print4("Positions in model:", positions)
-                n=0
-                print(op)
-                for atom in model.get_atoms():
-                    print(atom.d2[chain.id])
-                    n+=1
-                    if n>= 2:
-                        break
-
-                fractional = entity_to_frac(new_chain, params)
-                for pos in positions:
-                    pos_atoms = [atom for atom in model_atoms if atom.d2[chain.id]["position"] == pos]
-                    print5("Atoms in {}: {}".format(pos, len(pos_atoms)))
-
-                    if len(pos_atoms) < 5:
-                        print6("Less than 5 contacts ({})".format(len(pos_atoms)))
-                        continue
-
-
-
-                    #print_all_coords(fractional, 10)
-                    print4("Normal mate")
-                    mate_chain = generate_displaced_copy(fractional, distance = pos, rotation = get_operation(key, op[0]), reverse = False)
-                    mate_chain = entity_to_orth(mate_chain, params)
-                    #print_all_coords(mate_chain, 10)
-
-                    #print([atom.is_contact for atom in model_atoms])
-                    matching = check_matching_coords(pos_atoms, mate_chain.get_atoms())
-                    print5(matching)
-                    
-                    from molecules import BioObject
-
-                    mates.append(BioObject.export(self, "mates", mate_chain, "_mate_{}_{}_{}_{}".format(chain.id, op[0], id, pos)))
-
-                    ### Reverse
-                    print4("Reverse mate")
-                    #print_all_coords(fractional, 10)
-                    reverse_chain = generate_displaced_copy(fractional, distance = pos, rotation = get_operation(key, op[0]), reverse = False)
-                    #print_all_coords(reverse_chain, 10)
-                    reverse_chain = entity_to_orth(reverse_chain, params)
-                    #print_all_coords(reverse_chain, 10)
-                    matching_reverse = check_matching_coords(model_atoms, reverse_chain.get_atoms())
-                    print5(matching_reverse)
-                    from molecules import BioObject
-                    mates.append(BioObject.export(self, "mates", reverse_chain, "_mate_{}_{}_{}_reverse".format(chain.id, op[0], id)))
-
-
-        all_mates.append(mates)
-
-    return all_mates'''
 
 
 

@@ -65,7 +65,7 @@ def show_objects(obj_list, args):
         sprint(obj.id)
         #print(obj.__dict__)
         for key, item in obj.__dict__.items():
-            if key in ["lines"]:
+            if key in ["lines", "contacts"]:
                 continue
             #print(str(type(item)))
             if type(item) in (list, tuple, set):
@@ -112,6 +112,14 @@ def show_objects(obj_list, args):
                         for line in line_set:
                             #print(l,line)
                             pymol_draw_line(line[0], line[1], state=l)
+                        l += 1
+                if key == "contacts":
+                    from pyMol import pymol_draw_line
+                    l = 2
+                    for line_set in item:
+                        for line in line_set:
+                            #print(l,line)
+                            pymol_draw_line(line[0], line[1], state=l, name  = "c")
                         l += 1
                 ###
 
