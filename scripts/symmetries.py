@@ -333,7 +333,7 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
     rotation_set = dictio_space_groups[key]
     min_d2 = 0
     if len(rotation_set["symops"].items()) <= 1:
-        return None
+        return None, None
 
     from maths import find_com
     chains = []
@@ -379,13 +379,13 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
                 new_coordY = o_atom.coord[1] + rel_deltaY
                 new_coordZ = o_atom.coord[2] + rel_deltaZ
                 new_coord = [new_coordX, new_coordY, new_coordZ]
-                if op_number == 3:
+                if op_number == 99:
                     print4("Distances (op: {}):". format(op_number),new_coordX, new_coordY, new_coordZ, end = " -> ")
 
                 position = [int(n_coord - d_coord + 99.5) for n_coord, d_coord in zip(new_coord, d_atom.coord)]
                 position = tuple(position)
 
-                if op_number == 3:
+                if op_number == 99:
                     print(position)
 
                 d2 = (a**2)*(deltaX**2) + (b**2)*(deltaY**2) + (c**2)*(deltaZ**2) +2*b*c*c_a*deltaY*deltaZ +2*a*c*c_b*deltaX*deltaZ +2*a*b*c_g*deltaX*deltaY
