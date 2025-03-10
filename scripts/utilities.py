@@ -46,7 +46,7 @@ def print6(*strings, **kwargs):
 
 def clean_string(string, allow=(".", "_")):
     from unidecode import unidecode
-    return ''.join(e for e in unidecode(string) if e.isalnum() or e in allow)
+    return ''.join(e for e in unidecode(str(string)) if e.isalnum() or e in allow)
 
 def unpickle(path):
     import pickle

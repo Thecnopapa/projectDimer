@@ -67,6 +67,16 @@ def load_from_files(pdb_folder, load_class = PDB, ignore_selection = False, pick
         print2(obj)
     return loaded
 
+
+def load_references(force_reload = False):
+
+    return load_from_files(root.references, 
+                           pickle_extension= ".reference",
+                           is_reference=True,
+                           ignore_selection = True,
+                           force_reload = force_reload)
+
+
 def load_monomers(molecules = None, folder = "monomers", extension = ".monomer",force_reload=False):
     sprint("Loading monomers, force reload:", force_reload)
     loaded = []

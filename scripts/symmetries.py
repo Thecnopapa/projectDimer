@@ -643,6 +643,7 @@ if __name__ == "__main__":
         vars["do_only"] = ["1M2Z"]
 
     from imports import load_from_files
+    
     molecules = load_from_files(local.many_pdbs, force_reload = False)
     tprint("Generating symmetries...")
     progress = ProgressBar(len(molecules))

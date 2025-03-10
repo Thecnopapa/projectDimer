@@ -146,11 +146,18 @@ class PDB(BioObject):
         self.read_card()
         from symmetries import find_relevant_mates
         self.mates = find_relevant_mates(self.structure, self.params, self.space_group[1])
+        if self.mates is None: 
+            return None
+        self.mate_paths = []
         for mate in self.mates:
             mate.process(self)
             self.dimers.extend(mate.dimers)
+            self.mate_paths.extend(mate.paths)
         dimer_paths = []
         for dimer in self.dimers:
+            #print(dimer)
+            #print(dimer.__dict__)
+            #print(dimer.export())
             dimer_paths.append(dimer.export())
         self.dimer_paths = dimer_paths
         return self.dimers
@@ -223,7 +230,7 @@ class Monomer(BioObject):
     pickle_extension = '.monomer'
     pickle_folder = "monomers"
 
-    def __init__(self, name, chain, structure, is_mate = False):
+    def __init__(self, name, chain, structure, is_mate = False, skip_superpose = True):
         self.name = name
         self.is_mate = is_mate
         if self.is_mate:
@@ -250,6 +257,8 @@ class Monomer(BioObject):
         self.sequence = None
 
         self.scores = None
+        if not skip_superpose:
+            self.superpose()
 
 
 
@@ -281,7 +290,13 @@ class Monomer(BioObject):
             contents = [self.id, self.name, self.chain]
             self.superpositions = {}
             if references is None:
-                references = self.top_refs_for_super
+                if "references" in vars:
+                    print(vars.references)
+                    references = vars.references
+                else:
+                    from imports import load_references
+                    vars["references"] = load_references()
+                    references = vars.refetences
             for reference in references:
                 ref_name = reference.name
                 if not ref_name in self.rmsds.keys() or force_superpose:
@@ -347,6 +362,8 @@ class Mate(BioObject):
         self.m_chain = moving_chain
         self.update_id()
         self.dimers = []
+        self.structures = []
+        self.paths = None
 
     def update_id(self):
         self.id = "{}_mate_{}_{}_{}".format(self.name, self.f_chain.id, self.op_n, self.m_chain.id)
@@ -358,23 +375,31 @@ class Mate(BioObject):
         print1("Processing mate:", self.id)
         
         self.reconstruct_mates()
+        self.export()
         print2(self.dimers)
         
     def reconstruct_mates(self, min_contacts = 0):
         from symmetries import generate_displaced_copy, entity_to_orth, get_operation
         dimers = []
+    
         for position in self.positions.values():
             if position["n_contacts"] >= min_contacts:
                 fixed_monomer = Monomer(self.name, self.f_chain.id, entity_to_orth(self.f_chain, self.params))
                 moved_mate = generate_displaced_copy(self.m_chain, distance = position["position"], rotation = get_operation(self.key, self.op_n))
                 moved_mate = entity_to_orth(moved_mate, self.params)
+                self.structures.append(moved_mate)
                 moved_mate = Monomer(self.name, self.m_chain.id, moved_mate, is_mate = True)
                 dimers.append(Dimer(fixed_monomer, moved_mate))
         self.dimers = dimers
         return self.dimers
 
-
-        
+    def export(self):
+        paths = []
+        for structure, position in zip(self.structures, self.positions.values()):
+            
+            paths.append(super().export(subfolder="mates", in_structure = structure, extra_id = "_" + clean_string(position["position"], allow = ["-"])))
+        self.paths = paths
+        return self.paths
     
 
 
@@ -456,6 +481,7 @@ class Dimer(BioObject):
             self.replaced_path = super().export(subfolder="dimers_replaced", in_structure=self.replaced_structure)
             self.merged_path = super().export(subfolder="dimers_merged", in_structure=self.merged_structure)
             return self.merged_path
+        return None
 
 
     def summary(self):
