@@ -620,8 +620,11 @@ def reconstruct_relevant_neighbours(neighbour, params, key):
 
 
 
-
-
+def symmetries(molecule, progress):
+    sprint(molecule.id)
+    molecule.get_all_dimers()
+    molecule.pickle()
+    progress.add(info=molecule.id)
 
 
 if __name__ == "__main__":
@@ -631,7 +634,7 @@ if __name__ == "__main__":
 
 
     if len (sys.argv) > 2:
-        print(sys.argv[2:])
+        print(sys.argv)
         if "all" in sys.argv:
             vars["do_only"] = []
         else:
@@ -644,11 +647,10 @@ if __name__ == "__main__":
     molecules = load_from_files(local.many_pdbs, force_reload = False)
     tprint("Generating symmetries...")
     progress = ProgressBar(len(molecules))
+    import concurrent.futures
+    pool = concurrent.futures.ThreadPoolExecutor(max_workers=16)
     for molecule in molecules:
-        sprint(molecule.id)
-        molecule.get_all_dimers()
-        molecule.pickle()
-        progress.add(info=molecule.id)
-
+        pool.submit(symmetries, molecule, progress)
+    pool.shutdown(wait = True)
 
     eprint("Symmetries generated")
