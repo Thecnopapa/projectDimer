@@ -152,6 +152,8 @@ class PDB(BioObject):
         self.mate_paths = []
         self.contacts = []
         for mate in self.mates:
+            if mate is None:
+                continue
             mate.process(self)
             self.dimers.extend(mate.dimers)
             self.contacts.extend(mate.contacts)
