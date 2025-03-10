@@ -65,7 +65,7 @@ def show_objects(obj_list, args):
         sprint(obj.id)
         #print(obj.__dict__)
         for key, item in obj.__dict__.items():
-            if key in ["lines", "contacts"]:
+            if key in ["lines"]:
                 continue
             #print(str(type(item)))
             if type(item) in (list, tuple, set):
@@ -97,13 +97,10 @@ def show_objects(obj_list, args):
                         else:
                             pymol_load_path(item)
                 ### Development
-                if key == "mates" and False:
-                    s = 2
-                    for mate_set in item:
-                        for mate in mate_set:
-                            print(os.path.basename(mate))
-                            pymol_load_path(mate,os.path.basename(mate), state=s)
-                        s += 1
+                if key == "mate_paths":
+                    for mate in item:
+                        print(mate)    
+                        pymol_load_path(mate, os.path.basename(mate))
 
                 if key == "lines" and False:
                     from pyMol import pymol_draw_line
@@ -113,14 +110,10 @@ def show_objects(obj_list, args):
                             #print(l,line)
                             pymol_draw_line(line[0], line[1], state=l)
                         l += 1
-                if key == "contacts" and False:
+                if key == "contacts":
                     from pyMol import pymol_draw_line
-                    l = 2
-                    for line_set in item:
-                        for line in line_set:
-                            #print(l,line)
-                            pymol_draw_line(line[0], line[1], state=l, name  = "c")
-                        l += 1
+                    for line in item:
+                        pymol_draw_line(line[0], line[1], name  = "c")
                 ###
 
             from pyMol import pymol_format, pymol_set_state, pymol_orient, pymol_show_cell
@@ -130,10 +123,10 @@ def show_objects(obj_list, args):
             pymol_set_state(1)
             pymol_orient()
             pymol_show_cell()
-            pymol_group(identifier="reverse")
+            pymol_group(identifier="mate", name="mates")
             try:
                 pymol_symmetries(og)
-                pymol_group()
+                pymol_group(identifier = "sym")
             except:
                 pass
 

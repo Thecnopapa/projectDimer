@@ -148,16 +148,17 @@ class PDB(BioObject):
         self.mates = find_relevant_mates(self.structure, self.params, self.space_group[1])
         if self.mates is None: 
             return None
+
         self.mate_paths = []
+        self.contacts = []
         for mate in self.mates:
             mate.process(self)
             self.dimers.extend(mate.dimers)
+            self.contacts.extend(mate.contacts)
             self.mate_paths.extend(mate.paths)
+
         dimer_paths = []
         for dimer in self.dimers:
-            #print(dimer)
-            #print(dimer.__dict__)
-            #print(dimer.export())
             dimer_paths.append(dimer.export())
         self.dimer_paths = dimer_paths
         return self.dimers
@@ -364,6 +365,7 @@ class Mate(BioObject):
         self.dimers = []
         self.structures = []
         self.paths = None
+        self.contacts = []
 
     def update_id(self):
         self.id = "{}_mate_{}_{}_{}".format(self.name, self.f_chain.id, self.op_n, self.m_chain.id)
@@ -372,19 +374,33 @@ class Mate(BioObject):
         self.name = parent.name
         self.key = parent.space_group[1]
         self.update_id()
+
         print1("Processing mate:", self.id)
-        
+        self.unpack_contacts()
         self.reconstruct_mates()
         self.export()
         print2(self.dimers)
-        
+
+    def unpack_contacts(self):
+        from symmetries import convertFromFracToOrth
+        for pos in self.positions.values():
+            orth_contacts = []
+            for contact in pos["contacts"]:
+                print(contact)
+                orth_contacts.append([convertFromFracToOrth(point, self.params) for point in contact])
+
+
+            self.contacts.extend(orth_contacts)
+
+
     def reconstruct_mates(self, min_contacts = 0):
         from symmetries import generate_displaced_copy, entity_to_orth, get_operation
         dimers = []
     
         for position in self.positions.values():
+            from symmetries import print_all_coords
             if position["n_contacts"] >= min_contacts:
-                fixed_monomer = Monomer(self.name, self.f_chain.id, entity_to_orth(self.f_chain, self.params))
+                fixed_monomer = Monomer(self.name, self.f_chain.id, entity_to_orth(self.f_chain.copy(), self.params))
                 moved_mate = generate_displaced_copy(self.m_chain, distance = position["position"], rotation = get_operation(self.key, self.op_n))
                 moved_mate = entity_to_orth(moved_mate, self.params)
                 self.structures.append(moved_mate)

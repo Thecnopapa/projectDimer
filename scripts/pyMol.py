@@ -51,7 +51,7 @@ def pymol_load_path(path,  name=None, state = -1,):
     if name is None:
         name = os.path.basename(path)
     pymol.cmd.load(path,name)
-    pymol.cmd.set("state", state)
+    #pymol.cmd.set("state", state)
     return name
 
 def pymol_hide(sele, hide = None):

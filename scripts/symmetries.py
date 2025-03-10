@@ -199,9 +199,7 @@ def generate_displaced_copy(original, distance = 99.5, rotation = None, reverse=
 
     return displaced
 
-def print_all_coords(entity, head = None):
-    if head is None:
-        head = len(entity.get_atoms)
+def print_all_coords(entity, head = 5):
     n = 0
     for atom in entity.get_atoms():
         print(atom.coord)
@@ -330,7 +328,6 @@ def find_relevant_mates(orth_struct, params, key):
         for op_number, operation in rotation_set["symops"].items():
             print3("Operation:", op_number)
             displaced = generate_displaced_copy(fractional, distance= 99.5, rotation=operation)
-
             
 
             for moving_chain in chains:
@@ -366,11 +363,11 @@ def find_relevant_mates(orth_struct, params, key):
                         else:
                             if position in mate.positions.keys():
                                 mate.positions[position]["n_contacts"] += 1
-                                mate.positions[position]["contacts"].append(contacts)
+                                mate.positions[position]["contacts"].extend(contacts)
                             else:
                                 mate.positions[position] = {"position": position,
                                                             "n_contacts": 1,
-                                                            "contacts": [contacts]}
+                                                            "contacts": contacts}
                 if mate is None:
                     print5("No relevant contacts")
                     continue
