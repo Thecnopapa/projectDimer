@@ -386,7 +386,7 @@ class Mate(BioObject):
         for pos in self.positions.values():
             orth_contacts = []
             for contact in pos["contacts"]:
-                print(contact)
+                #print(contact)
                 orth_contacts.append([convertFromFracToOrth(point, self.params) for point in contact])
 
 
