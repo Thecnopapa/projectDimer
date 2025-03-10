@@ -632,7 +632,7 @@ if __name__ == "__main__":
 
     if len (sys.argv) > 2:
         print(sys.argv[2:])
-        if sys.argv[2] == "all":
+        if "all" in sys.argv:
             vars["do_only"] = []
         else:
             vars["do_only"] = sys.argv[2:]
