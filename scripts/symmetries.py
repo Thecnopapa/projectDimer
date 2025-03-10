@@ -256,9 +256,49 @@ def get_operation(key,op_n):
     from spaceGroups import dictio_space_groups
     return dictio_space_groups[key]["symops"][op_n]
 
-def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
-    print1("Finding nearest neighbour")
+def get_neigh_from_coord(coord, target_atoms, max_distance, count_to = 1, params = None):
+    if params is not None:
+        distance_fun = get_fractional_distance
+        max_distance = max_distance**2
+    else:
+        from maths import distance as distance_fun
+    num_contacts = 0
+    contacts = []
+    is_contact = False
+    for atom in target_atoms:
+        if distance_fun(coord, atom.coord, params = params) <= max_distance:
+            num_contacts += 1
+            contacts.append([[c for c in coord], [c for c in atom.coord]])
+            if num_contacts >= count_to:
+                is_contact = True
+                break
+    return is_contact, num_contacts, contacts
+                    
+    
+def get_fractional_distance(coord1, coord2, params):
+    from maths import vector
+    deltaX, deltaY, deltaZ = vector(coord1, coord2)
+
+    a = params["A"]
+    b = params["B"]
+    c = params["C"]
+    c_a = params["c_a"]
+    c_b = params["c_b"]
+    c_g = params["c_g"]
+
+    d2 = (a**2)*(deltaX**2) + (b**2)*(deltaY**2) + (c**2)*(deltaZ**2) +2*b*c*c_a*deltaY*deltaZ +2*a*c*c_b*deltaX*deltaZ +2*a*b*c_g*deltaX*deltaY
+
+    return d2
+
+
+
+def find_relevant_mates(orth_struct, params, key):
+    print1("Finding relevant mates")
     print2("Space group:", key)
+
+    fractional = entity_to_frac(orth_struct.copy(), params)
+
+
     from spaceGroups import dictio_space_groups
     rotation_set = dictio_space_groups[key]
     min_d2 = 0
@@ -278,6 +318,76 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
 
     print2(chains)
 
+    mates = []
+    remaining_ids = [chain.id for chain in chains]
+    from molecules import Mate
+
+    for fixed_chain in chains:
+        print2("Fixed chain:", fixed_chain)
+        fixed_atoms = [atom for atom in fixed_chain.get_atoms()]
+        com = fixed_chain.com
+          
+        for op_number, operation in rotation_set["symops"].items():
+            print3("Operation:", op_number)
+            displaced = generate_displaced_copy(fractional, distance= 99.5, rotation=operation)
+
+            
+
+            for moving_chain in chains:
+                if moving_chain.id not in remaining_ids:
+                    continue
+                if moving_chain.id == fixed_chain.id and op_number == 1:
+                    continue
+
+                print4("Moving chain:", moving_chain)
+                
+                moving_atoms = [atom for atom in displaced.get_atoms() if atom.get_full_id()[-3] == moving_chain.id]
+                #print(moving_atoms)
+                
+                mate = None
+
+                for atom in moving_atoms:
+                    deltaX = ((atom.coord[0] - com[0]) % 1) - 0.5
+                    deltaY = ((atom.coord[1] - com[1]) % 1) - 0.5
+                    deltaZ = ((atom.coord[2] - com[2]) % 1) - 0.5
+
+                    new_coordX = com[0] + deltaX
+                    new_coordY = com[1] + deltaY
+                    new_coordZ = com[2] + deltaZ
+                    new_coord = [new_coordX, new_coordY, new_coordZ]
+
+                    position = tuple([int(n_coord - d_coord + 99.5) for n_coord, d_coord in zip(new_coord, atom.coord)])
+                    #print(position)
+                    
+                    is_contact, _, contacts =  get_neigh_from_coord(new_coord, fixed_atoms, max_distance = 8, params = params)
+                    if is_contact:
+                        if mate is None:
+                            mate = Mate(op_number, operation, params, fixed_chain, moving_chain)
+                        else:
+                            if position in mate.positions.keys():
+                                mate.positions[position]["n_contacts"] += 1
+                                mate.positions[position]["contacts"].append(contacts)
+                            else:
+                                mate.positions[position] = {"position": position,
+                                                            "n_contacts": 1,
+                                                            "contacts": [contacts]}
+                if mate is None:
+                    print5("No relevant contacts")
+                    continue
+                print5(mate, mate.positions.keys())
+                mates.append(mate)
+
+        remaining_ids.remove(fixed_chain.id)
+    return mates
+
+
+
+
+
+
+
+    
+def deprecated():  ##########
     for op_number, operation in rotation_set["symops"].items():
         print2("Symmetry operation:", op_number)
 
@@ -294,7 +404,9 @@ def find_nearest_neighbour_by_chain(fractional, params, key, orth_struct):
 
         for chain in chains:
 
+            
 
+            mate = Mate(op_number, operation, params, chain) 
             for o_atom, d_atom in zip(fractional.get_atoms(), displaced.get_atoms()):
                 if op_number == 1 and o_atom.get_full_id()[2] == chain.id:
                     continue
@@ -407,11 +519,15 @@ def check_matching_coords(subset, target):
     return matching, bool_list
 
 
-def reconstruct_relevant_neighbours(self, neighbour, params, key):
+def reconstruct_relevant_neighbours(neighbour, params, key):
     print1("Reconstructing relevant neighbours")
+    from maths import distance
+    from molecules import BioObject, Monomer, Dimer
+
     if neighbour is None:
         return None
     dimers = []
+    monomers = []
     all_mates = []
     all_contacts = []
 
@@ -429,8 +545,7 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
         operations = list(set([atom.d2[chain.id]["operation"] for atom in model.get_atoms()]))
         mates = []
         contacts = []
-        from maths import distance
-        from molecules import BioObject
+        
         for i, op in enumerate(operations):
             print3( "Operation:", i, op)
             op_atoms = [atom for atom in model.get_atoms() if atom.d2[chain.id]["operation"] == op]
@@ -458,7 +573,7 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                             if distance(atom.coord, o_atom.coord) <= 8:
                                 atom.is_contact = True
                                 num_contacts += 1
-                                contacts.append([[np.float64(c) for c in o_atom.coord] , [[np.float64(c) for c in atom.coord] ])
+                                contacts.append([[np.float64(c) for c in o_atom.coord] , [np.float64(c) for c in atom.coord]])
                                 
                                 break
 
@@ -487,15 +602,24 @@ def reconstruct_relevant_neighbours(self, neighbour, params, key):
                         print6("Mate does not match closest atoms")
                         print(matching)
                     mates.append(BioObject.export(self, "mates", mate_chain, "_mate_{}_{}_{}_{}".format(chain.id, i, new_chain_id, position)))
-
                     print6("Mate generated succesfully:", mate_chain.get_full_id()) 
+                    dimer = chain.copy()
+    
+
 
         remaining_ids.remove(chain.id)
 
         all_mates.append(mates)
+
+
+
+
         all_contacts.append(contacts)
-    self.contacts = all_contacts
-    return all_mates
+    #self.contacts = all_contacts
+    return {"mates": all_mates,
+            "contacts": all_contacts,
+            "monomers": monomers,
+            "dimers": dimers}
 
 
 
@@ -519,7 +643,7 @@ if __name__ == "__main__":
         vars["do_only"] = ["1M2Z"]
 
     from imports import load_from_files
-    molecules = load_from_files(local.many_pdbs, force_reload =False)
+    molecules = load_from_files(local.many_pdbs, force_reload = False)
     tprint("Generating symmetries...")
     progress = ProgressBar(len(molecules))
     for molecule in molecules:

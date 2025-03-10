@@ -118,7 +118,7 @@ def unit(v):
     return (x / mag, y / mag, z / mag)
 
 
-def distance(p0, p1):
+def distance(p0, p1, **kwargs):
     return length(vector(p0, p1))
 
 

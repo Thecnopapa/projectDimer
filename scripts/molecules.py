@@ -102,7 +102,7 @@ class PDB(BioObject):
         self.fractional_path = None
         self.card = None
         self.params = None
-        self.space_group = None
+        self.space_group = None # [group, key]
 
     
     def read_card(self):
@@ -142,20 +142,25 @@ class PDB(BioObject):
 
 
     def get_all_dimers(self, force = False):
-        done = []
         self.dimers = []
         self.read_card()
-        self.generate_fractional()
-        self.get_neighbour()
-        from symmetries import reconstruct_relevant_neighbours
-
-        ### Development
-        dimer_list = reconstruct_relevant_neighbours(self, self.neighbour, self.params, key=self.space_group[1])
-        print(dimer_list)
-        self.mates = dimer_list # Temporary, for debug
-        ###
-
+        from symmetries import find_relevant_mates
+        self.mates = find_relevant_mates(self.structure, self.params, self.space_group[1])
+        for mate in self.mates:
+            mate.process(self)
+            self.dimers.extend(mate.dimers)
+        dimer_paths = []
+        for dimer in self.dimers:
+            dimer_paths.append(dimer.export())
+        self.dimer_paths = dimer_paths
         return self.dimers
+
+
+
+
+
+
+
 
     def export_fractional(self):
         print2("Exporting fractional")
@@ -218,13 +223,18 @@ class Monomer(BioObject):
     pickle_extension = '.monomer'
     pickle_folder = "monomers"
 
-    def __init__(self, name, chain, structure):
+    def __init__(self, name, chain, structure, is_mate = False):
         self.name = name
-        self.chain = chain
+        self.is_mate = is_mate
+        if self.is_mate:
+            self.chain = chain.lower()
+        else:
+            self.chain = chain.upper()
+
         self.structure = structure
         self.id = "{}_{}".format(name, chain)
-        self.export()
 
+        self.export()
         self.rmsds = {}
         self.al_res = {}
         self.rotations = {}
@@ -322,6 +332,50 @@ class Monomer(BioObject):
 
 
 
+class Mate(BioObject):
+    pickle_extension = ".mate"
+    pickle_folder = "mates"
+
+    def __init__(self, op_n, operation, params, fixed_chain, moving_chain):
+        self.structure = None
+        self.op_n = op_n
+        self.operation = operation
+        self.key = None
+        self.params = params
+        self.positions = {}
+        self.f_chain = fixed_chain
+        self.m_chain = moving_chain
+        self.update_id()
+        self.dimers = []
+
+    def update_id(self):
+        self.id = "{}_mate_{}_{}_{}".format(self.name, self.f_chain.id, self.op_n, self.m_chain.id)
+
+    def process(self, parent):
+        self.name = parent.name
+        self.key = parent.space_group[1]
+        self.update_id()
+        print1("Processing mate:", self.id)
+        
+        self.reconstruct_mates()
+        print2(self.dimers)
+        
+    def reconstruct_mates(self, min_contacts = 0):
+        from symmetries import generate_displaced_copy, entity_to_orth, get_operation
+        dimers = []
+        for position in self.positions.values():
+            if position["n_contacts"] >= min_contacts:
+                fixed_monomer = Monomer(self.name, self.f_chain.id, entity_to_orth(self.f_chain, self.params))
+                moved_mate = generate_displaced_copy(self.m_chain, distance = position["position"], rotation = get_operation(self.key, self.op_n))
+                moved_mate = entity_to_orth(moved_mate, self.params)
+                moved_mate = Monomer(self.name, self.m_chain.id, moved_mate, is_mate = True)
+                dimers.append(Dimer(fixed_monomer, moved_mate))
+        self.dimers = dimers
+        return self.dimers
+
+
+        
+    
 
 
 
@@ -329,11 +383,16 @@ class Dimer(BioObject):
     pickle_extension = '.dimer'
     pickle_folder = "dimers"
 
-    def __init__(self, monomer1, monomer2):
+    def __init__(self, monomer1, monomer2, position = None):
         self.monomer1 = monomer1
         self.monomer2 = monomer2
         self.name = monomer1.name
-        self.id = "{}_{}{}".format(self.name, monomer1.chain, monomer2.chain)
+        self.position = position
+        if position is None:
+            p = ""
+        else:
+            p = "_" + str(position)
+        self.id = "{}_{}{}{}".format(self.name, monomer1.chain, monomer2.chain, p)
         self.incomplete = False
 
         self.failed_entries = []
@@ -345,7 +404,8 @@ class Dimer(BioObject):
         self.best_match = None
 
         if monomer1.super_path is None or monomer2.super_path is None or monomer1.super_path == "" or monomer2.super_path == "":
-            vars.failed_df.loc[len(vars.failed_df)] = [self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)]
+            if "failed_df" in vars:
+                vars.failed_df.loc[len(vars.failed_df)] = [self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)]
             self.failed_entries.append([self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)])
             self.incomplete = True
         else:
@@ -395,6 +455,7 @@ class Dimer(BioObject):
             self.original_path = super().export(subfolder="dimers_original", in_structure=self.original_structure)
             self.replaced_path = super().export(subfolder="dimers_replaced", in_structure=self.replaced_structure)
             self.merged_path = super().export(subfolder="dimers_merged", in_structure=self.merged_structure)
+            return self.merged_path
 
 
     def summary(self):

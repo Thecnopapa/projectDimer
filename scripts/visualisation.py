@@ -97,7 +97,7 @@ def show_objects(obj_list, args):
                         else:
                             pymol_load_path(item)
                 ### Development
-                if key == "mates":
+                if key == "mates" and False:
                     s = 2
                     for mate_set in item:
                         for mate in mate_set:
@@ -105,7 +105,7 @@ def show_objects(obj_list, args):
                             pymol_load_path(mate,os.path.basename(mate), state=s)
                         s += 1
 
-                if key == "lines":
+                if key == "lines" and False:
                     from pyMol import pymol_draw_line
                     l = 2
                     for line_set in item:
@@ -113,7 +113,7 @@ def show_objects(obj_list, args):
                             #print(l,line)
                             pymol_draw_line(line[0], line[1], state=l)
                         l += 1
-                if key == "contacts":
+                if key == "contacts" and False:
                     from pyMol import pymol_draw_line
                     l = 2
                     for line_set in item:
