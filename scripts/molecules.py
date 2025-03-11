@@ -104,6 +104,11 @@ class PDB(BioObject):
         self.params = None
         self.space_group = None # [group, key]
 
+        self.setup()
+
+    def setup(self):
+        self.read_card()
+
     
     def read_card(self):
         from symmetries import get_crystal, calculate_parameters, get_space_group
@@ -142,12 +147,14 @@ class PDB(BioObject):
 
 
     def get_all_dimers(self, force = False):
+        if len(self.dimers) > 0 and not force:
+            return self.dimers
         self.dimers = []
         self.read_card()
         from symmetries import find_relevant_mates
         self.mates = find_relevant_mates(self.structure, self.params, self.space_group[1])
         if self.mates is None: 
-            return None
+            return []
 
         self.mate_paths = []
         self.contacts = []
@@ -168,86 +175,24 @@ class PDB(BioObject):
 
 
 
-
-
-
-
-    def export_fractional(self):
-        print2("Exporting fractional")
-        if self.fractional is None:
-            return None
-        self.fractional_path = self.export(subfolder="fractional", in_structure=self.fractional, extra_id="_fractional")
-        return self.fractional_path
-    
-    def export_neighbour(self):
-        print2("Exporting neighbour")
-        if self.neighbour is None:
-            print3("Neighbour not found")
-            return None
-        #original_model = self.structure[0].copy()
-        #original_model.id = 1
-        #self.neighbour.add(original_model)
-        self.neighbour_path = self.export(subfolder="neighbour", in_structure=self.neighbour, extra_id="_neighbour")
-        return self.neighbour_path
-
-    def generate_fractional(self):
-        print1("Generating fractional")
-        if self.params is None:
-            return None
-        if self.structure is None:
-            return None
-        self.fractional = self.structure.copy()
-        from symmetries import convertFromOrthToFrac
-        for atom in self.fractional.get_atoms():
-            if atom.is_disordered():
-                for d_atom in atom:
-                    #print("dis", d_atom.coord, end=" -> ")
-                    d_atom.coord=convertFromOrthToFrac(d_atom.coord, self.params)
-                    #print(d_atom.coord)
-            else:
-                #print(atom.coord, end=" -> ")
-                atom.coord=convertFromOrthToFrac(atom.coord, self.params)
-                #print(atom.coord)
-        self.export_fractional()
-        return self.fractional
-
-    def get_neighbour(self, force = False):
-        sprint(self.id)
-        print1("Getting neighbour")
-        if self.params is None or self.fractional is None:
-            print("Params or fractional not found:", self.params,self.fractional)
-            return None
-        from symmetries import  convertFromFracToOrth, find_nearest_neighbour_by_chain
-        neighbour, lines = find_nearest_neighbour_by_chain(self.fractional,self.params, self.space_group[1], self.structure)
-        self.lines = lines
-        if neighbour is None:
-            self.neighbour = None
-            return None
-        
-        self.neighbour = neighbour
-        self.export_neighbour()
-        return self.neighbour
-
-
 class Monomer(BioObject):
     pickle_extension = '.monomer'
     pickle_folder = "monomers"
 
-    def __init__(self, name, chain, structure, is_mate = False, position = None, skip_superpose = True):
+    def __init__(self, name, chain, structure, is_mate = False, extra_id = None, skip_superpose = True):
         self.name = name
         self.is_mate = is_mate
         self.structure = structure
-
+        self.extra_id = extra_id
         if self.is_mate:
             self.chain = chain.lower()
-            p = "_" + clean_string(position["position"], allow = ["-"])
         else:
             self.chain = chain.upper()
-            p = ""
+            self.extra_id = ""
 
         self.structure.id = self.chain
 
-        self.id = "{}_{}{}".format(name, chain, p)
+        self.id = "{}_{}{}".format(name, chain, self.extra_id)
 
         self.export()
         self.rmsds = {}
@@ -298,13 +243,8 @@ class Monomer(BioObject):
             contents = [self.id, self.name, self.chain]
             self.superpositions = {}
             if references is None:
-                if "references" in vars:
-                    #print(vars.references)
-                    references = vars.references
-                else:
-                    from imports import load_references
-                    vars["references"] = load_references()
-                    references = vars.references
+                references = vars.references
+
             for reference in references:
                 ref_name = reference.name
                 if not ref_name in self.rmsds.keys() or force_superpose:
@@ -344,10 +284,14 @@ class Monomer(BioObject):
             self.super_data = finalists[np.argmax(criteria)]
             self.best_fit = self.super_data[0]
             data = self.super_data[1]
-            contents = [self.id,self.super_data[0], data["coverage"][0], data["coverage"][1], data["rmsd"], round(data["identity"]*100)]
+            contents = [self.id, self.super_data[0], round(data["coverage"][0], 1), round(data["coverage"][1],1), data["rmsd"], round(data["identity"]*100)]
+            contents = [str(x) for x in contents]
             contents.extend(data["t_matrix"].values())
             #print3(contents)
             if "monomers_df" in vars:
+                #print(self.id, type(self.id))
+                #print(contents, type(contents))
+                #print(vars.monomers_df)
                 vars.monomers_df.loc[self.id] = contents
             self.monomers_entries.append(contents)
             self.super_path = data["out_path"]
@@ -420,9 +364,10 @@ class Mate(BioObject):
                 moved_mate = entity_to_orth(moved_mate, self.params)
                 #print_all_coords(moved_mate)
                 self.structures.append(moved_mate)
-                moved_mate = Monomer(self.name, moved_mate.id, moved_mate, is_mate = True, position = position)
+                extra_id = "_{}_{}".format(self.op_n,clean_string(position["position"], allow = ["-"]))
+                moved_mate = Monomer(self.name, moved_mate.id, moved_mate, is_mate = True, extra_id = extra_id)
 
-                dimer = Dimer(fixed_monomer, moved_mate, position = position)
+                dimer = Dimer(fixed_monomer, moved_mate)
                 dimer.export()
                 dimer.pickle()
                 dimers.append(dimer)
@@ -445,16 +390,13 @@ class Dimer(BioObject):
     pickle_extension = '.dimer'
     pickle_folder = "dimers"
 
-    def __init__(self, monomer1, monomer2, position = None):
+    def __init__(self, monomer1, monomer2):
         self.monomer1 = monomer1
         self.monomer2 = monomer2
         self.name = monomer1.name
-        self.position = position
-        if position is None:
-            p = ""
-        else:
-            p = "_" + clean_string(position["position"], allow = ["-"])
-        self.id = "{}_{}{}{}".format(self.name, monomer1.chain, monomer2.chain, p)
+
+        self.extra_id = monomer2.extra_id
+        self.id = "{}_{}{}{}".format(self.name, monomer1.chain, monomer2.chain, self.extra_id)
         self.incomplete = True
 
         self.failed_entries = []
@@ -485,7 +427,7 @@ class Dimer(BioObject):
             self.incomplete = False
             self.original_structure, self.replaced_structure, self.merged_structure = self.merge_structures()
             #_, _, self.merged_structure = self.merge_structures()
-            [print(chain) for chain in self.merged_structure.get_chains()]
+            #[print(chain) for chain in self.merged_structure.get_chains()]
 
         
     def merge_structures(self):
@@ -493,7 +435,7 @@ class Dimer(BioObject):
         monomer1 = self.monomer1
         monomer2 = self.monomer2
 
-        print1("({}) Merging monomers:".format(self.id), monomer1, monomer1.structure.id, monomer2, monomer2.structure.id)
+        #print1("({}) Merging monomers:".format(self.id), monomer1, monomer1.structure.id, monomer2, monomer2.structure.id)
         #print(monomer1.super_path, monomer2.super_path)
         structureA = PDBParser(QUIET=True).get_structure(monomer1.id, monomer1.super_path)
         structureB = PDBParser(QUIET=True).get_structure(monomer2.id, monomer2.super_path)

@@ -150,7 +150,7 @@ def entity_to_orth(entity, params):
 
 
 def generate_displaced_copy(original, distance = 99.5, key = None, op_n = None):
-    print6("Generating displaced copy")
+    #print6("Generating displaced copy")
     if original is None:
         return None
     displaced = original.copy()
@@ -159,7 +159,7 @@ def generate_displaced_copy(original, distance = 99.5, key = None, op_n = None):
         _ = [x for x in distance]
     except:
         distance = [distance] * 3
-    print6(distance)
+    #print6(distance)
 
     if key is None and op_n in None:
         for atom in displaced.get_atoms():
@@ -288,7 +288,7 @@ def find_relevant_mates(orth_struct, params, key):
             orth_chain.com = find_com(orth_chain.get_atoms())
             chain.orth_com = find_com(orth_chain.get_atoms())
             chain.com = convertFromOrthToFrac(chain.orth_com, params)
-            print2("COM:", [round(x, 2) for x in chain.com], [round(x, 2) for x in chain.orth_com])
+            #print2("COM:", [round(x, 2) for x in chain.com], [round(x, 2) for x in chain.orth_com])
             chains.append(chain)
 
     print2(chains)
@@ -313,7 +313,7 @@ def find_relevant_mates(orth_struct, params, key):
                 if moving_chain.id == fixed_chain.id and op_number == 1:
                     continue
 
-                print4("Moving chain:", moving_chain)
+                #print4("Moving chain:", moving_chain)
                 #print_all_coords(moving_chain)
                 
                 moving_atoms = [atom for atom in displaced.get_atoms() if atom.get_full_id()[-3] == moving_chain.id]
@@ -359,7 +359,7 @@ def find_relevant_mates(orth_struct, params, key):
                                                             "n_contacts": 1,
                                                             "contacts": contacts}
                 if mate is None:
-                    print5("No relevant contacts")
+                    #print5("No relevant contacts")
                     continue
                 print5(mate, mate.positions.keys())
                 mates.append(mate)
@@ -373,248 +373,11 @@ def find_relevant_mates(orth_struct, params, key):
 
 
 
-    
-def deprecated():  ##########
-    for op_number, operation in rotation_set["symops"].items():
-        print2("Symmetry operation:", op_number)
-
-        displaced = generate_displaced_copy(fractional, distance= 99.5, rotation=operation)
-
-        assert sum(1 for _ in fractional.get_atoms()) == sum(1 for _ in displaced.get_atoms())
-
-        a = params["A"]
-        b = params["B"]
-        c = params["C"]
-        c_a = params["c_a"]
-        c_b = params["c_b"]
-        c_g = params["c_g"]
-
-        for chain in chains:
-
-            
-
-            mate = Mate(op_number, operation, params, chain) 
-            for o_atom, d_atom in zip(fractional.get_atoms(), displaced.get_atoms()):
-                if op_number == 1 and o_atom.get_full_id()[2] == chain.id:
-                    continue
-
-                rel_deltaX = ((d_atom.coord[0] - o_atom.coord[0]) % 1) - 0.5
-                rel_deltaY = ((d_atom.coord[1] - o_atom.coord[1]) % 1) - 0.5
-                rel_deltaZ = ((d_atom.coord[2] - o_atom.coord[2]) % 1) - 0.5
-                deltaX = ((d_atom.coord[0] - chain.com[0]) % 1) - 0.5
-                deltaY = ((d_atom.coord[1] - chain.com[1]) % 1) - 0.5
-                deltaZ = ((d_atom.coord[2] - chain.com[2]) % 1) - 0.5
-                new_coordX = o_atom.coord[0] + rel_deltaX
-                new_coordY = o_atom.coord[1] + rel_deltaY
-                new_coordZ = o_atom.coord[2] + rel_deltaZ
-                new_coord = [new_coordX, new_coordY, new_coordZ]
-                if op_number == 99:
-                    print4("Distances (op: {}):". format(op_number),new_coordX, new_coordY, new_coordZ, end = " -> ")
-
-                position = [int(n_coord - d_coord + 99.5) for n_coord, d_coord in zip(new_coord, d_atom.coord)]
-                position = tuple(position)
-
-                if op_number == 99:
-                    print(position)
-
-                d2 = (a**2)*(deltaX**2) + (b**2)*(deltaY**2) + (c**2)*(deltaZ**2) +2*b*c*c_a*deltaY*deltaZ +2*a*c*c_b*deltaX*deltaZ +2*a*b*c_g*deltaX*deltaY
-                #print3(d2)
-                try:
-                    o_atom.d2.keys()
-                except:
-                    o_atom.d2 = {}
-                #print(o_atom.d2.keys(), chain.id, )
-                if chain.id in o_atom.d2.keys():
-                    #print3(d2, o_atom.d2[chain.id][0])
-                    if d2 < o_atom.d2[chain.id]["distance"]:
-                            o_atom.d2[chain.id] =  {"distance": d2,
-                                                    "operation":op_number,
-                                                    "deltas": (deltaX,deltaY,deltaZ),
-                                                    "rel_deltas": (rel_deltaX, rel_deltaY, rel_deltaZ),
-                                                    "new_coords": (new_coordX, new_coordY, new_coordZ),
-                                                    "position": position}
-                            #print4("D2:", d2)
-                else:
-                    o_atom.d2[chain.id] = {"distance": d2,
-                                           "operation":op_number,
-                                           "deltas": (deltaX,deltaY,deltaZ),
-                                           "rel_deltas": (rel_deltaX, rel_deltaY, rel_deltaZ),
-                                           "new_coords": (new_coordX, new_coordY, new_coordZ),
-                                           "position": position}
-                    #print4("D2:", d2)
-
-
-    
-    print2("Generating neighbour")
-    neighbour = fractional.copy()
-    #neighbour = entity_to_orth(neighbour, params)
-    all_lines = []
-    i = 1
-    for chain in chains:
-        lines = []
-        new_model = neighbour[0].copy()
-        new_model.id += i
-        neighbour.add(new_model)
-        i +=1
-        print3(chain, new_model.id)
-
-        for atom in new_model.get_atoms():
-
-            #print(atom.d2[chain.id])
-            atom.bfactor = atom.d2[chain.id]["operation"]
-            orth_delta = convertFromFracToOrth(atom.d2[chain.id]["deltas"], params)
-            delta = atom.d2[chain.id]["deltas"]
-            rel_delta = atom.d2[chain.id]["rel_deltas"]
-            #print(atom.d2[chain.id][4])
-            lines.append([convertFromFracToOrth(atom.coord, params)])
-            if atom.is_disordered() > 0:
-                for d_atom in atom:
-                    #d_atom.coord = coord_add(chain.orth_com, orth_delta)
-                    #d_atom.coord = coord_operation(d_atom.coord, key, atom.d2[chain.id]["operation"])
-                    #d_atom.coord = coord_add(d_atom.coord, atom.d2[chain.id]["position"])
-                    d_atom.coord = coord_add(d_atom.coord, rel_delta)
-                    #d_atom.coord = convertFromFracToOrth(atom.d2[chain.id][4], params)
-            else:
-                #atom.coord = coord_add(chain.orth_com, orth_delta)
-                #atom.coord = coord_operation(atom.coord, key, atom.d2[chain.id]["operation"])
-                #atom.coord = coord_add(atom.coord, atom.d2[chain.id]["position"])
-                atom.coord = coord_add(atom.coord, rel_delta)
-                #atom.coord = convertFromFracToOrth(atom.d2[chain.id][4], params)
-            lines[-1].append(convertFromFracToOrth(atom.coord, params))
-            #print(atom.coord)
-        all_lines.append(lines)
-    neighbour = entity_to_orth(neighbour, params)
-    #print_all_coords(neighbour)
-    return neighbour, all_lines
-
-
-def check_matching_coords(subset, target):
-    from maths import distance
-    bool_list = []
-    for atom1 in subset:
-        for atom2 in target:
-            if atom1.get_full_id()[-2] == atom2.get_full_id()[-2] and atom1.get_full_id()[-3] == atom2.get_full_id()[-3]:
-                
-                if distance(atom1.coord, atom2.coord) <= 1:
-                    bool_list.append(True)
-                else:
-                    bool_list.append(False)
-                    print(atom1.get_full_id(), atom2.get_full_id())
-                    print([round(x) for x in atom1.coord], [round(x) for x in atom2.coord], distance(atom1.coord, atom2.coord),distance(atom1.coord, atom2.coord) <= 1 )
-                break
-    matching = not (False in bool_list) and len(bool_list) > 0
-    return matching, bool_list
-
-
-def reconstruct_relevant_neighbours(neighbour, params, key):
-    print1("Reconstructing relevant neighbours")
-    from maths import distance
-    from molecules import BioObject, Monomer, Dimer
-
-    if neighbour is None:
-        return None
-    dimers = []
-    monomers = []
-    all_mates = []
-    all_contacts = []
-
-    original = neighbour[0]
-
-    chains = []
-    for chain in original.get_chains():
-        if sum([1 for _ in chain.get_residues()]) >= 100:
-            chains.append(chain)
-    remaining_ids = [chain.id for chain in chains]
-    for chain in chains:
-        m_n = chains.index(chain)+1
-        model = neighbour[m_n]
-        print2("Chain:", chain, model)
-        operations = list(set([atom.d2[chain.id]["operation"] for atom in model.get_atoms()]))
-        mates = []
-        contacts = []
-        
-        for i, op in enumerate(operations):
-            print3( "Operation:", i, op)
-            op_atoms = [atom for atom in model.get_atoms() if atom.d2[chain.id]["operation"] == op]
-            num_atoms = len(op_atoms)
-            positions = set([atom.d2[chain.id]["position"] for atom in op_atoms])
-
-            for position in positions:
-                op_atoms_by_pos = [atom for atom in op_atoms if atom.d2[chain.id]["position"] == position]
-                print4("Position: {} (N:{})".format(position, len(op_atoms_by_pos)))
-
-                new_chain_ids_by_pos = set([atom.get_full_id()[2] for atom in op_atoms_by_pos if atom.get_full_id()[2] in [chain.id for chain in chains]])
-                #print5("New chain ids", new_chain_ids_by_pos) 
-                for new_chain_id in new_chain_ids_by_pos:
-                    if new_chain_id not in remaining_ids:
-                        continue
-                    print5("New chain id:", new_chain_id)
-                    op_atoms_by_pos_by_chain = [atom for atom in op_atoms_by_pos if atom.get_full_id()[2] == new_chain_id]
-                    
-
-                    num_contacts = 0
-                
-                    for atom in op_atoms_by_pos_by_chain:
-                        atom.is_contact = False
-                        for o_atom in chain.get_atoms():
-                            if distance(atom.coord, o_atom.coord) <= 8:
-                                atom.is_contact = True
-                                num_contacts += 1
-                                contacts.append([[np.float64(c) for c in o_atom.coord] , [np.float64(c) for c in atom.coord]])
-                                
-                                break
-
-                    
-                    
-                    if num_contacts < 5:
-                        print6("Not enough contacts ({})".format(num_contacts))
-                        continue
-                    else:
-                        print6("N: {}, Contacts: {}".format(len(op_atoms_by_pos_by_chain), num_contacts))
-
-                    mate_chain = None
-                    
-                    for c in chains:
-                        if c.id == new_chain_id:
-                            mate_chain = c.copy()
-
-                    if mate_chain is None:
-                        print6("Error finding reference chain")
-                        continue
-                    mate_chain = entity_to_frac(mate_chain, params)
-                    mate_chain = generate_displaced_copy(mate_chain, distance = position, rotation = get_operation(key, op), reverse = False)
-                    mate_chain = entity_to_orth(mate_chain, params)
-                    matching = check_matching_coords(op_atoms_by_pos_by_chain, mate_chain.get_atoms())
-                    if not matching[0]:
-                        print6("Mate does not match closest atoms")
-                        print(matching)
-                    mates.append(BioObject.export(self, "mates", mate_chain, "_mate_{}_{}_{}_{}".format(chain.id, i, new_chain_id, position)))
-                    print6("Mate generated succesfully:", mate_chain.get_full_id()) 
-                    dimer = chain.copy()
-    
-
-
-        remaining_ids.remove(chain.id)
-
-        all_mates.append(mates)
-
-
-
-
-        all_contacts.append(contacts)
-    #self.contacts = all_contacts
-    return {"mates": all_mates,
-            "contacts": all_contacts,
-            "monomers": monomers,
-            "dimers": dimers}
-
-
-
-def symmetries(molecule, progress):
+def symmetries(molecule):
     sprint(molecule.id)
     molecule.get_all_dimers()
     molecule.pickle()
-    progress.add(info=molecule.id)
+
 
 
 if __name__ == "__main__":

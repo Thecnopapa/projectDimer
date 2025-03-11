@@ -191,6 +191,19 @@ class BlinkingBar(ThinkingBar):
             self.direction = "left"
 ### In development ###
 
+def enable_garbage_collector():
+    import gc
+    gc.enable()
+
+def collect_garbage():
+    import gc
+    before = len(gc.get_objects())
+    gc.collect()
+    after = len(gc.get_objects())
+    print("Collected {} objects".format(after - before))
+
+
+
 
 if __name__ == "__main__":
     progress = ThinkingBar()

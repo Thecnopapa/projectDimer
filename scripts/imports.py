@@ -67,6 +67,27 @@ def load_from_files(pdb_folder, load_class = PDB, ignore_selection = False, pick
         print2(obj)
     return loaded
 
+def load_single_pdb(identifier, pickle_folder, pdb_folder, force_reload=False):
+    print1("Loading pdb:", identifier, "-Force reload:", force_reload)
+    objects = []
+    if not force_reload:
+        print2("Loading PDB pickle from:", pickle_folder)
+        for file in os.listdir(pickle_folder):
+            if identifier in file:
+                p = unpickle(os.path.join(pickle_folder, file))
+                p.restore_dfs()
+                objects.append(p)
+    if len(objects) == 0:
+        for file in os.listdir(pdb_folder):
+            if identifier in file:
+                print2("Generating PDB object from:", os.path.join(pdb_folder, file))
+                objects.append(PDB(os.path.join(pdb_folder, file)))
+
+    if len(objects) == 0:
+        print2("No objects loaded")
+    else:
+        print2("Objects loaded: {}".format(objects))
+    return objects
 
 def load_references(force_reload = False):
 

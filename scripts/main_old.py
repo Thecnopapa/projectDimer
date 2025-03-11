@@ -17,6 +17,8 @@ def main(PROCESS_ALL = False,
          ):
 
 
+
+
     # Set up
     vars["do_only"] = DO_ONLY
     print(local.list())
@@ -27,7 +29,6 @@ def main(PROCESS_ALL = False,
     from dataframes import save_dfs, create_dfs
     from imports import pickle, export
 
-
     # Download large dataset
     tprint("Downloading large data")
     from imports import download_pdbs
@@ -36,44 +37,23 @@ def main(PROCESS_ALL = False,
     eprint("Large data downloaded")
 
 
-    # Load/Import molecule references
+    # Load/Import molecule files
     tprint("Loading files")
-    from imports import load_references, load_single_pdb
+    from imports import load_from_files, load_references
     from molecules import Reference, PDB
     vars["references"] = load_references()
+
+    if LARGE_DATASET:
+        molecules = load_from_files(local.many_pdbs, force_reload = PROCESS_ALL)
+    else:
+        molecules = load_from_files(local.experimental, force_reload = PROCESS_ALL)
+    eprint("Files loaded")
 
 
     # Create dataframes
     sprint("Creating dataframes")
     create_dfs(vars.references)
     eprint("Dataframes created")
-
-
-    if LARGE_DATASET:
-        molecule_folder = local.many_pdbs
-    else:
-        molecule_folder = local.experimental
-    molecule_list = os.listdir(molecule_folder)
-
-    progress = ProgressBar(len(molecule_list))
-    for m in sorted(molecule_list):
-        filename = os.path.basename(m).split(".")[0]
-        sprint(filename)
-        molecules = load_single_pdb(filename, local.molecules, local.many_pdbs, force_reload=True)
-        for molecule in molecules:
-            if GENERATE_SYMMETRIES:
-                molecule.get_all_dimers()
-            else:
-                molecule.get_dimers()
-            molecule.pickle()
-            progress.update(info=molecule.id)
-        save_dfs()
-
-    quit()
-
-
-
-
 
 
     # Generate symmetries and produce dimers
@@ -94,10 +74,73 @@ def main(PROCESS_ALL = False,
     eprint("Symmetries generated")
 
 
+    quit()
+    # Load/Generate monomer files
+    '''tprint("Loading monomers")
+    from imports import load_monomers
+    monomers = load_monomers(molecules = molecules, force_reload=PROCESS_ALL)
+    pickle(monomers)
+    eprint("Monomers loaded")'''
+
+
+    # Align references to monomers
+    '''tprint("Aligning monomers")
+    progress = ProgressBar(len(monomers))
+    try:
+        for monomer in monomers:
+            monomer.sequence_align(references, force_align = PROCESS_ALL)
+            progress.add()
+        pickle(monomers)
+        save_dfs()
+        eprint("Monomers aligned")
+    except:
+        sprint("Alignments could not be produced")'''
+
+
+
+    # Superpose references to monomers
+    '''tprint("Superposing monomers")
+    progress = ProgressBar(len(monomers))
+    for monomer in monomers:
+        monomer.superpose(references, force_superpose = PROCESS_ALL)
+        progress.add(info=monomer.id)
+    pickle(monomers)
+    save_dfs()
+    eprint("Monomers superposed")'''
+
+
+    # Load/Generate dimer files
+    '''tprint("Loading dimers")
+    from imports import load_dimers
+    dimers = load_dimers(molecules = molecules, force_reload=PROCESS_ALL)
+    pickle(dimers)
+    eprint("Dimers loaded")'''
+
+    # Processing dimers
+    '''tprint("Processing dimers")
+    progress = ProgressBar(len(dimers))
+    for dimer in dimers:
+        #dimer
+        progress.add()
+    pickle(dimers)
+    save_dfs()
+    eprint("Dimers processed")'''
+
+
+
     # Save and exit
     tprint("Saving data")
     save_dfs() # Save dataframes and generate figures
 
+    '''all_files = references + molecules + monomers + dimers # select all loaded files
+    progress = ProgressBar(len(all_files))
+    for file in all_files:
+        file.pickle() # Save the object
+        file.export() # Save the pdb
+        progress.add()
+    eprint("Finished")'''
+
+    # Done xd
 
 
 if __name__ == "__main__":
