@@ -172,8 +172,9 @@ def generate_displaced_copy(original, distance = 99.5, key = None, op_n = None):
         coord_operation_entity(displaced, key=key, op_n=op_n, distance =distance)
         for atom in displaced.get_atoms():
             if atom.is_disordered() > 0:
-                print(atom.coord)
-                [print(d_atom.coord) for d_atom in atom]
+                #print(atom.coord)
+                #[print(d_atom.coord) for d_atom in atom]
+                pass
 
     return displaced
 
