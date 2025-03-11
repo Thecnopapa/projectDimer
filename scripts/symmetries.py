@@ -126,8 +126,8 @@ def entity_to_frac(entity, params):
         if atom.is_disordered() > 0:
             for d_atom in atom:
                 d_atom.coord = convertFromOrthToFrac(d_atom.coord, params)
-        else:
-            atom.coord = convertFromOrthToFrac(atom.coord, params)
+        #else:
+        atom.coord = convertFromOrthToFrac(atom.coord, params)
     return entity
 
 
@@ -144,12 +144,12 @@ def entity_to_orth(entity, params):
         if atom.is_disordered() > 0:
             for d_atom in atom:
                 d_atom.coord = convertFromFracToOrth(d_atom.coord, params)
-        else:
-            atom.coord = convertFromFracToOrth(atom.coord, params)
+        #else:
+        atom.coord = convertFromFracToOrth(atom.coord, params)
     return entity
 
 
-def generate_displaced_copy(original, distance = 99.5, rotation = None, reverse=False):
+def generate_displaced_copy(original, distance = 99.5, key = None, op_n = None):
     print6("Generating displaced copy")
     if original is None:
         return None
@@ -161,7 +161,7 @@ def generate_displaced_copy(original, distance = 99.5, rotation = None, reverse=
         distance = [distance] * 3
     print6(distance)
 
-    if rotation is None:
+    if key is None and op_n in None:
         for atom in displaced.get_atoms():
             if atom.is_disordered() > 0:
                 for d_atom in atom:
@@ -169,33 +169,11 @@ def generate_displaced_copy(original, distance = 99.5, rotation = None, reverse=
             else:
                 atom.coord = [x+d for x, d in zip(atom.coord, distance)]
     else:
-        if reverse:
-
-            tra = [-r for r in rotation["tra"]]
-            #print(rotation["rot"])
-            rot = np.reshape(rotation["rot"], (1,9))
-            rot = [-r for r in rot]
-            rot = np.reshape(rot, (3,3))
-            #print(rot)
-
-        else:
-            rot = rotation["rot"]
-            tra = rotation["tra"]
+        coord_operation_entity(displaced, key=key, op_n=op_n, distance =distance)
         for atom in displaced.get_atoms():
             if atom.is_disordered() > 0:
-                for d_atom in atom:
-                    x, y, z = d_atom.coord
-                    nx = (rot[0][0] * x) + (rot[0][1] * y) + (rot[0][2] * z) + tra[0]+distance[0]
-                    ny = (rot[1][0] * x) + (rot[1][1] * y) + (rot[1][2] * z) + tra[1]+distance[1]
-                    nz = (rot[2][0] * x) + (rot[2][1] * y) + (rot[2][2] * z) + tra[2]+distance[2]
-                    d_atom.coord = [nx, ny, nz]
-
-            else:
-                x, y, z = atom.coord
-                nx = (rot[0][0] * x) + (rot[0][1] * y) + (rot[0][2] * z) + tra[0]+distance[0]
-                ny = (rot[1][0] * x) + (rot[1][1] * y) + (rot[1][2] * z) + tra[1]+distance[1]
-                nz = (rot[2][0] * x) + (rot[2][1] * y) + (rot[2][2] * z) + tra[2]+distance[2]
-                atom.coord = [nx,ny,nz]
+                print(atom.coord)
+                [print(d_atom.coord) for d_atom in atom]
 
     return displaced
 
@@ -209,16 +187,18 @@ def print_all_coords(entity, head = 5):
 
 
 
-def coord_operation_entity(entity, key, op_n, reverse = False):
+def coord_operation_entity(entity, key, op_n, distance = (0,0,0)):
     for atom in entity.get_atoms():
         if atom.is_disordered() > 0:
+            #print(atom.is_disordered())
             for d_atom in atom:
-                d_atom.coord = coord_operation(d_atom.coord, key, op_n, reverse=reverse)
-        else:
-            atom.coord = coord_operation(atom.coord, key, op_n, reverse=reverse)
+                #print(d_atom.get_full_id())
+                d_atom.coord = coord_operation(d_atom.coord, key, op_n, distance =distance)
+        #else:
+        atom.coord = coord_operation(atom.coord, key, op_n, distance=distance)
     return entity
 
-def coord_operation(coord, key, op_n, reverse = False):
+def coord_operation(coord, key, op_n, distance = (0,0,0)):
     from spaceGroups import dictio_space_groups
     rotation = dictio_space_groups[key]
     #print(rotation)
@@ -227,14 +207,10 @@ def coord_operation(coord, key, op_n, reverse = False):
     tra = operation["tra"]
 
     x, y, z = coord
-    if reverse:
-        nx = (-rot[0][0] * x) + (-rot[0][1] * y) + (-rot[0][2] * z) - tra[0]
-        ny = (-rot[1][0] * x) + (-rot[1][1] * y) + (-rot[1][2] * z) - tra[1]
-        nz = (-rot[2][0] * x) + (-rot[2][1] * y) + (-rot[2][2] * z) - tra[2]
-    else:
-        nx = (rot[0][0] * x) + (rot[0][1] * y) + (rot[0][2] * z) + tra[0]
-        ny = (rot[1][0] * x) + (rot[1][1] * y) + (rot[1][2] * z) + tra[1]
-        nz = (rot[2][0] * x) + (rot[2][1] * y) + (rot[2][2] * z) + tra[2]
+
+    nx = (rot[0][0] * x) + (rot[0][1] * y) + (rot[0][2] * z) + tra[0]+distance[0]
+    ny = (rot[1][0] * x) + (rot[1][1] * y) + (rot[1][2] * z) + tra[1]+distance[1]
+    nz = (rot[2][0] * x) + (rot[2][1] * y) + (rot[2][2] * z) + tra[2]+distance[2]
 
     return nx, ny, nz
 
@@ -327,8 +303,8 @@ def find_relevant_mates(orth_struct, params, key):
           
         for op_number, operation in rotation_set["symops"].items():
             print3("Operation:", op_number)
-            displaced = generate_displaced_copy(fractional, distance= 99.5, rotation=operation)
-            print_all_coords(displaced)
+            displaced = generate_displaced_copy(fractional, distance= 99.5, key =key, op_n=op_number)
+            #print_all_coords(displaced)
 
             for moving_chain in chains:
                 if moving_chain.id not in remaining_ids:
@@ -345,7 +321,7 @@ def find_relevant_mates(orth_struct, params, key):
                 mate = None
 
                 for atom in moving_atoms:
-                    print(atom, atom.get_full_id(), atom.coord, atom.is_disordered()>0)
+                    #print(atom, atom.get_full_id(), atom.coord, atom.is_disordered()>0)
                     deltaX = ((atom.coord[0] - com[0]) % 1) - 0.5
                     deltaY = ((atom.coord[1] - com[1]) % 1) - 0.5
                     deltaZ = ((atom.coord[2] - com[2]) % 1) - 0.5
@@ -358,11 +334,11 @@ def find_relevant_mates(orth_struct, params, key):
                     position= [(n_coord - d_coord + 99.5) for n_coord, d_coord in zip(new_coord, atom.coord)]
                     for p in position:
                         assert p % 1 == 0
-                    print(position)
+                    #print(position)
 
                     position = tuple([int(p) for p in position])
                     if any([p >= 10 for p in position]):
-                        print(atom)
+                        print(atom.get_full_id())
                         print("Position:", position)
                         print("Original:", atom.coord)
                         #print("Deltas:", deltaX, deltaY, deltaZ)

@@ -415,7 +415,7 @@ class Mate(BioObject):
                 f_chain_copy = self.f_chain.copy()
                 fixed_monomer = Monomer(self.name, f_chain_copy.id, entity_to_orth(f_chain_copy, self.params))
                 #print_all_coords(f_chain_copy)
-                moved_mate = generate_displaced_copy(self.m_chain, distance = position["position"], rotation = get_operation(self.key, self.op_n))
+                moved_mate = generate_displaced_copy(self.m_chain, distance = position["position"], key =self.key, op_n =self.op_n)
                 
                 moved_mate = entity_to_orth(moved_mate, self.params)
                 #print_all_coords(moved_mate)
@@ -460,8 +460,11 @@ class Dimer(BioObject):
         self.failed_entries = []
 
         if monomer1.super_path is None or monomer2.super_path is None:
-            self.monomer1.superpose()
-            self.monomer2.superpose()
+            try:
+                self.monomer1.superpose()
+                self.monomer2.superpose()
+            except:
+                print("Superposition failed")
             self.validate()
 
        
