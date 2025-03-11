@@ -123,7 +123,7 @@ def convertFromOrthToFrac(orth_coords, parameters):
 
 def entity_to_frac(entity, params):
     for atom in entity.get_atoms():
-        if atom.is_disordered():
+        if atom.is_disordered() > 0:
             for d_atom in atom:
                 d_atom.coord = convertFromOrthToFrac(d_atom.coord, params)
         else:
@@ -141,7 +141,7 @@ def convertFromFracToOrth(frac_coords, parameters):
     return tx, ty, tz
 def entity_to_orth(entity, params):
     for atom in entity.get_atoms():
-        if atom.is_disordered():
+        if atom.is_disordered() > 0:
             for d_atom in atom:
                 d_atom.coord = convertFromFracToOrth(d_atom.coord, params)
         else:
@@ -163,7 +163,7 @@ def generate_displaced_copy(original, distance = 99.5, rotation = None, reverse=
 
     if rotation is None:
         for atom in displaced.get_atoms():
-            if atom.is_disordered():
+            if atom.is_disordered() > 0:
                 for d_atom in atom:
                     d_atom.coord = [x+d for x, d in zip(d_atom.coord, distance)]
             else:
@@ -182,7 +182,7 @@ def generate_displaced_copy(original, distance = 99.5, rotation = None, reverse=
             rot = rotation["rot"]
             tra = rotation["tra"]
         for atom in displaced.get_atoms():
-            if atom.is_disordered():
+            if atom.is_disordered() > 0:
                 for d_atom in atom:
                     x, y, z = d_atom.coord
                     nx = (rot[0][0] * x) + (rot[0][1] * y) + (rot[0][2] * z) + tra[0]+distance[0]
@@ -211,7 +211,7 @@ def print_all_coords(entity, head = 5):
 
 def coord_operation_entity(entity, key, op_n, reverse = False):
     for atom in entity.get_atoms():
-        if atom.is_disordered():
+        if atom.is_disordered() > 0:
             for d_atom in atom:
                 d_atom.coord = coord_operation(d_atom.coord, key, op_n, reverse=reverse)
         else:
@@ -328,7 +328,7 @@ def find_relevant_mates(orth_struct, params, key):
         for op_number, operation in rotation_set["symops"].items():
             print3("Operation:", op_number)
             displaced = generate_displaced_copy(fractional, distance= 99.5, rotation=operation)
-            
+            print_all_coords(displaced)
 
             for moving_chain in chains:
                 if moving_chain.id not in remaining_ids:
@@ -337,6 +337,7 @@ def find_relevant_mates(orth_struct, params, key):
                     continue
 
                 print4("Moving chain:", moving_chain)
+                #print_all_coords(moving_chain)
                 
                 moving_atoms = [atom for atom in displaced.get_atoms() if atom.get_full_id()[-3] == moving_chain.id]
                 #print(moving_atoms)
@@ -344,6 +345,7 @@ def find_relevant_mates(orth_struct, params, key):
                 mate = None
 
                 for atom in moving_atoms:
+                    print(atom, atom.get_full_id(), atom.coord, atom.is_disordered()>0)
                     deltaX = ((atom.coord[0] - com[0]) % 1) - 0.5
                     deltaY = ((atom.coord[1] - com[1]) % 1) - 0.5
                     deltaZ = ((atom.coord[2] - com[2]) % 1) - 0.5
@@ -356,12 +358,14 @@ def find_relevant_mates(orth_struct, params, key):
                     position= [(n_coord - d_coord + 99.5) for n_coord, d_coord in zip(new_coord, atom.coord)]
                     for p in position:
                         assert p % 1 == 0
+                    print(position)
 
                     position = tuple([int(p) for p in position])
                     if any([p >= 10 for p in position]):
+                        print(atom)
                         print("Position:", position)
                         print("Original:", atom.coord)
-                        print("Deltas:", deltaX, deltaY, deltaZ)
+                        #print("Deltas:", deltaX, deltaY, deltaZ)
                         print("New coord:", new_coord)
                         quit()
                     
@@ -486,7 +490,7 @@ def deprecated():  ##########
             rel_delta = atom.d2[chain.id]["rel_deltas"]
             #print(atom.d2[chain.id][4])
             lines.append([convertFromFracToOrth(atom.coord, params)])
-            if atom.is_disordered():
+            if atom.is_disordered() > 0:
                 for d_atom in atom:
                     #d_atom.coord = coord_add(chain.orth_com, orth_delta)
                     #d_atom.coord = coord_operation(d_atom.coord, key, atom.d2[chain.id]["operation"])
