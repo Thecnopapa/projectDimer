@@ -65,7 +65,7 @@ def show_objects(obj_list, args):
         sprint(obj.id)
         #print(obj.__dict__)
         for key, item in obj.__dict__.items():
-            if key in ["lines"]:
+            if key in ["lines", "contacts"]:
                 continue
             #print(str(type(item)))
             if type(item) in (list, tuple, set):
@@ -97,7 +97,7 @@ def show_objects(obj_list, args):
                         else:
                             pymol_load_path(item)
                 ### Development
-                if key == "mate_paths":
+                if key == "mate_paths" or key == "dimer_paths":
                     for mate in item:
                         print(mate)    
                         pymol_load_path(mate, os.path.basename(mate))
@@ -124,6 +124,7 @@ def show_objects(obj_list, args):
             pymol_orient()
             pymol_show_cell()
             pymol_group(identifier="mate", name="mates")
+            #pymol_group(identifier= "dimer")
             try:
                 pymol_symmetries(og)
                 pymol_group(identifier = "sym")

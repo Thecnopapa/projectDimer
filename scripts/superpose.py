@@ -17,7 +17,7 @@ def superpose_single(id, fixed, moving):
     super_line = [Globals.vars.gesamt, fixed, moving, "-o", out_path ]
     #print(super_line)
     gesamt_out = subprocess.run(super_line, capture_output=True, text=True)
-    if "do_only" in vars:
+    if "show_gesamt" in vars:
         if not(len(vars.do_only) == 0 or vars.do_only is None):
             print(gesamt_out.stdout)
             print(gesamt_out.stderr)

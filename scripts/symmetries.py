@@ -353,8 +353,17 @@ def find_relevant_mates(orth_struct, params, key):
                     new_coordZ = com[2] + deltaZ
                     new_coord = [new_coordX, new_coordY, new_coordZ]
 
-                    position = tuple([int(n_coord - d_coord + 99.5) for n_coord, d_coord in zip(new_coord, atom.coord)])
-                    #print(position)
+                    position= [(n_coord - d_coord + 99.5) for n_coord, d_coord in zip(new_coord, atom.coord)]
+                    for p in position:
+                        assert p % 1 == 0
+
+                    position = tuple([int(p) for p in position])
+                    if any([p >= 10 for p in position]):
+                        print("Position:", position)
+                        print("Original:", atom.coord)
+                        print("Deltas:", deltaX, deltaY, deltaZ)
+                        print("New coord:", new_coord)
+                        quit()
                     
                     is_contact, _, contacts =  get_neigh_from_coord(new_coord, fixed_atoms, max_distance = 8, params = params)
                     if is_contact:
@@ -647,10 +656,17 @@ if __name__ == "__main__":
     molecules = load_from_files(local.many_pdbs, force_reload = False)
     tprint("Generating symmetries...")
     progress = ProgressBar(len(molecules))
-    import concurrent.futures
-    pool = concurrent.futures.ThreadPoolExecutor(max_workers=16)
-    for molecule in molecules:
-        pool.submit(symmetries, molecule, progress)
-    pool.shutdown(wait = True)
+
+    MAX_WORKERS = 0
+    if MAX_WORKERS <= 1:
+        for molecule in molecules:
+            symmetries(molecule, progress)
+    else:
+
+        import concurrent.futures
+        pool = concurrent.futures.ThreadPoolExecutor(max_workers=32)
+        for molecule in molecules:
+            pool.submit(symmetries, molecule, progress)
+        pool.shutdown(wait = True)
 
     eprint("Symmetries generated")

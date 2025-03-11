@@ -233,16 +233,21 @@ class Monomer(BioObject):
     pickle_extension = '.monomer'
     pickle_folder = "monomers"
 
-    def __init__(self, name, chain, structure, is_mate = False, skip_superpose = True):
+    def __init__(self, name, chain, structure, is_mate = False, position = None, skip_superpose = True):
         self.name = name
         self.is_mate = is_mate
+        self.structure = structure
+
         if self.is_mate:
             self.chain = chain.lower()
+            p = "_" + clean_string(position["position"], allow = ["-"])
         else:
             self.chain = chain.upper()
+            p = ""
 
-        self.structure = structure
-        self.id = "{}_{}".format(name, chain)
+        self.structure.id = self.chain
+
+        self.id = "{}_{}{}".format(name, chain, p)
 
         self.export()
         self.rmsds = {}
@@ -294,12 +299,12 @@ class Monomer(BioObject):
             self.superpositions = {}
             if references is None:
                 if "references" in vars:
-                    print(vars.references)
+                    #print(vars.references)
                     references = vars.references
                 else:
                     from imports import load_references
                     vars["references"] = load_references()
-                    references = vars.refetences
+                    references = vars.references
             for reference in references:
                 ref_name = reference.name
                 if not ref_name in self.rmsds.keys() or force_superpose:
@@ -312,9 +317,11 @@ class Monomer(BioObject):
                         contents.extend([data["rmsd"], data["aligned_residues"]])
                         self.superpositions[ref_name] = data
                     else:
-                        vars.failed_df.loc[len(vars.failed_df)] = [self.id, "gesamt", "gesamt error", "are DISSIMILAR and cannot be reasonably aligned"]
+                        if "failed_df" in vars:
+                            vars.failed_df.loc[len(vars.failed_df)] = [self.id, "gesamt", "gesamt error", "are DISSIMILAR and cannot be reasonably aligned"]
                         contents.extend([99,0])
-            vars.raw_monomers_df.loc[self.id] = contents
+            if "raw_monomers_df" in vars:
+                vars.raw_monomers_df.loc[self.id] = contents
             self.raw_monomers_entries.append(contents)
             self.choose_superposition()
 
@@ -340,12 +347,14 @@ class Monomer(BioObject):
             contents = [self.id,self.super_data[0], data["coverage"][0], data["coverage"][1], data["rmsd"], round(data["identity"]*100)]
             contents.extend(data["t_matrix"].values())
             #print3(contents)
-            vars.monomers_df.loc[self.id] = contents
+            if "monomers_df" in vars:
+                vars.monomers_df.loc[self.id] = contents
             self.monomers_entries.append(contents)
             self.super_path = data["out_path"]
         else:
             self.super_path = ""
-            vars.failed_df.loc[len(vars.failed_df)] = [self.id, "monomer", "No coverage", "No reference meets coverage (80%)" + str(coverages)]
+            if "failed_df" in vars:
+                vars.failed_df.loc[len(vars.failed_df)] = [self.id, "monomer", "No coverage", "No reference meets coverage (80%)" + str(coverages)]
             self.failed_entries.append([self.id, "monomer", "No coverage", "No reference meets coverage (80%)" + str(coverages)])
 
 
@@ -396,18 +405,28 @@ class Mate(BioObject):
 
 
     def reconstruct_mates(self, min_contacts = 0):
-        from symmetries import generate_displaced_copy, entity_to_orth, get_operation
+        from symmetries import generate_displaced_copy, entity_to_orth, get_operation, print_all_coords
         dimers = []
-    
+        import copy
         for position in self.positions.values():
             from symmetries import print_all_coords
             if position["n_contacts"] >= min_contacts:
-                fixed_monomer = Monomer(self.name, self.f_chain.id, entity_to_orth(self.f_chain.copy(), self.params))
+                #print(position["position"], self.op_n)
+                f_chain_copy = self.f_chain.copy()
+                fixed_monomer = Monomer(self.name, f_chain_copy.id, entity_to_orth(f_chain_copy, self.params))
+                #print_all_coords(f_chain_copy)
                 moved_mate = generate_displaced_copy(self.m_chain, distance = position["position"], rotation = get_operation(self.key, self.op_n))
+                
                 moved_mate = entity_to_orth(moved_mate, self.params)
+                #print_all_coords(moved_mate)
                 self.structures.append(moved_mate)
-                moved_mate = Monomer(self.name, self.m_chain.id, moved_mate, is_mate = True)
-                dimers.append(Dimer(fixed_monomer, moved_mate))
+                moved_mate = Monomer(self.name, moved_mate.id, moved_mate, is_mate = True, position = position)
+
+                dimer = Dimer(fixed_monomer, moved_mate, position = position)
+                dimer.export()
+                dimer.pickle()
+                dimers.append(dimer)
+                
         self.dimers = dimers
         return self.dimers
 
@@ -434,45 +453,68 @@ class Dimer(BioObject):
         if position is None:
             p = ""
         else:
-            p = "_" + str(position)
+            p = "_" + clean_string(position["position"], allow = ["-"])
         self.id = "{}_{}{}{}".format(self.name, monomer1.chain, monomer2.chain, p)
-        self.incomplete = False
+        self.incomplete = True
 
         self.failed_entries = []
 
-        if monomer1.best_fit == monomer2.best_fit:
-            self.best_fit = monomer1.best_fit
+        if monomer1.super_path is None or monomer2.super_path is None:
+            self.monomer1.superpose()
+            self.monomer2.superpose()
+            self.validate()
+
+       
+
+    def validate(self):
+        if self.monomer1.best_fit == self.monomer2.best_fit:
+            self.best_fit = self.monomer1.best_fit
         else:
             self.best_fit = "Missmatch"
         self.best_match = None
 
-        if monomer1.super_path is None or monomer2.super_path is None or monomer1.super_path == "" or monomer2.super_path == "":
+        if self.monomer1.super_path is None or self.monomer2.super_path is None or self.monomer1.super_path == "" or self.monomer2.super_path == "":
             if "failed_df" in vars:
-                vars.failed_df.loc[len(vars.failed_df)] = [self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)]
-            self.failed_entries.append([self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(monomer1.chain,monomer1.super_path,monomer2.chain,monomer2.super_path)])
+                vars.failed_df.loc[len(vars.failed_df)] = [self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(self.monomer1.chain, self.monomer1.super_path,self.monomer2.chain,self.monomer2.super_path)]
+            self.failed_entries.append([self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(self.monomer1.chain,self.monomer1.super_path,self.monomer2.chain,self.monomer2.super_path)])
             self.incomplete = True
         else:
+            self.incomplete = False
             self.original_structure, self.replaced_structure, self.merged_structure = self.merge_structures()
+            #_, _, self.merged_structure = self.merge_structures()
+            [print(chain) for chain in self.merged_structure.get_chains()]
 
+        
     def merge_structures(self):
 
         monomer1 = self.monomer1
         monomer2 = self.monomer2
 
-        print1("Merging monomers:", monomer1, monomer2)
+        print1("({}) Merging monomers:".format(self.id), monomer1, monomer1.structure.id, monomer2, monomer2.structure.id)
+        #print(monomer1.super_path, monomer2.super_path)
         structureA = PDBParser(QUIET=True).get_structure(monomer1.id, monomer1.super_path)
         structureB = PDBParser(QUIET=True).get_structure(monomer2.id, monomer2.super_path)
+
         originalA = structureA[0]
+        originalA.get_list()[0].id = originalA.get_list()[0].id.upper()
         originalB = structureB[0]
+        originalB.get_list()[0].id = originalB.get_list()[0].id.lower()
         replacedA = structureA[1]
         replacedB = structureB[1]
+        originalA.id = originalB.id = 0
         replacedA.id = replacedB.id = 1
-
+        #print(originalA.get_list()[0], originalB.get_list()[0], replacedA.get_list()[0], replacedB.get_list()[0])
+        
         replacedA.get_list()[0].id = originalA.get_list()[0].id
         replacedB.get_list()[0].id = originalB.get_list()[0].id
+        
+        
+        #print(originalA.get_list()[0], originalB.get_list()[0], replacedA.get_list()[0], replacedB.get_list()[0])
+        
 
         originalA.add(originalB.get_list()[0])
         replacedA.add(replacedB.get_list()[0])
+        
 
         original_structure = Structure.Structure(self.id+"_o")
         original_structure.add(originalA)
@@ -480,24 +522,34 @@ class Dimer(BioObject):
         replaced_structure = Structure.Structure(self.id+"_r")
         replaced_structure.add(replacedA)
         #print1(replaced_structure, replaced_structure.get_list())
+
+        
         merged_structure = Structure.Structure(self.id + "_m")
         merged_structure.add(originalA)
         merged_structure.add(replacedA)
+        
+        #print(merged_structure)
+        #[print(model) for model in merged_structure.get_models()]
+        #[print(chain) for chain in merged_structure.get_chains()]
 
+        
         monomer1.replaced = PDBParser(QUIET=True).get_structure(monomer1.id+"_r", monomer1.super_path)[1].get_list()[0]
         monomer2.replaced = PDBParser(QUIET=True).get_structure(monomer2.id+"_r", monomer1.super_path)[1].get_list()[0]
 
         monomer1.replaced.detach_parent()
         monomer2.replaced.detach_parent()
+        
 
+        assert len([1 for _ in merged_structure.get_chains()]) == 4   
 
+        
         return original_structure, replaced_structure, merged_structure
 
     def export(self):
         if not self.incomplete:
-            self.original_path = super().export(subfolder="dimers_original", in_structure=self.original_structure)
-            self.replaced_path = super().export(subfolder="dimers_replaced", in_structure=self.replaced_structure)
-            self.merged_path = super().export(subfolder="dimers_merged", in_structure=self.merged_structure)
+            #self.original_path = super().export(subfolder="dimers_original", in_structure=self.original_structure, extra_id = "_dimer_ori")
+            #self.replaced_path = super().export(subfolder="dimers_replaced", in_structure=self.replaced_structure, extra_id = "_dimer_rep")
+            self.merged_path = super().export(subfolder="dimers_merged", in_structure=self.merged_structure, extra_id = "_dimer_merged")
             return self.merged_path
         return None
 

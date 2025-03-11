@@ -28,7 +28,7 @@ def load_pickles(folder, extension = (".pickle"), ignore_selection = False):
 
         progress = ProgressBar(len(os.listdir(local[folder])))
         for file in sorted(os.listdir(local[folder])):
-            if file.endswith(extension) and (selection is None or file.split(".")[0] in selection):
+            if file.endswith(extension) and (selection is None or any([s in file.split(".")[0] for s in selection])):
                 p = unpickle(os.path.join(local[folder],file))
                 p.restore_dfs()
                 pickles.append(p)
@@ -56,7 +56,7 @@ def load_from_files(pdb_folder, load_class = PDB, ignore_selection = False, pick
                     selection = vars.do_only.split(" ")
                 elif vars.do_only is list:
                     selection = vars.do_only
-            if file.endswith(pdb_extension) and (selection is None or file.split(".")[0] in selection):
+            if file.endswith(pdb_extension) and (selection is None or any([s in file.split(".")[0] for s in selection])):
                 obj = load_class(os.path.join(pdb_folder, file))
                 if is_reference:
                     obj = obj.get_monomers(as_reference=True)
