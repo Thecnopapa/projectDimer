@@ -11,7 +11,7 @@ import platform
 
 def main(PROCESS_ALL = False,
          LARGE_DATASET = True,
-         DO_ONLY = "",
+         DO_ONLY = [],
          GENERATE_SYMMETRIES = True,
          MAX_THREADS = 1,
          ):
@@ -54,14 +54,17 @@ def main(PROCESS_ALL = False,
     else:
         molecule_folder = local.experimental
     molecule_list = os.listdir(molecule_folder)
+    #print(len(vars.do_only), vars.do_only)
     if len(vars.do_only) > 0:
         molecule_list = [f for f in molecule_list if any([s in f for s in vars.do_only])]
-
+    #[print(m) for m in sorted(molecule_list)]
     progress = ProgressBar(len(molecule_list))
     for m in sorted(molecule_list):
-        filename = os.path.basename(m).split(".")[0]
+        if "lock" in m:
+            continue
+        filename = m.split(".")[0]
         sprint(filename)
-        molecules = load_single_pdb(filename, local.molecules, local.many_pdbs, force_reload=True)
+        molecules = load_single_pdb(filename, local.molecules, local.many_pdbs, force_reload=PROCESS_ALL)
         for molecule in molecules:
             if GENERATE_SYMMETRIES:
                 molecule.get_all_dimers()
@@ -105,14 +108,21 @@ def main(PROCESS_ALL = False,
 if __name__ == "__main__":
     # Setup paths and globals
     print(sys.argv)
+    DO_ONLY = []
+    if len(sys.argv) > 2:
+        DO_ONLY = sys.argv[2:]
+    if "force" in sys.argv:
+        PROCESS_ALL = True
+    else:
+        PROCESS_ALL = False
     import setup
 
     # Imports that need globals initialised:
     from Globals import root, local, vars
 
-    main(PROCESS_ALL=False, # Ignore saved pickles and generate everything from scratch
+    main(PROCESS_ALL=PROCESS_ALL, # Ignore saved pickles and generate everything from scratch
          LARGE_DATASET = True, # Use a large dataset (delete all local data previously to avoid errors)
-         DO_ONLY = sys.argv[1:] # ( list of strings / string) Names of pdbs to be processed (CAPS sensitive, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"
+         DO_ONLY = DO_ONLY, # ( list of strings / string) Names of pdbs to be processed (CAPS sensitive, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"
          )
     quit()
 

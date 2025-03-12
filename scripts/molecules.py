@@ -1,4 +1,6 @@
 import os
+
+from symmetries import entity_to_orth
 from utilities import *
 from Globals import root, local, vars
 from Bio.PDB import PDBParser, MMCIFParser, PDBIO, StructureBuilder, Structure
@@ -47,7 +49,7 @@ class BioObject:
             else:
                 self.structure = PDBParser(QUIET=True).get_structure(self.name[:4], self.path)
         except:
-            from scripts.imports import download_pdbs
+            from imports import download_pdbs
             print1("Could not parse {}".format(self.path))
             import subprocess
             subprocess.run(["rm", self.path])
@@ -123,6 +125,7 @@ class PDB(BioObject):
            self.card = get_crystal(self.o_path)
            self.params = calculate_parameters(self.card)
            self.space_group = get_space_group(self.card)
+           self.key = self.space_group[1]
         except:
             self.card = None
             self.params = None
@@ -136,7 +139,7 @@ class PDB(BioObject):
                 if len(chain) > 200:
                     if as_reference:
                         return Reference(self.name, chain.id, chain)
-                    self.monomers.append(Monomer(self.name, chain.id, chain))
+                    self.monomers.append(Monomer(self.name, chain.id, chain, self))
         return self.monomers
 
     def get_dimers(self):
@@ -159,7 +162,7 @@ class PDB(BioObject):
         self.dimers = []
         self.read_card()
         from symmetries import find_relevant_mates
-        self.mates = find_relevant_mates(self.structure, self.params, self.space_group[1])
+        self.mates = find_relevant_mates(self, self.structure, self.params, self.space_group[1])
         if self.mates is None: 
             return []
 
@@ -186,39 +189,65 @@ class Monomer(BioObject):
     pickle_extension = '.monomer'
     pickle_folder = "monomers"
 
-    def __init__(self, name, chain, structure, is_mate = False, extra_id = None, skip_superpose = True):
+    def __init__(self, name, chain, frac_structure, parent, is_mate = False, op_n = None, position = None, parent_monomer = None):
         self.name = name
         self.is_mate = is_mate
-        self.structure = structure
-        self.extra_id = extra_id
+        self.fractional_structure = frac_structure
+        self.params = parent.params
+        self.key = parent.key
+        self.op_n = op_n
+        self.position = position
+        self.structure = entity_to_orth(self.fractional_structure.copy(), self.params)
+
         if self.is_mate:
             self.chain = chain.lower()
+            #print(self.position["position"], self.op_n, self.name)
+            self.extra_id = "_{}_{}".format(self.op_n, clean_string(self.position["position"], allow=["-"]))
+
         else:
             self.chain = chain.upper()
             self.extra_id = ""
 
         self.structure.id = self.chain
-
         self.id = "{}_{}{}".format(name, chain, self.extra_id)
 
-        self.export()
-        self.rmsds = {}
-        self.al_res = {}
-        self.rotations = {}
-        self.super_path = None
-        self.super_data = None
-        self.best_fit= None
         self.previews = None
-
         self.raw_monomers_entries = []
         self.failed_entries = []
         self.monomers_entries = []
-
         self.sequence = None
-
         self.scores = None
-        if not skip_superpose:
+        self.export()
+
+        if self.is_mate:
+            self.rmsds = parent_monomer.rmsds
+            self.super_data = parent_monomer.super_data
+            self.best_fit = parent_monomer.best_fit
+            self.super_path = self.move_parent_superposition(parent_monomer.super_path)
+        else:
+            self.rmsds = {}
+            self.super_path = None
+            self.super_data = None
+            self.best_fit= None
             self.superpose()
+        self.pickle()
+
+
+
+    def move_parent_superposition(self,original_path):
+        from symmetries import entity_to_orth, entity_to_frac, coord_operation_entity
+        structure = PDBParser(QUIET=True).get_structure(self.id, original_path)
+        structure = entity_to_frac(structure, self.params)
+        structure = coord_operation_entity(structure, self.key, self.op_n, self.position["position"])
+        structure = entity_to_orth(structure, self.params)
+        exporting = PDBIO()
+        exporting.set_structure(structure)
+        path = os.path.join(local.super_raw, os.path.basename(original_path).split(".")[0] + self.extra_id + ".pdb")
+        exporting.save(path)
+        return path
+
+
+
 
 
 
@@ -244,6 +273,7 @@ class Monomer(BioObject):
 
     def superpose(self, references = None, force_superpose=False):
         #sprint("Force superpose:", force_superpose)
+        print1("Superposing:", self.id)
         if self.super_path is None or force_superpose:
             #print(self.super_path)
             from superpose import superpose_single
@@ -314,15 +344,15 @@ class Mate(BioObject):
     pickle_extension = ".mate"
     pickle_folder = "mates"
 
-    def __init__(self, op_n, operation, params, fixed_chain, moving_chain):
+    def __init__(self, op_n, operation, params, fixed_monomer, moving_monomer):
         self.structure = None
         self.op_n = op_n
         self.operation = operation
         self.key = None
         self.params = params
         self.positions = {}
-        self.f_chain = fixed_chain
-        self.m_chain = moving_chain
+        self.fixed_monomer = fixed_monomer
+        self.moving_monomer = moving_monomer
         self.update_id()
         self.dimers = []
         self.structures = []
@@ -330,14 +360,14 @@ class Mate(BioObject):
         self.contacts = []
 
     def update_id(self):
-        self.id = "{}_mate_{}_{}_{}".format(self.name, self.f_chain.id, self.op_n, self.m_chain.id)
+        self.id = "{}_mate_{}_{}_{}".format(self.name, self.fixed_monomer.chain, self.op_n, self.moving_monomer.chain)
 
     def process(self, parent):
         self.name = parent.name
         self.key = parent.space_group[1]
         self.update_id()
 
-        print1("Processing mate:", self.id)
+        print2("Processing mate:", self.id)
         self.unpack_contacts()
         self.reconstruct_mates()
         self.export()
@@ -363,18 +393,23 @@ class Mate(BioObject):
             from symmetries import print_all_coords
             if position["n_contacts"] >= min_contacts:
                 #print(position["position"], self.op_n)
-                f_chain_copy = self.f_chain.copy()
-                fixed_monomer = Monomer(self.name, f_chain_copy.id, entity_to_orth(f_chain_copy, self.params))
-                #print_all_coords(f_chain_copy)
-                moved_mate = generate_displaced_copy(self.m_chain, distance = position["position"], key =self.key, op_n =self.op_n)
+
+                moved_mate = generate_displaced_copy(self.moving_monomer.fractional_structure, distance = position["position"], key =self.key, op_n =self.op_n)
                 
                 moved_mate = entity_to_orth(moved_mate, self.params)
                 #print_all_coords(moved_mate)
                 self.structures.append(moved_mate)
-                extra_id = "_{}_{}".format(self.op_n,clean_string(position["position"], allow = ["-"]))
-                moved_mate = Monomer(self.name, moved_mate.id, moved_mate, is_mate = True, extra_id = extra_id)
 
-                dimer = Dimer(fixed_monomer, moved_mate)
+                moved_monomer = Monomer(self.moving_monomer.name,
+                                        self.moving_monomer.chain,
+                                        moved_mate,
+                                        self,
+                                        parent_monomer= self.moving_monomer,
+                                        op_n = self.op_n,
+                                        position = position,
+                                        is_mate = True)
+
+                dimer = Dimer(self.fixed_monomer, moved_monomer)
                 dimer.export()
                 dimer.pickle()
                 dimers.append(dimer)
@@ -407,14 +442,8 @@ class Dimer(BioObject):
         self.incomplete = True
 
         self.failed_entries = []
+        self.validate()
 
-        if monomer1.super_path is None or monomer2.super_path is None:
-            try:
-                self.monomer1.superpose()
-                self.monomer2.superpose()
-            except:
-                print("Superposition failed")
-            self.validate()
 
        
 
@@ -529,3 +558,19 @@ class Dimer(BioObject):
 class Reference(Monomer):
     pickle_extension = '.reference'
     pickle_folder = "refs"
+
+    def __init__(self, name, chain, structure):
+        self.name = name
+        self.structure = structure
+        self.chain = chain
+        self.structure.id = self.chain
+        self.id = "reference_{}_{}".format(name, chain)
+
+        self.export()
+
+        self.raw_monomers_entries = []
+        self.failed_entries = []
+        self.monomers_entries = []
+
+        self.sequence = None
+

@@ -267,7 +267,7 @@ def get_fractional_distance(coord1, coord2, params):
 
 
 
-def find_relevant_mates(orth_struct, params, key):
+def find_relevant_mates(self, orth_struct, params, key):
     print1("Finding relevant mates")
     print2("Space group:", key)
 
@@ -279,9 +279,9 @@ def find_relevant_mates(orth_struct, params, key):
     min_d2 = 0
     if len(rotation_set["symops"].items()) <= 1:
         return None, None
-
+    from molecules import Mate, Monomer
     from maths import find_com
-    chains = []
+    monomers = []
     for chain, orth_chain in zip(fractional.get_chains(), orth_struct.get_chains()):
         if sum([1 for _ in chain.get_residues()]) >= 100:
 
@@ -289,29 +289,30 @@ def find_relevant_mates(orth_struct, params, key):
             chain.orth_com = find_com(orth_chain.get_atoms())
             chain.com = convertFromOrthToFrac(chain.orth_com, params)
             #print2("COM:", [round(x, 2) for x in chain.com], [round(x, 2) for x in chain.orth_com])
-            chains.append(chain)
+            monomers.append(Monomer(self.name, chain.id, chain, self))
 
-    print2(chains)
+    print2(monomers)
 
     mates = []
-    remaining_ids = [chain.id for chain in chains]
-    from molecules import Mate
+    remaining_ids = [monomer.id for monomer in monomers]
 
-    for fixed_chain in chains:
-        print2("Fixed chain:", fixed_chain)
+
+    for fixed_monomer in monomers:
+        fixed_chain = fixed_monomer.fractional_structure
+        print2("Fixed monomer:", fixed_monomer.id)
         fixed_atoms = [atom for atom in fixed_chain.get_atoms()]
         com = fixed_chain.com
-          
+
         for op_number, operation in rotation_set["symops"].items():
             print3("Operation:", op_number)
             displaced = generate_displaced_copy(fractional, distance= 99.5, key =key, op_n=op_number)
             #print_all_coords(displaced)
-
-            for moving_chain in chains:
-                if moving_chain.id not in remaining_ids:
+            for moving_monomer in monomers:
+                if moving_monomer.id not in remaining_ids:
                     continue
-                if moving_chain.id == fixed_chain.id and op_number == 1:
+                if moving_monomer.id == fixed_monomer.id and op_number == 1:
                     continue
+                moving_chain = moving_monomer.fractional_structure
 
                 #print4("Moving chain:", moving_chain)
                 #print_all_coords(moving_chain)
@@ -349,7 +350,7 @@ def find_relevant_mates(orth_struct, params, key):
                     is_contact, _, contacts =  get_neigh_from_coord(new_coord, fixed_atoms, max_distance = 8, params = params)
                     if is_contact:
                         if mate is None:
-                            mate = Mate(op_number, operation, params, fixed_chain, moving_chain)
+                            mate = Mate(op_number, operation, params, fixed_monomer, moving_monomer)
                         else:
                             if position in mate.positions.keys():
                                 mate.positions[position]["n_contacts"] += 1
@@ -364,7 +365,7 @@ def find_relevant_mates(orth_struct, params, key):
                 print5(mate, mate.positions.keys())
                 mates.append(mate)
 
-        remaining_ids.remove(fixed_chain.id)
+        remaining_ids.remove(fixed_monomer.id)
     return mates
 
 
