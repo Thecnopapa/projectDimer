@@ -67,21 +67,21 @@ def load_from_files(pdb_folder, load_class = PDB, ignore_selection = False, pick
         print2(obj)
     return loaded
 
-def load_single_pdb(identifier, pickle_folder, pdb_folder, force_reload=False):
-    print1("Loading pdb:", identifier, "-Force reload:", force_reload)
+def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None, force_reload=False, object_class = PDB):
+    print1("Loading pdb:", identifier, "-Force reload:", force_reload, "-Class:", object_class)
     objects = []
-    if not force_reload:
+    if not force_reload and pickle_folder is not None:
         print2("Loading PDB pickle from:", pickle_folder)
         for file in os.listdir(pickle_folder):
-            if identifier in file:
+            if (identifier is "all" or identifier in file) and "lock" not in file:
                 p = unpickle(os.path.join(pickle_folder, file))
                 p.restore_dfs()
                 objects.append(p)
-    if len(objects) == 0:
+    if len(objects) == 0 and pdb_folder is not None:
         for file in os.listdir(pdb_folder):
-            if identifier in file:
+            if (identifier is "all" or identifier in file) and "lock" not in file:
                 print2("Generating PDB object from:", os.path.join(pdb_folder, file))
-                objects.append(PDB(os.path.join(pdb_folder, file)))
+                objects.append(object_class(os.path.join(pdb_folder, file)))
 
     if len(objects) == 0:
         print2("No objects loaded")
@@ -90,13 +90,8 @@ def load_single_pdb(identifier, pickle_folder, pdb_folder, force_reload=False):
     return objects
 
 def load_references(force_reload = False):
-
-    return load_from_files(root.references, 
-                           pickle_extension= ".reference",
-                           is_reference=True,
-                           ignore_selection = True,
-                           force_reload = force_reload)
-
+    local["refs"] = "pickles/refs"
+    return load_single_pdb(pickle_folder = local.refs, pdb_folder=root.references, force_reload = force_reload, object_class = Reference)
 
 def load_monomers(molecules = None, folder = "monomers", extension = ".monomer",force_reload=False):
     sprint("Loading monomers, force reload:", force_reload)

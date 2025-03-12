@@ -62,7 +62,8 @@ def main(PROCESS_ALL = False,
     progress = ProgressBar(len(molecules))
     for molecule in molecules:
         if GENERATE_SYMMETRIES:
-            molecule.get_all_dimers(force = PROCESS_ALL)
+            #molecule.get_all_dimers(force = PROCESS_ALL)
+            pass
         else:
             molecule.get_dimers()
         molecule.pickle()

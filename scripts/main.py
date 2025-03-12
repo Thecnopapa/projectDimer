@@ -61,7 +61,9 @@ def main(PROCESS_ALL = False,
     progress = ProgressBar(len(molecule_list))
     for m in sorted(molecule_list):
         if "lock" in m:
+            sprint(".lock file detected:", m)
             continue
+
         filename = m.split(".")[0]
         sprint(filename)
         molecules = load_single_pdb(filename, local.molecules, local.many_pdbs, force_reload=PROCESS_ALL)
@@ -74,29 +76,6 @@ def main(PROCESS_ALL = False,
             progress.add(info=molecule.id)
         save_dfs()
 
-    quit()
-
-
-
-
-
-
-    # Generate symmetries and produce dimers
-    sprint("Generating dimers")
-    from symmetries import symmetries
-    progress = ProgressBar(len(molecules))
-    for molecule in molecules:
-        if GENERATE_SYMMETRIES:
-            molecule.get_all_dimers(force = PROCESS_ALL)
-        else:
-            molecule.get_dimers()
-        molecule.pickle()
-        progress.add(info=molecule.id)
-        del molecule
-        collect_garbage()
-    del molecules
-    collect_garbage()
-    eprint("Symmetries generated")
 
 
     # Save and exit
@@ -109,12 +88,16 @@ if __name__ == "__main__":
     # Setup paths and globals
     print(sys.argv)
     DO_ONLY = []
-    if len(sys.argv) > 2:
-        DO_ONLY = sys.argv[2:]
+
     if "force" in sys.argv:
         PROCESS_ALL = True
+        sys.argv.remove("force")
     else:
         PROCESS_ALL = False
+
+    if len(sys.argv) > 2:
+        DO_ONLY = sys.argv[2:]
+
     import setup
 
     # Imports that need globals initialised:

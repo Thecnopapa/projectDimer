@@ -111,7 +111,6 @@ class PDB(BioObject):
         self.card = None
         self.params = None
         self.space_group = None # [group, key]
-
         self.setup()
 
     def setup(self):
@@ -126,10 +125,13 @@ class PDB(BioObject):
            self.params = calculate_parameters(self.card)
            self.space_group = get_space_group(self.card)
            self.key = self.space_group[1]
+           print2("Crystal card read:", self.space_group, self.key)
         except:
             self.card = None
             self.params = None
             self.space_group = None
+            self.key = None
+
         return self.card
 
     def get_monomers(self, as_reference=False):
@@ -162,7 +164,7 @@ class PDB(BioObject):
         self.dimers = []
         self.read_card()
         from symmetries import find_relevant_mates
-        self.mates = find_relevant_mates(self, self.structure, self.params, self.space_group[1])
+        self.mates = find_relevant_mates(self, self.structure, self.params, self.key)
         if self.mates is None: 
             return []
 
@@ -236,6 +238,8 @@ class Monomer(BioObject):
 
     def move_parent_superposition(self,original_path):
         from symmetries import entity_to_orth, entity_to_frac, coord_operation_entity
+        if original_path is None or original_path == "":
+            return original_path
         structure = PDBParser(QUIET=True).get_structure(self.id, original_path)
         structure = entity_to_frac(structure, self.params)
         structure = coord_operation_entity(structure, self.key, self.op_n, self.position["position"])
@@ -364,7 +368,7 @@ class Mate(BioObject):
 
     def process(self, parent):
         self.name = parent.name
-        self.key = parent.space_group[1]
+        self.key = parent.key
         self.update_id()
 
         print2("Processing mate:", self.id)
@@ -559,12 +563,15 @@ class Reference(Monomer):
     pickle_extension = '.reference'
     pickle_folder = "refs"
 
-    def __init__(self, name, chain, structure):
-        self.name = name
-        self.structure = structure
-        self.chain = chain
+    def __init__(self, path):
+
+        self.o_path = path
+        self.parse_structure(parse_original=True)
+        self.name = os.path.basename(path).split(".")[0]
+        self.structure = [chain for chain in self.structure.get_chains()][0]
+        self.chain = self.structure.id
         self.structure.id = self.chain
-        self.id = "reference_{}_{}".format(name, chain)
+        self.id = "reference_{}_{}".format(self.name, self.chain)
 
         self.export()
 

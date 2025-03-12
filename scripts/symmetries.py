@@ -169,6 +169,7 @@ def generate_displaced_copy(original, distance = 99.5, key = None, op_n = None):
             else:
                 atom.coord = [x+d for x, d in zip(atom.coord, distance)]
     else:
+        #print(key,op_n)
         coord_operation_entity(displaced, key=key, op_n=op_n, distance =distance)
         for atom in displaced.get_atoms():
             if atom.is_disordered() > 0:
@@ -376,7 +377,7 @@ def find_relevant_mates(self, orth_struct, params, key):
 
 def symmetries(molecule):
     sprint(molecule.id)
-    molecule.get_all_dimers()
+    #molecule.get_all_dimers()
     molecule.pickle()
 
 
