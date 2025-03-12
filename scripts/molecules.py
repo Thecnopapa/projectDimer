@@ -4,6 +4,7 @@ from Globals import root, local, vars
 from Bio.PDB import PDBParser, MMCIFParser, PDBIO, StructureBuilder, Structure
 import numpy as np
 import pandas as pd
+import string
 
 
 
@@ -62,6 +63,11 @@ class BioObject:
             for model in self.structure.get_list()[1:]:
                 self.structure.__delitem__(model.id)
             for chain in self.structure.get_list()[0].get_list():
+                if chain.id not in string.ascii_uppercase:
+                    try:
+                        chain.id = string.ascii_uppercase.index(chain.id)
+                    except:
+                        chain.id = [letter for letter in string.ascii_uppercase if letter not in [c.id for c in self.structure.get_chains()]][0]
                 for residue in chain.get_list():
                     for atom in residue.get_list():
                         if atom.name != "CA":
@@ -108,6 +114,7 @@ class PDB(BioObject):
 
     def setup(self):
         self.read_card()
+
 
     
     def read_card(self):

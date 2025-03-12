@@ -1,7 +1,7 @@
 # Project_B by Iain Visa @ IBMB-CSIC / UB
 
 # Essential imports
-import os
+import os, sys
 import pandas as pd
 from utilities import *
 import platform
@@ -54,6 +54,8 @@ def main(PROCESS_ALL = False,
     else:
         molecule_folder = local.experimental
     molecule_list = os.listdir(molecule_folder)
+    if len(vars.do_only) > 0:
+        molecule_list = [f for f in molecule_list if any([s in f for s in vars.do_only])]
 
     progress = ProgressBar(len(molecule_list))
     for m in sorted(molecule_list):
@@ -66,7 +68,7 @@ def main(PROCESS_ALL = False,
             else:
                 molecule.get_dimers()
             molecule.pickle()
-            progress.update(info=molecule.id)
+            progress.add(info=molecule.id)
         save_dfs()
 
     quit()
@@ -102,6 +104,7 @@ def main(PROCESS_ALL = False,
 
 if __name__ == "__main__":
     # Setup paths and globals
+    print(sys.argv)
     import setup
 
     # Imports that need globals initialised:
@@ -109,7 +112,7 @@ if __name__ == "__main__":
 
     main(PROCESS_ALL=False, # Ignore saved pickles and generate everything from scratch
          LARGE_DATASET = True, # Use a large dataset (delete all local data previously to avoid errors)
-         DO_ONLY = "" # ( list of strings / string) Names of pdbs to be processed (CAPS sensitive, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"
+         DO_ONLY = sys.argv[1:] # ( list of strings / string) Names of pdbs to be processed (CAPS sensitive, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"
          )
     quit()
 
