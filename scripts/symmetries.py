@@ -234,15 +234,19 @@ def get_operation(key,op_n):
 
 
 class Contact:
-    def __init__(self, atom, coord, target_list, max_distance, min_contacts, params, count_to_min = False):
-        self.coord = coord
+    def __init__(self, atom, position, new_coord, target_list, max_distance, min_contacts, params, count_to_min = False):
+        self.coord = new_coord
+        self.atom = atom
         self.max_distance = max_distance
         self.min_contacts = min_contacts
         self.count_to_min = count_to_min
         self.params = params
+        self.position = position
 
         self.get_contacts(target_list)
 
+    def __repr__(self):
+        return "Contacts ({}) in res {} with max_dist: {}A".format(self.num_contacts, self.atom.get_full_id()[-2][1], self.max_distance)
 
     def get_contacts(self, target_atoms):
         if self.params is not None:
@@ -253,14 +257,16 @@ class Contact:
             max_distance = self.max_distance
         self.is_contact = False
         self.num_contacts = 0
-        self.contacts = []
+        self.all_contacts = []
         for atom in target_atoms:
             dist = distance_fun(self.coord, atom.coord, params=self.params)
             if  dist <= max_distance:
+                line = [[c for c in self.coord], [c for c in atom.coord]]
                 self.num_contacts += 1
-                self.contacts.append({
+                self.all_contacts.append({
                     "target_atom": atom,
-                    "line":[[c for c in self.coord], [c for c in atom.coord]],
+                    #"line":[[c for c in self.coord], [c for c in atom.coord]],
+                    "line": [convertFromFracToOrth(coord, self.params) for coord in line],
                     "distance": dist,
                     "maximum_distance": max_distance,
                 })
@@ -270,7 +276,8 @@ class Contact:
                         break
 
 
-def get_neigh_from_coord(coord, target_atoms, max_distance, count_to = 1, params = None):
+
+def get_neigh_from_coord(coord, target_atoms, max_distance, count_to = 1, params = None): #Deprecated
     if params is not None:
         distance_fun = get_fractional_distance
         max_distance = max_distance**2
@@ -306,7 +313,7 @@ def get_fractional_distance(coord1, coord2, params):
 
 
 
-def find_relevant_mates(self, orth_struct, params, key, minimum_chain_length = 100, contact_distance = 8):
+def find_relevant_mates(self, orth_struct, params, key, minimum_chain_length = 100, contact_distance = 8, min_contacts = 0):
     print1("Finding relevant mates")
     print2("Space group:", key)
 
@@ -386,18 +393,18 @@ def find_relevant_mates(self, orth_struct, params, key, minimum_chain_length = 1
                         print("New coord:", new_coord)
                         quit()
                     
-                    is_contact, _, contacts =  get_neigh_from_coord(new_coord, fixed_atoms, max_distance = contact_distance, params = params)
-                    if is_contact:
+                    contact =  Contact(atom, position, new_coord, fixed_atoms, max_distance = contact_distance, min_contacts = min_contacts, params = params)
+                    if contact.is_contact:
                         if mate is None:
                             mate = Mate(op_number, operation, params, fixed_monomer, moving_monomer)
                         else:
                             if position in mate.positions.keys():
+                                mate.positions[position]["contacts"].append(contact)
                                 mate.positions[position]["n_contacts"] += 1
-                                mate.positions[position]["contacts"].extend(contacts)
                             else:
                                 mate.positions[position] = {"position": position,
                                                             "n_contacts": 1,
-                                                            "contacts": contacts}
+                                                            "contacts": [contact]}
                 if mate is None:
                     #print5("No relevant contacts")
                     continue

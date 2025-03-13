@@ -164,7 +164,10 @@ class PDB(BioObject):
         self.dimers = []
         self.read_card()
         from symmetries import find_relevant_mates
-        self.mates = find_relevant_mates(self, self.structure, self.params, self.key, minimum_chain_length=minimum_chain_length, contact_distance=contact_distance)
+        self.mates = find_relevant_mates(self, self.structure, self.params, self.key,
+                                         minimum_chain_length=minimum_chain_length,
+                                         contact_distance=contact_distance,
+                                         min_contacts=min_contacts)
         if self.mates is None: 
             return []
 
@@ -380,13 +383,11 @@ class Mate(BioObject):
     def unpack_contacts(self):
         from symmetries import convertFromFracToOrth
         for pos in self.positions.values():
-            orth_contacts = []
+            contacts = []
             for contact in pos["contacts"]:
-                #print(contact)
-                orth_contacts.append([convertFromFracToOrth(point, self.params) for point in contact])
-
-
-            self.contacts.extend(orth_contacts)
+                for c in contact.all_contacts:
+                    contacts.append(c["line"])
+            self.contacts.extend(contacts)
 
 
     def reconstruct_mates(self, min_contacts = 0):
