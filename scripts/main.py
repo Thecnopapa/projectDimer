@@ -88,7 +88,7 @@ def main(PROCESS_ALL = False,
             molecule.pickle()
             progress.add(info=molecule.id)
         save_dfs()
-    del molecule, molecules
+
 
     eprint("SYMMETRY & DIMER GENERATION")
     ###### DIMER ANALYSIS ##############################################################################################
