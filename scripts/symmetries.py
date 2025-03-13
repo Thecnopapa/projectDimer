@@ -234,7 +234,7 @@ def get_operation(key,op_n):
 
 
 class Contact:
-    def __init__(self, coord, target_list, max_distance, min_contacts, params, count_to_min = False):
+    def __init__(self, atom, coord, target_list, max_distance, min_contacts, params, count_to_min = False):
         self.coord = coord
         self.max_distance = max_distance
         self.min_contacts = min_contacts
@@ -245,23 +245,29 @@ class Contact:
 
 
     def get_contacts(self, target_atoms):
-        if params is not None:
+        if self.params is not None:
             distance_fun = get_fractional_distance
             max_distance = self.max_distance ** 2
         else:
             from maths import distance as distance_fun
+            max_distance = self.max_distance
         self.is_contact = False
         self.num_contacts = 0
         self.contacts = []
         for atom in target_atoms:
-            if distance_fun(self.coord, atom.coord, params=self.params) <= self.max_distance:
+            dist = distance_fun(self.coord, atom.coord, params=self.params)
+            if  dist <= max_distance:
                 self.num_contacts += 1
-                self.contacts.append([[c for c in self.coord], [c for c in atom.coord]])
+                self.contacts.append({
+                    "target_atom": atom,
+                    "line":[[c for c in self.coord], [c for c in atom.coord]],
+                    "distance": dist,
+                    "maximum_distance": max_distance,
+                })
                 if self.num_contacts >= self.min_contacts:
                     self.is_contact = True
                     if self.count_to_min:
                         break
-        return self.is_contact, self.num_contacts, self.contacts
 
 
 def get_neigh_from_coord(coord, target_atoms, max_distance, count_to = 1, params = None):
