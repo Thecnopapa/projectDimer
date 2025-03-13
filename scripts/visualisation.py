@@ -99,7 +99,7 @@ def show_objects(obj_list, args):
                 ### Development
                 if key == "mate_paths" or key == "dimer_paths":
                     for mate in item:
-                        print(mate)    
+                        #print(mate)
                         pymol_load_path(mate, os.path.basename(mate))
 
                 if key == "lines" and False:

@@ -158,13 +158,13 @@ class PDB(BioObject):
         return self.dimers
 
 
-    def get_all_dimers(self, force = False):
+    def get_all_dimers(self, force = False, minimum_chain_length = 100, contact_distance = 8, min_contacts = 0):
         if len(self.dimers) > 0 and not force:
             return self.dimers
         self.dimers = []
         self.read_card()
         from symmetries import find_relevant_mates
-        self.mates = find_relevant_mates(self, self.structure, self.params, self.key)
+        self.mates = find_relevant_mates(self, self.structure, self.params, self.key, minimum_chain_length=minimum_chain_length, contact_distance=contact_distance)
         if self.mates is None: 
             return []
 
@@ -173,7 +173,7 @@ class PDB(BioObject):
         for mate in self.mates:
             if mate is None:
                 continue
-            mate.process(self)
+            mate.process(self, min_contacts=min_contacts)
             self.dimers.extend(mate.dimers)
             self.contacts.extend(mate.contacts)
             self.mate_paths.extend(mate.paths)
@@ -366,14 +366,14 @@ class Mate(BioObject):
     def update_id(self):
         self.id = "{}_mate_{}_{}_{}".format(self.name, self.fixed_monomer.chain, self.op_n, self.moving_monomer.chain)
 
-    def process(self, parent):
+    def process(self, parent, min_contacts=0):
         self.name = parent.name
         self.key = parent.key
         self.update_id()
 
         print2("Processing mate:", self.id)
         self.unpack_contacts()
-        self.reconstruct_mates()
+        self.reconstruct_mates(min_contacts=min_contacts)
         self.export()
         print2(self.dimers)
 

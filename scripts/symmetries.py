@@ -268,7 +268,7 @@ def get_fractional_distance(coord1, coord2, params):
 
 
 
-def find_relevant_mates(self, orth_struct, params, key):
+def find_relevant_mates(self, orth_struct, params, key, minimum_chain_length = 100, contact_distance = 8):
     print1("Finding relevant mates")
     print2("Space group:", key)
 
@@ -279,12 +279,12 @@ def find_relevant_mates(self, orth_struct, params, key):
     rotation_set = dictio_space_groups[key]
     min_d2 = 0
     if len(rotation_set["symops"].items()) <= 1:
-        return None, None
+        return None
     from molecules import Mate, Monomer
     from maths import find_com
     monomers = []
     for chain, orth_chain in zip(fractional.get_chains(), orth_struct.get_chains()):
-        if sum([1 for _ in chain.get_residues()]) >= 100:
+        if sum([1 for _ in chain.get_residues()]) >= minimum_chain_length:
 
             orth_chain.com = find_com(orth_chain.get_atoms())
             chain.orth_com = find_com(orth_chain.get_atoms())
@@ -348,7 +348,7 @@ def find_relevant_mates(self, orth_struct, params, key):
                         print("New coord:", new_coord)
                         quit()
                     
-                    is_contact, _, contacts =  get_neigh_from_coord(new_coord, fixed_atoms, max_distance = 8, params = params)
+                    is_contact, _, contacts =  get_neigh_from_coord(new_coord, fixed_atoms, max_distance = contact_distance, params = params)
                     if is_contact:
                         if mate is None:
                             mate = Mate(op_number, operation, params, fixed_monomer, moving_monomer)

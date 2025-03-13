@@ -14,6 +14,9 @@ def main(PROCESS_ALL = False,
          DO_ONLY = [],
          GENERATE_SYMMETRIES = True,
          MAX_THREADS = 1,
+         MINIMUM_CHAIN_LENGTH = 100,
+         CONTACT_DISTANCE = 8,
+         MINIMUM_CONTACTS = 0,
          ):
 
 
@@ -69,7 +72,11 @@ def main(PROCESS_ALL = False,
         molecules = load_single_pdb(filename, local.molecules, local.many_pdbs, force_reload=PROCESS_ALL)
         for molecule in molecules:
             if GENERATE_SYMMETRIES:
-                molecule.get_all_dimers()
+                molecule.get_all_dimers(force=PROCESS_ALL,
+                                        minimum_chain_length=MINIMUM_CHAIN_LENGTH,
+                                        contact_distance=CONTACT_DISTANCE,
+                                        min_contacts=MINIMUM_CONTACTS,
+                                        )
             else:
                 molecule.get_dimers()
             molecule.pickle()

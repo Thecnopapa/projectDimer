@@ -28,7 +28,7 @@ def pymol_colour_everything(start_at=0):
 
 def pymol_start(show=False, quiet=True):
     # Start PyMol
-    sprint("Starting PyMol...")
+    sprint("(PyMol) Starting PyMol...")
     if show:  # Debug stuff / -c: no interface, -q no startup message, -Q completely quiet
         pymol.finish_launching(["pymol"])  #
         if quiet:
@@ -37,7 +37,7 @@ def pymol_start(show=False, quiet=True):
         pymol.finish_launching(["pymol", "-cqQ"])
 
 def pymol_close():
-    sprint("Closing PyMol...")
+    sprint("(PyMol) Closing PyMol...")
     pymol.cmd.quit()
 
 def pymol_reset():
@@ -50,6 +50,7 @@ def pymol_load_name(file_name, folder):
 def pymol_load_path(path,  name=None, state = -1,):
     if name is None:
         name = os.path.basename(path)
+    print("(PyMol) Loading:",name)
     pymol.cmd.load(path,name)
     #pymol.cmd.set("state", state)
     return name
@@ -59,12 +60,14 @@ def pymol_hide(sele, hide = None):
     if hide is not None:
         if hide == "all":
             hide = " ".join(all_reprs)
+        print("(PyMol) Hiding:", sele)
         pymol.cmd.hide(representation=hide, selection=sele)
 
 def pymol_format(representation,identifier="", hide="all", colour = None, spectrum=None):
     for obj in get_all_obj():
         if identifier in obj:
             pymol_hide(obj, hide=hide)
+            print("(PyMol) Formatting:", obj, representation)
             pymol.cmd.show(representation=representation, selection=obj)
             if colour is not None:
                 pymol_colour(colour, obj=obj, spectrum=spectrum)
@@ -75,10 +78,11 @@ def pymol_colour(colour, obj = "(all)", sele = None, spectrum=None):
         sele_str = "({} and {})".format(obj,sele)
     else:
         sele_str = "({})".format(obj)
+        
+    print("(PyMol) Colouring:", sele_str, colour, spectrum)
     if spectrum is not None:
         pymol.cmd.spectrum(spectrum, colour, sele_str)
     else:
-        print("colouring", sele_str, colour)
         pymol.cmd.colour(colour, sele_str)
 
 
@@ -142,24 +146,29 @@ def pymol_align_chains(chains_to_align):
 def pymol_symmetries(obj = None):
     if obj is None:
         obj = pymol.cmd.get_names(type='objects')[0]
+    print("(PyMol) Generating symmetries for: ", obj, )
     pymol.cmd.symexp("sym", obj, obj, 6)
 
 def pymol_set_state(state):
+    print("(PyMol) Setting state to: ", state, )
     pymol.cmd.set("state", state)
 
 def pymol_colour_all(colour):
     pymol.cmd.color(colour, "(all)")
 
 def pymol_orient():
+    print("(PyMol) Orienting all")
     pymol.cmd.orient("(all)")
 
 def pymol_show_cell():
+    print("(PyMol) Displaying cell")
     pymol.cmd.show("cell")
 
 def pymol_group(identifier = "sym", name = None):
     group = []
     if name is None:
         name = identifier
+    print("(PyMol) Grouping:", identifier, "in", name)
     for obj in pymol.cmd.get_names(type='objects'):
         if identifier in obj:
             group.append(obj)
@@ -167,7 +176,7 @@ def pymol_group(identifier = "sym", name = None):
     pymol.cmd.group(name, " ".join(group))
 
 def pymol_draw_line(coord1, coord2, name = "d", state = -1):
-    print("({}) Distance between:".format(name), coord1, "and", coord2)
+    #print("(PyMol) ({}) Distance between:".format(name), coord1, "and", coord2, end="\r")
     pymol.cmd.pseudoatom("tmp1", pos=coord1, state=state)
     pymol.cmd.pseudoatom("tmp2", pos=coord2, state=state)
     pymol.cmd.distance(name, "tmp1","tmp2", state=state)
