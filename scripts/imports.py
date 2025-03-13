@@ -68,18 +68,18 @@ def load_from_files(pdb_folder, load_class = PDB, ignore_selection = False, pick
     return loaded
 
 def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None, force_reload=False, object_class = PDB):
-    print1("Loading pdb:", identifier, "-Force reload:", force_reload, "-Class:", object_class)
+    print1("Loading pdb:", identifier, "-Force reload:", force_reload, "-class:", object_class.__name__)
     objects = []
     if not force_reload and pickle_folder is not None:
         print2("Loading PDB pickle from:", pickle_folder)
         for file in os.listdir(pickle_folder):
-            if (identifier is "all" or identifier in file) and "lock" not in file:
+            if (identifier == "all" or identifier in file) and "lock" not in file:
                 p = unpickle(os.path.join(pickle_folder, file))
                 p.restore_dfs()
                 objects.append(p)
     if len(objects) == 0 and pdb_folder is not None:
         for file in os.listdir(pdb_folder):
-            if (identifier is "all" or identifier in file) and "lock" not in file:
+            if (identifier == "all" or identifier in file) and "lock" not in file:
                 print2("Generating PDB object from:", os.path.join(pdb_folder, file))
                 objects.append(object_class(os.path.join(pdb_folder, file)))
 
