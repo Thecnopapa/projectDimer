@@ -57,7 +57,7 @@ def main(PROCESS_ALL = False,
         molecule_folder = local.many_pdbs
     else:
         molecule_folder = local.experimental
-    molecule_list = os.listdir(molecule_folder)
+    molecule_list = sorted(os.listdir(molecule_folder))
     #print(len(vars.do_only), vars.do_only)
     if len(vars.do_only) > 0:
         molecule_list = [f for f in molecule_list if any([s in f for s in vars.do_only])]
@@ -69,11 +69,10 @@ def main(PROCESS_ALL = False,
     tprint("SYMMETRY & DIMER GENERATION")
 
     progress = ProgressBar(len(molecule_list))
-    for m in sorted(molecule_list):
+    for m in molecule_list:
         if "lock" in m:
             sprint(".lock file detected:", m)
             continue
-
         filename = m.split(".")[0]
         sprint(filename)
         molecules = load_single_pdb(filename, local.molecules, local.many_pdbs, force_reload=PROCESS_ALL)
@@ -94,6 +93,20 @@ def main(PROCESS_ALL = False,
     eprint("SYMMETRY & DIMER GENERATION")
     ###### DIMER ANALYSIS ##############################################################################################
     tprint("DIMER ANALYSIS")
+
+    progress = ProgressBar(len(molecule_list))
+    for m in molecule_list:
+        if "lock" in m:
+            sprint(".lock file detected:", m)
+            continue
+        filename = m.split(".")[0]
+        sprint(filename)
+        molecules = load_single_pdb(filename, local.molecules)
+        for molecule in molecules:
+            dimers = molecule.dimers
+            print(dimers)
+
+
 
     eprint("DIMER ANALYSIS")
     ###### SAVE & EXIT #################################################################################################

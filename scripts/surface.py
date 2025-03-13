@@ -10,6 +10,10 @@ import Bio.PDB
 from Bio.PDB import SASA
 
 
+
+
+
+
 def get_contact_res(self, use_replaced = True, radius=1.6, n_points=100):
 
 

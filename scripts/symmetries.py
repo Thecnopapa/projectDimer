@@ -232,6 +232,38 @@ def get_operation(key,op_n):
     from spaceGroups import dictio_space_groups
     return dictio_space_groups[key]["symops"][op_n]
 
+
+class Contact:
+    def __init__(self, coord, target_list, max_distance, min_contacts, params, count_to_min = False):
+        self.coord = coord
+        self.max_distance = max_distance
+        self.min_contacts = min_contacts
+        self.count_to_min = count_to_min
+        self.params = params
+
+        self.get_contacts(target_list)
+
+
+    def get_contacts(self, target_atoms):
+        if params is not None:
+            distance_fun = get_fractional_distance
+            max_distance = self.max_distance ** 2
+        else:
+            from maths import distance as distance_fun
+        self.is_contact = False
+        self.num_contacts = 0
+        self.contacts = []
+        for atom in target_atoms:
+            if distance_fun(self.coord, atom.coord, params=self.params) <= self.max_distance:
+                self.num_contacts += 1
+                self.contacts.append([[c for c in self.coord], [c for c in atom.coord]])
+                if self.num_contacts >= self.min_contacts:
+                    self.is_contact = True
+                    if self.count_to_min:
+                        break
+        return self.is_contact, self.num_contacts, self.contacts
+
+
 def get_neigh_from_coord(coord, target_atoms, max_distance, count_to = 1, params = None):
     if params is not None:
         distance_fun = get_fractional_distance
