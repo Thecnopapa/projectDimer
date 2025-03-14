@@ -403,6 +403,7 @@ def find_relevant_mates(self, orth_struct, params, key, minimum_chain_length = 1
                                 mate.positions[position]["n_contacts"] += 1
                             else:
                                 mate.positions[position] = {"position": position,
+                                                            "value": abs(sum(position)),
                                                             "n_contacts": 1,
                                                             "contacts": [contact]}
                 if mate is None:

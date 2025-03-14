@@ -375,10 +375,27 @@ class Mate(BioObject):
         self.update_id()
 
         print2("Processing mate:", self.id)
+        self.check_redundancy()
         self.unpack_contacts()
         self.reconstruct_mates(min_contacts=min_contacts)
         self.export()
         print2(self.dimers)
+
+
+    def check_redundancy(self):
+
+        if self.fixed_monomer.chain.upper() == self.moving_monomer.chain.upper() and len(list(self.positions.keys())) > 1:
+            best_pos = None
+            for key, pos in self.positions.items():
+                if best_pos is None:
+                    print(pos["value"])
+                    best_pos = key, pos
+                    continue
+                if pos["value"] > best_pos[1]["value"] :
+                    print(pos["value"])
+                    best_pos = key, pos
+            self.positions = {best_pos[0]: best_pos[1]}
+
 
     def unpack_contacts(self):
         from symmetries import convertFromFracToOrth
