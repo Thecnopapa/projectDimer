@@ -226,7 +226,7 @@ class Monomer(BioObject):
         self.monomers_entries = []
         self.sequence = None
         self.scores = None
-        self.sasa = None
+        self.sasas = None
         self.rmsds = {}
         self.super_path = None
         self.super_data = None
@@ -239,7 +239,9 @@ class Monomer(BioObject):
             self.super_data = parent_monomer.super_data
             self.best_fit = parent_monomer.best_fit
             self.super_path = self.move_parent_superposition(parent_monomer.super_path)
-            self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path)[1]
+            if self.super_path is not None:
+                print(self.super_path)
+                self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path)[1]
             self.sasas = parent_monomer.sasas
 
         else:
@@ -253,7 +255,7 @@ class Monomer(BioObject):
 
     def move_parent_superposition(self,original_path):
         from symmetries import entity_to_orth, entity_to_frac, coord_operation_entity
-        if original_path is None or original_path == "":
+        if original_path is None:
             return original_path
         structure = PDBParser(QUIET=True).get_structure(self.id, original_path)
         structure = entity_to_frac(structure, self.params)
@@ -354,7 +356,7 @@ class Monomer(BioObject):
             self.super_path = data["out_path"]
             self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path)[1]
         else:
-            self.super_path = ""
+            self.super_path = None
             if "failed_df" in vars:
                 vars.failed_df.loc[len(vars.failed_df)] = [self.id, "monomer", "No coverage", "No reference meets coverage (80%)" + str(coverages)]
             self.failed_entries.append([self.id, "monomer", "No coverage", "No reference meets coverage (80%)" + str(coverages)])
@@ -491,7 +493,7 @@ class Dimer(BioObject):
             self.best_fit = "Missmatch"
         self.best_match = None
 
-        if self.monomer1.super_path is None or self.monomer2.super_path is None or self.monomer1.super_path == "" or self.monomer2.super_path == "":
+        if self.monomer1.super_path is None or self.monomer2.super_path is None:
             if "failed_df" in vars:
                 vars.failed_df.loc[len(vars.failed_df)] = [self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(self.monomer1.chain, self.monomer1.super_path,self.monomer2.chain,self.monomer2.super_path)]
             self.failed_entries.append([self.id, "dimer", "Missing superposition", "At least one superposition is missing, {}:{}, {}:{}".format(self.monomer1.chain,self.monomer1.super_path,self.monomer2.chain,self.monomer2.super_path)])

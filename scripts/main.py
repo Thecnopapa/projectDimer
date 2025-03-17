@@ -137,8 +137,8 @@ if __name__ == "__main__":
         sys.argv.remove("force")
     else:
         PROCESS_ALL = False
-    if len(sys.argv) > 2:
-        DO_ONLY = sys.argv[2:]
+    if len(sys.argv) >= 2:
+        DO_ONLY = sys.argv[1:]
     import setup
 
     # Imports that need globals initialised:
