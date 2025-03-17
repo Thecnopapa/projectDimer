@@ -17,6 +17,8 @@ def main(PROCESS_ALL = False,
          MINIMUM_CHAIN_LENGTH = 100,
          CONTACT_DISTANCE = 8,
          MINIMUM_CONTACTS = 0,
+         FORCE_SASA = False,
+         BALL_SIZE = 1.6,
          ):
 
 
@@ -75,7 +77,7 @@ def main(PROCESS_ALL = False,
             continue
         filename = m.split(".")[0]
         sprint(filename)
-        molecules = load_single_pdb(filename, local.molecules, local.many_pdbs, force_reload=PROCESS_ALL)
+        molecules = load_single_pdb(filename, local.molecules, molecule_folder, force_reload=PROCESS_ALL)
         for molecule in molecules:
             if GENERATE_SYMMETRIES:
                 molecule.get_all_dimers(force=PROCESS_ALL,
@@ -105,6 +107,9 @@ def main(PROCESS_ALL = False,
         for molecule in molecules:
             dimers = molecule.dimers
             print(dimers)
+            for dimer in dimers:
+                dimer.get_sasa(BALL_SIZE, force=FORCE_SASA)
+
 
 
 
@@ -143,6 +148,8 @@ if __name__ == "__main__":
          MINIMUM_CHAIN_LENGTH=100, # Minimum number of residues to consider a chain for dimerization (to ignore ligands and small molecules)
          CONTACT_DISTANCE = 8, # Minimum (less or equal than) distance in Angstroms to consider a contact between atoms
          MINIMUM_CONTACTS = 0, # Minimum number of contacts to consider a dimer interface
+         FORCE_SASA = True,
+         BALL_SIZE = 1.6,
          )
 
     quit()

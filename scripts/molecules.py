@@ -71,6 +71,9 @@ class BioObject:
                     except:
                         chain.id = [letter for letter in string.ascii_uppercase if letter not in [c.id for c in self.structure.get_chains()]][0]
                 for residue in chain.get_list():
+                    if residue.id[0] != " ":
+                        chain.__delitem__(residue.id)
+                        continue
                     for atom in residue.get_list():
                         if atom.name != "CA":
                             residue.__delitem__(atom.id)
@@ -194,7 +197,7 @@ class Monomer(BioObject):
     pickle_extension = '.monomer'
     pickle_folder = "monomers"
 
-    def __init__(self, name, chain, frac_structure, parent, is_mate = False, op_n = None, position = None, parent_monomer = None):
+    def __init__(self, name, chain, frac_structure, parent, is_mate = False, op_n = None, position = None, parent_monomer = None, sasa=True):
         self.name = name
         self.is_mate = is_mate
         self.fractional_structure = frac_structure
@@ -222,19 +225,26 @@ class Monomer(BioObject):
         self.monomers_entries = []
         self.sequence = None
         self.scores = None
+        self.sasa = None
+        self.rmsds = {}
+        self.super_path = None
+        self.super_data = None
+        self.best_fit = None
+        self.replaced = None
         self.export()
 
         if self.is_mate:
             self.rmsds = parent_monomer.rmsds
             self.super_data = parent_monomer.super_data
             self.best_fit = parent_monomer.best_fit
-            self.super_path = self.move_parent_superposition(parent_monomer.super_path)
+            self.super_path, self.replaced = self.move_parent_superposition(parent_monomer.super_path)
+            self.sasa = parent_monomer.sasa
+
         else:
-            self.rmsds = {}
-            self.super_path = None
-            self.super_data = None
-            self.best_fit= None
             self.superpose()
+            if sasa:
+                from surface import get_monomer_sasa
+                get_monomer_sasa(self)
         self.pickle()
 
 
@@ -251,7 +261,7 @@ class Monomer(BioObject):
         exporting.set_structure(structure)
         path = os.path.join(local.super_raw, os.path.basename(original_path).split(".")[0] + self.extra_id + ".pdb")
         exporting.save(path)
-        return path
+        return path, structure
 
 
 
@@ -309,6 +319,7 @@ class Monomer(BioObject):
             self.raw_monomers_entries.append(contents)
             self.choose_superposition()
 
+
     def choose_superposition(self):
         finalists = []
         criteria = []
@@ -339,11 +350,13 @@ class Monomer(BioObject):
                 vars.monomers_df.loc[self.id] = contents
             self.monomers_entries.append(contents)
             self.super_path = data["out_path"]
+            self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path)
         else:
             self.super_path = ""
             if "failed_df" in vars:
                 vars.failed_df.loc[len(vars.failed_df)] = [self.id, "monomer", "No coverage", "No reference meets coverage (80%)" + str(coverages)]
             self.failed_entries.append([self.id, "monomer", "No coverage", "No reference meets coverage (80%)" + str(coverages)])
+
 
 
 
@@ -572,6 +585,12 @@ class Dimer(BioObject):
             data = {"id": self.id,
                     "name": self.name}
         return data
+
+    def get_sasa(self, BALL_SIZE = 1.6, force = False):
+        if "sasa_df" not in self.__dict__.keys() or force:
+            from surface import get_contact_res
+            get_contact_res(self, radius=BALL_SIZE)
+
 
 
 
