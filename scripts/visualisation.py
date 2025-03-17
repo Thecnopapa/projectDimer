@@ -114,7 +114,8 @@ def show_objects(obj_list, args):
                     from pyMol import pymol_draw_line
                     for line in item:
                         pymol_draw_line(line[0], line[1], name  = "c")
-                if key == "sasa_contacts":
+                if key == "contacs_sasa":
+
                     pass
 
                 ###

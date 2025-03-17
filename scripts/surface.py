@@ -73,8 +73,9 @@ def build_contact_arrays(self):
     sasa_array = []
     for i, sasas in enumerate(zip(*self.sasas)):
         #print([type(s) for s in sasas])
-        print(i,*sasas, "\t", sasas[2]-sasas[4], sasas[3]-sasas[5])
-        sasa_array.append([i,sasas[0], sasas[2]-sasas[4] == 0, sasas[3]-sasas[5]] == 0)
+        #print(i,*sasas, "\t", sasas[2]-sasas[4], sasas[3]-sasas[5])
+        sasa_array.append([i,sasas[0], bool(sasas[2]-sasas[4] == 0), bool(sasas[3]-sasas[5] == 0)])
+        print(sasa_array[-1])
 
     self.contacts_sasa = sasa_array
 
