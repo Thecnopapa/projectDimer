@@ -6,7 +6,8 @@ from Globals import root, local, vars
 import numpy as np
 import pandas as pd
 
-import Bio.PDB
+#import Bio.PDB
+from Bio.PDB.SASA import ShrakeRupley
 from Bio.PDB import SASA
 
 

@@ -1,11 +1,11 @@
-conda create -n biop python=3.12
+conda create -n biop python=3.12.0 numpy=2
 conda activate biop
 
 conda install conda-forge::biopython
 conda install -c conda-forge -c schrodinger pymol-bundle
 conda install pandas matplotlib unidecode scikit-learn
 
-pip install subprocess adjustText
+pip install subprocess.run adjustText
 
 
 
