@@ -106,9 +106,8 @@ def main(PROCESS_ALL = False,
         molecules = load_single_pdb(filename, local.molecules)
         for molecule in molecules:
             dimers = molecule.dimers
-            print(dimers)
             for dimer in dimers:
-                dimer.get_sasa(BALL_SIZE, force=FORCE_SASA)
+                print(dimer)
 
 
 

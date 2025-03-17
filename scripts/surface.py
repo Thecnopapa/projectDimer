@@ -10,18 +10,58 @@ import Bio.PDB
 from Bio.PDB import SASA
 
 
+def get_sasa_contacts(self):
+    pass
 
-
-def get_monomer_sasa(self, n_points =100, radius = 1.6):
+def get_monomer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
+    print2("Calculating SASA, replaced = ", use_replaced)
+    if use_replaced:
+        structure = self.replaced
+    else:
+        structure = self.structure
     if self.best_fit is None:
         return None
+
     sr = SASA.ShrakeRupley(n_points=n_points, probe_radius=radius)
-    sr.compute(self.structure, level="R")
+    sr.compute(structure, level="R")
     sasas = []
-    for res in self.structure.get_residues():
-        print(res.__dict__)
+    for res in structure.get_residues():
         sasas.append(res.sasa)
+
     self.sasas = sasas.copy()
+
+
+
+def get_dimer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
+    if self.monomer1.best_fit != self.monomer2.best_fit or self.monomer1.best_fit is None:
+        print1("{}: Best fits are not the same: {} / {}".format(self.id, self.monomer1.best_fit, self.monomer2.best_fit,
+                                                                "\n"))
+        self.sasa_df = None
+        return None
+    sasas1 = self.monomer1.sasas
+    sasas2 = self.monomer2.sasas
+
+    if use_replaced:
+        structure = self.replaced_structure
+    else:
+        structure = self.original_structure
+
+    sr = SASA.ShrakeRupley(n_points=n_points, probe_radius=radius)
+    sasas1D = []
+    sasas2D = []
+
+    sr.compute(structure, level="R")
+    chains = list(structure.get_chains())
+    for res1D, res2D in zip(chains[0].get_residues(), chains[1].get_residues()):
+        sasas1D.append(res1D.sasa)
+        sasas2D.append(res2D.sasa)
+
+    [print(res, res[0]-res[2], res[1]-res[3]) for res in zip(sasas1, sasas2, sasas1D, sasas2D)]
+    print(len(sasas1), len(sasas2), len(sasas1D), len(sasas2D))
+
+
+
+
 
 
 def get_contact_res(self, use_replaced = True, radius=1.6, n_points=100):

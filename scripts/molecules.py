@@ -1,5 +1,6 @@
 import os
 
+from surface import get_dimer_sasa
 from symmetries import entity_to_orth
 from utilities import *
 from Globals import root, local, vars
@@ -238,7 +239,7 @@ class Monomer(BioObject):
             self.super_data = parent_monomer.super_data
             self.best_fit = parent_monomer.best_fit
             self.super_path, self.replaced = self.move_parent_superposition(parent_monomer.super_path)
-            self.sasa = parent_monomer.sasa
+            self.sasas = parent_monomer.sasas
 
         else:
             self.superpose()
@@ -350,7 +351,7 @@ class Monomer(BioObject):
                 vars.monomers_df.loc[self.id] = contents
             self.monomers_entries.append(contents)
             self.super_path = data["out_path"]
-            self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path)
+            self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path)[1]
         else:
             self.super_path = ""
             if "failed_df" in vars:
@@ -467,7 +468,7 @@ class Dimer(BioObject):
     pickle_extension = '.dimer'
     pickle_folder = "dimers"
 
-    def __init__(self, monomer1, monomer2):
+    def __init__(self, monomer1, monomer2, sasa = True):
         self.monomer1 = monomer1
         self.monomer2 = monomer2
         self.name = monomer1.name
@@ -478,9 +479,8 @@ class Dimer(BioObject):
 
         self.failed_entries = []
         self.validate()
+        self.get_sasa()
 
-
-       
 
     def validate(self):
         if self.monomer1.best_fit == self.monomer2.best_fit:
@@ -588,8 +588,8 @@ class Dimer(BioObject):
 
     def get_sasa(self, BALL_SIZE = 1.6, force = False):
         if "sasa_df" not in self.__dict__.keys() or force:
-            from surface import get_contact_res
-            get_contact_res(self, radius=BALL_SIZE)
+            from surface import get_dimer_sasa
+            get_dimer_sasa(self, radius=BALL_SIZE)
 
 
 
