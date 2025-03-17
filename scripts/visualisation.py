@@ -65,7 +65,7 @@ def show_objects(obj_list, args):
         sprint(obj.id)
         #print(obj.__dict__)
         for key, item in obj.__dict__.items():
-            if key in ["lines", "contacts"]:
+            if key in ["lines", "contacts", "sasas"]:
                 continue
             #print(str(type(item)))
             if type(item) in (list, tuple, set):
@@ -114,6 +114,9 @@ def show_objects(obj_list, args):
                     from pyMol import pymol_draw_line
                     for line in item:
                         pymol_draw_line(line[0], line[1], name  = "c")
+                if key == "sasa_contacts":
+                    pass
+
                 ###
 
             from pyMol import pymol_format, pymol_set_state, pymol_orient, pymol_show_cell
@@ -125,6 +128,8 @@ def show_objects(obj_list, args):
             pymol_show_cell()
             pymol_group(identifier="mate", name="mates")
             #pymol_group(identifier= "dimer")
+            pymol_group(identifier="rep", name="replaced")
+            pymol_group(identifier="merged", name="merged")
             try:
                 pymol_symmetries(og)
                 pymol_group(identifier = "sym")

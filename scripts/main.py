@@ -5,6 +5,7 @@ import os, sys
 import pandas as pd
 from utilities import *
 import platform
+import numpy as np
 
 
 
@@ -97,6 +98,7 @@ def main(PROCESS_ALL = False,
     tprint("DIMER ANALYSIS")
 
     progress = ProgressBar(len(molecule_list))
+    from surface import build_contact_arrays
     for m in molecule_list:
         if "lock" in m:
             sprint(".lock file detected:", m)
@@ -107,7 +109,10 @@ def main(PROCESS_ALL = False,
         for molecule in molecules:
             dimers = molecule.dimers
             for dimer in dimers:
-                print(dimer)
+                print1(dimer)
+                print2("SASA shape:" ,np.array(list(dimer.sasas)).shape)
+                build_contact_arrays(dimer)
+                dimer.pickle()
 
 
 

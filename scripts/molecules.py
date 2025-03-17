@@ -238,7 +238,8 @@ class Monomer(BioObject):
             self.rmsds = parent_monomer.rmsds
             self.super_data = parent_monomer.super_data
             self.best_fit = parent_monomer.best_fit
-            self.super_path, self.replaced = self.move_parent_superposition(parent_monomer.super_path)
+            self.super_path = self.move_parent_superposition(parent_monomer.super_path)
+            self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path)[1]
             self.sasas = parent_monomer.sasas
 
         else:
@@ -262,7 +263,7 @@ class Monomer(BioObject):
         exporting.set_structure(structure)
         path = os.path.join(local.super_raw, os.path.basename(original_path).split(".")[0] + self.extra_id + ".pdb")
         exporting.save(path)
-        return path, structure
+        return path
 
 
 
@@ -479,7 +480,8 @@ class Dimer(BioObject):
 
         self.failed_entries = []
         self.validate()
-        self.get_sasa()
+        from surface import get_dimer_sasa
+        get_dimer_sasa(self)
 
 
     def validate(self):
@@ -564,7 +566,7 @@ class Dimer(BioObject):
     def export(self):
         if not self.incomplete:
             #self.original_path = super().export(subfolder="dimers_original", in_structure=self.original_structure, extra_id = "_dimer_ori")
-            #self.replaced_path = super().export(subfolder="dimers_replaced", in_structure=self.replaced_structure, extra_id = "_dimer_rep")
+            self.replaced_path = super().export(subfolder="dimers_replaced", in_structure=self.replaced_structure, extra_id = "_dimer_rep")
             self.merged_path = super().export(subfolder="dimers_merged", in_structure=self.merged_structure, extra_id = "_dimer_merged")
             return self.merged_path
         return None
@@ -586,10 +588,7 @@ class Dimer(BioObject):
                     "name": self.name}
         return data
 
-    def get_sasa(self, BALL_SIZE = 1.6, force = False):
-        if "sasa_df" not in self.__dict__.keys() or force:
-            from surface import get_dimer_sasa
-            get_dimer_sasa(self, radius=BALL_SIZE)
+
 
 
 

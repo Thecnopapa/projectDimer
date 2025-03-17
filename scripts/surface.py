@@ -13,7 +13,7 @@ from Bio.PDB import SASA
 def get_sasa_contacts(self):
     pass
 
-def get_monomer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
+def get_monomer_sasa(self, n_points =100, radius = 1.3, use_replaced = True):
     print2("Calculating SASA, replaced = ", use_replaced)
     if use_replaced:
         structure = self.replaced
@@ -29,17 +29,18 @@ def get_monomer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
         sasas.append(res.sasa)
 
     self.sasas = sasas.copy()
+    print(len(list(structure.get_atoms())))
 
 
 
-def get_dimer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
+def get_dimer_sasa(self, n_points =100, radius = 1.3, use_replaced = True):
     if self.monomer1.best_fit != self.monomer2.best_fit or self.monomer1.best_fit is None:
         print1("{}: Best fits are not the same: {} / {}".format(self.id, self.monomer1.best_fit, self.monomer2.best_fit,
                                                                 "\n"))
         self.sasa_df = None
         return None
-    sasas1 = self.monomer1.sasas
-    sasas2 = self.monomer2.sasas
+    sasas1 = self.monomer1.sasas.copy()
+    sasas2 = self.monomer2.sasas.copy()
 
     if use_replaced:
         structure = self.replaced_structure
@@ -50,14 +51,33 @@ def get_dimer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
     sasas1D = []
     sasas2D = []
 
+    residues = []
+    resnames = []
+    for res in structure.get_residues():
+        res.sasa = None
     sr.compute(structure, level="R")
     chains = list(structure.get_chains())
+    print(len(list(structure.get_atoms())))
     for res1D, res2D in zip(chains[0].get_residues(), chains[1].get_residues()):
+        #print(res1D.get_full_id(), res2D.get_full_id(), res1D.sasa, res2D.sasa)
         sasas1D.append(res1D.sasa)
         sasas2D.append(res2D.sasa)
+        residues.append(res1D.id[1])
+        resnames.append(res1D.resname)
 
-    [print(res, res[0]-res[2], res[1]-res[3]) for res in zip(sasas1, sasas2, sasas1D, sasas2D)]
-    print(len(sasas1), len(sasas2), len(sasas1D), len(sasas2D))
+
+    self.sasas = residues, resnames, sasas1, sasas2, sasas1D, sasas2D
+
+
+def build_contact_arrays(self):
+    sasa_array = []
+    for i, sasas in enumerate(zip(*self.sasas)):
+        #print([type(s) for s in sasas])
+        print(i,*sasas, "\t", sasas[2]-sasas[4], sasas[3]-sasas[5])
+        sasa_array.append([i,sasas[0], sasas[2]-sasas[4] == 0, sasas[3]-sasas[5]] == 0)
+
+    self.contacts_sasa = sasa_array
+
 
 
 
@@ -100,6 +120,7 @@ def get_contact_res(self, use_replaced = True, radius=1.6, n_points=100):
         for res1D, res2D in zip(dimer_structure.get_list()[0].get_list(), dimer_structure.get_list()[1].get_list()):
             sasas1D.append(res1D.sasa)
             sasas2D.append(res2D.sasa)
+
         #print(sasas1)
         #print(sasas1D)
         #print(sasas2)
