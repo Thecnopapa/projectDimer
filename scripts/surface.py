@@ -14,10 +14,13 @@ from Bio.PDB import SASA
 def get_sasa_contacts(self):
     pass
 
-def get_monomer_sasa(self, n_points =100, radius = 1.3, use_replaced = True):
+def get_monomer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
     print2("Calculating SASA, replaced = ", use_replaced)
     if use_replaced:
-        structure = self.replaced
+        structure = self.replaced.copy()
+        print(structure)
+        from maths import find_com
+        print(find_com(structure.get_atoms()))
     else:
         print("why not?")
         quit()
@@ -37,7 +40,7 @@ def get_monomer_sasa(self, n_points =100, radius = 1.3, use_replaced = True):
 
 
 
-def get_dimer_sasa(self, n_points =100, radius = 1.3, use_replaced = True):
+def get_dimer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
     if self.monomer1.best_fit != self.monomer2.best_fit or self.monomer1.best_fit is None:
         print1("{}: Best fits are not the same: {} / {}".format(self.id, self.monomer1.best_fit, self.monomer2.best_fit,
                                                                 "\n"))
@@ -47,10 +50,15 @@ def get_dimer_sasa(self, n_points =100, radius = 1.3, use_replaced = True):
     from maths import find_com
     if use_replaced:
         structure = self.replaced_structure.copy()
+        print(structure)
+        print(structure.get_list()[0].get_list())
+        print([find_com(chain.get_atoms()) for chain in structure.get_chains()])
     else:
         print("why not?")
         quit()
         structure = self.original_structure.copy()
+
+    assert len(list(structure.get_chains())) == 2
 
     sr = SASA.ShrakeRupley(n_points=n_points, probe_radius=radius)
     sasas1D = []
@@ -58,19 +66,28 @@ def get_dimer_sasa(self, n_points =100, radius = 1.3, use_replaced = True):
 
     for res in structure.get_residues():
         res.sasa = None
-    chains = list(structure.get_chains())
+    chain1, chain2 = list(structure.get_chains())
+    print(chain1,chain2)
+
     #print(structure)
-    print(self.monomer1, self.monomer1.parent, chains[0].id, "//", self.monomer2, self.monomer2.parent_monomer, chains[1].id)
+    print(self.monomer1, self.monomer1.parent, chain1.id, "//", self.monomer2, self.monomer2.parent_monomer, chain2.id)
     #print("COM at sasa", find_com(self.monomer1.replaced.get_atoms()), find_com(self.monomer2.replaced.get_atoms()))
     #print("COM at sasa (saved)",self.monomer1.com, self.monomer2.com)
-    sr.compute(structure, level="R")
+    '''sr.compute(chain1, level="R")
+    for res in chain1.get_residues():
+        sasas1D.append(res.sasa)
+    sr.compute(chain2, level="R")
+    for res in chain2.get_residues():
+        sasas2D.append(res.sasa)'''
     #print(len(list(chains[0].get_residues())),  len(list(chains[1].get_residues())))
 
 
-
-    assert len(list(chains[0].get_residues())) == len(list(chains[1].get_residues()))
+    sr.compute(structure, level="R")
+    from pyMol import pymol_temp_show
+    pymol_temp_show(structure)
+    assert len(list(chain1.get_residues())) == len(list(chain2.get_residues()))
     print(len(list(structure.get_atoms())))
-    for res1D, res2D in zip(structure.get_list()[0].get_list()[0].get_list(), structure.get_list()[0].get_list()[1].get_list()):
+    for res1D, res2D in zip(chain1.get_residues(), chain2.get_residues()):
         #print(res1D.get_full_id(), res2D.get_full_id(), res1D.sasa, res2D.sasa)
         sasas1D.append(res1D.sasa)
         sasas2D.append(res2D.sasa)
@@ -81,7 +98,10 @@ def get_dimer_sasa(self, n_points =100, radius = 1.3, use_replaced = True):
 
 
 
+
 def build_contact_arrays(self):
+
+    ################### SASA contacts ##############################
     sasas1 = self.monomer1.sasas
     sasas2 = self.monomer2.sasas
     sasas1D = self.sasas[0]
@@ -91,18 +111,30 @@ def build_contact_arrays(self):
     sasa_array = []
     for sasa1, sasa2, sasa1D, sasa2D, residue in zip(sasas1, sasas2, sasas1D, sasas2D, residues):
         #print([type(s) for s in (sasa1, sasa2, sasa1D, sasa2D)])
-        #print(i,*sasas, "\t", sasas[2]-sasas[4], sasas[3]-sasas[5])
-        #sasa_array.append([i,sasas[0], bool(sasas[2]-sasas[4] == 0), bool(sasas[3]-sasas[5] == 0)])
-        if bool(sasa1-sasa1D == 0):
+        #print(sasa1, sasa1D, "\t", sasa2, sasa2D, "\t", residue)
+        if bool(sasa1-sasa1D != 0):
             sasa_array.append([self.monomer1.chain, residue.id[1]])
             #print(sasa_array[-1], sasa1, sasa1D,"\t", sasa1-sasa1D)
-        if bool(sasa2-sasa2D == 0):
+        if bool(sasa2-sasa2D != 0):
             sasa_array.append([self.monomer2.chain,residue.id[1]])
             #print(sasa_array[-1], sasa2, sasa2D, "\t", sasa2-sasa2D)
 
-
-
     self.contacts_sasa = sasa_array
+
+    ############### Symmetry contacts ##############################
+    contact_array = []
+    for contact in self.monomer2.contacts:
+        contact_array.append([self.monomer2.chain, contact.atom.get_full_id()[-2][1]])
+        #print(contact_array[-1])
+        for c in contact.all_contacts:
+            cl = [self.monomer1.chain, c["target_atom"].get_full_id()[-2][1]]
+            if cl not in contact_array:
+                contact_array.append(cl)
+            #print(contact_array[-1])
+    print(contact_array)
+    print("Number of contacts by symmetry:", len(contact_array))
+
+    self.contacts_symm = contact_array
 
 
 

@@ -113,6 +113,7 @@ def main(PROCESS_ALL = False,
                 if dimer.sasas is not None:
                     print2("SASA shape:" ,np.array(list(dimer.sasas)).shape)
                     build_contact_arrays(dimer)
+                    print(len(dimer.contacts_sasa))
                 dimer.pickle()
 
 

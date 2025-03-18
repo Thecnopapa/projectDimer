@@ -65,7 +65,7 @@ def show_objects(obj_list, args):
         sprint(obj.id)
         #print(obj.__dict__)
         for key, item in obj.__dict__.items():
-            if key in ["lines", "contacts", "sasas", "contacts_sasa"]:
+            if key in ["lines", "c_lines", "sasas", "contacts_sasa"]:
                 continue
             #print(str(type(item)))
             if type(item) in (list, tuple, set):
@@ -97,7 +97,10 @@ def show_objects(obj_list, args):
                         else:
                             pymol_load_path(item)
                         if "contacts_sasa" in obj.__dict__.keys():
-                            pymol_paint_conatcts(os.path.basename(item), obj.contacts_sasa)
+                            pymol_paint_conatcts(os.path.basename(item), obj.contacts_sasa, colour = "red")
+                            pass
+                        if "contacts_symm" in obj.__dict__.keys():
+                            pymol_paint_conatcts(os.path.basename(item), obj.contacts_symm)
                 ### Development
                 if key == "mate_paths" or key == "dimer_paths":
                     for mate in item:
@@ -112,7 +115,7 @@ def show_objects(obj_list, args):
                             #print(l,line)
                             pymol_draw_line(line[0], line[1], state=l)
                         l += 1
-                if key == "contacts":
+                if key == "c_lines":
                     from pyMol import pymol_draw_line
                     for line in item:
                         pymol_draw_line(line[0], line[1], name  = "c")

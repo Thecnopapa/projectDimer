@@ -218,6 +218,7 @@ class Monomer(BioObject):
             self.chain = chain.lower()
             #print(self.position["position"], self.op_n, self.name)
             self.extra_id = "_{}_{}".format(self.op_n, clean_string(self.position["position"], allow=["-"]))
+            self.contacts = parent.contacts
 
         else:
             self.chain = chain.upper()
@@ -226,6 +227,8 @@ class Monomer(BioObject):
         self.structure.id = self.chain
         self.id = "{}_{}{}".format(name, chain, self.extra_id)
         self.export()
+
+
 
         self.previews = None
         self.raw_monomers_entries = []
@@ -283,6 +286,7 @@ class Monomer(BioObject):
         model0.add(original_chain)
         assert len(parent_structure.get_list()[1].get_list()) == 1
         moving_superposition = parent_structure.get_list()[1].get_list()[0]
+        moving_superposition.id = self.chain
 
         #print("moving_superposition", moving_superposition, len(list(moving_superposition.get_residues())))
         #print_all_coords(moving_superposition)
@@ -396,6 +400,7 @@ class Monomer(BioObject):
             self.monomers_entries.append(contents)
             self.super_path = data["out_path"]
             self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path).get_list()[1].get_list()[0]
+            self.replaced.id = self.chain
         else:
             self.super_path = None
             if "failed_df" in vars:
@@ -422,6 +427,7 @@ class Mate(BioObject):
         self.dimers = []
         self.structures = []
         self.paths = None
+        self.c_lines = []
         self.contacts = []
 
     def update_id(self):
@@ -458,11 +464,12 @@ class Mate(BioObject):
     def unpack_contacts(self):
         from symmetries import convertFromFracToOrth
         for pos in self.positions.values():
-            contacts = []
+            cl = []
             for contact in pos["contacts"]:
+                self.contacts.append(contact)
                 for c in contact.all_contacts:
-                    contacts.append(c["line"])
-            self.contacts.extend(contacts)
+                    cl.append(c["line"])
+            self.c_lines.extend(cl)
 
 
     def reconstruct_mates(self, min_contacts = 0):

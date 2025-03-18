@@ -190,6 +190,18 @@ def pymol_paint_conatcts(obj, contact_list, colour = "yellow"):
         pymol_colour(colour, obj, sele, silent = True)
 
 
+def pymol_temp_show(structure):
+    from Bio.PDB import PDBIO
+    local["temp"] = "temp"
+    exporting = PDBIO()
+    exporting.set_structure(structure)
+    path = os.path.join(local.temp, "temp_{}.pdb".format(structure.id))
+    exporting.save(path)
+    pymol_start(show=True)
+    pymol_load_path(path)
+    input()
+    os.remove(path)
+    pymol_close()
 
 
 
