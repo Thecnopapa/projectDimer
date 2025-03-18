@@ -113,7 +113,6 @@ def main(PROCESS_ALL = False,
                 if dimer.sasas is not None:
                     print2("SASA shape:" ,np.array(list(dimer.sasas)).shape)
                     build_contact_arrays(dimer)
-                    print(len(dimer.contacts_sasa))
                 dimer.pickle()
 
 
@@ -140,7 +139,7 @@ if __name__ == "__main__":
     else:
         PROCESS_ALL = False
     if len(sys.argv) >= 2:
-        DO_ONLY = sys.argv[1:]
+        DO_ONLY = [arg.upper() for arg in sys.argv[1:]]
     import setup
 
     # Imports that need globals initialised:

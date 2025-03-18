@@ -124,13 +124,14 @@ def show_objects(obj_list, args):
 
                 ###
 
-            from pyMol import pymol_format, pymol_set_state, pymol_orient, pymol_show_cell
+            from pyMol import pymol_format, pymol_set_state, pymol_orient, pymol_show_cell, pymol_hide
             pymol_format("spheres", "neighbour", "all", colour="rainbow", spectrum="b")
             pymol_format("mesh", "original", "all", colour="white")
             pymol_format("mesh", "processed", "all", colour="blue")
             pymol_set_state(1)
             pymol_orient()
             pymol_show_cell()
+            pymol_hide("c", "label")
             pymol_group(identifier="mate", name="mates")
             #pymol_group(identifier= "dimer")
             pymol_group(identifier="rep", name="replaced")

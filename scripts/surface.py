@@ -84,7 +84,7 @@ def get_dimer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
 
     sr.compute(structure, level="R")
     from pyMol import pymol_temp_show
-    pymol_temp_show(structure)
+    #pymol_temp_show(structure)
     assert len(list(chain1.get_residues())) == len(list(chain2.get_residues()))
     print(len(list(structure.get_atoms())))
     for res1D, res2D in zip(chain1.get_residues(), chain2.get_residues()):
@@ -120,9 +120,11 @@ def build_contact_arrays(self):
             #print(sasa_array[-1], sasa2, sasa2D, "\t", sasa2-sasa2D)
 
     self.contacts_sasa = sasa_array
+    print2("Number of contacts by SASA:", len(sasa_array))
 
     ############### Symmetry contacts ##############################
     contact_array = []
+    self.c_lines = []
     for contact in self.monomer2.contacts:
         contact_array.append([self.monomer2.chain, contact.atom.get_full_id()[-2][1]])
         #print(contact_array[-1])
@@ -130,9 +132,10 @@ def build_contact_arrays(self):
             cl = [self.monomer1.chain, c["target_atom"].get_full_id()[-2][1]]
             if cl not in contact_array:
                 contact_array.append(cl)
+            self.c_lines.append(c["line"])
             #print(contact_array[-1])
-    print(contact_array)
-    print("Number of contacts by symmetry:", len(contact_array))
+    #print(contact_array)
+    print2("Number of contacts by symmetry:", len(contact_array))
 
     self.contacts_symm = contact_array
 
