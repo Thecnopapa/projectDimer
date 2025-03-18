@@ -1,10 +1,10 @@
 import os
 
 from surface import get_dimer_sasa
-from symmetries import entity_to_orth
+from symmetries import entity_to_orth, print_all_coords
 from utilities import *
 from Globals import root, local, vars
-from Bio.PDB import PDBParser, MMCIFParser, PDBIO, StructureBuilder, Structure
+from Bio.PDB import PDBParser, MMCIFParser, PDBIO, StructureBuilder, Structure,  Model
 import numpy as np
 import pandas as pd
 import string
@@ -139,6 +139,8 @@ class PDB(BioObject):
         return self.card
 
     def get_monomers(self, as_reference=False):
+        print("Using a deprecated feature, please don't")
+        quit()
         if len(self.monomers) == 0 or True:
             self.monomers = []
             for chain in self.structure.get_chains():
@@ -207,6 +209,10 @@ class Monomer(BioObject):
         self.op_n = op_n
         self.position = position
         self.structure = entity_to_orth(self.fractional_structure.copy(), self.params)
+        if parent_monomer is None:
+            self.parent = None
+        else:
+            self.parent_monomer = parent_monomer.id
 
         if self.is_mate:
             self.chain = chain.lower()
@@ -219,6 +225,7 @@ class Monomer(BioObject):
 
         self.structure.id = self.chain
         self.id = "{}_{}{}".format(name, chain, self.extra_id)
+        self.export()
 
         self.previews = None
         self.raw_monomers_entries = []
@@ -232,7 +239,7 @@ class Monomer(BioObject):
         self.super_data = None
         self.best_fit = None
         self.replaced = None
-        self.export()
+
 
         if self.is_mate:
             self.rmsds = parent_monomer.rmsds
@@ -240,30 +247,64 @@ class Monomer(BioObject):
             self.best_fit = parent_monomer.best_fit
             self.super_path = self.move_parent_superposition(parent_monomer.super_path)
             if self.super_path is not None:
-                print(self.super_path)
-                self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path)[1]
-            self.sasas = parent_monomer.sasas
+                #print(self.super_path)
+                #print(self.id, parent_monomer)
+                #print(self.super_path)
+                self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path).get_list()[1].get_list()[0]
+                from maths import find_com
+                print(find_com(self.replaced.get_atoms()))
+            self.sasas = parent_monomer.sasas.copy()
 
         else:
             self.superpose()
             if sasa:
                 from surface import get_monomer_sasa
                 get_monomer_sasa(self)
+        from maths import find_com
+        self.com = find_com(self.replaced.get_atoms())
         self.pickle()
 
 
 
-    def move_parent_superposition(self,original_path):
-        from symmetries import entity_to_orth, entity_to_frac, coord_operation_entity
-        if original_path is None:
-            return original_path
-        structure = PDBParser(QUIET=True).get_structure(self.id, original_path)
-        structure = entity_to_frac(structure, self.params)
-        structure = coord_operation_entity(structure, self.key, self.op_n, self.position["position"])
-        structure = entity_to_orth(structure, self.params)
+    def move_parent_superposition(self,super_path):
+        from symmetries import entity_to_orth, entity_to_frac, coord_operation_entity, print_all_coords
+        if super_path is None:
+            return super_path
+
+        original_chain = self.structure.copy()
+        #print_all_coords(original_chain)
+        #print("original_chain", original_chain, len(list(original_chain.get_residues())))
+        parent_structure = PDBParser(QUIET=True).get_structure(self.id, super_path)
+        #print("parent_structure", parent_structure, parent_structure.get_list())
+        #print_all_coords(parent_structure)
+        new_structure = Structure.Structure(self.id)
+        model0 = Model.Model(0)
+        model1 = Model.Model(1)
+        model0.add(original_chain)
+        assert len(parent_structure.get_list()[1].get_list()) == 1
+        moving_superposition = parent_structure.get_list()[1].get_list()[0]
+
+        #print("moving_superposition", moving_superposition, len(list(moving_superposition.get_residues())))
+        #print_all_coords(moving_superposition)
+        moving_superposition = entity_to_frac(moving_superposition, self.params)
+        #print_all_coords(moving_superposition)
+        #print(self.key, self.op_n, self.position["position"])
+        moving_superposition = coord_operation_entity(moving_superposition, self.key, self.op_n, self.position["position"])
+        #print_all_coords(moving_superposition)
+        moving_superposition = entity_to_orth(moving_superposition, self.params)
+        #print_all_coords(moving_superposition)
+        #print("moved_superposition", moving_superposition)
+
+        model1.add(moving_superposition)
+        #print("model0", model0, model0.get_list())
+        #print("model1", model1, model1.get_list())
+        new_structure.add(model0)
+        new_structure.add(model1)
+        #print("new_structure", new_structure, new_structure.get_list())
+
         exporting = PDBIO()
-        exporting.set_structure(structure)
-        path = os.path.join(local.super_raw, os.path.basename(original_path).split(".")[0] + self.extra_id + ".pdb")
+        exporting.set_structure(new_structure)
+        path = os.path.join(local.super_raw, os.path.basename(super_path).split(".")[0] + self.extra_id + "_merged.pdb")
         exporting.save(path)
         return path
 
@@ -354,7 +395,7 @@ class Monomer(BioObject):
                 vars.monomers_df.loc[self.id] = contents
             self.monomers_entries.append(contents)
             self.super_path = data["out_path"]
-            self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path)[1]
+            self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path).get_list()[1].get_list()[0]
         else:
             self.super_path = None
             if "failed_df" in vars:
@@ -435,7 +476,7 @@ class Mate(BioObject):
 
                 moved_mate = generate_displaced_copy(self.moving_monomer.fractional_structure, distance = position["position"], key =self.key, op_n =self.op_n)
                 
-                moved_mate = entity_to_orth(moved_mate, self.params)
+                #moved_mate = entity_to_orth(moved_mate, self.params)
                 #print_all_coords(moved_mate)
                 self.structures.append(moved_mate)
 
@@ -482,8 +523,15 @@ class Dimer(BioObject):
 
         self.failed_entries = []
         self.validate()
+        self.contacts_sasa = []
+        self.contacts_symm = []
         from surface import get_dimer_sasa
         get_dimer_sasa(self)
+        from maths import find_com
+
+        self.com = (find_com(self.replaced_structure.get_list()[0].get_list()[0].get_atoms()), find_com(self.replaced_structure.get_list()[0].get_list()[1].get_atoms()))
+        print(self.com)
+
 
 
     def validate(self):

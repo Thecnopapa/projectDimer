@@ -73,13 +73,13 @@ def pymol_format(representation,identifier="", hide="all", colour = None, spectr
                 pymol_colour(colour, obj=obj, spectrum=spectrum)
 
 
-def pymol_colour(colour, obj = "(all)", sele = None, spectrum=None):
+def pymol_colour(colour, obj = "(all)", sele = None, spectrum=None, silent =False):
     if sele is not None:
         sele_str = "({} and {})".format(obj,sele)
     else:
         sele_str = "({})".format(obj)
-        
-    print("(PyMol) Colouring:", sele_str, colour, spectrum)
+    if not silent:
+        print("(PyMol) Colouring:", sele_str, colour, spectrum)
     if spectrum is not None:
         pymol.cmd.spectrum(spectrum, colour, sele_str)
     else:
@@ -182,6 +182,14 @@ def pymol_draw_line(coord1, coord2, name = "d", state = -1):
     pymol.cmd.distance(name, "tmp1","tmp2", state=state)
     pymol.cmd.delete("tmp1")
     pymol.cmd.delete("tmp2")
+
+def pymol_paint_conatcts(obj, contact_list, colour = "yellow"):
+    print("(PyMol) Colouring contacts in {}".format(obj))
+    for chain, resn in contact_list:
+        sele = "c. {} and i. {}".format(chain, resn)
+        pymol_colour(colour, obj, sele, silent = True)
+
+
 
 
 
