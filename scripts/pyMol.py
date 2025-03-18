@@ -198,10 +198,10 @@ def pymol_temp_show(structure):
     path = os.path.join(local.temp, "temp_{}.pdb".format(structure.id))
     exporting.save(path)
     pymol_start(show=True)
-    pymol_load_path(path)
+    loaded = pymol_load_path(path)
     input()
+    pymol_hide(loaded, "all")
     os.remove(path)
-    pymol_close()
 
 
 
