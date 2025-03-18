@@ -249,10 +249,9 @@ class Monomer(BioObject):
             if self.super_path is not None:
                 #print(self.super_path)
                 #print(self.id, parent_monomer)
-                #print(self.super_path)
+                #print("COM before displacement")
                 self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path).get_list()[1].get_list()[0]
                 from maths import find_com
-                print(find_com(self.replaced.get_atoms()))
             self.sasas = parent_monomer.sasas.copy()
 
         else:
@@ -262,6 +261,7 @@ class Monomer(BioObject):
                 get_monomer_sasa(self)
         from maths import find_com
         self.com = find_com(self.replaced.get_atoms())
+        #print("COM after superpose / displacement:", self.com)
         self.pickle()
 
 
@@ -530,7 +530,7 @@ class Dimer(BioObject):
         from maths import find_com
 
         self.com = (find_com(self.replaced_structure.get_list()[0].get_list()[0].get_atoms()), find_com(self.replaced_structure.get_list()[0].get_list()[1].get_atoms()))
-        print(self.com)
+        #print(self.com)
 
 
 
@@ -601,11 +601,11 @@ class Dimer(BioObject):
         #[print(chain) for chain in merged_structure.get_chains()]
 
         
-        monomer1.replaced = PDBParser(QUIET=True).get_structure(monomer1.id+"_r", monomer1.super_path)[1].get_list()[0]
-        monomer2.replaced = PDBParser(QUIET=True).get_structure(monomer2.id+"_r", monomer1.super_path)[1].get_list()[0]
+        #monomer1.replaced = PDBParser(QUIET=True).get_structure(monomer1.id+"_r", monomer1.super_path)[1].get_list()[0]
+        #monomer2.replaced = PDBParser(QUIET=True).get_structure(monomer2.id+"_r", monomer1.super_path)[1].get_list()[0]
 
-        monomer1.replaced.detach_parent()
-        monomer2.replaced.detach_parent()
+        #monomer1.replaced.detach_parent()
+        #monomer2.replaced.detach_parent()
         
 
         assert len([1 for _ in merged_structure.get_chains()]) == 4   

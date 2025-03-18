@@ -61,8 +61,8 @@ def get_dimer_sasa(self, n_points =100, radius = 1.3, use_replaced = True):
     chains = list(structure.get_chains())
     #print(structure)
     print(self.monomer1, self.monomer1.parent, chains[0].id, "//", self.monomer2, self.monomer2.parent_monomer, chains[1].id)
-    print(find_com(self.monomer1.replaced.get_atoms()), find_com(self.monomer2.replaced.get_atoms()))
-    print(self.monomer1.com, self.monomer2.com)
+    #print("COM at sasa", find_com(self.monomer1.replaced.get_atoms()), find_com(self.monomer2.replaced.get_atoms()))
+    #print("COM at sasa (saved)",self.monomer1.com, self.monomer2.com)
     sr.compute(structure, level="R")
     #print(len(list(chains[0].get_residues())),  len(list(chains[1].get_residues())))
 

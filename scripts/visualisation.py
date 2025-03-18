@@ -65,7 +65,7 @@ def show_objects(obj_list, args):
         sprint(obj.id)
         #print(obj.__dict__)
         for key, item in obj.__dict__.items():
-            if key in ["lines", "contacts", "sasas", "conatcts_sasa"]:
+            if key in ["lines", "contacts", "sasas", "contacts_sasa"]:
                 continue
             #print(str(type(item)))
             if type(item) in (list, tuple, set):
