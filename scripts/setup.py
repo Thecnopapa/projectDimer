@@ -35,6 +35,7 @@ else:
 #### Set up essential folders ###
 from Globals import root, local, vars
 local["molecules"] = "pickles/molecules"
+vars["pymol_started"] = False
 
 
 

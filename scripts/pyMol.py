@@ -28,6 +28,9 @@ def pymol_colour_everything(start_at=0):
 
 def pymol_start(show=False, quiet=True):
     # Start PyMol
+    if vars.pymol_started:
+        print("(PyMol) PyMol already started")
+        return
     sprint("(PyMol) Starting PyMol...")
     if show:  # Debug stuff / -c: no interface, -q no startup message, -Q completely quiet
         pymol.finish_launching(["pymol"])  #
@@ -35,6 +38,7 @@ def pymol_start(show=False, quiet=True):
             pymol.finish_launching(["pymol", "-q"])
     else:
         pymol.finish_launching(["pymol", "-cqQ"])
+    vars["pymol_started"] = True
 
 def pymol_close():
     sprint("(PyMol) Closing PyMol...")
@@ -55,9 +59,13 @@ def pymol_load_path(path,  name=None, state = -1,):
     #pymol.cmd.set("state", state)
     return name
 
+def pymol_disable(sele):
+    print("(PyMol) Disabling:", sele)
+    pymol.cmd.disable(sele)
+
 def pymol_hide(sele, hide = None):
     all_reprs = ["lines","spheres","mesh","ribbon","cartoon","sticks","dots","surface","labels","nonbonded","nb_spheres"]
-    if hide is not None:
+    if hide is not None and len(sele) >0:
         if hide == "all":
             hide = " ".join(all_reprs)
         print("(PyMol) Hiding:", sele)
@@ -195,14 +203,22 @@ def pymol_temp_show(structure):
     local["temp"] = "temp"
     exporting = PDBIO()
     exporting.set_structure(structure)
-    path = os.path.join(local.temp, "temp_{}.pdb".format(structure.id))
+    all_obj = pymol_get_all_objects()
+    name = "temp_{}.pdb".format(structure.id)
+    if name in all_obj:
+        n = 1
+        while name in all_obj:
+            name = "temp_{}_{}.pdb".format(structure.id, n)
+            n += 1
+    path = os.path.join(local.temp, name)
     exporting.save(path)
     pymol_start(show=True)
+    pymol_disable("(all)")
     loaded = pymol_load_path(path)
-    input()
-    pymol_hide(loaded, "all")
     os.remove(path)
 
+def pymol_get_all_objects():
+    return pymol.cmd.get_names(type='objects')
 
 
 

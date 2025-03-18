@@ -83,8 +83,14 @@ def get_dimer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
 
 
     sr.compute(structure, level="R")
-    from pyMol import pymol_temp_show
-    #pymol_temp_show(structure)
+    from pyMol import pymol_temp_show, pymol_start, pymol_colour
+    pymol_start(show=True)
+    pymol_temp_show(chain1)
+    pymol_temp_show(chain2)
+    for atom in structure.get_atoms():
+        atom.b = atom.sasa
+    pymol_colour("green_yellow_red",spectrum="b" )
+    quit()
     assert len(list(chain1.get_residues())) == len(list(chain2.get_residues()))
     print(len(list(structure.get_atoms())))
     for res1D, res2D in zip(chain1.get_residues(), chain2.get_residues()):
