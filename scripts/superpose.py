@@ -21,13 +21,13 @@ def superpose_single(id, fixed, moving):
         if not(len(vars.do_only) == 0 or vars.do_only is None):
             print(gesamt_out.stdout)
             print(gesamt_out.stderr)
-    # TODO
+    ##### DEVELOPMENT
     print(gesamt_out.stdout)
-    quit()
+    #####
     data = {"out_path": out_path}
     t_matrix_lines = 0
     centroid_lines = 0
-    map = {}
+    data["map"] =[]
     for line in gesamt_out.stdout.splitlines():
         #print(centroid_lines, line)
         if "Q-score" in line:
@@ -83,10 +83,18 @@ def superpose_single(id, fixed, moving):
             l = line.split(":")
             data["ccp4_angles"]["translation"] = [float(i) for i in l[1].split()]
 
-        if l.endswith("|") and l.startswith("|"):
-            # TODO
+        if line.endswith("|") and line.startswith("|"):
+            l = line.split("|")
+            if len(l) != 5:
+                continue
+            res1 = l[1].split(" ")[-2]
+            dist = l[2][4:8]
+            res2 = l[3].split(" ")[-2]
+            print(res1, dist, res2)
+            data["map"].append({"res1": res1, "res2": res2, "distance": dist})
 
         centroid_lines -=1
+    quit()
     return data
 
 
