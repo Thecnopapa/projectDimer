@@ -15,9 +15,9 @@ def get_sasa_contacts(self):
     pass
 
 def get_monomer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
-    print2("Calculating SASA for {}, replaced = ".format(self.id), use_replaced)
+    print2("Calculating SASA for {}, replaced = ".format(self), use_replaced)
     if use_replaced:
-        structure = self.replaced.copy()
+        structure = self.replaced
         #print(structure)
         #print(structure.parent)
         structure.detach_parent()
@@ -32,15 +32,15 @@ def get_monomer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
         return None
 
     sr = SASA.ShrakeRupley(n_points=n_points, probe_radius=radius)
-    sr.compute(structure, level="R")
+    sr.compute(structure, level="A")
     sasas = []
-    for res in structure.get_residues():
-        sasas.append(round(res.sasa,4))
+    for atom in structure.get_atoms():
+        sasas.append(round(atom.sasa,4))
     from pyMol import pymol_temp_show, pymol_start, pymol_colour, pymol_reset
     #pymol_start(show=True)
 
     for atom in structure.get_atoms():
-        atom.bfactor = atom.parent.sasa
+        atom.bfactor = atom.sasa
 
     #pymol_temp_show(structure)
 
@@ -48,7 +48,7 @@ def get_monomer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
     if self.sasas is None:
         self.sasas = sasas
     else:
-        self.sasas.extend(sasas.copy())
+        self.sasas.extend(sasas)
         quit()
 
     #print(len(list(structure.get_atoms())))
@@ -56,7 +56,7 @@ def get_monomer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
 
 
 def get_dimer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
-    print3("Calculating SASA for {}, replaced = ".format(self.id), use_replaced)
+    print3("Calculating SASA for {}, replaced = ".format(self), use_replaced)
 
     if self.monomer1.best_fit != self.monomer2.best_fit or self.monomer1.best_fit is None:
         print1("{}: Best fits are not the same: {} / {}".format(self.id, self.monomer1.best_fit, self.monomer2.best_fit,
@@ -116,10 +116,10 @@ def get_dimer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
         sasas2D.append(res.sasa)'''
     #print(len(list(chains[0].get_residues())),  len(list(chains[1].get_residues())))
 
-    sr.compute(new_structure, level="R")
+    sr.compute(new_structure, level="A")
     #print()
     for atom in new_structure.get_atoms():
-        atom.bfactor = atom.parent.sasa
+        atom.bfactor = atom.sasa
 
     #pymol_temp_show(chain1)
     #pymol_temp_show(chain2)
@@ -131,9 +131,9 @@ def get_dimer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
     #pymol_colour("red_yellow_green",spectrum="b" )
     #input()
     #pymol_reset()
-    assert len(list(chain1.get_residues())) == len(list(chain2.get_residues()))
+    assert len(list(chain1.get_atoms())) == len(list(chain2.get_atoms()))
     #print(len(list(new_structure.get_atoms())))
-    for res1D, res2D in zip(chain1.get_residues(), chain2.get_residues()):
+    for res1D, res2D in zip(chain1.get_atoms(), chain2.get_atoms()):
         #print(res1D.get_full_id(), res2D.get_full_id(), res1D.sasa, res2D.sasa)
         sasas1D.append(round(res1D.sasa,4))
         sasas2D.append(round(res2D.sasa,4))

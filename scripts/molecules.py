@@ -39,7 +39,7 @@ class BioObject:
 
 
     def __repr__(self):
-        return "{} ({})".format(self.id, self.__class__.__name__)
+        return "{} ({} at {})".format(self.id, self.__class__.__name__, id(self))
 
     def parse_structure(self, parse_original = False):
         if self.path is None or parse_original:
@@ -506,7 +506,7 @@ class Mate(BioObject):
                                         position = position,
                                         is_mate = True)
 
-                dimer = Dimer(self.fixed_monomer.copy(), moved_monomer)
+                dimer = Dimer(self.fixed_monomer, moved_monomer)
                 dimer.export()
                 dimer.pickle()
                 dimers.append(dimer)
@@ -532,8 +532,8 @@ class Dimer(BioObject):
     def __init__(self, monomer1, monomer2, sasa = True):
         self.monomer1 = monomer1
         self.monomer2 = monomer2
-        self.monomer1.structure = self.monomer1.structure.copy()
-        self.monomer2.parent = self.monomer1.structure.copy()
+        #self.monomer1.structure = self.monomer1.structure.copy()
+        #self.monomer2.parent = self.monomer1.structure.copy()
 
         '''from copy import deepcopy
         self.monomer1 = deepcopy(monomer1)
