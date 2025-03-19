@@ -21,9 +21,7 @@ def superpose_single(id, fixed, moving):
         if not(len(vars.do_only) == 0 or vars.do_only is None):
             print(gesamt_out.stdout)
             print(gesamt_out.stderr)
-    ##### DEVELOPMENT
-    print(gesamt_out.stdout)
-    #####
+
     data = {"out_path": out_path}
     t_matrix_lines = 0
     centroid_lines = 0
@@ -90,12 +88,46 @@ def superpose_single(id, fixed, moving):
             res1 = l[1].split(" ")[-2]
             dist = l[2][4:8]
             res2 = l[3].split(" ")[-2]
-            print(res1, dist, res2)
+            if res1 == "":
+                res1 = None
+            else:
+                res1 = get_digits(res1, integer= True)
+            if res2 == "":
+                res2 = None
+            else:
+                res2 = get_digits(res2, integer=True)
+            if dist == "    ":
+                dist = None
+            #print(res1, dist, res2)
             data["map"].append({"res1": res1, "res2": res2, "distance": dist})
 
         centroid_lines -=1
-    quit()
+
     return data
+
+def create_maps(fixed, moving, raw_map):
+    fixed_to_moving = {}
+    moving_to_fixed = {}
+    fixed_residues = {res.id[1]:res for res in fixed.get_residues()}
+    moving_residues = {res.id[1]:res for res in moving.get_residues()}
+    for row in raw_map:
+        if row["res1"] is not None:
+            if row["res2"] is not None:
+                fixed_to_moving[row["res1"]] = moving_residues[row["res2"]]
+            else:
+                fixed_to_moving[row["res1"]] = None
+
+        if row["res2"] is not None:
+            if row["res1"] is not None:
+                moving_to_fixed[row["res2"]] = fixed_residues[row["res1"]]
+            else:
+                moving_to_fixed[row["res1"]] = None
+
+
+
+    return fixed_to_moving, moving_to_fixed
+
+
 
 
 

@@ -192,7 +192,8 @@ def sub_vectors(start,end):
         new_vector.append(start[dim] - end[dim])
     return tuple(new_vector)
 
-
+def string_numbers():
+    return ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
 
 def points_to_line(start,end):
     return list(zip(start,end))

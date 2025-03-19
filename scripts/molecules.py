@@ -222,7 +222,7 @@ class Monomer(BioObject):
         self.position = position
         self.structure = entity_to_orth(self.fractional_structure.copy(), self.params)
         self.parent_monomer = parent_monomer
-        self.parent = parent
+        #self.parent = parent
 
         if self.is_mate:
             self.chain = chain.lower()
@@ -260,11 +260,7 @@ class Monomer(BioObject):
             self.best_fit = self.parent_monomer.best_fit
             self.super_path = self.move_parent_superposition(self.parent_monomer.super_path)
             if self.super_path is not None:
-                #print(self.super_path)
-                #print(self.id, self.parent_monomer)
-                #print("COM before displacement")
                 self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path).get_list()[1].get_list()[0]
-                from maths import find_com
                 self.sasas = self.parent_monomer.sasas.copy()
 
         else:
@@ -274,7 +270,7 @@ class Monomer(BioObject):
                 get_monomer_sasa(self)
         from maths import find_com
         self.com = find_com(self.replaced.get_atoms())
-        #print("COM after superpose / displacement:", self.com)
+
         self.pickle()
 
 
@@ -411,6 +407,8 @@ class Monomer(BioObject):
             self.super_path = data["out_path"]
             self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path).get_list()[1].get_list()[0]
             self.replaced.id = self.chain
+            from superpose import create_maps
+            self.map_to_ref, self.map_to_ori = create_maps(self.structure, self.replaced, data["map"])
         else:
             self.super_path = None
             if "failed_df" in vars:
@@ -457,7 +455,6 @@ class Mate(BioObject):
 
 
     def check_redundancy(self):
-
         if self.fixed_monomer.chain.upper() == self.moving_monomer.chain.upper() and len(list(self.positions.keys())) > 1:
             best_pos = None
             for key, pos in self.positions.items():

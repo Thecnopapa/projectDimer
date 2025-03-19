@@ -48,6 +48,13 @@ def clean_string(string, allow=(".", "_")):
     from unidecode import unidecode
     return ''.join(e for e in unidecode(str(string)) if e.isalnum() or e in allow)
 
+def get_digits(string, allow=("."), integer = False):
+    from unidecode import unidecode
+    if integer:
+        return int(''.join(e for e in unidecode(str(string)) if e.isdigit() or e in allow))
+    else:
+        return float(''.join(e for e in unidecode(str(string)) if e.isdigit() or e in allow))
+
 def unpickle(path):
     import pickle
     with open(path, "rb") as f:
