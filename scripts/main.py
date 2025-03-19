@@ -110,8 +110,7 @@ def main(PROCESS_ALL = False,
             dimers = molecule.dimers
             for dimer in dimers:
                 print1(dimer)
-                if dimer.sasas is not None:
-                    print2("SASA shape:" ,np.array(list(dimer.sasas)).shape)
+                if dimer.sasas1D is not None and dimer.sasas2D is not None:
                     build_contact_arrays(dimer)
                 dimer.pickle()
 

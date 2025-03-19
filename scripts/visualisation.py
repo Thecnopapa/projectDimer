@@ -65,7 +65,7 @@ def show_objects(obj_list, args):
         sprint(obj.id)
         #print(obj.__dict__)
         for key, item in obj.__dict__.items():
-            if key in ["lines", "c_lines", "sasas", "contacts_sasa"]:
+            if key in ["lines", "c_lines", "sasas1D", "sasas2D"]:
                 continue
             #print(str(type(item)))
             if type(item) in (list, tuple, set):
@@ -79,9 +79,9 @@ def show_objects(obj_list, args):
                 for k, v in item.items():
                     print2(k,":",v)
             if "molecules" in str(type(item)):
-                print1(key, ":", item)
+                print1(key, ":", item, id(item))
             if "Bio" in str(type(item)):
-                print1(key, ":", item)
+                print1(key, ":", item, id(item))
             if item is None:
                 print1(key, ":", "None")
         if "pymol" in args:
@@ -100,7 +100,8 @@ def show_objects(obj_list, args):
                             pymol_paint_conatcts(os.path.basename(item), obj.contacts_sasa, colour = "red")
                             pass
                         if "contacts_symm" in obj.__dict__.keys():
-                            pymol_paint_conatcts(os.path.basename(item), obj.contacts_symm)
+                            #pymol_paint_conatcts(os.path.basename(item), obj.contacts_symm)
+                            pass
                 ### Development
                 if key == "mate_paths" or key == "dimer_paths":
                     for mate in item:
@@ -131,7 +132,10 @@ def show_objects(obj_list, args):
             pymol_set_state(1)
             pymol_orient()
             pymol_show_cell()
-            pymol_hide("c", "label")
+            try:
+                pymol_hide("c", "label")
+            except:
+                pass
             pymol_group(identifier="mate", name="mates")
             #pymol_group(identifier= "dimer")
             pymol_group(identifier="rep", name="replaced")

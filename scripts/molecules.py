@@ -100,6 +100,18 @@ class BioObject:
             self.path = path
         return path
 
+    def copy(self):
+        print("Copying {}".format(self))
+        copied =self.__class__.__new__(self.__class__)
+        import copy
+        for key, value in self.__dict__.items():
+            try: copied.__setattr__(key, value.copy())
+            except:
+                copied.__setattr__(key, copy.copy(value))
+            #try: copy.__setattr__(key, value.copy())
+            #except: setattr(copy, key, value); print("Copying {} failed".format(key))
+        return copied
+
 class PDB(BioObject):
     pickle_extension = '.molecule'
     pickle_folder = "molecules"
@@ -209,10 +221,8 @@ class Monomer(BioObject):
         self.op_n = op_n
         self.position = position
         self.structure = entity_to_orth(self.fractional_structure.copy(), self.params)
-        if parent_monomer is None:
-            self.parent = None
-        else:
-            self.parent_monomer = parent_monomer.id
+        self.parent_monomer = parent_monomer
+        self.parent = parent
 
         if self.is_mate:
             self.chain = chain.lower()
@@ -245,17 +255,17 @@ class Monomer(BioObject):
 
 
         if self.is_mate:
-            self.rmsds = parent_monomer.rmsds
-            self.super_data = parent_monomer.super_data
-            self.best_fit = parent_monomer.best_fit
-            self.super_path = self.move_parent_superposition(parent_monomer.super_path)
+            self.rmsds = self.parent_monomer.rmsds
+            self.super_data = self.parent_monomer.super_data
+            self.best_fit = self.parent_monomer.best_fit
+            self.super_path = self.move_parent_superposition(self.parent_monomer.super_path)
             if self.super_path is not None:
                 #print(self.super_path)
-                #print(self.id, parent_monomer)
+                #print(self.id, self.parent_monomer)
                 #print("COM before displacement")
                 self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path).get_list()[1].get_list()[0]
                 from maths import find_com
-            self.sasas = parent_monomer.sasas.copy()
+                self.sasas = self.parent_monomer.sasas.copy()
 
         else:
             self.superpose()
@@ -496,7 +506,7 @@ class Mate(BioObject):
                                         position = position,
                                         is_mate = True)
 
-                dimer = Dimer(self.fixed_monomer, moved_monomer)
+                dimer = Dimer(self.fixed_monomer.copy(), moved_monomer)
                 dimer.export()
                 dimer.pickle()
                 dimers.append(dimer)
@@ -522,6 +532,17 @@ class Dimer(BioObject):
     def __init__(self, monomer1, monomer2, sasa = True):
         self.monomer1 = monomer1
         self.monomer2 = monomer2
+        self.monomer1.structure = self.monomer1.structure.copy()
+        self.monomer2.parent = self.monomer1.structure.copy()
+
+        '''from copy import deepcopy
+        self.monomer1 = deepcopy(monomer1)
+        self.monomer2 = deepcopy(monomer2)'''
+
+
+
+
+
         self.name = monomer1.name
 
         self.extra_id = monomer2.extra_id

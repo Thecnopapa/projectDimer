@@ -29,7 +29,8 @@ def pymol_colour_everything(start_at=0):
 def pymol_start(show=False, quiet=True):
     # Start PyMol
     if vars.pymol_started:
-        print("(PyMol) PyMol already started")
+        if not quiet:
+            print("(PyMol) PyMol already started")
         return
     sprint("(PyMol) Starting PyMol...")
     if show:  # Debug stuff / -c: no interface, -q no startup message, -Q completely quiet
@@ -59,16 +60,18 @@ def pymol_load_path(path,  name=None, state = -1,):
     #pymol.cmd.set("state", state)
     return name
 
-def pymol_disable(sele):
-    print("(PyMol) Disabling:", sele)
+def pymol_disable(sele, silent=True):
+    if not silent:
+        print("(PyMol) Disabling:", sele)
     pymol.cmd.disable(sele)
 
-def pymol_hide(sele, hide = None):
+def pymol_hide(sele, hide = None, silent = True):
     all_reprs = ["lines","spheres","mesh","ribbon","cartoon","sticks","dots","surface","labels","nonbonded","nb_spheres"]
     if hide is not None and len(sele) >0:
         if hide == "all":
             hide = " ".join(all_reprs)
-        print("(PyMol) Hiding:", sele)
+        if not silent:
+            print("(PyMol) Hiding:", sele)
         pymol.cmd.hide(representation=hide, selection=sele)
 
 def pymol_format(representation,identifier="", hide="all", colour = None, spectrum=None):
@@ -193,27 +196,29 @@ def pymol_draw_line(coord1, coord2, name = "d", state = -1):
 
 def pymol_paint_conatcts(obj, contact_list, colour = "yellow"):
     print("(PyMol) Colouring contacts in {}".format(obj))
-    for chain, resn in contact_list:
+    for chain, resn, in contact_list:
         sele = "c. {} and i. {}".format(chain, resn)
         pymol_colour(colour, obj, sele, silent = True)
 
 
-def pymol_temp_show(structure):
+def pymol_temp_show(structure, disable = False):
     from Bio.PDB import PDBIO
     local["temp"] = "temp"
     exporting = PDBIO()
     exporting.set_structure(structure)
-    all_obj = pymol_get_all_objects()
+    all_obj = [n.upper() for n in pymol_get_all_objects()]
+    #print(all_obj)
     name = "temp_{}.pdb".format(structure.id)
-    if name in all_obj:
+    if name.upper() in all_obj:
         n = 1
-        while name in all_obj:
+        while name.upper() in all_obj:
             name = "temp_{}_{}.pdb".format(structure.id, n)
             n += 1
     path = os.path.join(local.temp, name)
     exporting.save(path)
     pymol_start(show=True)
-    pymol_disable("(all)")
+    if disable:
+        pymol_disable("(all)")
     loaded = pymol_load_path(path)
     os.remove(path)
 
