@@ -147,60 +147,62 @@ def get_dimer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
 
 
 
-def build_contact_arrays(self):
+def build_contact_arrays(self, sasa = True):
 
     ################### SASA contacts ##############################
-    sasas1 = self.monomer1.sasas
-    sasas2 = self.monomer2.sasas
-    sasas1D = self.sasas1D
-    sasas2D = self.sasas2D
-    print(self.monomer1.chain)
-    print(self.monomer2.chain)
-    residues = list(self.monomer1.replaced.get_residues())
-    sasa_array = []
-    print(len(residues))
-    print(len(sasas1))
-    assert len(residues) == len(list(sasas1))
-    assert len(residues) == len(list(sasas2))
-    assert len(residues) == len(list(sasas1D))
-    assert len(residues) == len(list(sasas2D))
+    if sasa:
+        sasas1 = self.monomer1.sasas
+        sasas2 = self.monomer2.sasas
+        sasas1D = self.sasas1D
+        sasas2D = self.sasas2D
+        print(self.monomer1.chain)
+        print(self.monomer2.chain)
+        residues = list(self.monomer1.replaced.get_residues())
+        sasa_array = []
+        print(len(residues))
+        print(len(sasas1))
+        assert len(residues) == len(list(sasas1))
+        assert len(residues) == len(list(sasas2))
+        assert len(residues) == len(list(sasas1D))
+        assert len(residues) == len(list(sasas2D))
 
-    for i, res in enumerate(residues):
-        #print(sasas1[i], sasas2[i], sasas1D[i], sasas2D[i], sasas1[i]-sasas1D[i], sasas2[i]-sasas2D[i])
-        if bool(sasas1[i]-sasas1D[1] > 0):
-            sasa_array.append([self.monomer1.chain, res.id[1]])
-            #print(sasa_array[-1], sasa1, sasa1D,"\t", sasa1-sasa1D)
-        if bool(sasas2[i]-sasas2D[0] > 0):
-            sasa_array.append([self.monomer2.chain,res.id[1]])
-            #print(sasa_array[-1], sasa2, sasa2D, "\t", sasa2-sasa2D)
+        for i, res in enumerate(residues):
+            #print(sasas1[i], sasas2[i], sasas1D[i], sasas2D[i], sasas1[i]-sasas1D[i], sasas2[i]-sasas2D[i])
+            if bool(sasas1[i]-sasas1D[1] > 0):
+                sasa_array.append([self.monomer1.chain, res.id[1]])
+                #print(sasa_array[-1], sasa1, sasa1D,"\t", sasa1-sasa1D)
+            if bool(sasas2[i]-sasas2D[0] > 0):
+                sasa_array.append([self.monomer2.chain,res.id[1]])
+                #print(sasa_array[-1], sasa2, sasa2D, "\t", sasa2-sasa2D)
 
 
-    '''for sasa1, sasa2, sasa1D, sasa2D, residue in zip(sasas1, sasas2, sasas1D, sasas2D, residues):
-        #print([type(s) for s in (sasa1, sasa2, sasa1D, sasa2D)])
-        print(sasa1, sasa1D, "\t", sasa2, sasa2D, "\t", round(sasa1-sasa1D, 2), round(sasa2-sasa2D, 2))
-        if bool(sasa1-sasa1D > 0):
-            sasa_array.append([self.monomer1.chain, residue.id[1]])
-            #print(sasa_array[-1], sasa1, sasa1D,"\t", sasa1-sasa1D)
-        if bool(sasa2-sasa2D > 0):
-            sasa_array.append([self.monomer2.chain,residue.id[1]])
-            #print(sasa_array[-1], sasa2, sasa2D, "\t", sasa2-sasa2D)'''
+        '''for sasa1, sasa2, sasa1D, sasa2D, residue in zip(sasas1, sasas2, sasas1D, sasas2D, residues):
+            #print([type(s) for s in (sasa1, sasa2, sasa1D, sasa2D)])
+            print(sasa1, sasa1D, "\t", sasa2, sasa2D, "\t", round(sasa1-sasa1D, 2), round(sasa2-sasa2D, 2))
+            if bool(sasa1-sasa1D > 0):
+                sasa_array.append([self.monomer1.chain, residue.id[1]])
+                #print(sasa_array[-1], sasa1, sasa1D,"\t", sasa1-sasa1D)
+            if bool(sasa2-sasa2D > 0):
+                sasa_array.append([self.monomer2.chain,residue.id[1]])
+                #print(sasa_array[-1], sasa2, sasa2D, "\t", sasa2-sasa2D)'''
 
-    self.contacts_sasa = sasa_array
-    print2("Number of contacts by SASA:", len(sasa_array))
+        self.contacts_sasa = sasa_array
+        print2("Number of contacts by SASA:", len(sasa_array))
 
     ############### Symmetry contacts ##############################
+    print(self.contacts)
     contact_array = []
     self.c_lines = []
-    for contact in self.monomer2.contacts:
+    for contact in self.contacts:
         contact_array.append([self.monomer2.chain, contact.atom.get_full_id()[-2][1]])
         #print(contact_array[-1])
-        for c in contact.all_contacts:
-            cl = [self.monomer1.chain, c["target_atom"].get_full_id()[-2][1]]
-            if cl not in contact_array:
-                contact_array.append(cl)
-            self.c_lines.append(c["line"])
-            #print(contact_array[-1])
-    #print(contact_array)
+        sc = contact.shortest_contact
+        cl = [self.monomer1.chain, sc["target_atom"].get_full_id()[-2][1]]
+        if cl not in contact_array:
+            contact_array.append(cl)
+        self.c_lines.append(sc["line"])
+        print(contact_array[-1])
+    print(contact_array)
     print2("Number of contacts by symmetry:", len(contact_array))
 
     self.contacts_symm = contact_array

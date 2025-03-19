@@ -100,7 +100,7 @@ def show_objects(obj_list, args):
                             pymol_paint_conatcts(os.path.basename(item), obj.contacts_sasa, colour = "red")
                             pass
                         if "contacts_symm" in obj.__dict__.keys():
-                            #pymol_paint_conatcts(os.path.basename(item), obj.contacts_symm)
+                            pymol_paint_conatcts(os.path.basename(item), obj.contacts_symm)
                             pass
                 ### Development
                 if key == "mate_paths" or key == "dimer_paths":

@@ -234,46 +234,66 @@ def get_operation(key,op_n):
 
 
 class Contact:
-    def __init__(self, atom, position, new_coord, target_list, max_distance, min_contacts, params, count_to_min = False):
-        self.coord = new_coord
+    def __init__(self, atom, position,  target_list, max_distance = None, min_contacts=0, params= None, coord = None, count_to_min = False):
+        #print2(atom.parent.id[1], len(target_list), type(target_list))
+        if coord is None:
+            self.coord = atom.coord
+        else:
+            self.coord = coord
         self.atom = atom
         self.max_distance = max_distance
         self.min_contacts = min_contacts
         self.count_to_min = count_to_min
         self.params = params
         self.position = position
-
+        self.shortest_contact = None
+        self.is_contact = False
         self.get_contacts(target_list)
 
     def __repr__(self):
-        return "Contacts ({}) in res {} with max_dist: {}A".format(self.num_contacts, self.atom.get_full_id()[-2][1], self.max_distance)
+        import math
+        return "Contacts ({}) in res {}, shortest: {}A".format(self.num_contacts, self.atom.get_full_id()[-2][1], math.sqrt(self.shortest_contact["distance"]))
 
     def get_contacts(self, target_atoms):
+
         if self.params is not None:
             distance_fun = get_fractional_distance
-            max_distance = self.max_distance ** 2
+            if self.max_distance is not None:
+                max_distance = self.max_distance ** 2
         else:
-            from maths import distance as distance_fun
-            max_distance = self.max_distance
+            from maths import d2
+            distance_fun = d2
+            if self.max_distance is not None:
+                max_distance = self.max_distance ** 2
         self.is_contact = False
         self.num_contacts = 0
         self.all_contacts = []
         for atom in target_atoms:
+            #print("  ",atom.parent.id[1])
             dist = distance_fun(self.coord, atom.coord, params=self.params)
-            if  dist <= max_distance:
+            #print(dist)
+            if self.max_distance is None or dist <= max_distance:
                 line = [[c for c in self.coord], [c for c in atom.coord]]
+                if self.params is not None:
+                    line = [convertFromFracToOrth(coord, self.params) for coord in line]
                 self.num_contacts += 1
-                self.all_contacts.append({
+                new_contact = {
+                    "atom": self.atom,
                     "target_atom": atom,
-                    #"line":[[c for c in self.coord], [c for c in atom.coord]],
-                    "line": [convertFromFracToOrth(coord, self.params) for coord in line],
+                    "line":  line,
                     "distance": dist,
                     "maximum_distance": max_distance,
-                })
+                }
+                self.all_contacts.append(new_contact)
+                if self.shortest_contact is None or dist < self.shortest_contact["distance"]:
+                    self.shortest_contact = new_contact
+                #print(self.num_contacts, self.min_contacts,self.num_contacts >= self.min_contacts )
+                self.is_contact = True
                 if self.num_contacts >= self.min_contacts:
-                    self.is_contact = True
+                    #self.is_contact = True
                     if self.count_to_min:
-                        break
+                        #break
+                        pass
 
 
 
@@ -393,7 +413,7 @@ def find_relevant_mates(self, orth_struct, params, key, minimum_chain_length = 1
                         print("New coord:", new_coord)
                         quit()
                     
-                    contact =  Contact(atom, position, new_coord, fixed_atoms, max_distance = contact_distance, min_contacts = min_contacts, params = params)
+                    contact =  Contact(atom, position, fixed_atoms, coord = new_coord, max_distance = contact_distance, min_contacts = min_contacts, params = params)
                     if contact.is_contact:
                         if mate is None:
                             mate = Mate(op_number, operation, params, fixed_monomer, moving_monomer)

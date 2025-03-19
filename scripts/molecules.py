@@ -1,7 +1,7 @@
 import os
 
 from surface import get_dimer_sasa
-from symmetries import entity_to_orth, print_all_coords
+from symmetries import entity_to_orth, print_all_coords, convertFromFracToOrth
 from utilities import *
 from Globals import root, local, vars
 from Bio.PDB import PDBParser, MMCIFParser, PDBIO, StructureBuilder, Structure,  Model
@@ -197,7 +197,7 @@ class PDB(BioObject):
             mate.process(self, min_contacts=min_contacts)
             self.dimers.extend(mate.dimers)
             self.contacts.extend(mate.contacts)
-            self.mate_paths.extend(mate.paths)
+            #self.mate_paths.extend(mate.paths)
 
         dimer_paths = []
         for dimer in self.dimers:
@@ -450,7 +450,7 @@ class Mate(BioObject):
         self.check_redundancy()
         self.unpack_contacts()
         self.reconstruct_mates(min_contacts=min_contacts)
-        self.export()
+        #self.export()
         print2(self.dimers)
 
 
@@ -492,7 +492,7 @@ class Mate(BioObject):
                 
                 #moved_mate = entity_to_orth(moved_mate, self.params)
                 #print_all_coords(moved_mate)
-                self.structures.append(moved_mate)
+                #self.structures.append(moved_mate)
 
                 moved_monomer = Monomer(self.moving_monomer.name,
                                         self.moving_monomer.chain,
@@ -512,10 +512,11 @@ class Mate(BioObject):
         return self.dimers
 
     def export(self):
+        return None
         paths = []
         for structure, position in zip(self.structures, self.positions.values()):
             
-            paths.append(super().export(subfolder="mates", in_structure = structure, extra_id = "_" + clean_string(position["position"], allow = ["-"])))
+            paths.append(super().export(subfolder="mates", in_structure = convertFromFracToOrth(structure.copy(), self.params), extra_id = "_" + clean_string(position["position"], allow = ["-"])))
         self.paths = paths
         return self.paths
     
@@ -529,15 +530,9 @@ class Dimer(BioObject):
     def __init__(self, monomer1, monomer2, sasa = True):
         self.monomer1 = monomer1
         self.monomer2 = monomer2
-        #self.monomer1.structure = self.monomer1.structure.copy()
-        #self.monomer2.parent = self.monomer1.structure.copy()
 
-        '''from copy import deepcopy
-        self.monomer1 = deepcopy(monomer1)
-        self.monomer2 = deepcopy(monomer2)'''
-
-
-
+        self.position = monomer2.position
+        self.op_n = monomer2.op_n
 
 
         self.name = monomer1.name
@@ -550,13 +545,29 @@ class Dimer(BioObject):
         self.validate()
         self.contacts_sasa = []
         self.contacts_symm = []
+        self.contacts = []
+        self.get_contacts()
         from surface import get_dimer_sasa
         get_dimer_sasa(self)
+
         from maths import find_com
 
         self.com = (find_com(self.replaced_structure.get_list()[0].get_list()[0].get_atoms()), find_com(self.replaced_structure.get_list()[0].get_list()[1].get_atoms()))
         #print(self.com)
+        self.pickle()
 
+
+    def get_contacts(self):
+        print("########## Getting contacts")
+        from symmetries import Contact
+        mon1_atoms = list(self.monomer1.replaced.get_atoms())
+        for atom in self.monomer2.replaced.get_atoms():
+            #sprint(atom.parent.id[1])
+            contact = Contact(atom, self.position, mon1_atoms, max_distance=8)
+            #print1(contact.is_contact, contact.shortest_contact)
+            if contact.is_contact:
+                self.contacts.append(contact)
+                #print(contact)
 
 
     def validate(self):

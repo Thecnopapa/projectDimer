@@ -121,6 +121,12 @@ def unit(v):
 def distance(p0, p1, **kwargs):
     return length(vector(p0, p1))
 
+def d2(p0, p1, root = False, **kwargs):
+    #print(p0, p1)
+    if root:
+        return sqrt((p0[0] - p1[0])**2 + (p0[1] - p1[1])**2 + (p0[2] - p1[2])**2)
+    else:
+        return (p0[0] - p1[0])**2 + (p0[1] - p1[1])**2 + (p0[2] - p1[2])**2
 
 def scale(v, sc):
     x, y, z = v

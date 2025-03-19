@@ -111,7 +111,8 @@ def main(PROCESS_ALL = False,
             for dimer in dimers:
                 print1(dimer)
                 if dimer.sasas1D is not None and dimer.sasas2D is not None:
-                    build_contact_arrays(dimer)
+                    build_contact_arrays(dimer, sasa=False)
+                    pass
                 dimer.pickle()
 
 
