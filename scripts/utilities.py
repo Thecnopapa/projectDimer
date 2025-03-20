@@ -56,8 +56,10 @@ def get_digits(string, allow=("."), integer = False):
         else:
             return float(''.join(e for e in unidecode(str(string)) if e.isdigit() or e in allow))
     except:
-        print("No digits found in: {}".format(string))
-        print(''.join(e for e in unidecode(str(string)) if e.isdigit() or e in allow))
+        from Globals import vars
+        if vars.verbose:
+            print("No digits found in: {}".format(string))
+            print(''.join(e for e in unidecode(str(string)) if e.isdigit() or e in allow))
 
         return None
 def unpickle(path):

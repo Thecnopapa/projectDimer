@@ -164,8 +164,6 @@ def pymol_set_state(state):
     print("(PyMol) Setting state to: ", state, )
     pymol.cmd.set("state", state)
 
-def pymol_colour_all(colour):
-    pymol.cmd.color(colour, "(all)")
 
 def pymol_orient():
     print("(PyMol) Orienting all")
