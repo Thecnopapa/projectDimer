@@ -4,7 +4,6 @@
 import os, sys
 import pandas as pd
 
-
 from utilities import *
 import platform
 import numpy as np
@@ -22,6 +21,7 @@ def main(PROCESS_ALL = False,
          MINIMUM_CONTACTS = 0,
          FORCE_SASA = False,
          BALL_SIZE = 1.6,
+         VERBOSE = False,
          ):
 
 
@@ -29,6 +29,7 @@ def main(PROCESS_ALL = False,
     tprint("SET UP")
 
     vars["do_only"] = DO_ONLY
+    vars["verbose"] = VERBOSE
 
     # Enable garbage collection
     enable_garbage_collector() # Idk if it works
@@ -137,11 +138,19 @@ if __name__ == "__main__":
     # Setup paths and globals
     print(sys.argv)
     DO_ONLY = []
-    if "force" in sys.argv:
+    if "force" in sys.argv or "-f" in sys.argv:
         PROCESS_ALL = True
-        sys.argv.remove("force")
+        supress(sys.argv.remove, "force")
+        supress(sys.argv.remove, "-f")
     else:
         PROCESS_ALL = False
+    if "verbose" in sys.argv or "-v" in sys.argv:
+        VERBOSE = True
+        supress(sys.argv.remove, "verbose")
+        supress(sys.argv.remove, "-v")
+    else:
+        VERBOSE = False
+
     print(sys.argv)
     if len(sys.argv) >= 2 and not "all" in sys.argv:
         DO_ONLY = [arg.upper() for arg in sys.argv[1:]]
@@ -160,6 +169,7 @@ if __name__ == "__main__":
          MINIMUM_CONTACTS = 0, # Minimum number of contacts to consider a dimer interface
          FORCE_SASA = True,
          BALL_SIZE = 1.6,
+         VERBOSE = VERBOSE
          )
 
     quit()

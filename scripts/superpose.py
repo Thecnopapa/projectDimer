@@ -21,6 +21,8 @@ def superpose_single(id, fixed, moving):
         if not(len(vars.do_only) == 0 or vars.do_only is None):
             print(gesamt_out.stdout)
             print(gesamt_out.stderr)
+    if vars.verbose:
+        print(gesamt_out.stdout)
 
     data = {"out_path": out_path}
     t_matrix_lines = 0
@@ -85,21 +87,22 @@ def superpose_single(id, fixed, moving):
             l = line.split("|")
             if len(l) != 5:
                 continue
-            res1 = l[1].split(" ")[-2]
+            res1 = l[1].replace(" ", "")#.split(" ")[-2]
             dist = l[2][4:8]
-            res2 = l[3].split(" ")[-2]
+            res2 = l[3].replace(" ", "")#.split(" ")[-2]
             if res1 == "":
                 res1 = None
             else:
-                res1 = get_digits(res1, integer= True)
+                res1 = get_digits(res1, allow=[], integer= True)
             if res2 == "":
                 res2 = None
             else:
-                res2 = get_digits(res2, integer=True)
+                res2 = get_digits(res2, allow=[], integer=True)
             if dist == "    ":
                 dist = None
             #print(res1, dist, res2)
-            data["map"].append({"res1": res1, "res2": res2, "distance": dist})
+            if not (res1 is None and res2 is None):
+                data["map"].append({"res1": res1, "res2": res2, "distance": dist})
 
         centroid_lines -=1
 
