@@ -142,7 +142,8 @@ if __name__ == "__main__":
         sys.argv.remove("force")
     else:
         PROCESS_ALL = False
-    if len(sys.argv) >= 2:
+    print(sys.argv)
+    if len(sys.argv) >= 2 and not "all" in sys.argv:
         DO_ONLY = [arg.upper() for arg in sys.argv[1:]]
     import setup
 
