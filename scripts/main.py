@@ -3,6 +3,8 @@
 # Essential imports
 import os, sys
 import pandas as pd
+
+
 from utilities import *
 import platform
 import numpy as np
@@ -31,7 +33,7 @@ def main(PROCESS_ALL = False,
     # Enable garbage collection
     enable_garbage_collector() # Idk if it works
 
-    from dataframes import save_dfs, create_dfs
+    from dataframes import save_dfs, create_dfs, create_clustering_dfs
     from imports import pickle, export, download_pdbs, load_references, load_single_pdb
 
 
@@ -97,6 +99,8 @@ def main(PROCESS_ALL = False,
     ###### DIMER ANALYSIS ##############################################################################################
     tprint("DIMER ANALYSIS")
 
+    create_clustering_dfs(vars.references)
+    print(list(vars.clustering["contacts"].keys()))
     progress = ProgressBar(len(molecule_list))
     from surface import build_contact_arrays
     for m in molecule_list:

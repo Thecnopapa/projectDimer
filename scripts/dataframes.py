@@ -16,6 +16,11 @@ def save_dfs():
                 if "df" in key:
                     print1("Saving {}.csv".format(key))
                     value.to_csv(os.path.join(root.dataframes,f"{key}.csv"), header = True, index=False)
+                if "clustering" == key:
+                    for name, df in value.items():
+                        print1("Saving {}.csv".format(name))
+                        df.to_csv(os.path.join(root.clustering,f"{name}.csv"), header = True, index=False)
+
             try:
                 from visualisation import generate_charts
                 generate_charts()
@@ -36,10 +41,25 @@ def create_dfs(references):
 
     vars["failed_df"] = pd.DataFrame(columns=["ID", "stage", "error", "details"])
 
-    columns_alignment = ["ID"]
+    '''columns_alignment = ["ID"]
     for reference in references:
         columns_alignment.extend(["score_" + reference.name])
-    vars["alignments_df"] = pd.DataFrame(columns=columns_alignment)
+    vars["alignments_df"] = pd.DataFrame(columns=columns_alignment)'''
+
+def create_clustering_dfs(references):
+    root["clustering"] = "dataframes/clustering"
+    vars["clustering"] = {}
+    vars["clustering"]["contacts"] = {}
+    for reference in references:
+        print("Reference:", reference.name)
+        ref_data = {"ResNum": [],
+                    "ResName": []}
+        for res in reference.structure.get_list():
+            ref_data["ResNum"].append(res.id[1])
+            ref_data["ResName"].append(res.resname)
+        vars["clustering"]["contacts"][reference.name] = pd.DataFrame(data=ref_data)
+
+
 
 def load_failed_dfs():
     sprint("Loading failed dataframes...")

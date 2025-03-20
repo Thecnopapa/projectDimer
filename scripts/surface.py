@@ -193,6 +193,7 @@ def build_contact_arrays(self, sasa = True):
     print(self.contacts)
     contact_array = []
     self.c_lines = []
+    empty_array = {res.id[1]:[False, False] for res in self.monomer1.replaced.get_residues()}
     for contact in self.contacts:
         contact_array.append([self.monomer2.chain, contact.atom.get_full_id()[-2][1]])
         #print(contact_array[-1])
@@ -202,16 +203,28 @@ def build_contact_arrays(self, sasa = True):
             contact_array.append(cl)
         self.c_lines.append(sc["line"])
         print(contact_array[-1])
-    print(contact_array)
-    print2("Number of contacts by symmetry:", len(contact_array))
+        empty_array[contact.atom.parent.id[1]][1] = True
+        for c in contact.all_contacts:
+            empty_array[c["target_atom"].parent.id[1]][0] = True
 
+    #print(contact_array)
+    #[print(row) for row in empty_array.items()]
+    print2("Number of contacts by symmetry:", len(contact_array))
     self.contacts_symm = contact_array
 
 
+    full_array = [value for value in empty_array.values()]
+    contact_df = vars["clustering"]["contacts"][self.best_fit]
+    contact_df[self.id] = full_array
+    print(contact_df)
 
 
 
 
+
+
+
+########## OLD #########################################################################################################
 
 def get_contact_res(self, use_replaced = True, radius=1.6, n_points=100):
 
