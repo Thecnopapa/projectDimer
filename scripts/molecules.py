@@ -1,5 +1,6 @@
 import os
 
+
 from surface import get_dimer_sasa
 from symmetries import entity_to_orth, print_all_coords, convertFromFracToOrth
 from utilities import *
@@ -212,7 +213,7 @@ class Monomer(BioObject):
     pickle_extension = '.monomer'
     pickle_folder = "monomers"
 
-    def __init__(self, name, chain, frac_structure, parent, is_mate = False, op_n = None, position = None, parent_monomer = None, sasa=True):
+    def __init__(self, name, chain, frac_structure, parent, is_mate = False, op_n = None, position = None, parent_monomer = None, sasa=False):
         self.name = name
         self.is_mate = is_mate
         self.fractional_structure = frac_structure
@@ -261,7 +262,8 @@ class Monomer(BioObject):
             self.super_path = self.move_parent_superposition(self.parent_monomer.super_path)
             if self.super_path is not None:
                 self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path).get_list()[1].get_list()[0]
-                self.sasas = self.parent_monomer.sasas.copy()
+                if sasa:
+                    self.sasas = self.parent_monomer.sasas.copy()
 
         else:
             self.superpose()
@@ -269,7 +271,8 @@ class Monomer(BioObject):
                 from surface import get_monomer_sasa
                 get_monomer_sasa(self)
         from maths import find_com
-        self.com = find_com(self.replaced.get_atoms())
+        if self.replaced is not None:
+            self.com = find_com(self.replaced.get_atoms())
 
         self.pickle()
 
@@ -538,7 +541,7 @@ class Dimer(BioObject):
         self.name = monomer1.name
 
         self.extra_id = monomer2.extra_id
-        self.id = "{}_{}{}{}".format(self.name, monomer1.chain, monomer2.chain, self.extra_id)
+        self.id = "{}_{}{}{}".format(self.name, monomer1.chain, monomer2.chain, self.extra_id, sasa = False)
         self.incomplete = True
 
         self.failed_entries = []
@@ -546,9 +549,12 @@ class Dimer(BioObject):
         self.contacts_sasa = []
         self.contacts_symm = []
         self.contacts = []
+        if self.incomplete:
+            return
         self.get_contacts()
-        from surface import get_dimer_sasa
-        get_dimer_sasa(self)
+        if sasa:
+            from surface import get_dimer_sasa
+            get_dimer_sasa(self)
 
         from maths import find_com
 
