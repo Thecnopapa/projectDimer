@@ -93,7 +93,7 @@ def main(PROCESS_ALL = False,
                 molecule.get_dimers()
             molecule.pickle()
             progress.add(info=molecule.id)
-        save_dfs()
+    save_dfs()
 
 
     eprint("SYMMETRY & DIMER GENERATION")
@@ -115,9 +115,8 @@ def main(PROCESS_ALL = False,
             dimers = molecule.dimers
             for dimer in dimers:
                 print1(dimer)
-                if dimer.sasas1D is not None and dimer.sasas2D is not None:
-                    build_contact_arrays(dimer, sasa=False)
-                    pass
+                build_contact_arrays(dimer, sasa=False)
+
                 dimer.pickle()
 
 

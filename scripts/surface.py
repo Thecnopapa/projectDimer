@@ -212,11 +212,11 @@ def build_contact_arrays(self, sasa = True):
     print2("Number of contacts by symmetry:", len(contact_array))
     self.contacts_symm = contact_array
 
-
-    full_array = [value for value in empty_array.values()]
-    contact_df = vars["clustering"]["contacts"][self.best_fit]
-    contact_df[self.id] = full_array
-    print(contact_df)
+    if self.best_fit is not None and self.best_fit != "Missmatch":
+        full_array = [value for value in empty_array.values()]
+        contact_df = vars["clustering"]["contacts"][self.best_fit]
+        contact_df[self.id] = full_array
+        print(contact_df)
 
 
 
