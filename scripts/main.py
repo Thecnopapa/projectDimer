@@ -13,6 +13,7 @@ import numpy as np
 
 def main(PROCESS_ALL = False,
          SKIP_SYMMETRY = False,
+         SKIP_DIMERS = False,
          FORCE_CONTACTS = False,
          LARGE_DATASET = True,
          DO_ONLY = [],
@@ -56,6 +57,7 @@ def main(PROCESS_ALL = False,
     # Create dataframes
     sprint("Creating dataframes")
     create_dfs(vars.references)
+    create_clustering_dfs(vars.references)
     print1("Dataframes created")
 
 
@@ -96,44 +98,52 @@ def main(PROCESS_ALL = False,
                     molecule.get_dimers()
                 molecule.pickle()
                 progress.add(info=molecule.id)
-    save_dfs()
+        save_dfs()
 
 
     eprint("SYMMETRY & DIMER GENERATION")
     ###### DIMER ANALYSIS ##############################################################################################
     tprint("DIMER ANALYSIS")
 
-    create_clustering_dfs(vars.references)
-    print(list(vars.clustering["contacts"].keys()))
-    progress = ProgressBar(len(molecule_list))
-    from surface import build_contact_arrays
-    for m in molecule_list:
-        if "lock" in m:
-            sprint(".lock file detected:", m)
-            continue
-        filename = m.split(".")[0]
-        sprint(filename)
-        molecules = load_single_pdb(filename, local.molecules)
-        for molecule in molecules:
-            dimers = molecule.dimers
-            for dimer in dimers:
-                print1(dimer)
-                if dimer.incomplete:
-                    continue
+    if not SKIP_DIMERS and not PROCESS_ALL:
+        print(list(vars.clustering["contacts"].keys()))
+        progress = ProgressBar(len(molecule_list))
+        from surface import build_contact_arrays
+        for m in molecule_list:
+            if "lock" in m:
+                sprint(".lock file detected:", m)
+                continue
+            filename = m.split(".")[0]
+            sprint(filename)
+            molecules = load_single_pdb(filename, local.molecules)
+            for molecule in molecules:
+                dimers = molecule.dimers
+                for dimer in dimers:
+                    print1(dimer)
+                    if dimer.incomplete:
+                        continue
 
-                build_contact_arrays(dimer, sasa=False, force= FORCE_CONTACTS)
-                dimer.pickle()
-            progress.add(info=molecule.id)
-    save_dfs()
+                    build_contact_arrays(dimer, sasa=False, force= FORCE_CONTACTS)
+                    dimer.pickle()
+                progress.add(info=molecule.id)
+        save_dfs()
+
+    eprint("DIMER ANALYSIS")
+    ###### CLUSTERING ##################################################################################################
+    tprint("CLUSTERING")
+
 
     from clustering import compare_contacts, cluster
     for reference in vars.references:
-        compare_contacts(reference)
-        cluster(reference)
+        sprint(reference.name)
+        if reference.name == "GR":
+            compare_contacts(reference)
+        #cluster(reference)
+        save_dfs()
 
 
 
-    eprint("DIMER ANALYSIS")
+    eprint("CLUSTERING")
     ###### SAVE & EXIT #################################################################################################
     tprint("SAVE & EXIT")
 
@@ -171,6 +181,7 @@ if __name__ == "__main__":
 
     main(PROCESS_ALL=PROCESS_ALL, # Ignore saved pickles and generate everything from scratch
          SKIP_SYMMETRY = True,
+         SKIP_DIMERS = True,
          FORCE_CONTACTS = True,
          LARGE_DATASET = True, # Use a large dataset (delete all local data previously to avoid errors)
          DO_ONLY = DO_ONLY, # ( list of strings / string) Names of pdbs to be processed (CAPS sensitive, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"

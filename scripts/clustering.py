@@ -426,79 +426,81 @@ def calculate_scores_GR(df, name="undefined", save = True):
 
 
 def compare_contacts(reference):
-    print1("Comparing contacts")
-    for reference in vars.references:
-        print(reference)
-        df_path = os.path.join(root.contacts, reference.name+".csv")
-        contacts_df = pd.read_csv(df_path, index_col=0)
-        print(contacts_df)
+    print1("Comparing contacts for GR")
 
-        assert reference.name == "GR"
-        if "GR_EVA.csv" in os.listdir(root.contacts):
-            eva_df = pd.read_csv(os.path.join(root.contacts, "GR_EVA.csv"))
-        else:
-            print("GR_EVA.csv not found (in contacts folder)")
-            return
+    print2(reference)
+    df_path = os.path.join(root.contacts, reference.name+".csv")
+    contacts_df = pd.read_csv(df_path)
+    print(contacts_df)
+
+    assert reference.name == "GR"
+    if "GR_EVA.csv" in os.listdir(root.contacts):
+        eva_df = pd.read_csv(os.path.join(root.contacts, "GR_EVA.csv"))
+        print(eva_df)
+    else:
+        print("GR_EVA.csv not found (in contacts folder)")
+        return
 
 
-        n_dimers = len(contacts_df.columns) - 2
-        print2("Number of dimers:", n_dimers)
+    n_dimers = len(contacts_df.columns) - 2
+    print2("Number of dimers:", n_dimers)
 
-        groups = []
-        n_groups = (len(eva_df.columns) - 1) / 2
-        assert n_groups % 2 == 0
-        ref_nums = eva_df["ResNum"]
+    groups = []
+    n_groups = (len(eva_df.columns) - 1) / 2
+    assert n_groups % 2 == 0
+    ref_nums = eva_df["ResNum"]
 
-        progress = ProgressBar(n_dimers)
-        from maths import difference_between_boolean_pairs
-        for c in range(n_dimers):
-            dimer_sasas = contacts_df.iloc[:, [0, c + 2]]
-            dimer_id = contacts_df.columns[c + 2]
-            similarities = []
-            for group in range(int(n_groups)):
-                ref_sasaA = eva_df.iloc[:, [0, group * 2 + 1]]
-                ref_sasaB = eva_df.iloc[:, [0, group * 2 + 2]]
-                total_len = len(ref_sasaA)
+    progress = ProgressBar(n_dimers)
+    from maths import difference_between_boolean_pairs
+    for c in range(n_dimers):
+        dimer_sasas = contacts_df.iloc[:, [0, c + 2]]
+        dimer_id = contacts_df.columns[c + 2]
+        similarities = []
+        for group in range(int(n_groups)):
+            ref_sasaA = eva_df.iloc[:, [0, group * 2 + 1]]
+            ref_sasaB = eva_df.iloc[:, [0, group * 2 + 2]]
+            total_len = len(ref_sasaA)
 
-                diffX = [0, 0]
-                diffx = [0, 0]
+            diffX = [0, 0]
+            diffx = [0, 0]
 
-                for ref_num in ref_nums:
-                    print(group, ref_num, end="\r")
-                    # print(dimer_sasas.loc[dimer_sasas["ResNum"] == ref_num].values)
-                    sA, sB = clean_list([dimer_sasas.loc[dimer_sasas["ResNum"] == ref_num].values[0, 1]],
-                                        delimiter=",", format="bool")
-                    rsA = ref_sasaA.loc[ref_sasaA["ResNum"] == ref_num].iloc[:, 1].values[0]
-                    rsB = ref_sasaB.loc[ref_sasaB["ResNum"] == ref_num].iloc[:, 1].values[0]
+            for ref_num in ref_nums:
+                print(group, ref_num, end="\r")
+                # print(dimer_sasas.loc[dimer_sasas["ResNum"] == ref_num].values)
+                sA, sB = clean_list([dimer_sasas.loc[dimer_sasas["ResNum"] == ref_num].values[0, 1]],
+                                    delimiter=",", format="bool")
+                rsA = ref_sasaA.loc[ref_sasaA["ResNum"] == ref_num].iloc[:, 1].values[0]
+                rsB = ref_sasaB.loc[ref_sasaB["ResNum"] == ref_num].iloc[:, 1].values[0]
 
-                    resX, resx = difference_between_boolean_pairs(sA, sB, rsA, rsB)
-                    diffX[0] += resX[0]
-                    diffX[1] += resX[1]
-                    diffx[0] += resx[0]
-                    diffx[1] += resx[1]
+                resX, resx = difference_between_boolean_pairs(sA, sB, rsA, rsB)
+                diffX[0] += resX[0]
+                diffX[1] += resX[1]
+                diffx[0] += resx[0]
+                diffx[1] += resx[1]
 
-                if diffX[0] != 0:
-                    diffX = diffX[0] / diffX[1]
-                else:
-                    diffX = 0
-                if diffx[0] != 0:
-                    diffx = diffx[0] / diffx[1]
-                else:
-                    diffx = 0
+            if diffX[0] != 0:
+                diffX = diffX[0] / diffX[1]
+            else:
+                diffX = 0
+            if diffx[0] != 0:
+                diffx = diffx[0] / diffx[1]
+            else:
+                diffx = 0
 
-                inverse = False
-                if diffx > diffX:
-                    inverse = True
-                similarities.append((group + 1, max([diffX, diffx]), inverse))
-                print1(similarities[-1][0], round(similarities[-1][1], 2))
-            best_match = max(similarities, key=lambda x: x[1])
-            print("Best match for {}: {}, with {}% similarity, inverse: {}\n".format(dimer_id, best_match[0],
-                                                                                     round(100 * best_match[1]),
-                                                                                     best_match[2]))
+            inverse = False
+            if diffx > diffX:
+                inverse = True
+            similarities.append((group + 1, max([diffX, diffx]), inverse))
+            print1(similarities[-1][0], round(similarities[-1][1], 2))
+        best_match = max(similarities, key=lambda x: x[1])
+        print("Best match for {}: {}, with {}% similarity, inverse: {}\n".format(dimer_id, best_match[0],
+                                                                                 round(100 * best_match[1]),
+                                                                                 best_match[2]))
 
-            vars.classified_df.loc[len(vars.classified_df)] = [dimer_id, reference.name, best_match[0],
-                                                     round(best_match[1] * 100), best_match[2]]
-        vars.classified_df.to_csv(os.path.join(root.dataframes, "classified_df.csv"))
+        vars.classified_df.loc[len(vars.classified_df)] = [dimer_id, reference.name, best_match[0],
+                                                 round(best_match[1] * 100), best_match[2]]
+        progress.add()
+    vars.classified_df.to_csv(os.path.join(root.dataframes, "classified_df.csv"))
 
 
 
