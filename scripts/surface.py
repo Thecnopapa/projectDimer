@@ -193,7 +193,7 @@ def build_contact_arrays(self, sasa = False, force=False):
     if self.best_fit is None or self.best_fit == "Missmatch":
         return None
     if force or self.full_array is None:
-        print(self.contacts)
+        #print(self.contacts)
         contact_array = []
         self.c_lines = []
         empty_array = {res.id[1]:[False, False] for res in self.monomer1.replaced.get_residues()}
@@ -208,6 +208,13 @@ def build_contact_arrays(self, sasa = False, force=False):
             #print(contact_array[-1])
             #print(empty_array)
             #print(self.monomer1.best_fit, self.monomer2.best_fit)
+
+            '''/cri4/iain/projectB/scripts/surface.py:223: PerformanceWarning: DataFrame is highly fragmented.  
+            This is usually the result of calling `frame.insert` many times, which has poor performance.  
+            Consider joining all columns at once using pd.concat(axis=1) instead. 
+            To get a de-fragmented frame, use `newframe = frame.copy()`
+              contact_df[self.id] = self.full_array'''
+
             empty_array[contact.atom.parent.id[1]][1] = True
             for c in contact.all_contacts:
                 empty_array[c["target_atom"].parent.id[1]][0] = True
@@ -221,7 +228,7 @@ def build_contact_arrays(self, sasa = False, force=False):
 
     contact_df = vars["clustering"]["contacts"][self.best_fit]
     contact_df[self.id] = self.full_array
-    print(contact_df)
+    #print(contact_df)
 
 
 

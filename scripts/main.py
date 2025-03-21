@@ -96,7 +96,7 @@ def main(PROCESS_ALL = False,
                     molecule.get_dimers()
                 molecule.pickle()
                 progress.add(info=molecule.id)
-        save_dfs()
+    save_dfs()
 
 
     eprint("SYMMETRY & DIMER GENERATION")
@@ -124,12 +124,12 @@ def main(PROCESS_ALL = False,
                 build_contact_arrays(dimer, sasa=False, force= FORCE_CONTACTS)
                 dimer.pickle()
             progress.add(info=molecule.id)
-            save_dfs()
+    save_dfs()
 
+    from clustering import compare_contacts, cluster
     for reference in vars.references:
-        print(reference)
-        df = vars.clustering["contacts"][reference.name]
-        print(df)
+        compare_contacts(reference)
+        cluster(reference)
 
 
 

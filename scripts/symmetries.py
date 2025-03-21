@@ -252,7 +252,7 @@ class Contact:
 
     def __repr__(self):
         import math
-        return "Contacts ({}) in res {}, shortest: {}A".format(self.num_contacts, self.atom.get_full_id()[-2][1], math.sqrt(self.shortest_contact["distance"]))
+        return "Contacts ({}) in res {} (chain {}), shortest: {} A".format(self.num_contacts, self.atom.get_full_id()[-2][1],self.atom.get_full_id()[-3], round(math.sqrt(self.shortest_contact["distance"]), 2))
 
     def get_contacts(self, target_atoms):
 
