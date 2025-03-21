@@ -549,6 +549,7 @@ class Dimer(BioObject):
         self.contacts_sasa = []
         self.contacts_symm = []
         self.contacts = []
+        self.full_array = None
         if self.incomplete:
             return
         self.get_contacts()

@@ -17,9 +17,12 @@ def save_dfs():
                     print1("Saving {}.csv".format(key))
                     value.to_csv(os.path.join(root.dataframes,f"{key}.csv"), header = True, index=False)
                 if "clustering" == key:
-                    for name, df in value.items():
-                        print1("Saving {}.csv".format(name))
-                        df.to_csv(os.path.join(root.clustering,f"{name}.csv"), header = True, index=False)
+                    for folder, dfs in value.items():
+                        os.makedirs(os.path.join(root.clustering,folder), exist_ok=True)
+                        for name, df in dfs.items():
+                            path = os.path.join(root.clustering,folder,name+".csv")
+                            print1("Saving {}.csv at {}".format(name, path))
+                            df.to_csv(path, header = True, index=False)
 
             try:
                 from visualisation import generate_charts

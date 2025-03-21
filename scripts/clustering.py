@@ -402,6 +402,95 @@ def calculate_scores_GR(df, name="undefined", save = True):
 
 
 
+def compare_contacts(references):
+    tprint("Comparing contacts")
+    classified_df = pd.DataFrame(columns=["ID", "Best_Fit", "Best_Match", "Similarity", "Inverse"])
+    for sasa_df in os.listdir(root.dataframes):
+        if "_sasas" in sasa_df:
+            ref_name = sasa_df.split("_sasas")[0]
+            print1("Reference:", ref_name, "({})".format(sasa_df))
+
+            ref_df_name = "{}_reference_clusters.csv".format(ref_name)
+            ref_df_path = os.path.join(root.dataframes, ref_df_name)
+            if not ref_df_name in os.listdir(root.dataframes):
+                try:
+                    import_X_df(os.path.join(root.dataframes, "{}_reference_clusters_raw.csv".format(ref_name)),
+                                "{}_reference_clusters".format(ref_name))
+                    print2("Reference df:", ref_df_path)
+                except:
+                    print2("Reference df (raw or processed) not found")
+                    print3(ref_df_name)
+                    print3("processed:", ref_df_path)
+                    print3("raw:", os.path.join(root.dataframes, "{}_reference_clusters_raw.csv".format(ref_name)))
+                    continue
+            ref_df = pd.read_csv(ref_df_path)
+
+            sasa_df = pd.read_csv(os.path.join(root.dataframes, sasa_df), index_col=0)
+            n_dimers = len(sasa_df.columns) - 2
+            print2("Number of dimers:", n_dimers)
+
+            groups = []
+            n_groups = (len(ref_df.columns) - 1) / 2
+            assert n_groups % 2 == 0
+            ref_nums = ref_df["ResNum"]
+
+            progress = ProgressBar(n_dimers)
+            from maths import difference_between_boolean_pairs
+            for c in range(n_dimers):
+                dimer_sasas = sasa_df.iloc[:, [0, c + 2]]
+                dimer_id = sasa_df.columns[c + 2]
+                similarities = []
+                for group in range(int(n_groups)):
+                    ref_sasaA = ref_df.iloc[:, [0, group * 2 + 1]]
+                    ref_sasaB = ref_df.iloc[:, [0, group * 2 + 2]]
+                    total_len = len(ref_sasaA)
+
+                    diffX = [0, 0]
+                    diffx = [0, 0]
+
+                    for ref_num in ref_nums:
+                        print(group, ref_num, end="\r")
+                        # print(dimer_sasas.loc[dimer_sasas["ResNum"] == ref_num].values)
+                        sA, sB = clean_list([dimer_sasas.loc[dimer_sasas["ResNum"] == ref_num].values[0, 1]],
+                                            delimiter=",", format="bool")
+                        rsA = ref_sasaA.loc[ref_sasaA["ResNum"] == ref_num].iloc[:, 1].values[0]
+                        rsB = ref_sasaB.loc[ref_sasaB["ResNum"] == ref_num].iloc[:, 1].values[0]
+
+                        resX, resx = difference_between_boolean_pairs(sA, sB, rsA, rsB)
+                        diffX[0] += resX[0]
+                        diffX[1] += resX[1]
+                        diffx[0] += resx[0]
+                        diffx[1] += resx[1]
+
+                    if diffX[0] != 0:
+                        diffX = diffX[0] / diffX[1]
+                    else:
+                        diffX = 0
+                    if diffx[0] != 0:
+                        diffx = diffx[0] / diffx[1]
+                    else:
+                        diffx = 0
+
+                    inverse = False
+                    if diffx > diffX:
+                        inverse = True
+                    similarities.append((group + 1, max([diffX, diffx]), inverse))
+                    print1(similarities[-1][0], round(similarities[-1][1], 2))
+                best_match = max(similarities, key=lambda x: x[1])
+                print("Best match for {}: {}, with {}% similarity, inverse: {}\n".format(dimer_id, best_match[0],
+                                                                                         round(100 * best_match[1]),
+                                                                                         best_match[2]))
+
+                classified_df.loc[len(classified_df)] = [dimer_id, ref_name, best_match[0],
+                                                         round(best_match[1] * 100), best_match[2]]
+                if "dimers" in locals() or "dimers" in globals():
+                    for dimer in dimers:
+                        if dimer.id == dimer_id:
+                            dimer.best_match = best_match
+                progress.add(info=dimer_id)
+            classified_df.to_csv(os.path.join(root.dataframes, "classified_df.csv"))
+    eprint("Contacts compared")
+
 
 
 

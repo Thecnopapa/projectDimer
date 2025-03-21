@@ -12,6 +12,8 @@ import numpy as np
 
 
 def main(PROCESS_ALL = False,
+         SKIP_SYMMETRY = False,
+         FORCE_CONTACTS = False,
          LARGE_DATASET = True,
          DO_ONLY = [],
          GENERATE_SYMMETRIES = True,
@@ -74,26 +76,27 @@ def main(PROCESS_ALL = False,
     ###### SYMMETRY & DIMER GENERATION #################################################################################
     tprint("SYMMETRY & DIMER GENERATION")
 
-    progress = ProgressBar(len(molecule_list))
-    for m in molecule_list:
-        if "lock" in m:
-            sprint(".lock file detected:", m)
-            continue
-        filename = m.split(".")[0]
-        sprint(filename)
-        molecules = load_single_pdb(filename, local.molecules, molecule_folder, force_reload=PROCESS_ALL)
-        for molecule in molecules:
-            if GENERATE_SYMMETRIES:
-                molecule.get_all_dimers(force=PROCESS_ALL,
-                                        minimum_chain_length=MINIMUM_CHAIN_LENGTH,
-                                        contact_distance=CONTACT_DISTANCE,
-                                        min_contacts=MINIMUM_CONTACTS,
-                                        )
-            else:
-                molecule.get_dimers()
-            molecule.pickle()
-            progress.add(info=molecule.id)
-    save_dfs()
+    if not SKIP_SYMMETRY and not PROCESS_ALL:
+        progress = ProgressBar(len(molecule_list))
+        for m in molecule_list:
+            if "lock" in m:
+                sprint(".lock file detected:", m)
+                continue
+            filename = m.split(".")[0]
+            sprint(filename)
+            molecules = load_single_pdb(filename, local.molecules, molecule_folder, force_reload=PROCESS_ALL)
+            for molecule in molecules:
+                if GENERATE_SYMMETRIES:
+                    molecule.get_all_dimers(force=PROCESS_ALL,
+                                            minimum_chain_length=MINIMUM_CHAIN_LENGTH,
+                                            contact_distance=CONTACT_DISTANCE,
+                                            min_contacts=MINIMUM_CONTACTS,
+                                            )
+                else:
+                    molecule.get_dimers()
+                molecule.pickle()
+                progress.add(info=molecule.id)
+        save_dfs()
 
 
     eprint("SYMMETRY & DIMER GENERATION")
@@ -115,10 +118,18 @@ def main(PROCESS_ALL = False,
             dimers = molecule.dimers
             for dimer in dimers:
                 print1(dimer)
-                build_contact_arrays(dimer, sasa=False)
+                if dimer.incomplete:
+                    continue
 
+                build_contact_arrays(dimer, sasa=False, force= FORCE_CONTACTS)
                 dimer.pickle()
+            progress.add(info=molecule.id)
+            save_dfs()
 
+    for reference in vars.references:
+        print(reference)
+        df = vars.clustering["contacts"][reference.name]
+        print(df)
 
 
 
@@ -159,6 +170,8 @@ if __name__ == "__main__":
     from Globals import root, local, vars
 
     main(PROCESS_ALL=PROCESS_ALL, # Ignore saved pickles and generate everything from scratch
+         SKIP_SYMMETRY = True,
+         FORCE_CONTACTS = True,
          LARGE_DATASET = True, # Use a large dataset (delete all local data previously to avoid errors)
          DO_ONLY = DO_ONLY, # ( list of strings / string) Names of pdbs to be processed (CAPS sensitive, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"
          GENERATE_SYMMETRIES=True,

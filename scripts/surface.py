@@ -147,7 +147,7 @@ def get_dimer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
 
 
 
-def build_contact_arrays(self, sasa = True):
+def build_contact_arrays(self, sasa = False, force=False):
 
     ################### SASA contacts ##############################
     if sasa:
@@ -190,33 +190,39 @@ def build_contact_arrays(self, sasa = True):
         print2("Number of contacts by SASA:", len(sasa_array))
 
     ############### Symmetry contacts ##############################
-    print(self.contacts)
-    contact_array = []
-    self.c_lines = []
-    empty_array = {res.id[1]:[False, False] for res in self.monomer1.replaced.get_residues()}
-    for contact in self.contacts:
-        contact_array.append([self.monomer2.chain, contact.atom.get_full_id()[-2][1]])
-        #print(contact_array[-1])
-        sc = contact.shortest_contact
-        cl = [self.monomer1.chain, sc["target_atom"].get_full_id()[-2][1]]
-        if cl not in contact_array:
-            contact_array.append(cl)
-        self.c_lines.append(sc["line"])
-        print(contact_array[-1])
-        empty_array[contact.atom.parent.id[1]][1] = True
-        for c in contact.all_contacts:
-            empty_array[c["target_atom"].parent.id[1]][0] = True
+    if self.best_fit is None or self.best_fit == "Missmatch":
+        return None
+    if force or self.full_array is None:
+        print(self.contacts)
+        contact_array = []
+        self.c_lines = []
+        empty_array = {res.id[1]:[False, False] for res in self.monomer1.replaced.get_residues()}
+        for contact in self.contacts:
+            contact_array.append([self.monomer2.chain, contact.atom.get_full_id()[-2][1]])
+            #print(contact_array[-1])
+            sc = contact.shortest_contact
+            cl = [self.monomer1.chain, sc["target_atom"].get_full_id()[-2][1]]
+            if cl not in contact_array:
+                contact_array.append(cl)
+            self.c_lines.append(sc["line"])
+            #print(contact_array[-1])
+            #print(empty_array)
+            #print(self.monomer1.best_fit, self.monomer2.best_fit)
+            empty_array[contact.atom.parent.id[1]][1] = True
+            for c in contact.all_contacts:
+                empty_array[c["target_atom"].parent.id[1]][0] = True
 
-    #print(contact_array)
-    #[print(row) for row in empty_array.items()]
-    print2("Number of contacts by symmetry:", len(contact_array))
-    self.contacts_symm = contact_array
+        #print(contact_array)
+        #[print(row) for row in empty_array.items()]
+        print2("Number of contacts by symmetry:", len(contact_array))
+        self.contacts_symm = contact_array
 
-    if self.best_fit is not None and self.best_fit != "Missmatch":
-        full_array = [value for value in empty_array.values()]
-        contact_df = vars["clustering"]["contacts"][self.best_fit]
-        contact_df[self.id] = full_array
-        print(contact_df)
+        self.full_array = [value for value in empty_array.values()]
+
+    contact_df = vars["clustering"]["contacts"][self.best_fit]
+    contact_df[self.id] = self.full_array
+    print(contact_df)
+
 
 
 
