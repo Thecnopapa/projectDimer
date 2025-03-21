@@ -122,7 +122,6 @@ def main(PROCESS_ALL = False,
                     print1(dimer)
                     if dimer.incomplete:
                         continue
-
                     build_contact_arrays(dimer, sasa=False, force= FORCE_CONTACTS)
                     dimer.pickle()
                 progress.add(info=molecule.id)
@@ -139,7 +138,7 @@ def main(PROCESS_ALL = False,
         if reference.name == "GR":
             compare_contacts(reference)
         #cluster(reference)
-        save_dfs()
+        #save_dfs()
 
 
 

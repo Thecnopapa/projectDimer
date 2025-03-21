@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
     elif ("clusters-eva" in sys.argv[1]):
         tprint("Showing clusters vs eva data")
-        classified_df = pd.read_csv(os.path.join(root.dataframes, "classified_df.csv"),index_col=0)
+        classified_df = pd.read_csv(os.path.join(root.dataframes, "classified_df.csv"))#,index_col=0)
         if len(sys.argv[2:]) == 0:
             print(classified_df.sort_values("Best_Match").to_string())
 
@@ -231,12 +231,12 @@ if __name__ == "__main__":
                     chains_to_align = []
                     for row in filtered_df.itertuples():
                         print1(row.ID)
-                        file_path = os.path.join(local.dimers_merged, row.ID+"_merged.pdb")
+                        file_path = os.path.join(local.dimers_merged, row.ID+"_dimer_merged.pdb")
                         pymol_load_path(file_path)
                         if row.Inverse:
-                            chains_to_align.append(row.ID[-1])
+                            chains_to_align.append((row.ID,row.ID.split("_")[-3][-1]))
                         else:
-                            chains_to_align.append(row.ID[-2])
+                            chains_to_align.append((row.ID,row.ID.split("_")[-3][-2]))
                     pymol_set_state(2)
                     pymol_align_chains(chains_to_align)
                     pymol_align_all()

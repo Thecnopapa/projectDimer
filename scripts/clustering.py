@@ -317,7 +317,7 @@ def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centr
     fig.savefig(figure_path, dpi=300)
 
 
-def cluster(reference, FORCE_ALL=False, DIMENSIONS = 3):
+def cluster(reference, FORCE_ALL=False, DIMENSIONS = 3, score_id = ""):
     if FORCE_ALL:
         FORCE_SM = True
         FORCE_CC = True
@@ -337,7 +337,6 @@ def cluster(reference, FORCE_ALL=False, DIMENSIONS = 3):
     if reference.name == "GR":
         tprint("Comparing to Eva")
         df_cc = pd.read_csv(os.path.join(root.clustered, "GR_cc.csv"))
-        score_id = ""
         scores = calculate_scores_GR(df_cc, score_id+str(DIMENSIONS))
         print1("Scores: cc: {}, eva: {}".format(scores[0], scores[1]))
         eprint("Compared successfully")
@@ -432,7 +431,8 @@ def compare_contacts(reference):
     df_path = os.path.join(root.contacts, reference.name+".csv")
     contacts_df = pd.read_csv(df_path)
     print(contacts_df)
-
+    if reference.name != "GR":
+        return
     assert reference.name == "GR"
     if "GR_EVA.csv" in os.listdir(root.contacts):
         eva_df = pd.read_csv(os.path.join(root.contacts, "GR_EVA.csv"))
@@ -513,9 +513,47 @@ if __name__ == "__main__":
 
     import setup
     from Globals import root, local, vars
+    from imports import load_references, load_single_pdb
+    from dataframes import save_dfs
 
 
+    #### CONTACT LENGTH TESTING ########################################################################################
+    vars["references"] = load_references()
 
+    molecule_folder = local.many_pdbs
+    molecule_list = sorted(os.listdir(molecule_folder))
+    # print(len(vars.do_only), vars.do_only)
+    if len(vars.do_only) > 0:
+        molecule_list = [f for f in molecule_list if any([s in f for s in vars.do_only])]
+    # [print(m) for m in sorted(molecule_list)]
+    print1("Molecule list obtained:", len(molecule_list), "molecules")
+
+
+    print(list(vars.clustering["contacts"].keys()))
+    progress = ProgressBar(len(molecule_list))
+    from surface import build_contact_arrays
+    for dist in [3,4,5,6,7,8]:
+        for m in molecule_list:
+            if "lock" in m:
+                sprint(".lock file detected:", m)
+                continue
+            filename = m.split(".")[0]
+            sprint(filename)
+            molecules = load_single_pdb(filename, local.molecules)
+            for molecule in molecules:
+                dimers = molecule.dimers
+                for dimer in dimers:
+                    print1(dimer)
+                    if dimer.incomplete:
+                        continue
+                    build_contact_arrays(dimer, sasa=False, force=True, max_contact_length=dist)
+                    #dimer.pickle()
+                progress.add(info=molecule.id)
+        save_dfs()
+
+        for reference in vars.references:
+            cluster(reference, score_id="under_{}_A_".format(dist))
+    ####################################################################################################################
 
     '''#### DIMENSION TESTING ###
     dimensions = [3,4,5,6,7,8,9,10]
@@ -529,13 +567,14 @@ if __name__ == "__main__":
                    )
     #### DIMENSION TESTING ###'''
 
-    clustering(FORCE_ALL=False,
+    # OLD
+    '''clustering(FORCE_ALL=False,
                FORCE_SM=False,
                FORCE_CC=True,
                FORCE_CLUSTER=True,
                FORCE_PLOT=True,
                DIMENSIONS=5,
-               )
-    from github import automatic_push_to_branch
+               )'''
+    #from github import automatic_push_to_branch
     #automatic_push_to_branch(target="auto")
             

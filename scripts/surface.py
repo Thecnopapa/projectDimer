@@ -147,7 +147,7 @@ def get_dimer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
 
 
 
-def build_contact_arrays(self, sasa = False, force=False):
+def build_contact_arrays(self, sasa = False, force=False, max_contact_length = None):
 
     ################### SASA contacts ##############################
     if sasa:
@@ -201,6 +201,9 @@ def build_contact_arrays(self, sasa = False, force=False):
             contact_array.append([self.monomer2.chain, contact.atom.get_full_id()[-2][1]])
             #print(contact_array[-1])
             sc = contact.shortest_contact
+            if max_contact_length is not None:
+                if sc["distance"] <= max_contact_length:
+                    continue
             cl = [self.monomer1.chain, sc["target_atom"].get_full_id()[-2][1]]
             if cl not in contact_array:
                 contact_array.append(cl)
@@ -217,6 +220,9 @@ def build_contact_arrays(self, sasa = False, force=False):
 
             empty_array[contact.atom.parent.id[1]][1] = True
             for c in contact.all_contacts:
+                if max_contact_length is not None:
+                    if c["distance"] <= max_contact_length:
+                        continue
                 empty_array[c["target_atom"].parent.id[1]][0] = True
 
         #print(contact_array)

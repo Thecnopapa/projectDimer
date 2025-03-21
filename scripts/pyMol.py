@@ -144,13 +144,15 @@ def pymol_align__obj(obj1, obj2):
 
 
 def pymol_align_chains(chains_to_align):
-    all_obj = pymol.cmd.get_names(type='objects')
-    print1(all_obj)
-    obj1, chain1 = all_obj[0], chains_to_align[0]
+    #all_obj = pymol.cmd.get_names(type='objects')
+    #print1(all_obj)
+    obj1, chain1 = chains_to_align[0]
     sele1 = "{} and c. {}".format(obj1, chain1)
-    for obj2, chain2 in zip(all_obj, chains_to_align):
+    for obj2, chain2 in chains_to_align[1:]:
         if obj2 != obj1:
             sele2 = "{} and c. {}".format(obj2, chain2)
+            print(sele1)
+            print(sele2)
             pymol_align__obj(sele1, sele2)
 
 
