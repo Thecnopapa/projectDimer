@@ -3,6 +3,7 @@ from itertools import count
 
 from numpy.ma.extras import average
 
+from threads import merge_pool, create_thread
 from utilities import *
 from Globals import root, local, vars
 import numpy as np
@@ -175,19 +176,29 @@ def generate_sm_threaded(reference, force=False, n_threads = 64):
     if n_dimers <2:
         print1("Not enough dimers in {} dataframe".format(reference.name))
         return
-    n_res = len(contacts_df)
 
+    n_res = len(contacts_df)
     progress = ProgressBar(n_dimers)
 
     from maths import difference_between_boolean_pairs
-    import threads
-    pool = threads.create_pool(n_threads)
+    from threads import create_thread, run_threads, wait_threads
+
+
+    total_cols = len(contacts_df.columns)
+    batch_len = total_cols//n_threads-1
+    batch_num = total_cols//batch_len
+    last_batch = total_cols%batch_len
 
     def sm_subset_calculations(contacts_df, start, end):
-        index1 = start
-        subset_df = contacts_df.iloc[start:end]
-        for id1, contacts1 in zip(subset_df.columns, subset_df._iter_column_arrays()):
+        print("Batch:", start, end)
+        index1 = 0
+        for id1, contacts1 in zip(contacts_df.columns, contacts_df._iter_column_arrays()):
             if id1 in ["ResNum", "ResName"]:
+                continue
+            if index1 >= end:
+                return
+            if index1 < start:
+                index1 += 1
                 continue
             progress.add(info="{}". format(id1), show_time = True)
             index1 += 1
@@ -199,6 +210,7 @@ def generate_sm_threaded(reference, force=False, n_threads = 64):
                 index2 += 1
                 if index2 <= index1:
                     continue
+
                 diffX = [0,0]
                 diffx = [0,0]
                 for res in range(n_res):
@@ -211,20 +223,34 @@ def generate_sm_threaded(reference, force=False, n_threads = 64):
                     diffx[0] += resx[0]
                     diffx[1] += resx[1]
 
-                if diffX[0] != 0:
+                if diffX[1] == 0:
                     diffX = diffX[0]/diffX[1]
                 else:
                     diffX = 0
 
-                if diffx[0] != 0:
+                if diffx[1] == 0:
                     diffx = diffx[0]/diffx[1]
                 else:
                     diffx = 0
 
-                similarity = max(1-diffX, 1-diffx)
+                similarity = max(diffX, diffx)
                 #similarity = similarity / n_res
                 #print(id1, id2, round(similarity,2))
                 sm_ssd.loc[id1+id2] = id1, id2,index1,index2, similarity
+
+    print("Number of dimers:", total_cols)
+    print("Batch size:", batch_len, "Number of batches:", batch_num)
+    print(last_batch)
+    ts = []
+    for batch in range(n_threads):
+        #print(batch, batch*batch_len, (batch+1)*batch_len)
+        ts.append(create_thread(sm_subset_calculations, contacts_df, start=batch*batch_len, end = (batch+1)*batch_len))
+    #print("last", batch_num*batch_len, batch_num*batch_len+last_batch+1)
+    ts.append(create_thread(sm_subset_calculations, contacts_df, start=batch_num*batch_len, end=batch_num*batch_len+last_batch+1))
+    print("Ready_threads:", len(ts))
+    run_threads(ts)
+    wait_threads()
+
 
     print(sm_ssd)
     root["sms"] = "dataframes/clustering/sms"

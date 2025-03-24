@@ -145,7 +145,7 @@ def main(PROCESS_ALL = False,
             reference.clusters_eva = get_clusters(reference.classified_eva_path, column = "Best_Match", ref_name=reference.name)
         cluster(reference)
         reference.pickle()
-    save_dfs(general=False, clustering=True)
+    save_dfs(general=False, clustering=False)
 
 
 
