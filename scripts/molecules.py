@@ -37,6 +37,13 @@ class BioObject:
                     if df_name in vars:
                         vars[df_name].loc[len(vars[df_name])] = contents
 
+    def restore_reference_dfs(self):
+        assert "Reference" in str(self.__class__)
+        for key, df in self.__dict__.items():
+            if "df" in key:
+                df_folder = root.clustering[key.split("_")[0]]
+                vars["clustering"][df_folder][self.name] = df
+
 
 
     def __repr__(self):

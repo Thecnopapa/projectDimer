@@ -98,7 +98,7 @@ def main(PROCESS_ALL = False,
                     molecule.get_dimers()
                 molecule.pickle()
                 progress.add(info=molecule.id)
-        save_dfs()
+        save_dfs(clustering=False)
 
 
     eprint("SYMMETRY & DIMER GENERATION")
@@ -125,20 +125,24 @@ def main(PROCESS_ALL = False,
                     build_contact_arrays(dimer, sasa=False, force= FORCE_CONTACTS)
                     dimer.pickle()
                 progress.add(info=molecule.id)
-        save_dfs()
+        for reference in vars.references:
+            if reference.name+".csv" in root.contacts:
+                reference.contacts_df = pd.read_csv(root.contacts[reference.name+".csv"])
+        save_dfs(general=False)
 
     eprint("DIMER ANALYSIS")
     ###### CLUSTERING ##################################################################################################
     tprint("CLUSTERING")
 
 
-    from clustering import compare_contacts, cluster
+    from clustering import compare_contacts, cluster, cc_analysis
     for reference in vars.references:
         sprint(reference.name)
         if reference.name == "GR":
             compare_contacts(reference)
+        cc_path = cc_analysis(reference)
         #cluster(reference)
-        #save_dfs()
+        save_dfs(general=False)
 
 
 
@@ -147,7 +151,7 @@ def main(PROCESS_ALL = False,
     tprint("SAVE & EXIT")
 
     # Save and exit
-    save_dfs() # Save dataframes and generate figures
+    #save_dfs() # Save dataframes and generate figures
 
     eprint("DONE")
 ########################################################################################################################
@@ -180,8 +184,8 @@ if __name__ == "__main__":
 
     main(PROCESS_ALL=PROCESS_ALL, # Ignore saved pickles and generate everything from scratch
          SKIP_SYMMETRY = True,
-         SKIP_DIMERS = True,
-         FORCE_CONTACTS = True,
+         SKIP_DIMERS = False,
+         FORCE_CONTACTS = False,
          LARGE_DATASET = True, # Use a large dataset (delete all local data previously to avoid errors)
          DO_ONLY = DO_ONLY, # ( list of strings / string) Names of pdbs to be processed (CAPS sensitive, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"
          GENERATE_SYMMETRIES=True,

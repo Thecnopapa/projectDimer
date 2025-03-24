@@ -77,8 +77,8 @@ def generate_sm(reference, force=False):
 
 
 
-
-def cc_analysis(reference, dimensions=3, force =False):
+### DEPRECATED ###
+def cc_analysis_old(reference, dimensions=3, force =False):
     sprint("CC analysis for {}".format(reference.name))
 
     if "{}_cc_output.csv".format(reference.name) in os.listdir(root.dataframes) and not force:
@@ -162,7 +162,94 @@ def cc_analysis(reference, dimensions=3, force =False):
     print1("CC output:")
     print2(cc_out_path)
     print(cc_out, "\n")
+    return cc_out_path
+##################
 
+def cc_analysis(reference, dimensions=3, force =False):
+    print("CC analysis for {}".format(reference.name))
+
+    if "{}_cc_output.csv".format(reference.name) in os.listdir(root.dataframes) and not force:
+        print1("Skipping CC analysis for {}".format(reference.name))
+        return
+
+    sm_ssd_path = os.path.join(root.dataframes, "{}_sm_ssd.csv".format(reference.name))
+    try:
+        sm_ssd = pd.read_csv(sm_ssd_path, index_col=None, header=None)
+    except:
+        print1("Error parsing {}, might be empy".format(sm_ssd_path))
+        return
+    #print(sm_ssd)
+    if len(sm_ssd.columns) != 5:
+        print1("SM Must be 5 columns wide (id1, id2, index1, index2, similarity)")
+        print2("Current:", len(sm_ssd.columns))
+        return
+
+    if len(sm_ssd) < 6:
+        print1("Not enough values for cc analysis, min: 6, current: {}".format(len(sm_ssd)))
+        return
+    ## CC analysis
+    import subprocess
+
+    cc_path = os.path.join(root.scripts, "cc_analysis.py")
+    cc_line = ["python", cc_path, str(dimensions), sm_ssd_path]  # Currently uses correlation matrix
+    print1("cc_line:")
+    print2(" ".join(cc_line))
+
+    cc_std = subprocess.run(cc_line,
+                            capture_output=True,
+                            text=True)
+    #print(cc_std.stdout)
+    #print(cc_std.stderr)
+    # print(cc_std.stdout.split("\n"))
+    out = []
+    for l in cc_std.stdout.split("\n"):
+        l = l.strip().split(" ")
+        for i in l:
+            if i == "":
+                l.remove(i)
+        # print(pd.to_numeric(l))
+        if len(l)-1  == 2:
+            l.append("0")
+            out.append(l)
+        elif len(l) >= 3:
+            out.append(l)
+        # print(l)
+    # print("-")
+    # print(out)
+    # print("-")
+
+    #print(out)
+    cols = ["index"]
+    for n in range(dimensions):
+        cols.append(str(n+1))
+    cc_out = pd.DataFrame(out, columns=cols)
+
+
+    for i in cc_out.columns:
+        if i == "index":
+            cc_out["index"] = pd.to_numeric(cc_out["index"], downcast='integer', errors='coerce')
+        else:
+            cc_out[i] = pd.to_numeric(cc_out[i], downcast='float', errors='coerce')
+    print(cc_out)
+    cc_out["id"] = pd.read_csv(os.path.join(root.dataframes, "{}_sasas.csv".format(reference.name)), index_col=0).columns[2:]
+
+    classified_df = pd.read_csv(os.path.join(root.dataframes, "classified_df.csv"), index_col=0)
+    classified_ids = classified_df["ID"].values
+    groups = []
+    for row in cc_out.itertuples():
+        if row.id in classified_ids:
+            groups.append(classified_df[classified_df["ID"]==row.id].Best_Match.values[0])
+        else:
+            groups.append("na")
+    cc_out["group"] = groups
+
+    cc_out_path = os.path.join(root.dataframes, "{}_cc_output.csv".format(reference.name))
+    cc_out.to_csv(cc_out_path, index=False, header=True)
+
+    print1("CC output:")
+    print2(cc_out_path)
+    print(cc_out, "\n")
+    return cc_out_path
 
 def clusterize_cc(reference, force=False, n_clusters = 20, dimensions=3):
     cc_clustered_name = "{}_cc_clustered.csv".format(reference.name)
@@ -342,6 +429,9 @@ def cluster(reference, FORCE_ALL=False, DIMENSIONS = 3, score_id = ""):
         eprint("Compared successfully")
 
 
+
+
+#### DEPRECATED ###
 def clustering(FORCE_ALL = False, FORCE_SM = True, FORCE_CC = True, FORCE_CLUSTER = True, FORCE_PLOT = True, DIMENSIONS = 3, ONLY_GR=False):
 
 
@@ -383,6 +473,7 @@ def clustering(FORCE_ALL = False, FORCE_SM = True, FORCE_CC = True, FORCE_CLUSTE
 
 
     eprint("Done")
+###################
 
 def get_cluster_score(df, primary, secondary):
     scores = []

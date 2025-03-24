@@ -192,7 +192,7 @@ def build_contact_arrays(self, sasa = False, force=False, max_contact_length = N
     ############### Symmetry contacts ##############################
     if self.best_fit is None or self.best_fit == "Missmatch":
         return None
-    if force or self.full_array is None:
+    if force or "full_array" not in self.__dict__ or self.full_array is None:
         #print(self.contacts)
         contact_array = []
         self.c_lines = []
