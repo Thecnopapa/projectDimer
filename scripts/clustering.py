@@ -154,10 +154,78 @@ def generate_sm(reference, force=False):
             else:
                 diffx = 0
 
-            similarity = max(diffX, diffx)
+            similarity = max(1-diffX, 1-diffx)
             #similarity = similarity / n_res
             #print(id1, id2, round(similarity,2))
             sm_ssd.loc[len(sm_ssd)] = id1, id2,index1,index2, similarity
+    print(sm_ssd)
+    root["sms"] = "dataframes/clustering/sms"
+    sm_path = os.path.join(root.sms, '{}.csv'.format(reference.name))
+    sm_ssd.to_csv(sm_path,header=False, index=False)
+    return sm_path
+
+def generate_sm_threaded(reference, force=False, n_threads = 64):
+    print1("Generating SM for {}".format(reference.name), "Number of Threads:", n_threads)
+
+    contacts_df = pd.read_csv(os.path.join(root.contacts, reference.name+".csv"), index_col=0)
+    print(contacts_df)
+
+    sm_ssd = pd.DataFrame(columns=["dimer1", "dimer2", "index1", "index2", "similarity"])
+    n_dimers = len(contacts_df.columns) - 2
+    if n_dimers <2:
+        print1("Not enough dimers in {} dataframe".format(reference.name))
+        return
+    n_res = len(contacts_df)
+
+    progress = ProgressBar(n_dimers)
+
+    from maths import difference_between_boolean_pairs
+    import threads
+    pool = threads.create_pool(n_threads)
+
+    def sm_subset_calculations(contacts_df, start, end):
+        index1 = start
+        subset_df = contacts_df.iloc[start:end]
+        for id1, contacts1 in zip(subset_df.columns, subset_df._iter_column_arrays()):
+            if id1 in ["ResNum", "ResName"]:
+                continue
+            progress.add(info="{}". format(id1), show_time = True)
+            index1 += 1
+            index2 = 0
+
+            for id2, contacts2 in zip(contacts_df.columns, contacts_df._iter_column_arrays()):
+                if id2 in ["ResNum", "ResName"]:
+                    continue
+                index2 += 1
+                if index2 <= index1:
+                    continue
+                diffX = [0,0]
+                diffx = [0,0]
+                for res in range(n_res):
+                    c1a, c1b = clean_list([contacts1[res]], delimiter=",", format="bool")
+                    c2a, c2b = clean_list([contacts2[res]], delimiter=",", format="bool")
+
+                    resX, resx =difference_between_boolean_pairs(c1a,c1b,c2a,c2b)
+                    diffX[0] += resX[0]
+                    diffX[1] += resX[1]
+                    diffx[0] += resx[0]
+                    diffx[1] += resx[1]
+
+                if diffX[0] != 0:
+                    diffX = diffX[0]/diffX[1]
+                else:
+                    diffX = 0
+
+                if diffx[0] != 0:
+                    diffx = diffx[0]/diffx[1]
+                else:
+                    diffx = 0
+
+                similarity = max(1-diffX, 1-diffx)
+                #similarity = similarity / n_res
+                #print(id1, id2, round(similarity,2))
+                sm_ssd.loc[id1+id2] = id1, id2,index1,index2, similarity
+
     print(sm_ssd)
     root["sms"] = "dataframes/clustering/sms"
     sm_path = os.path.join(root.sms, '{}.csv'.format(reference.name))
@@ -491,7 +559,7 @@ def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centr
     fig.savefig(figure_path, dpi=300)
 
 
-def cluster(reference, FORCE_ALL=False, DIMENSIONS = 3, score_id = ""):
+def cluster(reference, FORCE_ALL=False, DIMENSIONS = 3, score_id = "", thread = True):
     if FORCE_ALL:
         FORCE_SM = True
         FORCE_CC = True
@@ -503,7 +571,10 @@ def cluster(reference, FORCE_ALL=False, DIMENSIONS = 3, score_id = ""):
         FORCE_CLUSTER = False
         FORCE_PLOT = False
 
-    reference.sm_path = generate_sm(reference, force=FORCE_SM)
+    if thread:
+        reference.sm_path = generate_sm_threaded(reference, n_threads=64)
+    else:
+        reference.sm_path = generate_sm(reference, force=FORCE_SM)
     return
     cc_analysis(reference, force=FORCE_CC, dimensions=DIMENSIONS)
     clusterize_cc(reference, force=FORCE_CLUSTER, dimensions=DIMENSIONS)

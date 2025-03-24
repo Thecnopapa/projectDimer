@@ -8,7 +8,7 @@ import pandas as pd
 
 
 
-def save_dfs(force = [], general= True, clustering = True):
+def save_dfs(force = [], general= True, clustering = False):
     excluded = ["classified"]
     sprint("Saving dataframes...")
     if "do_only" in vars:

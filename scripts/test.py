@@ -1,11 +1,20 @@
 
+from utilities import *
+import setup
 
-import gc
+# Imports that need globals initialised:
+from Globals import root, local, vars
 
-gc.enable()
 
-print(len(gc.get_objects()))
+from imports import pickle, export, download_pdbs, load_references, load_single_pdb
 
-gc.collect()
-input()
-print(len(gc.get_objects()))
+
+# Load/Import molecule references
+sprint("Loading References")
+vars["references"] = load_references()
+print1("References loaded")
+
+for reference in vars["references"]:
+    print(reference.__dict__)
+
+from dataframes import save_dfs

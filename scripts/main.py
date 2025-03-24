@@ -99,7 +99,7 @@ def main(PROCESS_ALL = False,
                     molecule.get_dimers()
                 molecule.pickle()
                 progress.add(info=molecule.id)
-        save_dfs(clustering=False)
+        save_dfs()
 
 
     eprint("SYMMETRY & DIMER GENERATION")
@@ -130,7 +130,7 @@ def main(PROCESS_ALL = False,
             if reference.name+".csv" in root.contacts:
                 reference.contacts_df = pd.read_csv(root.contacts[reference.name+".csv"])
                 reference.pickle()
-        save_dfs(general=False)
+        save_dfs(general=False, clustering=True)
 
     eprint("DIMER ANALYSIS")
     ###### CLUSTERING ##################################################################################################
@@ -145,7 +145,7 @@ def main(PROCESS_ALL = False,
             reference.clusters_eva = get_clusters(reference.classified_eva_path, column = "Best_Match", ref_name=reference.name)
         cluster(reference)
         reference.pickle()
-        save_dfs(general=False)
+    save_dfs(general=False, clustering=True)
 
 
 
@@ -187,7 +187,7 @@ if __name__ == "__main__":
 
     main(PROCESS_ALL=PROCESS_ALL, # Ignore saved pickles and generate everything from scratch
          SKIP_SYMMETRY = True,
-         SKIP_DIMERS = True,
+         SKIP_DIMERS = False,
          FORCE_CONTACTS = False,
          COMPARE = False,
          LARGE_DATASET = True, # Use a large dataset (delete all local data previously to avoid errors)
