@@ -10,9 +10,37 @@ import pandas as pd
 
 
 
+class Cluster:
+    def __init__(self, ref_name, df, n, column):
+
+        self.name = ref_name
+        self.df = df
+        self.n = n
+        self.column = column
+        self.eva = False
+        if column == "Best_Match":
+            self.eva = True
+
+    def __repr__(self):
+        return f"Cluster({self.n}, {self.name})"
 
 
-def generate_sm(reference, force=False):
+def get_clusters(df_path, column, ref_name):
+    df = pd.read_csv(df_path)
+    clusters = []
+    for c in set(df[column]):
+        subset = df[df[column] == c]
+        clusters.append(Cluster(ref_name, subset, c, column))
+    return clusters
+
+
+
+
+
+
+
+### DEPRECATED ###
+def generate_sm_old(reference, force=False):
     sprint("Generating SM for {}".format(reference.name))
     sasa_name = '{}_sasas.csv'.format(reference.name)
     if '{}_sm_ssd.csv'.format(reference.name) in os.listdir(root.dataframes) and not force:
@@ -74,8 +102,67 @@ def generate_sm(reference, force=False):
             sm_ssd.loc[len(sm_ssd)] = id1, id2,index1,index2, similarity
     print(sm_ssd)
     sm_ssd.to_csv(os.path.join(root.dataframes, '{}_sm_ssd.csv'.format(reference.name)),header=False, index=False)
+##################
 
+def generate_sm(reference, force=False):
+    print1("Generating SM for {}".format(reference.name))
 
+    contacts_df = pd.read_csv(os.path.join(root.contacts, reference.name+".csv"), index_col=0)
+    print(contacts_df)
+
+    sm_ssd = pd.DataFrame(columns=["dimer1", "dimer2", "index1", "index2", "similarity"])
+    n_dimers = len(contacts_df.columns) - 2
+    if n_dimers <2:
+        print1("Not enough dimers in {} dataframe".format(reference.name))
+        return
+    n_res = len(contacts_df)
+
+    progress = ProgressBar(n_dimers)
+    index1 = 0
+    from maths import difference_between_boolean_pairs
+    for id1, contacts1 in zip(contacts_df.columns, contacts_df._iter_column_arrays()):
+        if id1 in ["ResNum", "ResName"]:
+            continue
+        progress.add(info="{}". format(id1), show_time = True)
+        index1 += 1
+        index2 = 0
+        for id2, contacts2 in zip(contacts_df.columns, contacts_df._iter_column_arrays()):
+            if id2 in ["ResNum", "ResName"]:
+                continue
+            index2 += 1
+            if index2 <= index1:
+                continue
+            diffX = [0,0]
+            diffx = [0,0]
+            for res in range(n_res):
+                c1a, c1b = clean_list([contacts1[res]], delimiter=",", format="bool")
+                c2a, c2b = clean_list([contacts2[res]], delimiter=",", format="bool")
+
+                resX, resx =difference_between_boolean_pairs(c1a,c1b,c2a,c2b)
+                diffX[0] += resX[0]
+                diffX[1] += resX[1]
+                diffx[0] += resx[0]
+                diffx[1] += resx[1]
+
+            if diffX[0] != 0:
+                diffX = diffX[0]/diffX[1]
+            else:
+                diffX = 0
+
+            if diffx[0] != 0:
+                diffx = diffx[0]/diffx[1]
+            else:
+                diffx = 0
+
+            similarity = max(diffX, diffx)
+            #similarity = similarity / n_res
+            #print(id1, id2, round(similarity,2))
+            sm_ssd.loc[len(sm_ssd)] = id1, id2,index1,index2, similarity
+    print(sm_ssd)
+    root["sms"] = "dataframes/clustering/sms"
+    sm_path = os.path.join(root.sms, '{}.csv'.format(reference.name))
+    sm_ssd.to_csv(sm_path,header=False, index=False)
+    return sm_path
 
 ### DEPRECATED ###
 def cc_analysis_old(reference, dimensions=3, force =False):
@@ -416,7 +503,8 @@ def cluster(reference, FORCE_ALL=False, DIMENSIONS = 3, score_id = ""):
         FORCE_CLUSTER = False
         FORCE_PLOT = False
 
-    generate_sm(reference, force=FORCE_SM)
+    reference.sm_path = generate_sm(reference, force=FORCE_SM)
+    return
     cc_analysis(reference, force=FORCE_CC, dimensions=DIMENSIONS)
     clusterize_cc(reference, force=FORCE_CLUSTER, dimensions=DIMENSIONS)
     plot_cc(reference, labels=False, labels_centres=True, force=FORCE_PLOT, dimensions=DIMENSIONS)
@@ -591,7 +679,9 @@ def compare_contacts(reference):
         vars.classified_df.loc[len(vars.classified_df)] = [dimer_id, reference.name, best_match[0],
                                                  round(best_match[1] * 100), best_match[2]]
         progress.add()
-    vars.classified_df.to_csv(os.path.join(root.dataframes, "classified_df.csv"))
+    classified_path = os.path.join(root.dataframes, "classified_df.csv")
+    vars.classified_df.to_csv(classified_path)
+    return classified_path
 
 
 
