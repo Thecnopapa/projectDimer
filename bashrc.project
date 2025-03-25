@@ -1,0 +1,23 @@
+
+#source '/opt/xtal/ccp4-9/bin/ccp4.setup-sh'
+#if [ -f ~/projectB/bashrc.project ]; then
+#    source ~/projectB/bashrc.project
+#fi
+
+
+
+cd /home/iain/projectB
+conda activate py312np2 || conda activate biop
+alias show="python scripts/visualisation.py"
+
+run(){
+        python /home/iain/projectB/scripts/$1.py $2 $3 $4 $5
+}
+alias bashrc="vim /home/iain/.bashrc"
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
+
+alias cloc="find . -name '*.py' | xargs wc -l"
+
+alias top="echo -en \"\033]0;Top\a\" && top"

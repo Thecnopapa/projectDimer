@@ -195,7 +195,7 @@ if __name__ == "__main__":
          FORCE_CONTACTS = False,
          COMPARE = False,
          ONLY_GR = False,
-         FORCE_CLUSTERING = False,
+         FORCE_CLUSTERING = True,
          LARGE_DATASET = True, # Use a large dataset (delete all local data previously to avoid errors)
          DO_ONLY = DO_ONLY, # ( list of strings / string) Names of pdbs to be processed (CAPS sensitive, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"
          GENERATE_SYMMETRIES=True,
