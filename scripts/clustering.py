@@ -1,9 +1,4 @@
 import os
-from itertools import count
-
-from numpy.ma.extras import average
-
-from threads import merge_pool, create_thread
 from utilities import *
 from Globals import root, local, vars
 import numpy as np
@@ -108,14 +103,19 @@ def generate_sm_old(reference, force=False):
 def generate_sm(reference, force=False):
     print1("Generating SM for {}".format(reference.name))
 
+    root["sms"] = "dataframes/clustering/sms"
+    if "{}.csv".format(reference.name) in os.listdir(root.sms) and not force:
+        print2("Skipping SM generation for {}".format(reference.name))
+        return reference.sm_path
+
     contacts_df = pd.read_csv(os.path.join(root.contacts, reference.name+".csv"), index_col=0)
     print(contacts_df)
 
-    sm_ssd = pd.DataFrame(columns=["dimer1", "dimer2", "index1", "index2", "similarity"])
+    sm_ssd = pd.DataFrame(columns=["dimer1", "dimer2", "index1", "index2", "similarity", "diffX", "diffx"])
     n_dimers = len(contacts_df.columns) - 2
     if n_dimers <2:
         print1("Not enough dimers in {} dataframe".format(reference.name))
-        return
+        return None
     n_res = len(contacts_df)
 
     progress = ProgressBar(n_dimers)
@@ -145,6 +145,9 @@ def generate_sm(reference, force=False):
                 diffx[0] += resx[0]
                 diffx[1] += resx[1]
 
+            dX = diffX
+            dx = diffx
+
             if diffX[0] != 0:
                 diffX = diffX[0]/diffX[1]
             else:
@@ -155,19 +158,20 @@ def generate_sm(reference, force=False):
             else:
                 diffx = 0
 
-            similarity = max(1-diffX, 1-diffx)
+            similarity = max(diffX, diffx)
             #similarity = similarity / n_res
             #print(id1, id2, round(similarity,2))
-            sm_ssd.loc[len(sm_ssd)] = id1, id2,index1,index2, similarity
+            sm_ssd.loc[len(sm_ssd)] = id1, id2,index1,index2, similarity, dX, dx
     print(sm_ssd)
-    root["sms"] = "dataframes/clustering/sms"
+
     sm_path = os.path.join(root.sms, '{}.csv'.format(reference.name))
     sm_ssd.to_csv(sm_path,header=False, index=False)
     return sm_path
 
+### DEPRECATED ###
 def generate_sm_threaded(reference, force=False, n_threads = 64):
     print1("Generating SM for {}".format(reference.name), "Number of Threads:", n_threads)
-
+    quit()
     contacts_df = pd.read_csv(os.path.join(root.contacts, reference.name+".csv"), index_col=0)
     print(contacts_df)
 
@@ -257,6 +261,7 @@ def generate_sm_threaded(reference, force=False, n_threads = 64):
     sm_path = os.path.join(root.sms, '{}.csv'.format(reference.name))
     sm_ssd.to_csv(sm_path,header=False, index=False)
     return sm_path
+##################
 
 ### DEPRECATED ###
 def cc_analysis_old(reference, dimensions=3, force =False):
@@ -347,13 +352,14 @@ def cc_analysis_old(reference, dimensions=3, force =False):
 ##################
 
 def cc_analysis(reference, dimensions=3, force =False):
-    print("CC analysis for {}".format(reference.name))
+    print1("CC analysis for {}".format(reference.name))
 
-    if "{}_cc_output.csv".format(reference.name) in os.listdir(root.dataframes) and not force:
-        print1("Skipping CC analysis for {}".format(reference.name))
-        return
+    root["ccs"] = "dataframes/clustering/ccs"
+    if "{}.csv".format(reference.name) in os.listdir(root.ccs) and not force:
+        print2("Skipping CC analysis for {}".format(reference.name))
+        return reference.cc_path
 
-    sm_ssd_path = os.path.join(root.dataframes, "{}_sm_ssd.csv".format(reference.name))
+    sm_ssd_path = reference.sm_path
     try:
         sm_ssd = pd.read_csv(sm_ssd_path, index_col=None, header=None)
     except:
@@ -375,10 +381,11 @@ def cc_analysis(reference, dimensions=3, force =False):
     cc_line = ["python", cc_path, str(dimensions), sm_ssd_path]  # Currently uses correlation matrix
     print1("cc_line:")
     print2(" ".join(cc_line))
-
+    progress = ProgressBar(1)
     cc_std = subprocess.run(cc_line,
                             capture_output=True,
                             text=True)
+    progress.add()
     #print(cc_std.stdout)
     #print(cc_std.stderr)
     # print(cc_std.stdout.split("\n"))
@@ -395,24 +402,30 @@ def cc_analysis(reference, dimensions=3, force =False):
         elif len(l) >= 3:
             out.append(l)
         # print(l)
-    # print("-")
-    # print(out)
-    # print("-")
+    #print("---")
+    #print(out)
+    #print("---")
+    reference.cc_raw = out
+
 
     #print(out)
     cols = ["index"]
     for n in range(dimensions):
         cols.append(str(n+1))
-    cc_out = pd.DataFrame(out, columns=cols)
 
+
+
+    cc_out = pd.DataFrame(out, columns=cols)
 
     for i in cc_out.columns:
         if i == "index":
             cc_out["index"] = pd.to_numeric(cc_out["index"], downcast='integer', errors='coerce')
         else:
             cc_out[i] = pd.to_numeric(cc_out[i], downcast='float', errors='coerce')
-    print(cc_out)
-    cc_out["id"] = pd.read_csv(os.path.join(root.dataframes, "{}_sasas.csv".format(reference.name)), index_col=0).columns[2:]
+    print("cc_out:")
+    print(cc_out.to_string)
+    #print("ids:")
+    cc_out["id"] = pd.read_csv(os.path.join(root.contacts, "{}.csv".format(reference.name)), index_col=0).columns[1:]
 
     classified_df = pd.read_csv(os.path.join(root.dataframes, "classified_df.csv"), index_col=0)
     classified_ids = classified_df["ID"].values
@@ -424,7 +437,7 @@ def cc_analysis(reference, dimensions=3, force =False):
             groups.append("na")
     cc_out["group"] = groups
 
-    cc_out_path = os.path.join(root.dataframes, "{}_cc_output.csv".format(reference.name))
+    cc_out_path = os.path.join(root.ccs, "{}.csv".format(reference.name))
     cc_out.to_csv(cc_out_path, index=False, header=True)
 
     print1("CC output:")
@@ -433,20 +446,20 @@ def cc_analysis(reference, dimensions=3, force =False):
     return cc_out_path
 
 def clusterize_cc(reference, force=False, n_clusters = 20, dimensions=3):
-    cc_clustered_name = "{}_cc_clustered.csv".format(reference.name)
-    if cc_clustered_name in os.listdir(root.dataframes) and not force:
-        print1("Skipping CC clustering for {}".format(reference.name))
-        return
-
-    sprint("Clustering {}".format(reference.name))
+    print1("Clustering of {}".format(reference.name))
     from sklearn.cluster import KMeans
 
-    cc_out_path = os.path.join(root.dataframes, "{}_cc_output.csv".format(reference.name))
+    root["clustered"] = "dataframes/clustering/clustered"
+    if "{}.csv".format(reference.name) in os.listdir(root.clustered) and not force:
+        print2("Skipping clustering for {}".format(reference.name))
+        return reference.clustered_path
+
+    cc_out_path = reference.cc_path
     try:
         cc_out = pd.read_csv(cc_out_path, index_col=0)
     except:
         print1("Error parsing {}, might be empy".format(cc_out_path))
-        return
+        return reference.cc_path
 
     if len(cc_out) < 30 and len(cc_out) > 6:
         n_clusters = 5
@@ -467,11 +480,11 @@ def clusterize_cc(reference, force=False, n_clusters = 20, dimensions=3):
             new_colour = "black"
         cc_out.loc[n+1, "colour"] = new_colour
 
-    cluster_centres_path = os.path.join(root.dataframes, "{}_cluster_centres.csv".format(reference.name))
-    cluster_centres_df = pd.DataFrame(model.cluster_centers_)
-    #print(cluster_centres_df)
-    cluster_centres_df.to_csv(cluster_centres_path,header=None)
-    cc_out.to_csv(os.path.join(root.dataframes,cc_clustered_name))
+    reference.cluster_centres = pd.DataFrame(model.cluster_centers_)
+    #reference.cluster_centres.to_csv(cluster_centres_path,header=None)
+    clustered_path = os.path.join(root.clustered, "{}.csv".format(reference.name))
+    cc_out.to_csv(clustered_path)
+    return clustered_path
 
 
 
@@ -479,26 +492,25 @@ def clusterize_cc(reference, force=False, n_clusters = 20, dimensions=3):
 
 def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centres=True, adjust=False):
     print1("Plotting 2D: {}".format(reference.name))
+    import matplotlib.pyplot as plt
 
-    root["cc"] = "images/cc"
-    figure_name ="{}_cc.png".format(reference.name)
-    figure_path = os.path.join(root.cc,figure_name )
-    if figure_name in os.listdir(root.cc) and not force:
-        print2("Figure {} already exists".format(figure_name))
+    root["cc_figs"] = "images/cc_figs"
+    if "{}.png".format(reference.name) in os.listdir(root.cc_figs) and not force:
+        print2("Figure {} already exists".format("{}.png".format(reference.name)))
         return
     if dimensions > 3:
         print2("Plotting more than 3 dimensions not currently supported")
         return
-    import matplotlib.pyplot as plt
+
 
 
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111)
 
     try:
-        cc_out = pd.read_csv(os.path.join(root.dataframes, "{}_cc_clustered.csv".format(reference.name)))
+        cc_out = pd.read_csv(reference.clustered_path)
     except:
-        print1("Error parsing {}, might be empy".format(figure_path))
+        print2("Error parsing {}, might be empy".format(reference.clustered_path))
         return
 
     if dimensions == 2:
@@ -509,12 +521,13 @@ def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centr
 
     texts = []
 
-    if "{}_cluster_centres.csv".format(reference.name) in os.listdir(root.dataframes):
+    if "cluster_centres" in reference.__dict__.keys():
         print2("Plotting cluster centres")
         from maths import get_closest_point, points_to_line
-        cluster_centres = pd.read_csv(os.path.join(root.dataframes, "{}_cluster_centres.csv".format(reference.name)),index_col=0,header=None)
+        cluster_centres = reference.cluster_centres
+        print(cluster_centres)
         print(cluster_centres.columns)
-        ax.scatter(cluster_centres.loc[:,3].values, cluster_centres.loc[:,2].values, color="black", marker=".")
+        ax.scatter(cluster_centres[2].values, cluster_centres[1].values, color="black", marker=".")
 
         centres = []
         for centre in cluster_centres.itertuples():
@@ -550,9 +563,7 @@ def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centr
                 texts.append(ax.annotate(centre[0], (centre[3],centre[2]), size=10))
 
     else:
-        print2("centres ({}_cluster_centres.csv) not found".format(reference.name))
-
-
+        print2("Cluster centres not found")
 
 
 
@@ -574,18 +585,20 @@ def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centr
                 ax.annotate(df.loc[:, "ID"][n], (X, Y)))  # ax.annotate(labels[n]'''
 
 
-    ax.set_title("CC analysis + Kmeans for {}".format(reference.name))
+    ax.set_title("CC analysis + Kmeans for {} (n= {})".format(reference.name, len(cc_out)))
     if adjust:
         from adjustText import adjust_text
         adjust_text(texts, autoalign='y',
                     only_move={'points': 'y', 'text': 'y'}, force_points=0.15,
                     arrowprops=dict(arrowstyle="->", color='blue', lw=0.5))
     fig.tight_layout()
+    figure_path = os.path.join(root.cc_figs, "{}.png".format(reference.name))
     print2("Saving at {}".format(figure_path))
     fig.savefig(figure_path, dpi=300)
+    return figure_path
 
 
-def cluster(reference, FORCE_ALL=False, DIMENSIONS = 3, score_id = "", thread = True):
+def cluster(reference, FORCE_ALL=False, DIMENSIONS = 3, score_id = "", thread = False):
     if FORCE_ALL:
         FORCE_SM = True
         FORCE_CC = True
@@ -601,11 +614,10 @@ def cluster(reference, FORCE_ALL=False, DIMENSIONS = 3, score_id = "", thread = 
         reference.sm_path = generate_sm_threaded(reference, n_threads=64)
     else:
         reference.sm_path = generate_sm(reference, force=FORCE_SM)
+    reference.cc_path = cc_analysis(reference, force=FORCE_CC, dimensions=DIMENSIONS)
+    reference.clustered_path = clusterize_cc(reference, force=FORCE_CLUSTER, dimensions=DIMENSIONS)
+    reference.plot_path = plot_cc(reference, labels=False, labels_centres=True, force=FORCE_PLOT, dimensions=DIMENSIONS)
     return
-    cc_analysis(reference, force=FORCE_CC, dimensions=DIMENSIONS)
-    clusterize_cc(reference, force=FORCE_CLUSTER, dimensions=DIMENSIONS)
-    plot_cc(reference, labels=False, labels_centres=True, force=FORCE_PLOT, dimensions=DIMENSIONS)
-
     if reference.name == "GR":
         tprint("Comparing to Eva")
         df_cc = pd.read_csv(os.path.join(root.clustered, "GR_cc.csv"))

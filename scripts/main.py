@@ -16,6 +16,8 @@ def main(PROCESS_ALL = False,
          SKIP_DIMERS = False,
          FORCE_CONTACTS = False,
          COMPARE = False,
+         ONLY_GR = False,
+         FORCE_CLUSTERING = False,
          LARGE_DATASET = True,
          DO_ONLY = [],
          GENERATE_SYMMETRIES = True,
@@ -143,7 +145,9 @@ def main(PROCESS_ALL = False,
         if reference.name == "GR" and COMPARE:
             reference.classified_eva_path = compare_contacts(reference)
             reference.clusters_eva = get_clusters(reference.classified_eva_path, column = "Best_Match", ref_name=reference.name)
-        cluster(reference)
+        if reference.name != "GR" and ONLY_GR:
+            continue
+        cluster(reference, FORCE_ALL= FORCE_CLUSTERING)
         reference.pickle()
     save_dfs(general=False, clustering=False)
 
@@ -187,9 +191,11 @@ if __name__ == "__main__":
 
     main(PROCESS_ALL=PROCESS_ALL, # Ignore saved pickles and generate everything from scratch
          SKIP_SYMMETRY = True,
-         SKIP_DIMERS = False,
+         SKIP_DIMERS = True,
          FORCE_CONTACTS = False,
          COMPARE = False,
+         ONLY_GR = False,
+         FORCE_CLUSTERING = False,
          LARGE_DATASET = True, # Use a large dataset (delete all local data previously to avoid errors)
          DO_ONLY = DO_ONLY, # ( list of strings / string) Names of pdbs to be processed (CAPS sensitive, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"
          GENERATE_SYMMETRIES=True,
