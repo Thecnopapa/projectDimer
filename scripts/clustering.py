@@ -106,13 +106,14 @@ def generate_sm(reference, force=False):
     root["sms"] = "dataframes/clustering/sms"
     if "{}.csv".format(reference.name) in os.listdir(root.sms) and not force:
         print2("Skipping SM generation for {}".format(reference.name))
-        return reference.sm_path
+        return os.path.join(root.sms, "{}_sm_ssd.csv".format(reference.name))
 
     contacts_df = pd.read_csv(os.path.join(root.contacts, reference.name+".csv"), index_col=0)
     print(contacts_df)
 
     sm_ssd = pd.DataFrame(columns=["dimer1", "dimer2", "index1", "index2", "similarity", "diffX", "diffx"])
-    n_dimers = len(contacts_df.columns) - 2
+    n_dimers = len(contacts_df.columns) - 1
+    #print(contacts_df.columns)
     if n_dimers <2:
         print1("Not enough dimers in {} dataframe".format(reference.name))
         return None
@@ -357,7 +358,7 @@ def cc_analysis(reference, dimensions=3, force =False):
     root["ccs"] = "dataframes/clustering/ccs"
     if "{}.csv".format(reference.name) in os.listdir(root.ccs) and not force:
         print2("Skipping CC analysis for {}".format(reference.name))
-        return reference.cc_path
+        return os.path.join(root.ccs, "{}.csv".format(reference.name))
 
     sm_ssd_path = reference.sm_path
     try:
@@ -452,7 +453,7 @@ def clusterize_cc(reference, force=False, n_clusters = 20, dimensions=3):
     root["clustered"] = "dataframes/clustering/clustered"
     if "{}.csv".format(reference.name) in os.listdir(root.clustered) and not force:
         print2("Skipping clustering for {}".format(reference.name))
-        return reference.clustered_path
+        return os.path.join(root.clustered, "{}.csv".format(reference.name))
 
     cc_out_path = reference.cc_path
     try:
