@@ -81,7 +81,7 @@ def main(PROCESS_ALL = False,
     ###### SYMMETRY & DIMER GENERATION #################################################################################
     tprint("SYMMETRY & DIMER GENERATION")
 
-    if not SKIP_SYMMETRY and not PROCESS_ALL:
+    if not SKIP_SYMMETRY or PROCESS_ALL:
         progress = ProgressBar(len(molecule_list))
         for m in molecule_list:
             if "lock" in m:
@@ -108,7 +108,7 @@ def main(PROCESS_ALL = False,
     ###### DIMER ANALYSIS ##############################################################################################
     tprint("DIMER ANALYSIS")
 
-    if not SKIP_DIMERS and not PROCESS_ALL:
+    if not SKIP_DIMERS or PROCESS_ALL:
         print(list(vars.clustering["contacts"].keys()))
         progress = ProgressBar(len(molecule_list))
         from surface import build_contact_arrays
@@ -147,7 +147,7 @@ def main(PROCESS_ALL = False,
             reference.clusters_eva = get_clusters(reference.classified_eva_path, column = "Best_Match", ref_name=reference.name)
         if reference.name != "GR" and ONLY_GR:
             continue
-        cluster(reference, FORCE_ALL= FORCE_CLUSTERING)
+        cluster(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL)
         reference.pickle()
     save_dfs(general=False, clustering=False)
 

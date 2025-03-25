@@ -469,11 +469,11 @@ class Mate(BioObject):
             best_pos = None
             for key, pos in self.positions.items():
                 if best_pos is None:
-                    print(pos["value"])
+                    #print(pos["value"])
                     best_pos = key, pos
                     continue
                 if pos["value"] > best_pos[1]["value"] :
-                    print(pos["value"])
+                    #print(pos["value"])
                     best_pos = key, pos
             self.positions = {best_pos[0]: best_pos[1]}
 
@@ -572,7 +572,7 @@ class Dimer(BioObject):
 
 
     def get_contacts(self):
-        print("########## Getting contacts")
+        #print("########## Getting contacts")
         from symmetries import Contact
         mon1_atoms = list(self.monomer1.replaced.get_atoms())
         for atom in self.monomer2.replaced.get_atoms():
