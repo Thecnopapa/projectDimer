@@ -234,7 +234,7 @@ def get_operation(key,op_n):
 
 
 class Contact:
-    def __init__(self, atom, position,  target_list, max_distance = None, min_contacts=0, params= None, coord = None, count_to_min = False):
+    def __init__(self, atom, position,  target_list, max_distance = None, min_contacts=0, params= None, coord = None, count_to_min = False, ref_dict = None):
         #print2(atom.parent.id[1], len(target_list), type(target_list))
         if coord is None:
             self.coord = atom.coord
@@ -249,10 +249,40 @@ class Contact:
         self.shortest_contact = None
         self.is_contact = False
         self.get_contacts(target_list)
+        self.face = None
+        self.face_opposite = None
+        if ref_dict is not None:
+            self.get_faces(ref_dict)
 
     def __repr__(self):
         import math
-        return "Contacts ({}) in res {} (chain {}), shortest: {} A".format(self.num_contacts, self.atom.get_full_id()[-2][1],self.atom.get_full_id()[-3], round(math.sqrt(self.shortest_contact["distance"]), 2))
+
+        return "Contacts ({}) in res {} (chain {}, face: {}), shortest: {} A (res: {}, face: {})".format(self.num_contacts,
+                                                                                     self.atom.get_full_id()[-2][1],
+                                                                                     self.atom.get_full_id()[-3],
+                                                                                     self.face,
+                                                                                     round(math.sqrt(self.shortest_contact["distance"]), 2),
+                                                                                     self.shortest_contact["target_atom"].parent.id[1],
+                                                                                     self.shortest_contact["face"])
+
+
+    def get_faces(self, ref_dict):
+        for face, res_list in ref_dict.items():
+            print(self.atom.parent.id[1], res_list,self.atom.parent.id[1] in res_list )
+            if self.atom.parent.id[1] in res_list:
+                if self.face is None:
+                    self.face = [face]
+                else:
+                    self.face.append(face)
+            for contact in self.all_contacts:
+                if contact["target_atom"].parent.id[1] in res_list:
+                    if self.face_opposite is None:
+                        self.face_opposite = [face]
+                        contact["face"] = face
+                    else:
+                        self.face_opposite.append(face)
+
+
 
     def get_contacts(self, target_atoms):
 
@@ -283,6 +313,7 @@ class Contact:
                     "line":  line,
                     "distance": dist,
                     "maximum_distance": max_distance,
+                    "face": None
                 }
                 self.all_contacts.append(new_contact)
                 if self.shortest_contact is None or dist < self.shortest_contact["distance"]:

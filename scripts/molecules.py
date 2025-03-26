@@ -230,6 +230,8 @@ class Monomer(BioObject):
         self.position = position
         self.structure = entity_to_orth(self.fractional_structure.copy(), self.params)
         self.parent_monomer = parent_monomer
+        self.face = None
+        self.faces = None
         #self.parent = parent
 
         if self.is_mate:
@@ -575,9 +577,14 @@ class Dimer(BioObject):
         #print("########## Getting contacts")
         from symmetries import Contact
         mon1_atoms = list(self.monomer1.replaced.get_atoms())
+        if self.best_fit == "GR":
+            from faces import GR_dict
+            ref_dict = GR_dict
+        else:
+            ref_dict = None
         for atom in self.monomer2.replaced.get_atoms():
             #sprint(atom.parent.id[1])
-            contact = Contact(atom, self.position, mon1_atoms, max_distance=8)
+            contact = Contact(atom, self.position, mon1_atoms, max_distance=8, ref_dict = ref_dict)
             #print1(contact.is_contact, contact.shortest_contact)
             if contact.is_contact:
                 self.contacts.append(contact)

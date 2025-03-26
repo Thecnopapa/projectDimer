@@ -14,6 +14,7 @@ import numpy as np
 def main(PROCESS_ALL = False,
          SKIP_SYMMETRY = False,
          SKIP_DIMERS = False,
+         SKIP_CLUSTERING = False,
          FORCE_CONTACTS = False,
          COMPARE = False,
          ONLY_GR = False,
@@ -75,7 +76,7 @@ def main(PROCESS_ALL = False,
     if len(vars.do_only) > 0:
         molecule_list = [f for f in molecule_list if any([s in f for s in vars.do_only])]
     #[print(m) for m in sorted(molecule_list)]
-    print1("Molecule list obtained:", len(molecule_list), "molecules")
+    print1("Molecule list obtained:", len(molecule_list), "molecules, DO_ONLY = ", DO_ONLY)
 
     eprint("SET UP")
     ###### SYMMETRY & DIMER GENERATION #################################################################################
@@ -138,18 +139,18 @@ def main(PROCESS_ALL = False,
     ###### CLUSTERING ##################################################################################################
     tprint("CLUSTERING")
 
-
-    from clustering import compare_contacts, get_clusters, cluster
-    for reference in vars.references:
-        sprint(reference.name)
-        if reference.name == "GR" and COMPARE:
-            reference.classified_eva_path = compare_contacts(reference)
-            reference.clusters_eva = get_clusters(reference.classified_eva_path, column = "Best_Match", ref_name=reference.name)
-        if reference.name != "GR" and ONLY_GR:
-            continue
-        cluster(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL)
-        reference.pickle()
-    save_dfs(general=False, clustering=False)
+    if not SKIP_CLUSTERING or PROCESS_ALL:
+        from clustering import compare_contacts, get_clusters, cluster
+        for reference in vars.references:
+            sprint(reference.name)
+            if reference.name == "GR" and COMPARE:
+                reference.classified_eva_path = compare_contacts(reference)
+                reference.clusters_eva = get_clusters(reference.classified_eva_path, column = "Best_Match", ref_name=reference.name)
+            if reference.name != "GR" and ONLY_GR:
+                continue
+            cluster(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL)
+            reference.pickle()
+        save_dfs(general=False, clustering=False)
 
 
 
@@ -182,7 +183,7 @@ if __name__ == "__main__":
         VERBOSE = False
 
     print(sys.argv)
-    if len(sys.argv) >= 2 and not "all" in sys.argv:
+    if len(sys.argv) > 2 and not "all" in sys.argv:
         DO_ONLY = [arg.upper() for arg in sys.argv[1:]]
     import setup
 
@@ -190,9 +191,10 @@ if __name__ == "__main__":
     from Globals import root, local, vars
 
     main(PROCESS_ALL=PROCESS_ALL, # Ignore saved pickles and generate everything from scratch
-         SKIP_SYMMETRY = True,
-         SKIP_DIMERS = True,
-         FORCE_CONTACTS = False,
+         SKIP_SYMMETRY = False,
+         SKIP_DIMERS = False,
+         SKIP_CLUSTERING=True,
+         FORCE_CONTACTS = True,
          COMPARE = False,
          ONLY_GR = False,
          FORCE_CLUSTERING = True,
