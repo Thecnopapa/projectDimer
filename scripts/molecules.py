@@ -539,7 +539,7 @@ class Dimer(BioObject):
     pickle_extension = '.dimer'
     pickle_folder = "dimers"
 
-    def __init__(self, monomer1, monomer2, sasa = True):
+    def __init__(self, monomer1, monomer2, sasa = False):
         self.monomer1 = monomer1
         self.monomer2 = monomer2
 

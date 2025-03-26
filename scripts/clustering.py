@@ -279,8 +279,8 @@ def cc_analysis_old(reference, dimensions=3, force =False):
         print1("Error parsing {}, might be empy".format(sm_ssd_path))
         return
     #print(sm_ssd)
-    if len(sm_ssd.columns) != 5:
-        print1("SM Must be 5 columns wide (id1, id2, index1, index2, similarity)")
+    if len(sm_ssd.columns) != 7:
+        print1("SM Must be 7 columns wide (id1, id2, index1, index2, similarity, diffX, diffx)")
         print2("Current:", len(sm_ssd.columns))
         return
 
@@ -367,8 +367,8 @@ def cc_analysis(reference, dimensions=3, force =False):
         print1("Error parsing {}, might be empy".format(sm_ssd_path))
         return
     #print(sm_ssd)
-    if len(sm_ssd.columns) != 5:
-        print1("SM Must be 5 columns wide (id1, id2, index1, index2, similarity)")
+    if len(sm_ssd.columns) != 7:
+        print1("SM Must be 7 columns wide (id1, id2, index1, index2, similarity, diffX, diffx)")
         print2("Current:", len(sm_ssd.columns))
         return
 

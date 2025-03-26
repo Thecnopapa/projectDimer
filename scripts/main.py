@@ -54,7 +54,7 @@ def main(PROCESS_ALL = False,
 
     # Load/Import molecule references
     sprint("Loading References")
-    vars["references"] = load_references()
+    vars["references"] = load_references(force_reload=PROCESS_ALL)
     print1("References loaded")
 
 
@@ -191,13 +191,13 @@ if __name__ == "__main__":
     from Globals import root, local, vars
 
     main(PROCESS_ALL=PROCESS_ALL, # Ignore saved pickles and generate everything from scratch
-         SKIP_SYMMETRY = False,
-         SKIP_DIMERS = False,
-         SKIP_CLUSTERING=True,
+         SKIP_SYMMETRY = True,
+         SKIP_DIMERS = True,
+         SKIP_CLUSTERING=False,
          FORCE_CONTACTS = True,
          COMPARE = False,
          ONLY_GR = False,
-         FORCE_CLUSTERING = True,
+         FORCE_CLUSTERING = False,
          LARGE_DATASET = True, # Use a large dataset (delete all local data previously to avoid errors)
          DO_ONLY = DO_ONLY, # ( list of strings / string) Names of pdbs to be processed (CAPS sensitive, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"
          GENERATE_SYMMETRIES=True,
