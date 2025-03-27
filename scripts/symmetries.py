@@ -234,7 +234,9 @@ def get_operation(key,op_n):
 
 
 class Contact:
-    def __init__(self, atom, position,  target_list, max_distance = None, min_contacts=0, params= None, coord = None, count_to_min = False, ref_dict = None):
+    def __init__(self, atom, position,  target_list,
+                 max_distance = None, min_contacts=0, params= None, coord = None, count_to_min = False,
+                 ref_dict = None):
         #print2(atom.parent.id[1], len(target_list), type(target_list))
         if coord is None:
             self.coord = atom.coord
@@ -268,19 +270,28 @@ class Contact:
 
     def get_faces(self, ref_dict):
         for face, res_list in ref_dict.items():
-            print(self.atom.parent.id[1], res_list,self.atom.parent.id[1] in res_list )
+            #print(self.atom.parent.id[1], res_list,self.atom.parent.id[1] in res_list )
             if self.atom.parent.id[1] in res_list:
                 if self.face is None:
-                    self.face = [face]
+                    self.face = {face:1}
+                elif face in self.face.keys():
+                    self.face[face] += 1
                 else:
-                    self.face.append(face)
+                    self.face[face] = 1
             for contact in self.all_contacts:
                 if contact["target_atom"].parent.id[1] in res_list:
                     if self.face_opposite is None:
-                        self.face_opposite = [face]
+                        self.face_opposite = {face: 1}
                         contact["face"] = face
+                    elif face in self.face_opposite.keys():
+                        self.face_opposite[face] += 1
                     else:
-                        self.face_opposite.append(face)
+                        self.face_opposite[face] = 1
+        if self.face is not None:
+            self.face = sort_dict(self.face, as_list=True)[0][0]
+        if self.face_opposite is not None:
+            self.face_opposite = sort_dict(self.face_opposite, as_list=True)[0][0]
+
 
 
 

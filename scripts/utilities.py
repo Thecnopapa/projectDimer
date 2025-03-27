@@ -220,6 +220,13 @@ def collect_garbage():
     after = len(gc.get_objects())
     print("Collected {} objects".format(after - before))
 
+def sort_dict(x, as_list = False, ascendant = False):
+    if x is None:
+        return None
+    if as_list:
+        return [(k, v) for k, v in sorted(x.items(), key=lambda item: item[1], reverse = not ascendant)]
+    else:
+        return {k: v for k, v in sorted(x.items(), key=lambda item: item[1], reverse=not ascendant)}
 
 
 

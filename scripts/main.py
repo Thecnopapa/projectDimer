@@ -139,7 +139,7 @@ def main(PROCESS_ALL = False,
     ###### CLUSTERING ##################################################################################################
     tprint("CLUSTERING")
 
-    if not SKIP_CLUSTERING or PROCESS_ALL:
+    if not SKIP_CLUSTERING or PROCESS_ALL and False:
         from clustering import compare_contacts, get_clusters, cluster
         for reference in vars.references:
             sprint(reference.name)
@@ -192,11 +192,11 @@ if __name__ == "__main__":
 
     main(PROCESS_ALL=PROCESS_ALL, # Ignore saved pickles and generate everything from scratch
          SKIP_SYMMETRY = True,
-         SKIP_DIMERS = True,
-         SKIP_CLUSTERING=False,
+         SKIP_DIMERS = False,
+         SKIP_CLUSTERING=True,
          FORCE_CONTACTS = True,
-         COMPARE = False,
-         ONLY_GR = False,
+         COMPARE = True,
+         ONLY_GR = True,
          FORCE_CLUSTERING = False,
          LARGE_DATASET = True, # Use a large dataset (delete all local data previously to avoid errors)
          DO_ONLY = DO_ONLY, # ( list of strings / string) Names of pdbs to be processed (CAPS sensitive, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"

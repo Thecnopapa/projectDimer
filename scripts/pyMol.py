@@ -194,7 +194,7 @@ def pymol_draw_line(coord1, coord2, name = "d", state = -1):
     pymol.cmd.delete("tmp1")
     pymol.cmd.delete("tmp2")
 
-def pymol_paint_conatcts(obj, contact_list, colour = "yellow"):
+def pymol_paint_contacts(obj, contact_list, colour ="yellow"):
     print("(PyMol) Colouring contacts in {}".format(obj))
     for chain, resn, in contact_list:
         sele = "c. {} and i. {}".format(chain, resn)

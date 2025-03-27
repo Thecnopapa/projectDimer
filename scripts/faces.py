@@ -28,6 +28,11 @@ GR_dict = {
                   770, 771, 772, 773, 774, 775, 776, 777],
 }
 
+GR_colours = {"front": "purple",
+              "base": "salmon",
+              "back": "cyan",
+              "top": "pink",}
+
 
 def define_faces_from_list(self, list):
     for contact in self.contacts:

@@ -73,7 +73,7 @@ def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None,
     if not force_reload and pickle_folder is not None:
         print2("Loading PDB pickle from:", pickle_folder)
         for file in os.listdir(pickle_folder):
-            print(file)
+            #print(file)
             if (identifier == "all" or identifier in file.upper()) and "lock" not in file:
                 p = unpickle(os.path.join(pickle_folder, file))
                 p.restore_dfs()

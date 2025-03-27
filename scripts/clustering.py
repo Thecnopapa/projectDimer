@@ -786,8 +786,13 @@ def compare_contacts(reference):
                                                                                  round(100 * best_match[1]),
                                                                                  best_match[2]))
 
+        face1 = dimer.face1
+        face2 = dimer.face2
+        if best_match[2]:
+            face1, face2 = face2, face1
+
         vars.classified_df.loc[len(vars.classified_df)] = [dimer_id, reference.name, best_match[0],
-                                                 round(best_match[1] * 100), best_match[2]]
+                                                 round(best_match[1] * 100), best_match[2], face1, face2]
         progress.add()
     classified_path = os.path.join(root.dataframes, "classified_df.csv")
     vars.classified_df.to_csv(classified_path)

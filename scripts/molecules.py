@@ -463,7 +463,7 @@ class Mate(BioObject):
         self.unpack_contacts()
         self.reconstruct_mates(min_contacts=min_contacts)
         #self.export()
-        print2(self.dimers)
+        print3(self.dimers)
 
 
     def check_redundancy(self):
@@ -561,6 +561,8 @@ class Dimer(BioObject):
         self.full_array = None
         if self.incomplete:
             return
+        self.face1 = None
+        self.face2 = None
         self.get_contacts()
         if sasa:
             from surface import get_dimer_sasa
@@ -589,6 +591,46 @@ class Dimer(BioObject):
             if contact.is_contact:
                 self.contacts.append(contact)
                 #print(contact)
+
+        m1faces = None
+        m2faces = None
+
+        for contact in self.contacts:
+            if contact.face is not None:
+                if m1faces is None:
+                    m1faces = {contact.face: 1}
+                elif contact.face in m1faces.keys():
+                    m1faces[contact.face] += 1
+                else:
+                    m1faces[contact.face] = 1
+
+            if contact.face_opposite is not None:
+                if m2faces is None:
+                    m2faces = {contact.face_opposite: 1}
+                elif contact.face_opposite in m2faces.keys():
+                    m2faces[contact.face_opposite] += 1
+                else:
+                    m2faces[contact.face_opposite] = 1
+
+        if m1faces is not None:
+            self.face1 = sort_dict(m1faces, as_list=True)[0][0]
+
+        if m2faces is not None:
+            self.face2 = sort_dict(m2faces, as_list=True)[0][0]
+
+        if self.face1 is not None:
+            from faces import GR_dict, GR_colours
+            self.contacts_faces1 = [GR_colours[self.face1]]
+            for res in GR_dict[self.face1]:
+                self.contacts_faces1.append([self.monomer1.chain, res])
+        if self.face2 is not None:
+            from faces import GR_dict, GR_colours
+            self.contacts_faces2 = [GR_colours[self.face2]]
+            for res in GR_dict[self.face2]:
+                self.contacts_faces2.append([self.monomer2.chain, res])
+
+
+
 
 
     def validate(self):
@@ -723,4 +765,10 @@ class Reference(Monomer):
         self.monomers_entries = []
 
         self.sequence = None
+        self.face_dict = None
+        if self.name == "GR":
+            self.face_dict = None
 
+    def reshape_face_dict(self):
+        from faces import GR_dict
+        self.face_dict = GR_dict.copy()

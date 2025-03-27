@@ -65,7 +65,7 @@ def show_objects(obj_list, args):
         sprint(obj.id)
         #print(obj.__dict__)
         for key, item in obj.__dict__.items():
-            if key in ["lines", "c_lines", "sasas1D", "sasas2D", "full_array"]:
+            if key in ["lines", "c_lines", "sasas1D", "sasas2D", "full_array", ]:
                 continue
             #print(str(type(item)))
             if type(item) in (list, tuple, set):
@@ -85,7 +85,7 @@ def show_objects(obj_list, args):
             if item is None:
                 print1(key, ":", "None")
         if "pymol" in args:
-            from pyMol import pymol_start, pymol_load_path, pymol_symmetries, pymol_group, pymol_paint_conatcts
+            from pyMol import pymol_start, pymol_load_path, pymol_symmetries, pymol_group, pymol_paint_contacts, pymol_format
             pymol_start(show=True)
             for key, item in obj.__dict__.items():
                 if type(item) == str:
@@ -96,12 +96,23 @@ def show_objects(obj_list, args):
                             pymol_load_path(item, os.path.basename(item) + "_processed")
                         else:
                             pymol_load_path(item)
+                        pymol_format("surface", os.path.basename(item), colour= "gray")
+                        if "faces" in args:
+                            print("Painting faces")
+                            if "contacts_faces1" in obj.__dict__.keys():
+                                pymol_paint_contacts(os.path.basename(item), obj.contacts_faces1[1:],
+                                                     colour=obj.contacts_faces1[0])
+                            if "contacts_faces2" in obj.__dict__.keys():
+                                pymol_paint_contacts(os.path.basename(item), obj.contacts_faces2[1:],
+                                                     colour=obj.contacts_faces2[0])
+                            print("Faces painted")
                         if "contacts_sasa" in obj.__dict__.keys():
-                            pymol_paint_conatcts(os.path.basename(item), obj.contacts_sasa, colour = "red")
+                            pymol_paint_contacts(os.path.basename(item), obj.contacts_sasa, colour ="red")
                             pass
                         if "contacts_symm" in obj.__dict__.keys():
-                            pymol_paint_conatcts(os.path.basename(item), obj.contacts_symm)
+                            pymol_paint_contacts(os.path.basename(item), obj.contacts_symm)
                             pass
+
                 ### Development
                 if key == "mate_paths" or key == "dimer_paths":
                     for mate in item:
@@ -138,13 +149,14 @@ def show_objects(obj_list, args):
                 pass
             pymol_group(identifier="mate", name="mates")
             #pymol_group(identifier= "dimer")
-            pymol_group(identifier="rep", name="replaced")
+            #pymol_group(identifier="rep", name="replaced")
             pymol_group(identifier="merged", name="merged")
             try:
                 pymol_symmetries(og)
                 pymol_group(identifier = "sym")
             except:
                 pass
+
 
 
 def print_available_commands():
@@ -200,6 +212,11 @@ if __name__ == "__main__":
         molecules = load_from_files(local.many_pdbs)
         tprint("Showing molecules")
         show_objects(molecules, sys.argv[2:])
+
+    elif "ref" in sys.argv[1] and len(sys.argv[2:]) != 0:
+        refs = load_references(identifier = sys.argv[2])
+        tprint("Showing references")
+        show_objects(refs, sys.argv[2:])
 
 
     elif ("clusters-eva" in sys.argv[1]):
