@@ -126,6 +126,8 @@ def main(PROCESS_ALL = False,
                     print1(dimer)
                     if dimer.incomplete:
                         continue
+                    dimer.get_contacts()
+                    dimer.get_faces()
                     build_contact_arrays(dimer, sasa=False, force= FORCE_CONTACTS)
                     dimer.pickle()
                 progress.add(info=molecule.id)

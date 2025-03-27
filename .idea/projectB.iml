@@ -5,6 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/scripts" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/previews" />
       <excludeFolder url="file://$MODULE_DIR$/secure" />
+      <excludeFolder url="file://$MODULE_DIR$/dataframes" />
     </content>
     <orderEntry type="jdk" jdkName="py312np2" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -563,7 +563,6 @@ class Dimer(BioObject):
             return
         self.face1 = None
         self.face2 = None
-        self.get_contacts()
         if sasa:
             from surface import get_dimer_sasa
             get_dimer_sasa(self)
@@ -592,6 +591,7 @@ class Dimer(BioObject):
                 self.contacts.append(contact)
                 #print(contact)
 
+    def get_faces(self):
         m1faces = None
         m2faces = None
 
