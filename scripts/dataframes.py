@@ -65,7 +65,7 @@ def create_clustering_dfs(references):
             ref_data["ResNum"].append(res.id[1])
             ref_data["ResName"].append(res.resname)
         vars["clustering"]["contacts"][reference.name] = pd.DataFrame(data=ref_data)
-    vars["classified_df"] = pd.DataFrame(columns=["ID", "Best_Fit", "Best_Match", "Similarity", "Inverse", "Face1, Face2"])
+    vars["classified_df"] = pd.DataFrame(columns=["ID", "Best_Fit", "Best_Match", "Similarity", "Inverse", "Face1", "Face2"])
 
 
 
