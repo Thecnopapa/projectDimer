@@ -575,7 +575,7 @@ class Dimer(BioObject):
 
 
     def get_contacts(self):
-        #print("########## Getting contacts")
+        print2("Calculating contacts")
         from symmetries import Contact
         mon1_atoms = list(self.monomer1.replaced.get_atoms())
         if self.best_fit == "GR":
@@ -592,6 +592,7 @@ class Dimer(BioObject):
                 #print(contact)
 
     def get_faces(self):
+        print2("Identifying faces")
         m1faces = None
         m2faces = None
 

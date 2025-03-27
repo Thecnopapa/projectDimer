@@ -127,8 +127,9 @@ def main(PROCESS_ALL = False,
                     if dimer.incomplete:
                         continue
                     dimer.get_contacts()
+                    build_contact_arrays(dimer, sasa=False, force=FORCE_CONTACTS)
                     dimer.get_faces()
-                    build_contact_arrays(dimer, sasa=False, force= FORCE_CONTACTS)
+
                     dimer.pickle()
                 progress.add(info=molecule.id)
         for reference in vars.references:
@@ -195,8 +196,8 @@ if __name__ == "__main__":
     main(PROCESS_ALL=PROCESS_ALL, # Ignore saved pickles and generate everything from scratch
          SKIP_SYMMETRY = True,
          SKIP_DIMERS = False,
-         SKIP_CLUSTERING=True,
-         FORCE_CONTACTS = True,
+         SKIP_CLUSTERING=False,
+         FORCE_CONTACTS = False,
          COMPARE = True,
          ONLY_GR = True,
          FORCE_CLUSTERING = False,

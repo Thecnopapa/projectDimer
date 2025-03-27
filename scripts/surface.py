@@ -187,7 +187,7 @@ def build_contact_arrays(self, sasa = False, force=False, max_contact_length = N
                 #print(sasa_array[-1], sasa2, sasa2D, "\t", sasa2-sasa2D)'''
 
         self.contacts_sasa = sasa_array
-        print2("Number of contacts by SASA:", len(sasa_array))
+        print3("Number of contacts by SASA:", len(sasa_array))
 
     ############### Symmetry contacts ##############################
     if self.best_fit is None or self.best_fit == "Missmatch":
@@ -227,7 +227,7 @@ def build_contact_arrays(self, sasa = False, force=False, max_contact_length = N
 
         #print(contact_array)
         #[print(row) for row in empty_array.items()]
-        print2("Number of contacts by symmetry:", len(contact_array))
+        print3("Number of contacts by symmetry:", len(contact_array))
         self.contacts_symm = contact_array
 
         self.full_array = [value for value in empty_array.values()]
