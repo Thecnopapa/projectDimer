@@ -121,7 +121,7 @@ class ProgressBar:
     def finish(self):
         self.update(end="\n")
         if not self.silent:
-            ring_bell(times=3)
+            ring_bell(times=2)
         print("Completed in {} seconds".format(round(time.perf_counter() - self.start_time, 2)))
 
 

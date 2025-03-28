@@ -66,6 +66,7 @@ def show_objects(obj_list, args):
         #print(obj.__dict__)
         for key, item in obj.__dict__.items():
             if key in ["lines", "c_lines", "sasas1D", "sasas2D", "full_array","contacts_faces1", "contacts_faces2" ]:
+                print1(key, ": OMITTED (len: {})".format(len(item)))
                 continue
             #print(str(type(item)))
             if type(item) in (list, tuple, set):
@@ -82,6 +83,8 @@ def show_objects(obj_list, args):
                 print1(key, ":", item, id(item))
             if "Bio" in str(type(item)):
                 print1(key, ":", item, id(item))
+            if "pandas" in str(type(item)):
+                print1(key, ":\n", item)
             if item is None:
                 print1(key, ":", "None")
         if "pymol" in args:
@@ -97,7 +100,7 @@ def show_objects(obj_list, args):
                         else:
                             pymol_load_path(item)
                         pymol_format("surface", os.path.basename(item), colour= "gray")
-                        if "faces" in args:
+                        if "faces" in args or True:
                             print("Painting faces")
                             if "contacts_faces1" in obj.__dict__.keys():
                                 pymol_paint_contacts(os.path.basename(item), obj.contacts_faces1[1:],
@@ -149,7 +152,7 @@ def show_objects(obj_list, args):
                 pass
             pymol_group(identifier="mate", name="mates")
             #pymol_group(identifier= "dimer")
-            #pymol_group(identifier="rep", name="replaced")
+            pymol_group(identifier="rep", name="replaced")
             pymol_group(identifier="merged", name="merged")
             try:
                 pymol_symmetries(og)

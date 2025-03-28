@@ -26,7 +26,7 @@ def load_pickles(folder, extension = (".pickle"), ignore_selection = False):
         if selection is not None:
             print2("Selection:", selection, "\n")
 
-        progress = ProgressBar(len(os.listdir(local[folder])))
+        progress = ProgressBar(len(os.listdir(local[folder])), silent=True, title=False)
         for file in sorted(os.listdir(local[folder])):
             if file.endswith(extension) and (selection is None or any([s in file.split(".")[0] for s in selection])):
                 p = unpickle(os.path.join(local[folder],file))
@@ -48,7 +48,7 @@ def load_from_files(pdb_folder, load_class = PDB, ignore_selection = False, pick
         loaded = load_pickles(pickle_folder, pickle_extension, ignore_selection=ignore_selection)
     if len(loaded) == 0:
         print1("No saved pickles found, importing from:", pdb_folder)
-        progress = ProgressBar(len(os.listdir(pdb_folder)))
+        progress = ProgressBar(len(os.listdir(pdb_folder)), silent=True, title=False)
         for file in sorted(os.listdir(pdb_folder)):
             selection = None
             if "do_only" in vars and not ignore_selection:
@@ -104,7 +104,7 @@ def load_monomers(molecules = None, folder = "monomers", extension = ".monomer",
         loaded = load_pickles(folder, extension)
     if len(loaded) == 0 and molecules is not None:
         print1("No saved monomers found, generating monomers now")
-        progress = ProgressBar(len(molecules))
+        progress = ProgressBar(len(molecules), silent=True, title=False)
         for molecule in molecules:
             loaded.extend(molecule.get_monomers())
             progress.add()
@@ -166,7 +166,7 @@ def download_pdbs(list_path:str=None , save_folder=None, pdb_list:list = None, t
         subprocess.run(["wget","-i", pdb_links, "-P", local[save_folder]])
 
 def pickle(list):
-    progress = ProgressBar(len(list))
+    progress = ProgressBar(len(list), silent=True, title=False)
     sprint("Pickling...")
     for item in list:
         item.pickle()
@@ -174,7 +174,7 @@ def pickle(list):
 
 def export(list):
     sprint("Exporting...")
-    progress = ProgressBar(len(list))
+    progress = ProgressBar(len(list), silent=True, title=False)
     for item in list:
         item.export()
         progress.add()

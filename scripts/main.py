@@ -24,7 +24,8 @@ def main(PROCESS_ALL = False,
          GENERATE_SYMMETRIES = True,
          MAX_THREADS = 1,
          MINIMUM_CHAIN_LENGTH = 100,
-         CONTACT_DISTANCE = 8,
+         CONTACT_DISTANCE_SYMMETRY = 8,
+         CONTACT_DISTANCE_CLUSTERING = 16,
          MINIMUM_CONTACTS = 0,
          SASA = False,
          FORCE_SASA = False,
@@ -91,6 +92,7 @@ def main(PROCESS_ALL = False,
         for m in molecule_list:
             if "lock" in m:
                 sprint(".lock file detected:", m)
+                progress.add(info=m)
                 continue
             filename = m.split(".")[0]
             sprint(filename)
@@ -98,7 +100,7 @@ def main(PROCESS_ALL = False,
             for molecule in molecules:
                 molecule.get_all_dimers(force=PROCESS_ALL,
                                         minimum_chain_length=MINIMUM_CHAIN_LENGTH,
-                                        contact_distance=CONTACT_DISTANCE,
+                                        contact_distance=CONTACT_DISTANCE_SYMMETRY,
                                         min_contacts=MINIMUM_CONTACTS,
                                         )
                 molecule.pickle()
@@ -118,6 +120,7 @@ def main(PROCESS_ALL = False,
         for m in molecule_list:
             if "lock" in m:
                 sprint(".lock file detected:", m)
+                progress.add(info=m)
                 continue
             filename = m.split(".")[0]
             sprint(filename)
@@ -128,9 +131,9 @@ def main(PROCESS_ALL = False,
                     print1(dimer)
                     if dimer.incomplete:
                         continue
-                    dimer.get_contacts()
+                    dimer.get_contacts(max_distance=CONTACT_DISTANCE_CLUSTERING)
                     dimer.get_faces()
-                    build_contact_arrays(dimer, c_arrays, sasa=SASA, force=FORCE_CONTACTS)
+                    build_contact_arrays(dimer, c_arrays, sasa=SASA, force=FORCE_CONTACTS or PROCESS_ALL, max_contact_length=CONTACT_DISTANCE_CLUSTERING)
 
                     dimer.pickle()
                     #vars.clustering["contacts"][dimer.best_fit] = pd.concat([vars.clustering["contacts"][dimer.best_fit], c_arrays[dimer.best_fit]],
@@ -138,12 +141,15 @@ def main(PROCESS_ALL = False,
             progress.add(info=m)
 
 
-        for key, item in c_arrays.items():
-            vars.clustering["contacts"][key] = pd.concat([vars.clustering["contacts"][key]+item], axis=1)
-        save_dfs(general=SASA, clustering=True)
+        for key in c_arrays.keys():
+            vars.clustering["contacts"][key] = pd.concat([vars.clustering["contacts"][key], *c_arrays[key]], axis=1)
+            print(vars.clustering["contacts"][key])
+        save_dfs(general=False, clustering=True)
         for reference in vars.references:
             reference.faces_df = vars.clustering["faces"][reference.name]
             reference.contacts_df = vars.clustering["contacts"][reference.name]
+            reference.pickle()
+            print(reference.faces_df)
 
 
 
@@ -166,7 +172,7 @@ def main(PROCESS_ALL = False,
                 continue
             cluster(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL)
             reference.pickle()
-        save_dfs(general=False, clustering=False)
+        save_dfs(general=False, clustering=True)
 
 
 
@@ -176,6 +182,7 @@ def main(PROCESS_ALL = False,
 
     # Save and exit
     #save_dfs() # Save dataframes and generate figures
+    ring_bell(times=3)
 
     eprint("DONE")
 ########################################################################################################################
@@ -217,12 +224,13 @@ if __name__ == "__main__":
          # Symmetry calculations, and generation of Monomers + Dimers
          SKIP_SYMMETRY = True, # Skip the entire block (overridden by PROCESS_ALL)
          MINIMUM_CHAIN_LENGTH=100,# Minimum number of residues to consider a chain for dimerization (to ignore ligands and small molecules)
-         CONTACT_DISTANCE=8,  # Minimum (less or equal than) distance in Angstroms to consider a contact between atoms
+         CONTACT_DISTANCE_SYMMETRY=8,  # Minimum (less or equal than) distance in Angstroms to consider a contact between atoms
          MINIMUM_CONTACTS=0,  # Minimum number of contacts to consider a dimer interface
 
          # Dimer processing, includes contact calculation and face identification, generates contact dataframes
          SKIP_DIMERS = False, # Skip the entire block (overridden by PROCESS_ALL)
-         FORCE_CONTACTS = False,  # Force contact calculation if already calculated
+         FORCE_CONTACTS = True,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
+         CONTACT_DISTANCE_CLUSTERING = 12,
 
          # SASA related (BROKEN)
          SASA = False, # Whether to run SASA calculations, currently broken

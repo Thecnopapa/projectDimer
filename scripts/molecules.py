@@ -585,7 +585,7 @@ class Dimer(BioObject):
         self.pickle()
 
 
-    def get_contacts(self):
+    def get_contacts(self, max_distance= 16):
         print2("Calculating contacts")
         from symmetries import Contact
         mon1_atoms = list(self.monomer1.replaced.get_atoms())
@@ -596,7 +596,7 @@ class Dimer(BioObject):
             ref_dict = None
         for atom in self.monomer2.replaced.get_atoms():
             #sprint(atom.parent.id[1])
-            contact = Contact(atom, self.position, mon1_atoms, max_distance=8, ref_dict = ref_dict)
+            contact = Contact(atom, self.position, mon1_atoms, max_distance=max_distance, ref_dict = ref_dict)
             #print1(contact.is_contact, contact.shortest_contact)
             if contact.is_contact:
                 self.contacts.append(contact)

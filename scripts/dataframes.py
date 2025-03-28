@@ -12,14 +12,14 @@ def save_dfs(force = False, general= True, clustering = False):
     sprint("Saving dataframes...")
     if "do_only" in vars:
         if len(vars.do_only) == 0 or vars.do_only is None or force:
-            for key, value in vars.items():
+            for key, value in vars.copy().items():
                 if "df" in key and general:
                     print1("Saving {}.csv".format(key))
                     value.to_csv(os.path.join(root.dataframes,f"{key}.csv"), header = True, index=False)
                 if "clustering" == key and clustering:
                     for folder, dfs in value.items():
                         os.makedirs(os.path.join(root.clustering,folder), exist_ok=True)
-                        vars.root[folder] = "clustering/{}".format(folder)
+                        vars[folder] = "clustering/{}".format(folder)
                         for name, df in dfs.items():
                             path = os.path.join(root.clustering,folder,name+".csv")
                             print1("Saving {}.csv at {}".format(name, path))
