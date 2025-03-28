@@ -21,8 +21,8 @@ class Cluster:
         return f"Cluster({self.n}, {self.name})"
 
 
-def get_clusters(df_path, column, ref_name):
-    df = pd.read_csv(df_path)
+def get_clusters(df, column, ref_name):
+    #df = pd.read_csv(df_path)
     clusters = []
     for c in set(df[column]):
         subset = df[df[column] == c]
@@ -30,75 +30,6 @@ def get_clusters(df_path, column, ref_name):
     return clusters
 
 
-
-
-
-
-
-### DEPRECATED ###
-def generate_sm_old(reference, force=False):
-    sprint("Generating SM for {}".format(reference.name))
-    sasa_name = '{}_sasas.csv'.format(reference.name)
-    if '{}_sm_ssd.csv'.format(reference.name) in os.listdir(root.dataframes) and not force:
-        print1("Skipping SM generation for {}".format(reference.name))
-        return
-    if not sasa_name in os.listdir(root.dataframes):
-        print1("Dataframe not found: {}".format(os.path.join(root.dataframes, sasa_name)))
-        return
-    sasas_df = pd.read_csv(os.path.join(root.dataframes, sasa_name), index_col=0)
-    print(sasas_df)
-
-    sm_ssd = pd.DataFrame(columns=["dimer1", "dimer2", "index1", "index2", "similarity"])
-    n_dimers = len(sasas_df.columns) - 2
-    if n_dimers <2:
-        print1("Not enough dimers in {} dataframe".format(reference.name))
-        return
-    n_res = len(sasas_df)
-
-    progress = ProgressBar(n_dimers)
-    index1 = 0
-    from maths import difference_between_boolean_pairs
-    for id1, contacts1 in zip(sasas_df.columns, sasas_df._iter_column_arrays()):
-        if id1 in ["ResNum", "ResName"]:
-            continue
-        progress.add(info="{}". format(id1), show_time = True)
-        index1 += 1
-        index2 = 0
-        for id2, contacts2 in zip(sasas_df.columns, sasas_df._iter_column_arrays()):
-            if id2 in ["ResNum", "ResName"]:
-                continue
-            index2 += 1
-            if index2 <= index1:
-                continue
-            diffX = [0,0]
-            diffx = [0,0]
-            for res in range(n_res):
-                c1a, c1b = clean_list([contacts1[res]], delimiter=",", format="bool")
-                c2a, c2b = clean_list([contacts2[res]], delimiter=",", format="bool")
-
-                resX, resx =difference_between_boolean_pairs(c1a,c1b,c2a,c2b)
-                diffX[0] += resX[0]
-                diffX[1] += resX[1]
-                diffx[0] += resx[0]
-                diffx[1] += resx[1]
-
-            if diffX[0] != 0:
-                diffX = diffX[0]/diffX[1]
-            else:
-                diffX = 0
-
-            if diffx[0] != 0:
-                diffx = diffx[0]/diffx[1]
-            else:
-                diffx = 0
-
-            similarity = max(diffX, diffx)
-            #similarity = similarity / n_res
-            #print(id1, id2, round(similarity,2))
-            sm_ssd.loc[len(sm_ssd)] = id1, id2,index1,index2, similarity
-    print(sm_ssd)
-    sm_ssd.to_csv(os.path.join(root.dataframes, '{}_sm_ssd.csv'.format(reference.name)),header=False, index=False)
-##################
 
 def generate_sm(reference, force=False):
     print1("Generating SM for {}".format(reference.name))
@@ -169,188 +100,8 @@ def generate_sm(reference, force=False):
     sm_ssd.to_csv(sm_path,header=False, index=False)
     return sm_path
 
-### DEPRECATED ###
-def generate_sm_threaded(reference, force=False, n_threads = 64):
-    print1("Generating SM for {}".format(reference.name), "Number of Threads:", n_threads)
-    quit()
-    contacts_df = pd.read_csv(os.path.join(root.contacts, reference.name+".csv"), index_col=0)
-    print(contacts_df)
-
-    sm_ssd = pd.DataFrame(columns=["dimer1", "dimer2", "index1", "index2", "similarity"])
-    n_dimers = len(contacts_df.columns) - 2
-    if n_dimers <2:
-        print1("Not enough dimers in {} dataframe".format(reference.name))
-        return
-
-    n_res = len(contacts_df)
-    progress = ProgressBar(n_dimers)
-
-    from maths import difference_between_boolean_pairs
-    from threads import create_thread, run_threads, wait_threads
 
 
-    total_cols = len(contacts_df.columns)
-    batch_len = total_cols//n_threads-1
-    batch_num = total_cols//batch_len
-    last_batch = total_cols%batch_len
-
-    def sm_subset_calculations(contacts_df, start, end):
-        print("Batch:", start, end)
-        index1 = 0
-        for id1, contacts1 in zip(contacts_df.columns, contacts_df._iter_column_arrays()):
-            if id1 in ["ResNum", "ResName"]:
-                continue
-            if index1 >= end:
-                return
-            if index1 < start:
-                index1 += 1
-                continue
-            progress.add(info="{}". format(id1), show_time = True)
-            index1 += 1
-            index2 = 0
-
-            for id2, contacts2 in zip(contacts_df.columns, contacts_df._iter_column_arrays()):
-                if id2 in ["ResNum", "ResName"]:
-                    continue
-                index2 += 1
-                if index2 <= index1:
-                    continue
-
-                diffX = [0,0]
-                diffx = [0,0]
-                for res in range(n_res):
-                    c1a, c1b = clean_list([contacts1[res]], delimiter=",", format="bool")
-                    c2a, c2b = clean_list([contacts2[res]], delimiter=",", format="bool")
-
-                    resX, resx =difference_between_boolean_pairs(c1a,c1b,c2a,c2b)
-                    diffX[0] += resX[0]
-                    diffX[1] += resX[1]
-                    diffx[0] += resx[0]
-                    diffx[1] += resx[1]
-
-                if diffX[1] == 0:
-                    diffX = diffX[0]/diffX[1]
-                else:
-                    diffX = 0
-
-                if diffx[1] == 0:
-                    diffx = diffx[0]/diffx[1]
-                else:
-                    diffx = 0
-
-                similarity = max(diffX, diffx)
-                #similarity = similarity / n_res
-                #print(id1, id2, round(similarity,2))
-                sm_ssd.loc[id1+id2] = id1, id2,index1,index2, similarity
-
-    print("Number of dimers:", total_cols)
-    print("Batch size:", batch_len, "Number of batches:", batch_num)
-    print(last_batch)
-    ts = []
-    for batch in range(n_threads):
-        #print(batch, batch*batch_len, (batch+1)*batch_len)
-        ts.append(create_thread(sm_subset_calculations, contacts_df, start=batch*batch_len, end = (batch+1)*batch_len))
-    #print("last", batch_num*batch_len, batch_num*batch_len+last_batch+1)
-    ts.append(create_thread(sm_subset_calculations, contacts_df, start=batch_num*batch_len, end=batch_num*batch_len+last_batch+1))
-    print("Ready_threads:", len(ts))
-    run_threads(ts)
-    wait_threads()
-
-
-    print(sm_ssd)
-    root["sms"] = "dataframes/clustering/sms"
-    sm_path = os.path.join(root.sms, '{}.csv'.format(reference.name))
-    sm_ssd.to_csv(sm_path,header=False, index=False)
-    return sm_path
-##################
-
-### DEPRECATED ###
-def cc_analysis_old(reference, dimensions=3, force =False):
-    sprint("CC analysis for {}".format(reference.name))
-
-    if "{}_cc_output.csv".format(reference.name) in os.listdir(root.dataframes) and not force:
-        print1("Skipping CC analysis for {}".format(reference.name))
-        return
-
-    sm_ssd_path = os.path.join(root.dataframes, "{}_sm_ssd.csv".format(reference.name))
-    try:
-        sm_ssd = pd.read_csv(sm_ssd_path, index_col=None, header=None)
-    except:
-        print1("Error parsing {}, might be empy".format(sm_ssd_path))
-        return
-    #print(sm_ssd)
-    if len(sm_ssd.columns) != 7:
-        print1("SM Must be 7 columns wide (id1, id2, index1, index2, similarity, diffX, diffx)")
-        print2("Current:", len(sm_ssd.columns))
-        return
-
-    if len(sm_ssd) < 6:
-        print1("Not enough values for cc analysis, min: 6, current: {}".format(len(sm_ssd)))
-        return
-    ## CC analysis
-    import subprocess
-
-    cc_path = os.path.join(root.scripts, "cc_analysis.py")
-    cc_line = ["python", cc_path, str(dimensions), sm_ssd_path]  # Currently uses correlation matrix
-    print1("cc_line:")
-    print2(" ".join(cc_line))
-
-    cc_std = subprocess.run(cc_line,
-                            capture_output=True,
-                            text=True)
-    #print(cc_std.stdout)
-    #print(cc_std.stderr)
-    # print(cc_std.stdout.split("\n"))
-    out = []
-    for l in cc_std.stdout.split("\n"):
-        l = l.strip().split(" ")
-        for i in l:
-            if i == "":
-                l.remove(i)
-        # print(pd.to_numeric(l))
-        if len(l)-1  == 2:
-            l.append("0")
-            out.append(l)
-        elif len(l) >= 3:
-            out.append(l)
-        # print(l)
-    # print("-")
-    # print(out)
-    # print("-")
-
-    #print(out)
-    cols = ["index"]
-    for n in range(dimensions):
-        cols.append(str(n+1))
-    cc_out = pd.DataFrame(out, columns=cols)
-
-
-    for i in cc_out.columns:
-        if i == "index":
-            cc_out["index"] = pd.to_numeric(cc_out["index"], downcast='integer', errors='coerce')
-        else:
-            cc_out[i] = pd.to_numeric(cc_out[i], downcast='float', errors='coerce')
-    print(cc_out)
-    cc_out["id"] = pd.read_csv(os.path.join(root.dataframes, "{}_sasas.csv".format(reference.name)), index_col=0).columns[2:]
-
-    classified_df = pd.read_csv(os.path.join(root.dataframes, "classified_df.csv"), index_col=0)
-    classified_ids = classified_df["ID"].values
-    groups = []
-    for row in cc_out.itertuples():
-        if row.id in classified_ids:
-            groups.append(classified_df[classified_df["ID"]==row.id].Best_Match.values[0])
-        else:
-            groups.append("na")
-    cc_out["group"] = groups
-
-    cc_out_path = os.path.join(root.dataframes, "{}_cc_output.csv".format(reference.name))
-    cc_out.to_csv(cc_out_path, index=False, header=True)
-
-    print1("CC output:")
-    print2(cc_out_path)
-    print(cc_out, "\n")
-    return cc_out_path
-##################
 
 def cc_analysis(reference, dimensions=3, force =False):
     print1("CC analysis for {}".format(reference.name))
@@ -428,7 +179,8 @@ def cc_analysis(reference, dimensions=3, force =False):
     #print("ids:")
     cc_out["id"] = pd.read_csv(os.path.join(root.contacts, "{}.csv".format(reference.name)), index_col=0).columns[1:]
 
-    classified_df = pd.read_csv(os.path.join(root.dataframes, "classified_df.csv"), index_col=0)
+    classified_df = pd.read_csv(os.path.join(root.classified, "{}.csv".format(reference.name)), index_col=0)
+    print(classified_df)
     classified_ids = classified_df["ID"].values
     groups = []
     for row in cc_out.itertuples():
@@ -611,10 +363,8 @@ def cluster(reference, FORCE_ALL=False, DIMENSIONS = 3, score_id = "", thread = 
         FORCE_CLUSTER = False
         FORCE_PLOT = False
 
-    if thread:
-        reference.sm_path = generate_sm_threaded(reference, n_threads=64)
-    else:
-        reference.sm_path = generate_sm(reference, force=FORCE_SM)
+
+    reference.sm_path = generate_sm(reference, force=FORCE_SM)
     reference.cc_path = cc_analysis(reference, force=FORCE_CC, dimensions=DIMENSIONS)
     reference.clustered_path = clusterize_cc(reference, force=FORCE_CLUSTER, dimensions=DIMENSIONS)
     reference.plot_path = plot_cc(reference, labels=False, labels_centres=True, force=FORCE_PLOT, dimensions=DIMENSIONS)
@@ -628,50 +378,6 @@ def cluster(reference, FORCE_ALL=False, DIMENSIONS = 3, score_id = "", thread = 
 
 
 
-
-#### DEPRECATED ###
-def clustering(FORCE_ALL = False, FORCE_SM = True, FORCE_CC = True, FORCE_CLUSTER = True, FORCE_PLOT = True, DIMENSIONS = 3, ONLY_GR=False):
-
-
-    if FORCE_ALL:
-        FORCE_SM = True
-        FORCE_CC = True
-        FORCE_CLUSTER = True
-        FORCE_PLOT = True
-
-    from imports import import_references
-    references = import_references()
-    for reference in references:
-        if ONLY_GR and reference.name == "GR":
-            references = [reference]
-
-    from dataframes import load_failed_dfs
-    load_failed_dfs()
-
-    tprint("Similarity analysis")
-    for reference in references:
-        generate_sm(reference, force=FORCE_SM)
-    eprint("Similarity analysis")
-
-    tprint("CC analysis")
-    for reference in references:
-        cc_analysis(reference, force=FORCE_CC, dimensions=DIMENSIONS)
-        clusterize_cc(reference, force=FORCE_CLUSTER, dimensions=DIMENSIONS)
-        plot_cc(reference,labels=False, labels_centres=True, force=FORCE_PLOT, dimensions=DIMENSIONS)
-    eprint("CC analysis")
-
-    tprint("Comparing to Eva")
-    gr_df = pd.read_csv(os.path.join(root.dataframes, "GR_cc_clustered.csv"))
-    if "BALL_SIZE" in vars:
-        scores = calculate_scores_GR(gr_df, vars.BALL_SIZE+"_"+DIMENSIONS)
-    else:
-        scores = calculate_scores_GR(gr_df,str(DIMENSIONS))
-    print1("Scores: cc: {}, eva: {}".format(scores[0], scores[1]))
-    eprint("Compared successfully")
-
-
-    eprint("Done")
-###################
 
 def get_cluster_score(df, primary, secondary):
     scores = []
@@ -716,6 +422,8 @@ def calculate_scores_GR(df, name="undefined", save = True):
 def compare_contacts(reference):
     print1("Comparing contacts for GR")
 
+    vars["clustering"]["classified"][reference.name] = pd.DataFrame(
+        columns=["ID", "Best_Fit", "Best_Match", "Similarity", "Inverse"])
     print2(reference)
     df_path = os.path.join(root.contacts, reference.name+".csv")
     contacts_df = pd.read_csv(df_path)
@@ -723,11 +431,11 @@ def compare_contacts(reference):
     if reference.name != "GR":
         return
     assert reference.name == "GR"
-    if "GR_EVA.csv" in os.listdir(root.contacts):
-        eva_df = pd.read_csv(os.path.join(root.contacts, "GR_EVA.csv"))
+    if "GR_EVA.csv" in os.listdir(root.data):
+        eva_df = pd.read_csv(os.path.join(root.data, "GR_EVA.csv"))
         print(eva_df)
     else:
-        print("GR_EVA.csv not found (in contacts folder)")
+        print("GR_EVA.csv not found (in data folder)")
         return
 
 
@@ -786,17 +494,35 @@ def compare_contacts(reference):
                                                                                  round(100 * best_match[1]),
                                                                                  best_match[2]))
 
-        face1 = dimer.face1
-        face2 = dimer.face2
-        if best_match[2]:
-            face1, face2 = face2, face1
-
-        vars.classified_df.loc[len(vars.classified_df)] = [dimer_id, reference.name, best_match[0],
-                                                 round(best_match[1] * 100), best_match[2], face1, face2]
+        vars.clustering["classified"][reference.name].loc[dimer_id] = [dimer_id, reference.name, best_match[0],
+                                                 round(best_match[1] * 100), best_match[2]]
         progress.add()
-    classified_path = os.path.join(root.dataframes, "classified_df.csv")
-    vars.classified_df.to_csv(classified_path)
-    return classified_path
+    #classified_path = os.path.join(root.dataframes, "classified_df.csv")
+    #vars.classified_df.to_csv(classified_path)
+    #return classified_path
+    return vars.clustering["classified"][reference.name]
+
+def add_info_to_classified(reference):
+    classified = vars.clustering["classified"][reference.name]
+    faces = vars.clustering["faces"][reference.name]
+    try:
+        assert len(classified) == len(faces)
+    except AssertionError:
+
+        print(len(classified), len(faces))
+        quit()
+    classified.sort_values("ID", ascending=True, inplace=True)
+    faces.sort_values("ID", ascending=True, inplace=True)
+    print(classified)
+    print(faces)
+    print(faces.columns)
+    vars.clustering["classified"][reference.name] = pd.concat([classified, faces[["face1", "face2"]]], axis=1)
+    reference.classified_df = vars.clustering["classified"][reference.name]
+    reference.faces_df = vars.clustering["faces"][reference.name]
+    vars.clustering["classified"][reference.name].to_csv(os.path.join(root.classified, reference.name + ".csv"))
+
+
+
 
 
 
@@ -813,7 +539,7 @@ if __name__ == "__main__":
     from dataframes import save_dfs
 
 
-    #### CONTACT LENGTH TESTING ########################################################################################
+'''    #### CONTACT LENGTH TESTING ########################################################################################
     vars["references"] = load_references()
 
     molecule_folder = local.many_pdbs
@@ -849,9 +575,9 @@ if __name__ == "__main__":
 
         for reference in vars.references:
             cluster(reference, score_id="under_{}_A_".format(dist))
-    ####################################################################################################################
+    ####################################################################################################################'''
 
-    '''#### DIMENSION TESTING ###
+'''#### DIMENSION TESTING ###
     dimensions = [3,4,5,6,7,8,9,10]
     for n in dimensions:
         clustering(FORCE_SM = False,
@@ -863,14 +589,13 @@ if __name__ == "__main__":
                    )
     #### DIMENSION TESTING ###'''
 
-    # OLD
-    '''clustering(FORCE_ALL=False,
-               FORCE_SM=False,
-               FORCE_CC=True,
-               FORCE_CLUSTER=True,
-               FORCE_PLOT=True,
-               DIMENSIONS=5,
-               )'''
-    #from github import automatic_push_to_branch
-    #automatic_push_to_branch(target="auto")
-            
+# OLD
+'''clustering(FORCE_ALL=False,
+           FORCE_SM=False,
+           FORCE_CC=True,
+           FORCE_CLUSTER=True,
+           FORCE_PLOT=True,
+           DIMENSIONS=5,
+           )'''
+#from github import automatic_push_to_branch
+#automatic_push_to_branch(target="auto")

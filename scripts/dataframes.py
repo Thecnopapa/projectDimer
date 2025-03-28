@@ -8,16 +8,12 @@ import pandas as pd
 
 
 
-def save_dfs(force = [], general= True, clustering = False):
-    excluded = ["classified"]
+def save_dfs(force = False, general= True, clustering = False):
     sprint("Saving dataframes...")
     if "do_only" in vars:
-        if len(vars.do_only) == 0 or vars.do_only is None:
+        if len(vars.do_only) == 0 or vars.do_only is None or force:
             for key, value in vars.items():
                 if "df" in key and general:
-                    for e in excluded:
-                        if e in key and e not in [f for f in force]:
-                            continue
                     print1("Saving {}.csv".format(key))
                     value.to_csv(os.path.join(root.dataframes,f"{key}.csv"), header = True, index=False)
                 if "clustering" == key and clustering:
@@ -57,6 +53,8 @@ def create_clustering_dfs(references):
     root["clustering"] = "dataframes/clustering"
     vars["clustering"] = {}
     vars["clustering"]["contacts"] = {}
+    vars["clustering"]["faces"] = {}
+    vars["clustering"]["classified"] = {}
     for reference in references:
         print("Reference:", reference.name)
         ref_data = {"ResNum": [],
@@ -65,7 +63,8 @@ def create_clustering_dfs(references):
             ref_data["ResNum"].append(res.id[1])
             ref_data["ResName"].append(res.resname)
         vars["clustering"]["contacts"][reference.name] = pd.DataFrame(data=ref_data)
-    vars["classified_df"] = pd.DataFrame(columns=["ID", "Best_Fit", "Best_Match", "Similarity", "Inverse", "Face1", "Face2"])
+        vars["clustering"]["faces"][reference.name] = pd.DataFrame(columns=["ID", "face1", "face2"])
+
 
 
 

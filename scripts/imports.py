@@ -78,7 +78,8 @@ def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None,
                 p = unpickle(os.path.join(pickle_folder, file))
                 p.restore_dfs()
                 if object_class == Reference:
-                    p.restore_reference_dfs()
+                    p.restore_reference_dfs(reset=force_reload)
+
                 objects.append(p)
     if len(objects) == 0 and pdb_folder is not None:
         for file in os.listdir(pdb_folder):

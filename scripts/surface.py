@@ -234,6 +234,9 @@ def build_contact_arrays(self, sasa = False, force=False, max_contact_length = N
 
     contact_df = vars["clustering"]["contacts"][self.best_fit]
     contact_df[self.id] = self.full_array
+
+    face_df = vars["clustering"]["faces"][self.best_fit]
+    face_df.loc[self.id] = [self.id, self.face1, self.face2]
     #print(contact_df)
 
 

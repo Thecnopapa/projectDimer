@@ -127,16 +127,19 @@ def main(PROCESS_ALL = False,
                     if dimer.incomplete:
                         continue
                     dimer.get_contacts()
-                    build_contact_arrays(dimer, sasa=False, force=FORCE_CONTACTS)
                     dimer.get_faces()
+                    build_contact_arrays(dimer, sasa=False, force=FORCE_CONTACTS)
+
 
                     dimer.pickle()
                 progress.add(info=molecule.id)
+        save_dfs(general=False, clustering=True)
         for reference in vars.references:
+
             if reference.name+".csv" in root.contacts:
                 reference.contacts_df = pd.read_csv(root.contacts[reference.name+".csv"])
                 reference.pickle()
-        save_dfs(general=False, clustering=True)
+
 
     eprint("DIMER ANALYSIS")
     ###### CLUSTERING ##################################################################################################
@@ -147,8 +150,11 @@ def main(PROCESS_ALL = False,
         for reference in vars.references:
             sprint(reference.name)
             if reference.name == "GR" and COMPARE:
-                reference.classified_eva_path = compare_contacts(reference)
-                reference.clusters_eva = get_clusters(reference.classified_eva_path, column = "Best_Match", ref_name=reference.name)
+                reference.classified = compare_contacts(reference)
+                from clustering import add_info_to_classified
+                add_info_to_classified(reference)
+                reference.clusters_eva = get_clusters(reference.classified, column = "Best_Match", ref_name=reference.name)
+
             if reference.name != "GR" and ONLY_GR:
                 continue
             cluster(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL)
@@ -197,7 +203,7 @@ if __name__ == "__main__":
          SKIP_SYMMETRY = True,
          SKIP_DIMERS = False,
          SKIP_CLUSTERING=False,
-         FORCE_CONTACTS = False,
+         FORCE_CONTACTS = True,
          COMPARE = True,
          ONLY_GR = True,
          FORCE_CLUSTERING = False,

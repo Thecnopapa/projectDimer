@@ -221,7 +221,7 @@ if __name__ == "__main__":
 
     elif ("clusters-eva" in sys.argv[1]):
         tprint("Showing clusters vs eva data")
-        classified_df = pd.read_csv(os.path.join(root.dataframes, "classified_df.csv")).sort_values("Similarity")#,index_col=0)
+        classified_df = pd.read_csv(os.path.join(root.classified, "GR.csv")).sort_values("Similarity")#,index_col=0)
         if len(sys.argv[2:]) == 0:
             print(classified_df.sort_values("Best_Match").to_string())
 
