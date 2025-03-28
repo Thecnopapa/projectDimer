@@ -1,5 +1,6 @@
 import shutil
 import time
+import os
 
 
 
@@ -56,8 +57,12 @@ def get_digits(string, allow=("."), integer = False):
         else:
             return float(''.join(e for e in unidecode(str(string)) if e.isdigit() or e in allow))
     except:
-        from Globals import vars
-        if vars.verbose:
+        try:
+            from Globals import vars
+            if vars.verbose:
+                print("No digits found in: {}".format(string))
+                print(''.join(e for e in unidecode(str(string)) if e.isdigit() or e in allow))
+        except:
             print("No digits found in: {}".format(string))
             print(''.join(e for e in unidecode(str(string)) if e.isdigit() or e in allow))
 
@@ -86,11 +91,13 @@ def supress(fun, *args, **kwargs):
 
 
 class ProgressBar:
-    def __init__(self, total=100, style="=", start=0):
+    def __init__(self, total=100, style="=", start=0, silent = False, title=True):
         self.start_time = time.perf_counter()
         self.total = total
         self.start = start
         self.current = start
+        self.silent = silent
+        self.title = title
         try:
             self.width = shutil.get_terminal_size()[0]-2
         except:
@@ -113,7 +120,10 @@ class ProgressBar:
 
     def finish(self):
         self.update(end="\n")
+        if not self.silent:
+            ring_bell(times=3)
         print("Completed in {} seconds".format(round(time.perf_counter() - self.start_time, 2)))
+
 
     def update(self, end="\r", info = ""):
         progress = int(self.current * 100 // self.total)
@@ -126,6 +136,20 @@ class ProgressBar:
         bar = "|{}>".format(self.style * progress_scaled)
         blank = " " * (self.width - len(bar)- len(percentage))
         print("{}{}{}".format(bar, blank, percentage), end = end)
+        if self.title:
+            try:
+                from Globals import vars
+                print('\33]0;{}\a'.format(os.path.basename(vars.tab_name + " {}%". format(progress))), end='', flush=True)
+            except:
+                pass
+
+def ring_bell(times = 1, interval=0.2):
+    import sys
+    import time
+    for i in range(times):
+        sys.stdout.write('\a')
+        sys.stdout.flush()
+        time.sleep(interval)
 
 
 

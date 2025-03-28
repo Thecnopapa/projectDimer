@@ -14,7 +14,7 @@ def setup(local_path=None, deepness_of_script =2):
 
 
 
-
+# Change console tab name
 try:
     import inspect
     for frame in inspect.stack()[1:]:
@@ -36,6 +36,10 @@ else:
 from Globals import root, local, vars
 local["molecules"] = "pickles/molecules"
 vars["pymol_started"] = False
+try:
+    vars["tab_name"] = importing_file
+except:
+    pass
 
 
 
