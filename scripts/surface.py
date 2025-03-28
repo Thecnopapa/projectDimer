@@ -147,7 +147,7 @@ def get_dimer_sasa(self, n_points =100, radius = 1.6, use_replaced = True):
 
 
 
-def build_contact_arrays(self, sasa = False, force=False, max_contact_length = None):
+def build_contact_arrays(self, c_arrays, sasa = False, force=False, max_contact_length = None):
 
     ################### SASA contacts ##############################
     if sasa:
@@ -230,11 +230,12 @@ def build_contact_arrays(self, sasa = False, force=False, max_contact_length = N
         print3("Number of contacts by symmetry:", len(contact_array))
         self.contacts_symm = contact_array
 
-        self.full_array = [value for value in empty_array.values()]
-
-    contact_df = vars["clustering"]["contacts"][self.best_fit]
-    contact_df[self.id] = self.full_array
-
+        self.full_array = [str(value) for value in empty_array.values()]
+        #print(self.full_array)
+    c_arrays[self.best_fit].append(pd.DataFrame(self.full_array, columns=[self.id]))
+    #contact_df = vars["clustering"]["contacts"][self.best_fit]
+    #contact_df[self.id] = self.full_array  # Poor performance according to pandas
+    #print(vars["clustering"]["faces"])
     face_df = vars["clustering"]["faces"][self.best_fit]
     face_df.loc[self.id] = [self.id, self.face1, self.face2]
     #print(contact_df)

@@ -19,6 +19,7 @@ def save_dfs(force = False, general= True, clustering = False):
                 if "clustering" == key and clustering:
                     for folder, dfs in value.items():
                         os.makedirs(os.path.join(root.clustering,folder), exist_ok=True)
+                        vars.root[folder] = "clustering/{}".format(folder)
                         for name, df in dfs.items():
                             path = os.path.join(root.clustering,folder,name+".csv")
                             print1("Saving {}.csv at {}".format(name, path))

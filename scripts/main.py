@@ -63,6 +63,9 @@ def main(PROCESS_ALL = False,
     sprint("Creating dataframes")
     create_dfs(vars.references)
     create_clustering_dfs(vars.references)
+    for reference in vars.references:
+        reference.restore_reference_dfs(reset=PROCESS_ALL)
+
     print1("Dataframes created")
 
 
@@ -99,7 +102,7 @@ def main(PROCESS_ALL = False,
                                         min_contacts=MINIMUM_CONTACTS,
                                         )
                 molecule.pickle()
-                progress.add(info=molecule.id)
+            progress.add(info=m)
         save_dfs()
 
 
@@ -108,9 +111,10 @@ def main(PROCESS_ALL = False,
     tprint("DIMER ANALYSIS")
 
     if not SKIP_DIMERS or PROCESS_ALL:
-        print(list(vars.clustering["contacts"].keys()))
+        #print(list(vars.clustering["contacts"].keys()))
         progress = ProgressBar(len(molecule_list))
         from surface import build_contact_arrays
+        c_arrays = {ref.name: [] for ref in vars.references}
         for m in molecule_list:
             if "lock" in m:
                 sprint(".lock file detected:", m)
@@ -126,16 +130,21 @@ def main(PROCESS_ALL = False,
                         continue
                     dimer.get_contacts()
                     dimer.get_faces()
-                    build_contact_arrays(dimer, sasa=SASA, force=FORCE_CONTACTS)
+                    build_contact_arrays(dimer, c_arrays, sasa=SASA, force=FORCE_CONTACTS)
 
                     dimer.pickle()
-                progress.add(info=molecule.id)
+                    #vars.clustering["contacts"][dimer.best_fit] = pd.concat([vars.clustering["contacts"][dimer.best_fit], c_arrays[dimer.best_fit]],
+                    #axis=1)
+            progress.add(info=m)
+
+
+        for key, item in c_arrays.items():
+            vars.clustering["contacts"][key] = pd.concat([vars.clustering["contacts"][key]+item], axis=1)
         save_dfs(general=SASA, clustering=True)
         for reference in vars.references:
+            reference.faces_df = vars.clustering["faces"][reference.name]
+            reference.contacts_df = vars.clustering["contacts"][reference.name]
 
-            if reference.name+".csv" in root.contacts:
-                reference.contacts_df = pd.read_csv(root.contacts[reference.name+".csv"])
-                reference.pickle()
 
 
     eprint("DIMER ANALYSIS")
@@ -153,6 +162,7 @@ def main(PROCESS_ALL = False,
                 reference.clusters_eva = get_clusters(reference.classified, column = "Best_Match", ref_name=reference.name)
 
             if reference.name != "GR" and ONLY_GR:
+                reference.pickle()
                 continue
             cluster(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL)
             reference.pickle()
@@ -206,12 +216,13 @@ if __name__ == "__main__":
 
          # Symmetry calculations, and generation of Monomers + Dimers
          SKIP_SYMMETRY = True, # Skip the entire block (overridden by PROCESS_ALL)
-
-         # Dimer processing, includes contact calculation and face identification, generates contact dataframes
-         SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL)
-         MINIMUM_CHAIN_LENGTH=100, # Minimum number of residues to consider a chain for dimerization (to ignore ligands and small molecules)
+         MINIMUM_CHAIN_LENGTH=100,# Minimum number of residues to consider a chain for dimerization (to ignore ligands and small molecules)
          CONTACT_DISTANCE=8,  # Minimum (less or equal than) distance in Angstroms to consider a contact between atoms
          MINIMUM_CONTACTS=0,  # Minimum number of contacts to consider a dimer interface
+
+         # Dimer processing, includes contact calculation and face identification, generates contact dataframes
+         SKIP_DIMERS = False, # Skip the entire block (overridden by PROCESS_ALL)
+         FORCE_CONTACTS = False,  # Force contact calculation if already calculated
 
          # SASA related (BROKEN)
          SASA = False, # Whether to run SASA calculations, currently broken
@@ -220,7 +231,7 @@ if __name__ == "__main__":
 
          # Clustering, from SM to plotting
          SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
-         FORCE_CONTACTS = True, # Force contact calculation if already calculated
+
          COMPARE = True, # Compare GR clustering to EVA clustering
          ONLY_GR = True, # Whether to only clusterise GR
          FORCE_CLUSTERING = False, # Force clustering if already calculated (overridden by PROCESS_ALL)

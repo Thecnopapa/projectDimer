@@ -39,13 +39,20 @@ class BioObject:
 
     def restore_reference_dfs(self, reset = False):
         assert "Reference" in str(self.__class__)
+        if reset:
+            return
+        if "clustering" not in vars:
+            vars["clustering"] = {}
         for key, df in self.__dict__.items():
             if "df" in key:
                 try:
-                    df_folder = root.clustering[key.split("_")[0]]
+                    df_folder = key.split("_")[0]
+                    if df_folder not in vars["clustering"]:
+                        vars["clustering"][df_folder] = {}
                     vars["clustering"][df_folder][self.name] = df
                 except:
                     print(key)
+                    print(df_folder)
                     quit()
 
 
