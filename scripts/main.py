@@ -26,6 +26,7 @@ def main(PROCESS_ALL = False,
          MINIMUM_CHAIN_LENGTH = 100,
          CONTACT_DISTANCE = 8,
          MINIMUM_CONTACTS = 0,
+         SASA = False,
          FORCE_SASA = False,
          BALL_SIZE = 1.6,
          VERBOSE = False,
@@ -92,14 +93,11 @@ def main(PROCESS_ALL = False,
             sprint(filename)
             molecules = load_single_pdb(filename, local.molecules, molecule_folder, force_reload=PROCESS_ALL)
             for molecule in molecules:
-                if GENERATE_SYMMETRIES:
-                    molecule.get_all_dimers(force=PROCESS_ALL,
-                                            minimum_chain_length=MINIMUM_CHAIN_LENGTH,
-                                            contact_distance=CONTACT_DISTANCE,
-                                            min_contacts=MINIMUM_CONTACTS,
-                                            )
-                else:
-                    molecule.get_dimers()
+                molecule.get_all_dimers(force=PROCESS_ALL,
+                                        minimum_chain_length=MINIMUM_CHAIN_LENGTH,
+                                        contact_distance=CONTACT_DISTANCE,
+                                        min_contacts=MINIMUM_CONTACTS,
+                                        )
                 molecule.pickle()
                 progress.add(info=molecule.id)
         save_dfs()
@@ -128,12 +126,11 @@ def main(PROCESS_ALL = False,
                         continue
                     dimer.get_contacts()
                     dimer.get_faces()
-                    build_contact_arrays(dimer, sasa=False, force=FORCE_CONTACTS)
-
+                    build_contact_arrays(dimer, sasa=SASA, force=FORCE_CONTACTS)
 
                     dimer.pickle()
                 progress.add(info=molecule.id)
-        save_dfs(general=False, clustering=True)
+        save_dfs(general=SASA, clustering=True)
         for reference in vars.references:
 
             if reference.name+".csv" in root.contacts:
@@ -199,36 +196,39 @@ if __name__ == "__main__":
     # Imports that need globals initialised:
     from Globals import root, local, vars
 
-    main(PROCESS_ALL=PROCESS_ALL, # Ignore saved pickles and generate everything from scratch
-         SKIP_SYMMETRY = True,
-         SKIP_DIMERS = False,
-         SKIP_CLUSTERING=False,
-         FORCE_CONTACTS = True,
-         COMPARE = True,
-         ONLY_GR = True,
-         FORCE_CLUSTERING = False,
-         LARGE_DATASET = True, # Use a large dataset (delete all local data previously to avoid errors)
-         DO_ONLY = DO_ONLY, # ( list of strings / string) Names of pdbs to be processed (CAPS sensitive, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"
-         GENERATE_SYMMETRIES=True,
-         MAX_THREADS=1, # Number of threads, might not be implemented yet, (0 or 1 deactivate threading)
+    main(PROCESS_ALL=PROCESS_ALL, # Master switch
+
+         # Setup and data import
+         VERBOSE=VERBOSE,
+         DO_ONLY=DO_ONLY, # ( list of strings / string) Names of PDBs to be processed (CAPS sensitive?, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"
+         LARGE_DATASET=True,  # Use a large dataset (delete all local data previously to avoid errors)
+         MAX_THREADS=1,  # Number of threads, might not be implemented yet, (0 or 1 deactivate threading)
+
+         # Symmetry calculations, and generation of Monomers + Dimers
+         SKIP_SYMMETRY = True, # Skip the entire block (overridden by PROCESS_ALL)
+
+         # Dimer processing, includes contact calculation and face identification, generates contact dataframes
+         SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL)
          MINIMUM_CHAIN_LENGTH=100, # Minimum number of residues to consider a chain for dimerization (to ignore ligands and small molecules)
-         CONTACT_DISTANCE = 8, # Minimum (less or equal than) distance in Angstroms to consider a contact between atoms
-         MINIMUM_CONTACTS = 0, # Minimum number of contacts to consider a dimer interface
-         FORCE_SASA = True,
-         BALL_SIZE = 1.6,
-         VERBOSE = VERBOSE
+         CONTACT_DISTANCE=8,  # Minimum (less or equal than) distance in Angstroms to consider a contact between atoms
+         MINIMUM_CONTACTS=0,  # Minimum number of contacts to consider a dimer interface
+
+         # SASA related (BROKEN)
+         SASA = False, # Whether to run SASA calculations, currently broken
+         FORCE_SASA=True, # DEPRECATED
+         BALL_SIZE=1.6, # DEPRECATED
+
+         # Clustering, from SM to plotting
+         SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
+         FORCE_CONTACTS = True, # Force contact calculation if already calculated
+         COMPARE = True, # Compare GR clustering to EVA clustering
+         ONLY_GR = True, # Whether to only clusterise GR
+         FORCE_CLUSTERING = False, # Force clustering if already calculated (overridden by PROCESS_ALL)
+
+
+
          )
 
     quit()
-
-    from surface import surface
-    surface(FORCE_SASA=True,
-            FORCE_SIMILARITY=True
-            )
-
-    from clustering import clustering
-    clustering(FORCE_ALL=False,
-               )
-
 
 
