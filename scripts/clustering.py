@@ -1,4 +1,6 @@
 import os
+from multiprocessing.util import close_all_fds_except
+
 from utilities import *
 from Globals import root, local, vars
 import numpy as np
@@ -39,7 +41,7 @@ def generate_sm(reference, force=False):
         print2("Skipping SM generation for {}".format(reference.name))
         return os.path.join(root.sms, "{}_sm_ssd.csv".format(reference.name))
 
-    contacts_df = pd.read_csv(os.path.join(root.contacts, reference.name+".csv"), index_col=0)
+    contacts_df = reference.contacts_df
     print(contacts_df)
 
     sm_ssd = pd.DataFrame(columns=["dimer1", "dimer2", "index1", "index2", "similarity", "diffX", "diffx"])
@@ -98,6 +100,7 @@ def generate_sm(reference, force=False):
 
     sm_path = os.path.join(root.sms, '{}.csv'.format(reference.name))
     sm_ssd.to_csv(sm_path,header=False, index=False)
+    reference.sms_df = sm_ssd
     return sm_path
 
 
@@ -111,12 +114,8 @@ def cc_analysis(reference, dimensions=3, force =False):
         print2("Skipping CC analysis for {}".format(reference.name))
         return os.path.join(root.ccs, "{}.csv".format(reference.name))
 
-    sm_ssd_path = reference.sm_path
-    try:
-        sm_ssd = pd.read_csv(sm_ssd_path, index_col=None, header=None)
-    except:
-        print1("Error parsing {}, might be empy".format(sm_ssd_path))
-        return
+
+    sm_ssd = reference.ssd_df
     #print(sm_ssd)
     if len(sm_ssd.columns) != 7:
         print1("SM Must be 7 columns wide (id1, id2, index1, index2, similarity, diffX, diffx)")
@@ -130,7 +129,7 @@ def cc_analysis(reference, dimensions=3, force =False):
     import subprocess
 
     cc_path = os.path.join(root.scripts, "cc_analysis.py")
-    cc_line = ["python", cc_path, str(dimensions), sm_ssd_path]  # Currently uses correlation matrix
+    cc_line = ["python", cc_path, str(dimensions), reference.sm_path]  # Currently uses correlation matrix
     print1("cc_line:")
     print2(" ".join(cc_line))
     progress = ProgressBar(1)
@@ -192,6 +191,7 @@ def cc_analysis(reference, dimensions=3, force =False):
 
     cc_out_path = os.path.join(root.ccs, "{}.csv".format(reference.name))
     cc_out.to_csv(cc_out_path, index=False, header=True)
+    reference.ccs_df = cc_out
 
     print1("CC output:")
     print2(cc_out_path)
@@ -207,12 +207,8 @@ def clusterize_cc(reference, force=False, n_clusters = 20, dimensions=3):
         print2("Skipping clustering for {}".format(reference.name))
         return os.path.join(root.clustered, "{}.csv".format(reference.name))
 
-    cc_out_path = reference.cc_path
-    try:
-        cc_out = pd.read_csv(cc_out_path, index_col=0)
-    except:
-        print1("Error parsing {}, might be empy".format(cc_out_path))
-        return reference.cc_path
+
+    cc_out = reference.ccs_df
 
     if len(cc_out) < 30 and len(cc_out) > 6:
         n_clusters = 5
@@ -237,6 +233,7 @@ def clusterize_cc(reference, force=False, n_clusters = 20, dimensions=3):
     #reference.cluster_centres.to_csv(cluster_centres_path,header=None)
     clustered_path = os.path.join(root.clustered, "{}.csv".format(reference.name))
     cc_out.to_csv(clustered_path)
+    reference.clustered_df = cc_out
     return clustered_path
 
 
@@ -524,8 +521,55 @@ def add_info_to_classified(reference):
     vars.clustering["classified"][reference.name].to_csv(os.path.join(root.classified, reference.name + ".csv"))
 
 
+def split_by_faces(reference):
+    faces_dict = {}
+    for row in reference.faces_df.itertuples():
+        if row.face1 is None or row.face2 is None:
+            continue
+        faces = " ".join(sorted([row.face1, row.face2]))
+        if faces not in faces_dict.keys():
+            faces_dict[faces] = [row.ID]
+        else:
+            faces_dict[faces].append(row.ID)
+        #print(faces)
+        #print(row)
 
 
+    reference.face_subsets = {}
+    contacts_df = reference.contacts_df
+    print(contacts_df)
+    root["{}_by_face".format(reference.name)] = "dataframes/clustering/faces/{}_by_face".format(reference.name)
+    for face, names in faces_dict.items():
+        face_df = contacts_df[names]
+        face_df.to_csv(os.path.join(root["{}_by_face".format(reference.name)], face + ".csv"))
+        reference.face_subsets[face] = face_df
+
+        print(face_df)
+
+
+
+
+
+    #print(pd.DataFrame(reference.faces_dfs))
+
+def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, score_id="", thread=False):
+    if FORCE_ALL:
+        FORCE_SM = True
+        FORCE_CC = True
+        FORCE_CLUSTER = True
+        FORCE_PLOT = True
+    else:
+        FORCE_SM = False
+        FORCE_CC = False
+        FORCE_CLUSTER = False
+        FORCE_PLOT = False
+
+    reference.sm_path = generate_sm(reference, force=FORCE_SM)
+    reference.cc_path = cc_analysis(reference, force=FORCE_CC, dimensions=DIMENSIONS)
+    reference.clustered_path = clusterize_cc(reference, force=FORCE_CLUSTER, dimensions=DIMENSIONS, n_clusters=n_clusters)
+    reference.plot_path = plot_cc(reference, labels=False, labels_centres=True, force=FORCE_PLOT,
+                                  dimensions=DIMENSIONS)
+    return
 
 
 

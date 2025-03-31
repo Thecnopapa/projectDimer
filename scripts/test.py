@@ -8,10 +8,15 @@ import sys
 # Imports that need globals initialised:
 from Globals import root, local, vars
 
+from imports import *
 
-progress = ProgressBar(10)
-for i in range(10):
-    progress.add()
-    time.sleep(0.5)
-KeepInterpreter()
+sprint("Loading References")
+vars["references"] = load_references(force_reload=False)
+print1("References loaded")
 
+
+from clustering import split_by_faces
+for reference in vars.references:
+    if reference.name != "GR":
+        continue
+    split_by_faces(reference)

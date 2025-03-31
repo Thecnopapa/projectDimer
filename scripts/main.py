@@ -31,6 +31,8 @@ def main(PROCESS_ALL = False,
          FORCE_SASA = False,
          BALL_SIZE = 1.6,
          VERBOSE = False,
+         SPLIT_FACES = True,
+    N_CLUSTERS = 4,
          ):
 
 
@@ -157,7 +159,7 @@ def main(PROCESS_ALL = False,
     tprint("CLUSTERING")
 
     if not SKIP_CLUSTERING or PROCESS_ALL and False:
-        from clustering import compare_contacts, get_clusters, cluster
+        from clustering import compare_contacts, get_clusters, cluster, split_by_faces, cluster_by_face
         for reference in vars.references:
             sprint(reference.name)
             if reference.name == "GR" and COMPARE:
@@ -170,7 +172,11 @@ def main(PROCESS_ALL = False,
             if reference.name != "GR" and ONLY_GR:
                 reference.pickle()
                 continue
-            cluster(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL)
+            if SPLIT_FACES:
+                reference.split_by_faces(reference)
+                cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, n_clusters=N_CLUSTERS)
+            else:
+                cluster(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL)
             reference.pickle()
         save_dfs(general=False, clustering=True)
 
@@ -228,7 +234,7 @@ if __name__ == "__main__":
          MINIMUM_CONTACTS=0,  # Minimum number of contacts to consider a dimer interface
 
          # Dimer processing, includes contact calculation and face identification, generates contact dataframes
-         SKIP_DIMERS = False, # Skip the entire block (overridden by PROCESS_ALL)
+         SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL)
          FORCE_CONTACTS = False,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
          CONTACT_DISTANCE_CLUSTERING = 12,
 
@@ -240,9 +246,11 @@ if __name__ == "__main__":
          # Clustering, from SM to plotting
          SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
 
-         COMPARE = True, # Compare GR clustering to EVA clustering
+         COMPARE = False, # Compare GR clustering to EVA clustering
          ONLY_GR = True, # Whether to only clusterise GR
-         FORCE_CLUSTERING = False, # Force clustering if already calculated (overridden by PROCESS_ALL)
+         FORCE_CLUSTERING = True, # Force clustering if already calculated (overridden by PROCESS_ALL)
+         SPLIT_FACES = False,
+         N_CLUSTERS = 4,
 
 
 
