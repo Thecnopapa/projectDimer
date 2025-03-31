@@ -510,6 +510,8 @@ def add_info_to_classified(reference):
     except AssertionError:
         print("Classified and faces dataframes do not have the same length:")
         print(len(classified), len(faces))
+        print(classified),
+        print(faces)
         quit()
     classified.sort_values("ID", ascending=True, inplace=True)
     faces.sort_values("ID", ascending=True, inplace=True)

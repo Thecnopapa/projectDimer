@@ -84,7 +84,7 @@ def show_objects(obj_list, args):
             if "Bio" in str(type(item)):
                 print1(key, ":", item, id(item))
             if "pandas" in str(type(item)):
-                print1(key, ":\n", item)
+                print1(key, ":\n", item.iloc[:, 0:2])#list(item.columns.to_series()))
             if item is None:
                 print1(key, ":", "None")
         if "pymol" in args:

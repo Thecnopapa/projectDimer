@@ -70,6 +70,9 @@ class Variable:
     def __repr__(self):
         return str(list(self.vars.keys()))
 
+    def copy(self):
+        return self.vars.copy()
+
     def keys(self):
         return list(self.vars.keys())
 

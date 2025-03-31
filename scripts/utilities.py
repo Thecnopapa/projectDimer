@@ -252,6 +252,17 @@ def sort_dict(x, as_list = False, ascendant = False):
     else:
         return {k: v for k, v in sorted(x.items(), key=lambda item: item[1], reverse=not ascendant)}
 
+def KeepInterpreter():
+    class HaltException(Exception): pass
+    try:
+        # script goes here
+
+        # when you want to stop,
+        raise HaltException("Somebody stop me!")
+
+    except HaltException as h:
+        print(h)
+        # now what?
 
 
 if __name__ == "__main__":

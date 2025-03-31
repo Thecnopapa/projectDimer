@@ -134,22 +134,21 @@ def main(PROCESS_ALL = False,
                     dimer.get_contacts(max_distance=CONTACT_DISTANCE_CLUSTERING)
                     dimer.get_faces()
                     build_contact_arrays(dimer, c_arrays, sasa=SASA, force=FORCE_CONTACTS or PROCESS_ALL, max_contact_length=CONTACT_DISTANCE_CLUSTERING)
-
                     dimer.pickle()
-                    #vars.clustering["contacts"][dimer.best_fit] = pd.concat([vars.clustering["contacts"][dimer.best_fit], c_arrays[dimer.best_fit]],
-                    #axis=1)
             progress.add(info=m)
 
-
         for key in c_arrays.keys():
-            vars.clustering["contacts"][key] = pd.concat([vars.clustering["contacts"][key], *c_arrays[key]], axis=1)
+            vars.clustering["contacts"][key] = pd.concat([vars.clustering["contacts"][key].iloc[:,0:2], *c_arrays[key]], axis=1)
             print(vars.clustering["contacts"][key])
         save_dfs(general=False, clustering=True)
+
         for reference in vars.references:
+            sprint("Faces and contact dfs for {}".format(reference.name))
             reference.faces_df = vars.clustering["faces"][reference.name]
             reference.contacts_df = vars.clustering["contacts"][reference.name]
             reference.pickle()
             print(reference.faces_df)
+            print(reference.contacts_df)
 
 
 
@@ -162,8 +161,9 @@ def main(PROCESS_ALL = False,
         for reference in vars.references:
             sprint(reference.name)
             if reference.name == "GR" and COMPARE:
-                reference.classified = compare_contacts(reference)
+                reference.classified_df = compare_contacts(reference)
                 from clustering import add_info_to_classified
+                save_dfs(general=False, clustering=True)
                 add_info_to_classified(reference)
                 reference.clusters_eva = get_clusters(reference.classified, column = "Best_Match", ref_name=reference.name)
 
@@ -229,7 +229,7 @@ if __name__ == "__main__":
 
          # Dimer processing, includes contact calculation and face identification, generates contact dataframes
          SKIP_DIMERS = False, # Skip the entire block (overridden by PROCESS_ALL)
-         FORCE_CONTACTS = True,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
+         FORCE_CONTACTS = False,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
          CONTACT_DISTANCE_CLUSTERING = 12,
 
          # SASA related (BROKEN)
@@ -248,6 +248,6 @@ if __name__ == "__main__":
 
          )
 
-    quit()
+    #quit()
 
 

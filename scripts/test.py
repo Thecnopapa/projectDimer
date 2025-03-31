@@ -13,4 +13,5 @@ progress = ProgressBar(10)
 for i in range(10):
     progress.add()
     time.sleep(0.5)
+KeepInterpreter()
 
