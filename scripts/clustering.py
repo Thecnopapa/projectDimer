@@ -33,19 +33,35 @@ def get_clusters(df, column, ref_name):
 
 
 
-def generate_sm(reference, force=False):
+def generate_sm(reference, force=False, subfolder=None, in_path = None, use_csv = True):
     print1("Generating SM for {}".format(reference.name))
 
     root["sms"] = "dataframes/clustering/sms"
-    if "{}.csv".format(reference.name) in os.listdir(root.sms) and not force:
-        print2("Skipping SM generation for {}".format(reference.name))
-        return os.path.join(root.sms, "{}_sm_ssd.csv".format(reference.name))
+    if subfolder is None:
+        sm_path = os.path.join(root.sms, '{}.csv'.format(reference.name))
+        if "{}.csv".format(reference.name) in os.listdir(root.sms) and not force:
+            print2("Skipping SM generation for {}".format(reference.name))
+            return sm_path
+        if use_csv:
+            contacts_df = pd.read_csv(os.path.join(root.contacts, "{}.csv".format(reference.name)))
+        else:
+            contacts_df = reference.contacts_df
+    else:
+        assert in_path is not None
+        name = os.path.basename(in_path).split(".")[0]
+        subfolder = subfolder.format("sms")
+        os.makedirs(os.path.join(root.sms, subfolder), exist_ok=True)
+        sm_path = os.path.join(root.sms, subfolder, name + ".csv")
+        if name+".csv" in os.listdir(os.path.join(root.sms, subfolder)) and not force:
+            print2("Skipping SM generation for {}".format(name))
+            return sm_path
+        contacts_df = pd.read_csv(in_path)
 
-    contacts_df = reference.contacts_df
     print(contacts_df)
 
+
     sm_ssd = pd.DataFrame(columns=["dimer1", "dimer2", "index1", "index2", "similarity", "diffX", "diffx"])
-    n_dimers = len(contacts_df.columns) - 1
+    n_dimers = len(contacts_df.columns)
     #print(contacts_df.columns)
     if n_dimers <2:
         print1("Not enough dimers in {} dataframe".format(reference.name))
@@ -96,27 +112,49 @@ def generate_sm(reference, force=False):
             #similarity = similarity / n_res
             #print(id1, id2, round(similarity,2))
             sm_ssd.loc[len(sm_ssd)] = id1, id2,index1,index2, similarity, dX, dx
-    print(sm_ssd)
+    #print(sm_ssd)
 
-    sm_path = os.path.join(root.sms, '{}.csv'.format(reference.name))
-    sm_ssd.to_csv(sm_path,header=False, index=False)
-    reference.sms_df = sm_ssd
+    if subfolder is None:
+        reference.sms_df = sm_ssd
+
+    sm_ssd.to_csv(sm_path, index=False)
+
+    print(sm_ssd)
     return sm_path
 
 
 
 
-def cc_analysis(reference, dimensions=3, force =False):
+def cc_analysis(reference, dimensions=3, force =False, subfolder = None, in_path = None, use_csv = True):
     print1("CC analysis for {}".format(reference.name))
 
     root["ccs"] = "dataframes/clustering/ccs"
-    if "{}.csv".format(reference.name) in os.listdir(root.ccs) and not force:
-        print2("Skipping CC analysis for {}".format(reference.name))
-        return os.path.join(root.ccs, "{}.csv".format(reference.name))
+    if subfolder is None:
+        ccs_path = os.path.join(root.ccs, '{}.csv'.format(reference.name))
+        if "{}.csv".format(reference.name) in os.listdir(root.ccs) and not force:
+            print2("Skipping CC analysis for {}".format(reference.name))
+            return ccs_path
+        if use_csv:
+            sm_ssd = pd.read_csv(os.path.join(root.sms, "{}.csv".format(reference.name)))
+        else:
+            sm_ssd = reference.sms_df
 
+    else:
+        assert in_path is not None
+        name = os.path.basename(in_path).split(".")[0]
+        subfolder = subfolder.format("ccs")
+        os.makedirs(os.path.join(root.ccs, subfolder), exist_ok=True)
+        ccs_path = os.path.join(root.ccs, subfolder, name + ".csv")
+        if name+".csv" in os.listdir(os.path.join(root.ccs, subfolder)) and not force:
+            print2("Skipping CC analysis for {}".format(name))
+            return ccs_path
+        sm_ssd = pd.read_csv(in_path)
 
-    sm_ssd = reference.ssd_df
-    #print(sm_ssd)
+    print(sm_ssd)
+
+    sm_path = os.path.join(local.temp, "sm_ssd_for_cc.csv")
+    sm_ssd.iloc[:, 2:5].to_csv(sm_path, index=False, header=False)
+
     if len(sm_ssd.columns) != 7:
         print1("SM Must be 7 columns wide (id1, id2, index1, index2, similarity, diffX, diffx)")
         print2("Current:", len(sm_ssd.columns))
@@ -129,7 +167,7 @@ def cc_analysis(reference, dimensions=3, force =False):
     import subprocess
 
     cc_path = os.path.join(root.scripts, "cc_analysis.py")
-    cc_line = ["python", cc_path, str(dimensions), reference.sm_path]  # Currently uses correlation matrix
+    cc_line = ["python", cc_path, str(dimensions), sm_path]  # Currently uses correlation matrix
     print1("cc_line:")
     print2(" ".join(cc_line))
     progress = ProgressBar(1)
@@ -156,7 +194,8 @@ def cc_analysis(reference, dimensions=3, force =False):
     #print("---")
     #print(out)
     #print("---")
-    reference.cc_raw = out
+    if subfolder is None:
+        reference.cc_raw = out
 
 
     #print(out)
@@ -174,9 +213,15 @@ def cc_analysis(reference, dimensions=3, force =False):
         else:
             cc_out[i] = pd.to_numeric(cc_out[i], downcast='float', errors='coerce')
     print("cc_out:")
-    print(cc_out.to_string)
+    print(cc_out)
     #print("ids:")
-    cc_out["id"] = pd.read_csv(os.path.join(root.contacts, "{}.csv".format(reference.name)), index_col=0).columns[1:]
+    if subfolder is None:
+        cc_out["id"] = pd.read_csv(os.path.join(root.contacts, "{}.csv".format(reference.name))).columns[2:]
+    else:
+        print(name)
+        cc_out["id"] = pd.read_csv(os.path.join(root.contacts, "contacts_{}/{}.csv".format(reference.name, name))).columns[2:]
+    print(cc_out)
+    quit()
 
     classified_df = pd.read_csv(os.path.join(root.classified, "{}.csv".format(reference.name)), index_col=0)
     print(classified_df)
@@ -521,12 +566,14 @@ def add_info_to_classified(reference):
     vars.clustering["classified"][reference.name].to_csv(os.path.join(root.classified, reference.name + ".csv"))
 
 
-def split_by_faces(reference):
+def split_by_faces(reference, force= False):
+    if "face_contacts" in reference.__dict__.keys() and not force:
+        return
     faces_dict = {}
     for row in reference.faces_df.itertuples():
         if row.face1 is None or row.face2 is None:
             continue
-        faces = " ".join(sorted([row.face1, row.face2]))
+        faces = "_".join(sorted([row.face1, row.face2]))
         if faces not in faces_dict.keys():
             faces_dict[faces] = [row.ID]
         else:
@@ -535,16 +582,16 @@ def split_by_faces(reference):
         #print(row)
 
 
-    reference.face_subsets = {}
+    reference.face_contacts = {}
     contacts_df = reference.contacts_df
     print(contacts_df)
-    root["{}_by_face".format(reference.name)] = "dataframes/clustering/faces/{}_by_face".format(reference.name)
+    root["contacts_{}".format(reference.name)] = "dataframes/clustering/contacts/contacts_{}".format(reference.name)
     for face, names in faces_dict.items():
-        face_df = contacts_df[names]
-        face_df.to_csv(os.path.join(root["{}_by_face".format(reference.name)], face + ".csv"))
-        reference.face_subsets[face] = face_df
-
+        face_df = pd.concat([contacts_df.iloc[:, 0:2], contacts_df[names]] ,axis = 1)
+        face_df.to_csv(os.path.join(root["contacts_{}".format(reference.name)], face + ".csv"), index=False)
+        reference.face_contacts[face] = face_df
         print(face_df)
+
 
 
 
@@ -553,6 +600,7 @@ def split_by_faces(reference):
     #print(pd.DataFrame(reference.faces_dfs))
 
 def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, score_id="", thread=False):
+
     if FORCE_ALL:
         FORCE_SM = True
         FORCE_CC = True
@@ -564,11 +612,20 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, sc
         FORCE_CLUSTER = False
         FORCE_PLOT = False
 
-    reference.sm_path = generate_sm(reference, force=FORCE_SM)
-    reference.cc_path = cc_analysis(reference, force=FORCE_CC, dimensions=DIMENSIONS)
-    reference.clustered_path = clusterize_cc(reference, force=FORCE_CLUSTER, dimensions=DIMENSIONS, n_clusters=n_clusters)
-    reference.plot_path = plot_cc(reference, labels=False, labels_centres=True, force=FORCE_PLOT,
-                                  dimensions=DIMENSIONS)
+    subfolder_name = "{}_" + reference.name
+
+    print(root[subfolder_name.format("contacts")])
+
+    for file in os.listdir(root[subfolder_name.format("contacts")]):
+        print(file)
+        contacts_path = os.path.join(root[subfolder_name.format("contacts")], file)
+
+        sms_path= generate_sm(reference, force=FORCE_SM, subfolder = subfolder_name, in_path = contacts_path)
+        ccs_path = cc_analysis(reference, force=FORCE_CC, dimensions=DIMENSIONS, subfolder = subfolder_name, in_path = sms_path)
+        clustered_path = clusterize_cc(reference, force=FORCE_CLUSTER, dimensions=DIMENSIONS, n_clusters=n_clusters, subfolder = subfolder_name, in_path = ccs_path)
+        plot_path = plot_cc(reference, labels=False, labels_centres=True, force=FORCE_PLOT,
+                                      dimensions=DIMENSIONS, subfolder = subfolder_name, in_path = clustered_path)
+        quit()
     return
 
 

@@ -32,6 +32,7 @@ def main(PROCESS_ALL = False,
          BALL_SIZE = 1.6,
          VERBOSE = False,
          SPLIT_FACES = True,
+         FORCE_SPLIT = False,
     N_CLUSTERS = 4,
          ):
 
@@ -173,7 +174,7 @@ def main(PROCESS_ALL = False,
                 reference.pickle()
                 continue
             if SPLIT_FACES:
-                reference.split_by_faces(reference)
+                split_by_faces(reference, force=FORCE_SPLIT)
                 cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, n_clusters=N_CLUSTERS)
             else:
                 cluster(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL)
@@ -248,8 +249,9 @@ if __name__ == "__main__":
 
          COMPARE = False, # Compare GR clustering to EVA clustering
          ONLY_GR = True, # Whether to only clusterise GR
-         FORCE_CLUSTERING = True, # Force clustering if already calculated (overridden by PROCESS_ALL)
-         SPLIT_FACES = False,
+         FORCE_CLUSTERING = False, # Force clustering if already calculated (overridden by PROCESS_ALL)
+         SPLIT_FACES = True,
+         FORCE_SPLIT = False,
          N_CLUSTERS = 4,
 
 
