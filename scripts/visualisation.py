@@ -222,6 +222,18 @@ if __name__ == "__main__":
         show_objects(refs, sys.argv[2:])
 
 
+
+    elif "clusters-face" in sys.argv[1]:
+        tprint("Showing clustered data by interaction faces")
+        faces = os.listdir(root.cc_figs_GR)
+        sprint("Clustered face-face combinations for GR:")
+        for n, f in enumerate(faces):
+            print1("{}: {}".format(n,f.split(".")[0]))
+        face = faces[int(input("\n # Please select cluster to display (using the associated number):\n >> "))].split(".")[0]
+        sprint("Selected interaction: {}".format(face))
+
+
+
     elif ("clusters-eva" in sys.argv[1]):
         tprint("Showing clusters vs eva data")
         classified_df = pd.read_csv(os.path.join(root.classified, "GR.csv")).sort_values("Similarity")#,index_col=0)
