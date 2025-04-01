@@ -273,8 +273,8 @@ def clusterize_cc(reference, force=False, n_clusters = 20, dimensions=3, subfold
 
     print(cc_out)
     from sklearn.cluster import KMeans
-    if len(cc_out) < 30 and len(cc_out) > 6:
-        n_clusters = 5
+    #if len(cc_out) < 30 and len(cc_out) > 6:
+        #n_clusters = 5
     model = KMeans(n_clusters=n_clusters, random_state=6, algorithm="elkan")
     cols = []
     for n in range(dimensions):
@@ -307,7 +307,7 @@ def clusterize_cc(reference, force=False, n_clusters = 20, dimensions=3, subfold
 
 
 
-def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centres=True, adjust=False, subfolder=None, in_path=None, use_csv = True, plot_centres=True):
+def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centres=True, adjust=False, subfolder=None, in_path=None, use_csv = True, plot_centres=True):
     print1("Plotting: {}, Dimensions: {}".format(reference.name, dimensions))
 
     if dimensions > 3:
@@ -337,7 +337,7 @@ def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centr
             return fig_path
         cc_out = pd.read_csv(in_path)
 
-    print(cc_out)
+    #print(cc_out)
 
     import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(10, 10))
@@ -361,7 +361,7 @@ def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centr
 
         from maths import get_closest_point, points_to_line
 
-        print(cluster_centres)
+        #print(cluster_centres)
         #print(cluster_centres.columns)
         ax.scatter(cluster_centres["2"].values, cluster_centres["1"].values, color="black", marker=".")
 
@@ -666,7 +666,7 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, sc
             print("CC analysis failed")
             return
         clustered_path = clusterize_cc(reference, force=FORCE_CLUSTER, dimensions=DIMENSIONS, n_clusters=n_clusters, subfolder = subfolder_name, in_path = ccs_path)
-        plot_path = plot_cc(reference, labels=False, labels_centres=True, force=FORCE_PLOT,
+        plot_path = plot_cc(reference, labels=False, labels_centres=True, # force = FORCE_PLOT
                                       dimensions=DIMENSIONS, subfolder = subfolder_name, in_path = clustered_path)
     return
 
