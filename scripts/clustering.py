@@ -158,11 +158,11 @@ def cc_analysis(reference, dimensions=3, force =False, subfolder = None, in_path
     if len(sm_ssd.columns) != 7:
         print1("SM Must be 7 columns wide (id1, id2, index1, index2, similarity, diffX, diffx)")
         print2("Current:", len(sm_ssd.columns))
-        return
+        return None
 
     if len(sm_ssd) < 6:
         print1("Not enough values for cc analysis, min: 6, current: {}".format(len(sm_ssd)))
-        return
+        return None
     ## CC analysis
     import subprocess
 
@@ -221,40 +221,58 @@ def cc_analysis(reference, dimensions=3, force =False, subfolder = None, in_path
         print(name)
         cc_out["id"] = pd.read_csv(os.path.join(root.contacts, "contacts_{}/{}.csv".format(reference.name, name))).columns[2:]
     print(cc_out)
-    quit()
 
-    classified_df = pd.read_csv(os.path.join(root.classified, "{}.csv".format(reference.name)), index_col=0)
-    print(classified_df)
-    classified_ids = classified_df["ID"].values
-    groups = []
-    for row in cc_out.itertuples():
-        if row.id in classified_ids:
-            groups.append(classified_df[classified_df["ID"]==row.id].Best_Match.values[0])
-        else:
-            groups.append("na")
-    cc_out["group"] = groups
+    if "{}.csv".format(reference.name) in os.listdir(root.classified):
+        classified_df = pd.read_csv(os.path.join(root.classified, "{}.csv".format(reference.name)), index_col=0)
+        #print(classified_df)
+        classified_ids = classified_df["ID"].values
+        groups = []
+        for row in cc_out.itertuples():
+            if row.id in classified_ids:
+                groups.append(classified_df[classified_df["ID"]==row.id].Best_Match.values[0])
+            else:
+                groups.append("na")
+        cc_out["group"] = groups
 
-    cc_out_path = os.path.join(root.ccs, "{}.csv".format(reference.name))
-    cc_out.to_csv(cc_out_path, index=False, header=True)
-    reference.ccs_df = cc_out
+    #cc_out_path = os.path.join(root.ccs, "{}.csv".format(reference.name))
+    cc_out.to_csv(ccs_path, index=False, header=True)
+    if subfolder is not None:
+        reference.ccs_df = cc_out
 
     print1("CC output:")
-    print2(cc_out_path)
+    print2(ccs_path)
     print(cc_out, "\n")
-    return cc_out_path
+    return ccs_path
 
-def clusterize_cc(reference, force=False, n_clusters = 20, dimensions=3):
+def clusterize_cc(reference, force=False, n_clusters = 20, dimensions=3, subfolder=None, in_path=None, use_csv =True):
     print1("Clustering of {}".format(reference.name))
-    from sklearn.cluster import KMeans
+
 
     root["clustered"] = "dataframes/clustering/clustered"
-    if "{}.csv".format(reference.name) in os.listdir(root.clustered) and not force:
-        print2("Skipping clustering for {}".format(reference.name))
-        return os.path.join(root.clustered, "{}.csv".format(reference.name))
+    if subfolder is None:
+        clustered_path = os.path.join(root.ccs, '{}.csv'.format(reference.name))
+        centres_path = os.path.join(root.ccs, '{}_centres.csv'.format(reference.name))
+        if "{}.csv".format(reference.name) in os.listdir(root.clustered) and not force:
+            print2("Skipping clustering for {}".format(reference.name))
+            return clustered_path
+        if use_csv:
+            cc_out = pd.read_csv(os.path.join(root.ccs, "{}.csv".format(reference.name)))
+        else:
+            cc_out = reference.ccs_df
+    else:
+        assert in_path is not None
+        name = os.path.basename(in_path).split(".")[0]
+        subfolder = subfolder.format("clustered")
+        os.makedirs(os.path.join(root.clustered, subfolder), exist_ok=True)
+        clustered_path = os.path.join(root.clustered, subfolder, name + ".csv")
+        centres_path = os.path.join(root.clustered, subfolder, name + "_centres.csv")
+        if name+".csv" in os.listdir(os.path.join(root.clustered, subfolder)) and not force:
+            print2("Skipping clustering for {}".format(name))
+            return clustered_path
+        cc_out = pd.read_csv(in_path)
 
-
-    cc_out = reference.ccs_df
-
+    print(cc_out)
+    from sklearn.cluster import KMeans
     if len(cc_out) < 30 and len(cc_out) > 6:
         n_clusters = 5
     model = KMeans(n_clusters=n_clusters, random_state=6, algorithm="elkan")
@@ -267,46 +285,64 @@ def clusterize_cc(reference, force=False, n_clusters = 20, dimensions=3):
     #print(model.cluster_centers_)
     for n in range(len(cc_out)):
         cluster = model.labels_[n]
-        cc_out.loc[n+1, "cluster"] = cluster
+        cc_out.loc[n, "cluster"] = cluster
         new_colour = "".join(["C", str(cluster)])
 
         if new_colour == "C":
             new_colour = "black"
-        cc_out.loc[n+1, "colour"] = new_colour
+        cc_out.loc[n, "colour"] = new_colour
 
-    reference.cluster_centres = pd.DataFrame(model.cluster_centers_)
-    #reference.cluster_centres.to_csv(cluster_centres_path,header=None)
-    clustered_path = os.path.join(root.clustered, "{}.csv".format(reference.name))
+    cluster_centres = pd.DataFrame(model.cluster_centers_)
+    print(cluster_centres)
+    print(cc_out)
+    cluster_centres.to_csv(centres_path, index=False)
     cc_out.to_csv(clustered_path)
-    reference.clustered_df = cc_out
+
+    if subfolder is None:
+        reference.cluster_centres = cluster_centres
+        reference.clustered_df = cc_out
     return clustered_path
 
 
 
 
 
-def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centres=True, adjust=False):
-    print1("Plotting 2D: {}".format(reference.name))
-    import matplotlib.pyplot as plt
+def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centres=True, adjust=False, subfolder=None, in_path=None, use_csv = True, plot_centres=True):
+    print1("Plotting: {}, Dimensions: {}".format(reference.name, dimensions))
 
-    root["cc_figs"] = "images/cc_figs"
-    if "{}.png".format(reference.name) in os.listdir(root.cc_figs) and not force:
-        print2("Figure {} already exists".format("{}.png".format(reference.name)))
-        return
     if dimensions > 3:
         print2("Plotting more than 3 dimensions not currently supported")
-        return
+        return None
 
+    root["cc_figs"] = "images/cc_figs"
+    if subfolder is None:
+        fig_path = os.path.join(root.cc_figs, '{}.png'.format(reference.name))
+        if "{}.png".format(reference.name) in os.listdir(root.cc_figs) and not force:
+            print2("Skipping plotting for {}".format(reference.name))
+            return fig_path
+        if use_csv:
+            cc_out = pd.read_csv(os.path.join(root.clustered, "{}.csv".format(reference.name)))
+        else:
+            cc_out = reference.clustered_df
 
+    else:
+        assert in_path is not None
+        name = os.path.basename(in_path).split(".")[0]
+        clustered_subfolder = subfolder.format("clustered")
+        subfolder = subfolder.format("cc_figs")
+        os.makedirs(os.path.join(root.cc_figs, subfolder), exist_ok=True)
+        fig_path = os.path.join(root.cc_figs, subfolder, name + ".png")
+        if name+".png" in os.listdir(os.path.join(root.cc_figs, subfolder)) and not force:
+            print2("Skipping plotting for {}".format(name))
+            return fig_path
+        cc_out = pd.read_csv(in_path)
 
+    print(cc_out)
+
+    import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111)
 
-    try:
-        cc_out = pd.read_csv(reference.clustered_path)
-    except:
-        print2("Error parsing {}, might be empy".format(reference.clustered_path))
-        return
 
     if dimensions == 2:
         ax.scatter(cc_out["1"], cc_out["2"], c=cc_out["colour"])
@@ -316,18 +352,23 @@ def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centr
 
     texts = []
 
-    if "cluster_centres" in reference.__dict__.keys():
+    if plot_centres:
         print2("Plotting cluster centres")
+        if subfolder is None:
+            cluster_centres = reference.cluster_centres
+        else:
+            cluster_centres = pd.read_csv(os.path.join(root.clustered,clustered_subfolder, "{}_centres.csv".format(name)))
+
         from maths import get_closest_point, points_to_line
-        cluster_centres = reference.cluster_centres
+
         print(cluster_centres)
-        print(cluster_centres.columns)
-        ax.scatter(cluster_centres[2].values, cluster_centres[1].values, color="black", marker=".")
+        #print(cluster_centres.columns)
+        ax.scatter(cluster_centres["2"].values, cluster_centres["1"].values, color="black", marker=".")
 
         centres = []
         for centre in cluster_centres.itertuples():
-            print(centre[0])
-            print(centre[1:])
+            #print(centre[0])
+            #print(centre[1:])
             centres.append(centre[1:])
             # print(centre[0],centre[2],centre[3])
 
@@ -357,9 +398,6 @@ def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centr
             for centre in cluster_centres.itertuples():
                 texts.append(ax.annotate(centre[0], (centre[3],centre[2]), size=10))
 
-    else:
-        print2("Cluster centres not found")
-
 
 
     #print(cc_out.iloc[0])
@@ -379,18 +417,20 @@ def plot_cc(reference, force=False, dimensions = 3, labels = False, labels_centr
             texts.append(
                 ax.annotate(df.loc[:, "ID"][n], (X, Y)))  # ax.annotate(labels[n]'''
 
-
-    ax.set_title("CC analysis + Kmeans for {} (n= {})".format(reference.name, len(cc_out)))
+    if subfolder is None:
+        ax.set_title("CC analysis + Kmeans for {} (n= {})".format(reference.name, len(cc_out)))
+    else:
+        ax.set_title("CC analysis + Kmeans for {} ({}) (n= {})".format(reference.name, name, len(cc_out)))
     if adjust:
         from adjustText import adjust_text
         adjust_text(texts, autoalign='y',
                     only_move={'points': 'y', 'text': 'y'}, force_points=0.15,
                     arrowprops=dict(arrowstyle="->", color='blue', lw=0.5))
     fig.tight_layout()
-    figure_path = os.path.join(root.cc_figs, "{}.png".format(reference.name))
-    print2("Saving at {}".format(figure_path))
-    fig.savefig(figure_path, dpi=300)
-    return figure_path
+
+    print2("Saving at {}".format(fig_path))
+    fig.savefig(fig_path, dpi=300)
+    return fig_path
 
 
 def cluster(reference, FORCE_ALL=False, DIMENSIONS = 3, score_id = "", thread = False):
@@ -614,18 +654,20 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, sc
 
     subfolder_name = "{}_" + reference.name
 
-    print(root[subfolder_name.format("contacts")])
+    #print(root[subfolder_name.format("contacts")])
 
     for file in os.listdir(root[subfolder_name.format("contacts")]):
-        print(file)
+        sprint(file)
         contacts_path = os.path.join(root[subfolder_name.format("contacts")], file)
 
         sms_path= generate_sm(reference, force=FORCE_SM, subfolder = subfolder_name, in_path = contacts_path)
         ccs_path = cc_analysis(reference, force=FORCE_CC, dimensions=DIMENSIONS, subfolder = subfolder_name, in_path = sms_path)
+        if ccs_path is None:
+            print("CC analysis failed")
+            return
         clustered_path = clusterize_cc(reference, force=FORCE_CLUSTER, dimensions=DIMENSIONS, n_clusters=n_clusters, subfolder = subfolder_name, in_path = ccs_path)
         plot_path = plot_cc(reference, labels=False, labels_centres=True, force=FORCE_PLOT,
                                       dimensions=DIMENSIONS, subfolder = subfolder_name, in_path = clustered_path)
-        quit()
     return
 
 
