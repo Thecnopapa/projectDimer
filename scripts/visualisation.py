@@ -2,6 +2,8 @@ import os
 import sys
 
 from Globals import root, local, vars
+from pyMol import pymol_start, pymol_load_name, pymol_load_path, pymol_set_state, pymol_align_chains, pymol_align_all, \
+    pymol_paint_contacts, pymol_colour
 from utilities import *
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -231,6 +233,53 @@ if __name__ == "__main__":
             print1("{}: {}".format(n,f.split(".")[0]))
         face = faces[int(input("\n # Please select cluster to display (using the associated number):\n >> "))].split(".")[0]
         sprint("Selected interaction: {}".format(face))
+        clustered_df = pd.read_csv(os.path.join(root.clustered_GR, face+".csv"), index_col=0)
+        #clustered_df.sort_values(by = "similarity", inplace = True)
+        clustered_df.sort_values(by = ["cluster","similarity"], inplace = True)
+        print(clustered_df.to_string(index=False))
+        c = input("\n # Please select cluster to display (int):\n >> ")
+        subset = clustered_df[clustered_df["cluster"] == int(c)]
+        #subset.sort_values(by = "similarity", inplace = True)
+        print(subset.to_string(index=False))
+        threshold = input("\n # Please select minimum similarity threshold (int):\n >> ")
+        if threshold == "":
+            threshold = 0
+        subset = subset[subset["similarity"] >= float(threshold)]
+        print(subset.to_string(index=False))
+
+        if "pymol" in sys.argv:
+            from pymol import *
+            pymol_start(show=True)
+            chains_to_align = []
+            for row in subset.itertuples():
+                dimers = load_single_pdb(identifier=row.id, pickle_folder=local.dimers)
+                for dimer in dimers:
+                    pymol_load_path(dimer.merged_path, dimer.id)
+                    if dimer.face1 == dimer.face2:
+                        if row.inverse:
+                            chains_to_align.append((row.id, row.id.split("_")[-3][-1]))
+                        else:
+                            chains_to_align.append((row.id, row.id.split("_")[-3][-2]))
+                    else:
+                        if dimer.face2 == face.split("_")[1]:
+                            chains_to_align.append((row.id, row.id.split("_")[-3][-2]))
+                        else:
+                            chains_to_align.append((row.id, row.id.split("_")[-3][-1]))
+
+
+                    pymol_colour("gray", dimer.id)
+                    pymol_paint_contacts(os.path.basename(dimer.id), dimer.contacts_faces1[1:],
+                                             colour=dimer.contacts_faces1[0])
+                    pymol_paint_contacts(os.path.basename(dimer.id), dimer.contacts_faces2[1:],
+                                             colour=dimer.contacts_faces2[0])
+                    print("Faces painted")
+
+            pymol_set_state(2)
+            pymol_align_chains(chains_to_align)
+
+
+
+
 
 
 
@@ -271,7 +320,7 @@ if __name__ == "__main__":
                             chains_to_align.append((row.ID,row.ID.split("_")[-3][-2]))
                     pymol_set_state(2)
                     pymol_align_chains(chains_to_align)
-                    pymol_align_all()
+                    #pymol_align_all()
                     #pymol_colour_all("chainbows")
 
                 else:

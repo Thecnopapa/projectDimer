@@ -31,6 +31,7 @@ def main(PROCESS_ALL = False,
          FORCE_SASA = False,
          BALL_SIZE = 1.6,
          VERBOSE = False,
+         QUIET = False,
          SPLIT_FACES = True,
          FORCE_SPLIT = False,
     N_CLUSTERS = 4,
@@ -42,6 +43,7 @@ def main(PROCESS_ALL = False,
 
     vars["do_only"] = DO_ONLY
     vars["verbose"] = VERBOSE
+    vars["quiet"] = QUIET
 
     # Enable garbage collection
     enable_garbage_collector() # Idk if it works
@@ -212,6 +214,13 @@ if __name__ == "__main__":
     else:
         VERBOSE = False
 
+    if "quiet" in sys.argv or "-q" in sys.argv:
+        QUIET = True
+        supress(sys.argv.remove, "quiet")
+        supress(sys.argv.remove, "-q")
+    else:
+        QUIET = False
+
     print(sys.argv)
     if len(sys.argv) > 2 and not "all" in sys.argv:
         DO_ONLY = [arg.upper() for arg in sys.argv[1:]]
@@ -224,6 +233,7 @@ if __name__ == "__main__":
 
          # Setup and data import
          VERBOSE=VERBOSE,
+         QUIET=QUIET,
          DO_ONLY=DO_ONLY, # ( list of strings / string) Names of PDBs to be processed (CAPS sensitive?, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"
          LARGE_DATASET=True,  # Use a large dataset (delete all local data previously to avoid errors)
          MAX_THREADS=1,  # Number of threads, might not be implemented yet, (0 or 1 deactivate threading)
@@ -249,7 +259,7 @@ if __name__ == "__main__":
 
          COMPARE = False, # Compare GR clustering to EVA clustering
          ONLY_GR = True, # Whether to only clusterise GR
-         FORCE_CLUSTERING = False, # Force clustering if already calculated (overridden by PROCESS_ALL)
+         FORCE_CLUSTERING = True, # Force clustering if already calculated (overridden by PROCESS_ALL)
          SPLIT_FACES = True,
          FORCE_SPLIT = False,
          N_CLUSTERS = 4,

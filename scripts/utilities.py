@@ -144,6 +144,12 @@ class ProgressBar:
                 pass
 
 def ring_bell(times = 1, interval=0.2):
+    try:
+        from Globals import vars
+        if vars.quiet:
+            return
+    except:
+        pass
     import sys
     import time
     for i in range(times):

@@ -227,12 +227,20 @@ def cc_analysis(reference, dimensions=3, force =False, subfolder = None, in_path
         #print(classified_df)
         classified_ids = classified_df["ID"].values
         groups = []
+        similarities = []
+        inverses = []
         for row in cc_out.itertuples():
             if row.id in classified_ids:
                 groups.append(classified_df[classified_df["ID"]==row.id].Best_Match.values[0])
+                similarities.append(classified_df[classified_df["ID"]==row.id].Similarity.values[0])
+                inverses.append(classified_df[classified_df["ID"] == row.id].Inverse.values[0])
             else:
                 groups.append("na")
+                similarities.append("na")
+                inverses.append("na")
         cc_out["group"] = groups
+        cc_out["similarity"] = similarities
+        cc_out["inverse"] = inverses
 
     #cc_out_path = os.path.join(root.ccs, "{}.csv".format(reference.name))
     cc_out.to_csv(ccs_path, index=False, header=True)

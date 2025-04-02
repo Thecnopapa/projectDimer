@@ -129,7 +129,7 @@ def generate_preview(path, folder="", state = 0,save_session=True):
 
 def pymol_align_all():
     all_obj = pymol.cmd.get_names(type='objects')
-    print(all_obj)
+    #print(all_obj)
     obj1 = all_obj[0]
     for obj2 in all_obj:
         if obj2 != obj1:
@@ -151,8 +151,8 @@ def pymol_align_chains(chains_to_align):
     for obj2, chain2 in chains_to_align[1:]:
         if obj2 != obj1:
             sele2 = "{} and c. {}".format(obj2, chain2)
-            print(sele1)
-            print(sele2)
+            #print(sele1)
+            #print(sele2)
             pymol_align__obj(sele1, sele2)
 
 
