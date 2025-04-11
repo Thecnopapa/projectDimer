@@ -1,5 +1,5 @@
 import os
-from multiprocessing.util import close_all_fds_except
+
 
 from utilities import *
 from Globals import root, local, vars
@@ -315,7 +315,7 @@ def clusterize_cc(reference, force=False, n_clusters = 20, dimensions=3, subfold
 
 
 
-def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centres=True, adjust=False, subfolder=None, in_path=None, use_csv = True, plot_centres=True):
+def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centres=True, adjust=False, subfolder=None, in_path=None, use_csv = True, plot_centres=True, subset = None):
     print1("Plotting: {}, Dimensions: {}".format(reference.name, dimensions))
 
     if dimensions > 3:
@@ -343,9 +343,17 @@ def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centre
         if name+".png" in os.listdir(os.path.join(root.cc_figs, subfolder)) and not force:
             print2("Skipping plotting for {}".format(name))
             return fig_path
-        cc_out = pd.read_csv(in_path)
+        cc_out = pd.read_csv(in_path, index_col=0)
+        if subset is not None:
+            print(subset)
+            #print([print(i, subset, i == subset) for i in cc_out["cluster"]])
+            print(len(cc_out))
+            cc_out = cc_out[cc_out["cluster"] == subset]
+            print(len(cc_out))
+            cc_out.reset_index(drop=True, inplace=True)
+            #cc_out = cc_out.reindex(index = range(len(cc_out)))
 
-    #print(cc_out)
+    print(cc_out)
 
     import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(10, 10))
@@ -360,7 +368,7 @@ def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centre
 
     texts = []
 
-    if plot_centres:
+    if plot_centres and subset is None:
         print2("Plotting cluster centres")
         if subfolder is None:
             cluster_centres = reference.cluster_centres
@@ -407,7 +415,7 @@ def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centre
                 texts.append(ax.annotate(centre[0], (centre[3],centre[2]), size=10))
 
 
-
+    print(cc_out)
     #print(cc_out.iloc[0])
     for n in range(len(cc_out)):
         index = cc_out["index"][n]
@@ -420,7 +428,7 @@ def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centre
             Y = cc_out["2"][n]
         if labels:
             texts.append(
-                ax.annotate(cc_out.loc[:, "cluster"][n], (X, Y)))  # ax.annotate(labels[n]
+                ax.annotate(cc_out.loc[:, "id"][n], (X, Y)))  # ax.annotate(labels[n]
         '''else:
             texts.append(
                 ax.annotate(df.loc[:, "ID"][n], (X, Y)))  # ax.annotate(labels[n]'''
@@ -428,17 +436,22 @@ def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centre
     if subfolder is None:
         ax.set_title("CC analysis + Kmeans for {} (n= {})".format(reference.name, len(cc_out)))
     else:
-        ax.set_title("CC analysis + Kmeans for {} ({}) (n= {})".format(reference.name, name, len(cc_out)))
+        if subset is None:
+            ax.set_title("CC analysis + Kmeans for {} ({}) (n= {})".format(reference.name, name, len(cc_out)))
+        else:
+            ax.set_title("CC analysis + Kmeans for {} ({}) CLUSTER {} (n= {})".format(reference.name, name, subset, len(cc_out)))
     if adjust:
         from adjustText import adjust_text
         adjust_text(texts, autoalign='y',
                     only_move={'points': 'y', 'text': 'y'}, force_points=0.15,
                     arrowprops=dict(arrowstyle="->", color='blue', lw=0.5))
     fig.tight_layout()
-
-    print2("Saving at {}".format(fig_path))
-    fig.savefig(fig_path, dpi=300)
-    return fig_path
+    if subset is None:
+        print2("Saving at {}".format(fig_path))
+        fig.savefig(fig_path, dpi=300)
+        return fig_path
+    else:
+        plt.show(block=True)
 
 
 def cluster(reference, FORCE_ALL=False, DIMENSIONS = 3, score_id = "", thread = False):
@@ -657,8 +670,8 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, sc
     else:
         FORCE_SM = False
         FORCE_CC = False
-        FORCE_CLUSTER = False
-        FORCE_PLOT = False
+        FORCE_CLUSTER = True
+        FORCE_PLOT = True
 
     subfolder_name = "{}_" + reference.name
 

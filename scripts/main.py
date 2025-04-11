@@ -259,7 +259,7 @@ if __name__ == "__main__":
 
          COMPARE = False, # Compare GR clustering to EVA clustering
          ONLY_GR = True, # Whether to only clusterise GR
-         FORCE_CLUSTERING = True, # Force clustering if already calculated (overridden by PROCESS_ALL)
+         FORCE_CLUSTERING = False, # Force clustering if already calculated (overridden by PROCESS_ALL)
          SPLIT_FACES = True,
          FORCE_SPLIT = False,
          N_CLUSTERS = 4,

@@ -231,13 +231,25 @@ if __name__ == "__main__":
         sprint("Clustered face-face combinations for GR:")
         for n, f in enumerate(faces):
             print1("{}: {}".format(n,f.split(".")[0]))
-        face = faces[int(input("\n # Please select cluster to display (using the associated number):\n >> "))].split(".")[0]
+        while True:
+            face = input("\n # Please select cluster to display (using the associated number):\n >> ")
+            try:
+                face = faces[int(face)].split(".")[0]
+                break
+            except:
+                pass
         sprint("Selected interaction: {}".format(face))
         clustered_df = pd.read_csv(os.path.join(root.clustered_GR, face+".csv"), index_col=0)
         #clustered_df.sort_values(by = "similarity", inplace = True)
         clustered_df.sort_values(by = ["cluster","similarity"], inplace = True)
         print(clustered_df.to_string(index=False))
-        c = input("\n # Please select cluster to display (int):\n >> ")
+        while True:
+            c = input("\n # Please select cluster to display (int):\n >> ")
+            try:
+                c = int(c)
+                break
+            except: pass
+
         subset = clustered_df[clustered_df["cluster"] == int(c)]
         #subset.sort_values(by = "similarity", inplace = True)
         print(subset.to_string(index=False))
@@ -247,6 +259,9 @@ if __name__ == "__main__":
         subset = subset[subset["similarity"] >= float(threshold)]
         print(subset.to_string(index=False))
 
+
+
+
         if "pymol" in sys.argv:
             from pymol import *
             pymol_start(show=True)
@@ -254,17 +269,21 @@ if __name__ == "__main__":
             for row in subset.itertuples():
                 dimers = load_single_pdb(identifier=row.id, pickle_folder=local.dimers)
                 for dimer in dimers:
+                    # TODO: delete after full run
+                    dimer.get_contacts(force=True)
+                    dimer.get_faces()
+                    #############################
                     pymol_load_path(dimer.merged_path, dimer.id)
                     if dimer.face1 == dimer.face2:
                         if row.inverse:
-                            chains_to_align.append((row.id, row.id.split("_")[-3][-1]))
-                        else:
                             chains_to_align.append((row.id, row.id.split("_")[-3][-2]))
+                        else:
+                            chains_to_align.append((row.id, row.id.split("_")[-3][-1]))
                     else:
                         if dimer.face2 == face.split("_")[1]:
-                            chains_to_align.append((row.id, row.id.split("_")[-3][-2]))
-                        else:
                             chains_to_align.append((row.id, row.id.split("_")[-3][-1]))
+                        else:
+                            chains_to_align.append((row.id, row.id.split("_")[-3][-2]))
 
 
                     pymol_colour("gray", dimer.id)
@@ -278,6 +297,14 @@ if __name__ == "__main__":
             pymol_align_chains(chains_to_align)
 
 
+        if "plot" in sys.argv or "mpl" in sys.argv:
+            from clustering import plot_cc
+            reference = load_references(identifier = "GR")[0]
+            print(reference)
+            in_path = os.path.join(root.clustered_GR, face+".csv")
+            print(in_path)
+            print(pd.read_csv(in_path))
+            plot_cc(reference=reference, subset=c, subfolder=face, in_path=in_path, labels=True)
 
 
 
@@ -374,7 +401,8 @@ if __name__ == "__main__":
 
     elif "cluster-score" in sys.argv[1] or "clusters-score" in sys.argv[1]:
 
-        from clustering import calculate_scores_GR
+        from clustering import calculate_scores_GR, plot_cc
+
         calculate_scores_GR(pd.read_csv(os.path.join(root.dataframes, "GR_cc_clustered.csv"), index_col=0).sort_values("cluster"), save=False)
 
 
