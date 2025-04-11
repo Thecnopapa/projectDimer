@@ -1,4 +1,4 @@
-import os, platform
+import os, sys, platform
 
 def setup(local_path=None, deepness_of_script =2):
 
@@ -34,6 +34,7 @@ else:
 
 #### Set up essential folders ###
 from Globals import root, local, vars
+from utilities import *
 local["molecules"] = "pickles/molecules"
 local["temp"] = "temp"
 vars["pymol_started"] = False
@@ -41,6 +42,30 @@ try:
     vars["tab_name"] = importing_file
 except:
     pass
+
+
+if "force" in sys.argv or "-f" in sys.argv:
+    vars["force"] = True
+    supress(sys.argv.remove, "force")
+    supress(sys.argv.remove, "-f")
+else:
+    vars["force"] = False
+
+if "verbose" in sys.argv or "-v" in sys.argv:
+    vars["verbose"] = True
+    supress(sys.argv.remove, "verbose")
+    supress(sys.argv.remove, "-v")
+else:
+    vars["verbose"] = False
+
+
+if "quiet" in sys.argv or "-q" in sys.argv:
+    supress(sys.argv.remove, "quiet")
+    supress(sys.argv.remove, "-q")
+    vars["quiet"] = True
+else:
+    vars["quiet"] = False
+
 
 
 

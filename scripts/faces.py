@@ -12,7 +12,10 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import FancyArrowPatch
 from mpl_toolkits.mplot3d import proj3d
-matplotlib.use('TkAgg')
+try:
+    matplotlib.use('TkAgg')
+except:
+    matplotlib.use('QtAgg')
 
 
 GR_dict = {
@@ -51,21 +54,59 @@ def define_faces_from_list(self, list):
         pass
 
 
-def get_pca(structure, n_components = 3, com = None):
+def get_pca(structure, n_components = 3, com = None, closer_to = None):
     print3("Getting PCA")
     from sklearn.decomposition import PCA
-    pca = PCA(n_components=n_components)
+    pca = PCA(n_components=n_components, random_state=6)
     coords = [atom.coord for atom in structure.get_atoms()]
     if com is None:
         com = find_com(coords)
-    print("COM:", com)
+    if closer_to is None:
+        closer_to = get_terminals(structure)["N"]
+    #print("COM:", com)
     coords = [c-com for c in coords]
     pca.fit(coords)
-    print(pca)
-    print(pca.components_)
-    print(pca.explained_variance_ratio_)
-    print(pca.singular_values_)
+    #print(pca)
+    #print(pca.components_)
+    #print(pca.explained_variance_ratio_)
+    #print(pca.singular_values_)
+
+    if closer_to is not None:
+        for n, component in enumerate(pca.components_):
+            closer = closer_to - com
+            #print(distance(component, closer),distance(component * -1, closer))
+            if distance(component, closer) > distance(component * -1, closer):
+                print4("Reverse component", n, pca.components_[n], "-->", end=" ")
+                pca.components_[n] = component * -1
+                print(pca.components_[n])
+
+
+
     return pca
+
+def pca_to_lines(pca, com, just_points = False):
+    components = pca.components_ * pca.explained_variance_ratio_ * pca.singular_values_
+    points = []
+    lines = []
+    print("COmponents:", components)
+    for component in components:
+        c = [component[i] + com[i] for i in range(len(component))]
+        print( "C:", c)
+        points.append((com, c))
+        lines.append(points_to_line(com, c))
+        print(points)
+    if just_points:
+        return points
+    else:
+        return lines
+
+def get_terminals(structure):
+    atom_list = list(structure.get_atoms())
+    terminals = dict(N = atom_list[0].coord,
+                     C = atom_list[-1].coord)
+    return terminals
+
+
 
 def plot_atoms(structure, pca = None):
     import matplotlib.pyplot as plt

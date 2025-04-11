@@ -294,7 +294,9 @@ class Monomer(BioObject):
         from faces import get_pca
         if self.replaced is not None:
             self.com = find_com(self.replaced.get_atoms())
-            self.pca = get_pca(self.replaced, com=self.com)
+            self.pca = dict(pca = get_pca(self.replaced, com=self.com),
+                            com = self.com,
+                            chain = self.chain)
 
         self.pickle()
 
@@ -583,6 +585,8 @@ class Dimer(BioObject):
         from maths import find_com
 
         self.com = (find_com(self.replaced_structure.get_list()[0].get_list()[0].get_atoms()), find_com(self.replaced_structure.get_list()[0].get_list()[1].get_atoms()))
+        self.pca1 = monomer1.pca
+        self.pca2 = monomer2.pca
         #print(self.com)
         self.pickle()
 
@@ -785,8 +789,10 @@ class Reference(Monomer):
         self.face_dict = None
         if self.name == "GR":
             self.face_dict = None
-        from faces import get_pca
-        self.pca = get_pca(self.structure)
+        from faces import get_pca, get_terminals
+        self.terminals = get_terminals(self.structure)
+        self.pca = get_pca(self.structure, closer_to = self.terminals["N"])
+
 
     def reshape_face_dict(self):
         from faces import GR_dict

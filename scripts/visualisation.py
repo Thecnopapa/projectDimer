@@ -3,7 +3,7 @@ import sys
 
 from Globals import root, local, vars
 from pyMol import pymol_start, pymol_load_name, pymol_load_path, pymol_set_state, pymol_align_chains, pymol_align_all, \
-    pymol_paint_contacts, pymol_colour
+    pymol_paint_contacts, pymol_colour, pymol_draw_line
 from utilities import *
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -95,7 +95,7 @@ def show_objects(obj_list, args):
             else:
                 print1(key, ":", item)
         if "pymol" in args:
-            from pyMol import pymol_start, pymol_load_path, pymol_symmetries, pymol_group, pymol_paint_contacts, pymol_format
+            from pyMol import pymol_start, pymol_load_path, pymol_symmetries, pymol_group, pymol_paint_contacts, pymol_format, pymol_draw_line
             pymol_start(show=True)
             for key, item in obj.__dict__.items():
                 if type(item) == str:
@@ -122,6 +122,25 @@ def show_objects(obj_list, args):
                         if "contacts_symm" in obj.__dict__.keys():
                             pymol_paint_contacts(os.path.basename(item), obj.contacts_symm)
                             pass
+                        if "pca" in obj.__dict__.keys():
+                            from faces import pca_to_lines
+                            if type(obj.pca) is dict:
+                                pca = obj.pca["pca"]
+                            else:
+                                pca = obj.pca
+                            point_list = pca_to_lines(pca, com=obj.com, just_points=True)
+                            for p in point_list:
+                                pymol_draw_line(coord1=p[0], coord2=p[1], name="pca")
+
+                        if "pca1" in obj.__dict__.keys():
+                            from faces import pca_to_lines
+                            for pca in [obj.pca1, obj.pca2]:
+                                point_list = pca_to_lines(pca["pca"], com=pca["com"], just_points=True)
+                                print("point list:", point_list)
+                                for p in point_list:
+
+                                    pymol_draw_line(coord1=p[0], coord2=p[1], name="pca", quiet=False)
+
 
                 ### Development
                 if key == "mate_paths" or key == "dimer_paths":
@@ -296,7 +315,13 @@ if __name__ == "__main__":
                                              colour=dimer.contacts_faces1[0])
                     pymol_paint_contacts(os.path.basename(dimer.id), dimer.contacts_faces2[1:],
                                              colour=dimer.contacts_faces2[0])
-                    print("Faces painted")
+
+                    from faces import pca_to_lines
+                    for pca in [dimer.pca1, dimer.pca2]:
+                        point_list = pca_to_lines(pca["pca"], com=pca["com"], just_points=True)
+                        print("point list:", point_list)
+                        for p in point_list:
+                            pymol_draw_line(coord1=p[0], coord2=p[1], name="pca", quiet=False)
 
             pymol_set_state(2)
             pymol_align_chains(chains_to_align)

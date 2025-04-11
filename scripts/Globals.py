@@ -1,5 +1,4 @@
 import os
-from utilities import *
 import pandas as pd
 root = None
 local = None
@@ -42,12 +41,12 @@ class Directory:
 def set_root(path):
     global root
     root = Directory(path)
-    sprint("Root set to: {}".format(os.path.abspath(root.path)))
+    print(" # Root set to: {}".format(os.path.abspath(root.path)))
 
 def set_local(path):
     global local
     local = Directory(path)
-    sprint("Local set to: {}".format(os.path.abspath(local.path)))
+    print(" # Local set to: {}".format(os.path.abspath(local.path)))
 
 
 

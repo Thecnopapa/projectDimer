@@ -42,8 +42,8 @@ def main(PROCESS_ALL = False,
     tprint("SET UP")
 
     vars["do_only"] = DO_ONLY
-    vars["verbose"] = VERBOSE
-    vars["quiet"] = QUIET
+    #vars["verbose"] = VERBOSE
+    #vars["quiet"] = QUIET
 
     # Enable garbage collection
     enable_garbage_collector() # Idk if it works
@@ -71,6 +71,7 @@ def main(PROCESS_ALL = False,
     create_clustering_dfs(vars.references)
     for reference in vars.references:
         reference.restore_reference_dfs(reset=PROCESS_ALL)
+        reference.pickle()
 
     print1("Dataframes created")
 
@@ -201,25 +202,25 @@ if __name__ == "__main__":
     # Setup paths and globals
     print(sys.argv)
     DO_ONLY = []
-    if "force" in sys.argv or "-f" in sys.argv:
-        PROCESS_ALL = True
-        supress(sys.argv.remove, "force")
-        supress(sys.argv.remove, "-f")
-    else:
-        PROCESS_ALL = False
-    if "verbose" in sys.argv or "-v" in sys.argv:
-        VERBOSE = True
-        supress(sys.argv.remove, "verbose")
-        supress(sys.argv.remove, "-v")
-    else:
-        VERBOSE = False
-
-    if "quiet" in sys.argv or "-q" in sys.argv:
-        QUIET = True
-        supress(sys.argv.remove, "quiet")
-        supress(sys.argv.remove, "-q")
-    else:
-        QUIET = False
+    '''    if "force" in sys.argv or "-f" in sys.argv:
+            PROCESS_ALL = True
+            supress(sys.argv.remove, "force")
+            supress(sys.argv.remove, "-f")
+        else:
+            PROCESS_ALL = False
+        if "verbose" in sys.argv or "-v" in sys.argv:
+            VERBOSE = True
+            supress(sys.argv.remove, "verbose")
+            supress(sys.argv.remove, "-v")
+        else:
+            VERBOSE = False
+    
+        if "quiet" in sys.argv or "-q" in sys.argv:
+            QUIET = True
+            supress(sys.argv.remove, "quiet")
+            supress(sys.argv.remove, "-q")
+        else:
+            QUIET = False'''
 
     print(sys.argv)
     if len(sys.argv) > 2 and not "all" in sys.argv:
@@ -228,12 +229,13 @@ if __name__ == "__main__":
 
     # Imports that need globals initialised:
     from Globals import root, local, vars
+    from utilities import *
 
-    main(PROCESS_ALL=PROCESS_ALL, # Master switch
+    main(PROCESS_ALL=vars.force, # Master switch
 
          # Setup and data import
-         VERBOSE=VERBOSE,
-         QUIET=QUIET,
+         VERBOSE=vars.verbose,
+         QUIET=vars.quiet,
          DO_ONLY=DO_ONLY, # ( list of strings / string) Names of PDBs to be processed (CAPS sensitive?, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"
          LARGE_DATASET=True,  # Use a large dataset (delete all local data previously to avoid errors)
          MAX_THREADS=1,  # Number of threads, might not be implemented yet, (0 or 1 deactivate threading)

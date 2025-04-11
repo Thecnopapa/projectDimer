@@ -2,7 +2,11 @@ import shutil
 import time
 import os
 
-
+try:
+    from Globals import vars
+    globals_loaded = True
+except:
+    globals_loaded = False
 
 def tprint(*strings, head=10, style="#", end="\n", sep=" "):  # Print section title
     width = shutil.get_terminal_size()[0] -2
@@ -17,6 +21,9 @@ def eprint(*strings, head=10, style = "^", sep=" "):  # Print end of section
 
 def sprint(*strings,**kwargs): # Print Subtitle
     str_strings = map(str, strings)
+    if globals_loaded and "quiet" in vars:
+        if vars.quiet:
+            return
     print("\n #", " ".join(str_strings),**kwargs)
 
 def print1(*strings, space=2, **kwargs): # Print with 1 indent
@@ -28,6 +35,9 @@ def print1(*strings, space=2, **kwargs): # Print with 1 indent
         else:
             str_strings.append(str(string))
     #str_strings = map(str, strings)
+    if globals_loaded and "quiet" in vars:
+        if vars.quiet:
+            return
     print("{}> {}".format(" " * space, " ".join(str_strings)), **kwargs)
 
 def print2(*strings, **kwargs): # Print with 2 indents
