@@ -245,8 +245,8 @@ if __name__ == "__main__":
          MINIMUM_CONTACTS=0,  # Minimum number of contacts to consider a dimer interface
 
          # Dimer processing, includes contact calculation and face identification, generates contact dataframes
-         SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL)
-         FORCE_CONTACTS = False,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
+         SKIP_DIMERS = False, # Skip the entire block (overridden by PROCESS_ALL)
+         FORCE_CONTACTS = True,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
          CONTACT_DISTANCE_CLUSTERING = 12,
 
          # SASA related (BROKEN)
@@ -255,7 +255,7 @@ if __name__ == "__main__":
          BALL_SIZE=1.6, # DEPRECATED
 
          # Clustering, from SM to plotting
-         SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
+         SKIP_CLUSTERING=True, # Skip th entire block (overridden by PROCESS_ALL)
 
          COMPARE = False, # Compare GR clustering to EVA clustering
          ONLY_GR = True, # Whether to only clusterise GR

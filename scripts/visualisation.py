@@ -68,27 +68,32 @@ def show_objects(obj_list, args):
         #print(obj.__dict__)
         for key, item in obj.__dict__.items():
             if key in ["lines", "c_lines", "sasas1D", "sasas2D", "full_array","contacts_faces1", "contacts_faces2" ]:
-                print1(key, ": OMITTED (len: {})".format(len(item)))
+                try:
+                    print1(key, ": OMITTED (len: {})".format(len(item)))
+                except:
+                    print1(key, ": OMITTED (no len)")
                 continue
             #print(str(type(item)))
-            if type(item) in (list, tuple, set):
+            elif type(item) in (list, tuple, set):
                 print1(key,":")
                 for i in item:
                     print2(i)
-            if type(item) in (str, int, float,  bool):
+            elif type(item) in (str, int, float,  bool):
                 print1(key,":",item)
-            if type(item) == dict:
+            elif type(item) == dict:
                 print1(key, ":")
                 for k, v in item.items():
                     print2(k,":",v)
-            if "molecules" in str(type(item)):
+            elif "molecules" in str(type(item)):
                 print1(key, ":", item, id(item))
-            if "Bio" in str(type(item)):
+            elif "Bio" in str(type(item)):
                 print1(key, ":", item, id(item))
-            if "pandas" in str(type(item)):
+            elif "pandas" in str(type(item)):
                 print1(key, ":\n", item.iloc[:, 0:2])#list(item.columns.to_series()))
-            if item is None:
+            elif item is None:
                 print1(key, ":", "None")
+            else:
+                print1(key, ":", item)
         if "pymol" in args:
             from pyMol import pymol_start, pymol_load_path, pymol_symmetries, pymol_group, pymol_paint_contacts, pymol_format
             pymol_start(show=True)

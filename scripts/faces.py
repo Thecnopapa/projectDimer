@@ -52,6 +52,7 @@ def define_faces_from_list(self, list):
 
 
 def get_pca(structure, n_components = 3, com = None):
+    print3("Getting PCA")
     from sklearn.decomposition import PCA
     pca = PCA(n_components=n_components)
     coords = [atom.coord for atom in structure.get_atoms()]
