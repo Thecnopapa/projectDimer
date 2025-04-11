@@ -20,5 +20,5 @@ for reference in vars.references:
     if reference.name != "GR":
         continue
     from faces import get_ref_pca
-    get_ref_pca(reference)
-    plot_atoms(reference.structure)
+    pca = get_ref_pca(reference)
+    plot_atoms(reference.structure, pca)

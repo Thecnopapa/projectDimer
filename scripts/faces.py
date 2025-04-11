@@ -55,9 +55,12 @@ def get_ref_pca(reference, n_components = 3):
     from sklearn.decomposition import PCA
     pca = PCA(n_components=n_components)
     coords = [atom.coord for atom in reference.structure.get_atoms()]
-    print(coords)
+    com = find_com(coords)
+    print("COM:", com)
+    coords = [c-com for c in coords]
     pca.fit(coords)
     print(pca)
+    print(pca.components_)
     print(pca.explained_variance_ratio_)
     print(pca.singular_values_)
     return pca
@@ -75,20 +78,25 @@ def plot_atoms(structure, pca = None):
                            markeredgecolor='brown',
                            fillstyle='right')
 
+    coords = [atom.coord for atom in structure.get_atoms()]
+    com = find_com(coords)
+    print("COM:", com)
     for atom in structure.get_atoms():
+        coord = atom.coord - com
         colours = []
-        print(atom.parent.id[1])
+        #print(atom.parent.id[1])
         for face in GR_dict.keys():
             if atom.parent.id[1] in GR_dict[face]:
                 colours.append(GR_colours[face])
-        print(colours)
+        #print(colours)
         if len(colours) == 0:
-            ax.scatter(*atom.coord, c="gray")
+            ax.scatter(*coord, c="gray", marker= "o", s=50)
         else:
             for col in colours:
-                ax.scatter(*atom.coord, c=col)
+                ax.scatter(*coord, c=col, marker = "o", s=50)
 
     if pca is not None:
+        original_components = pca.components_ * pca.explained_variance_ratio_*pca.singular_values_
         pca_lines = []
         pca_lines.append(points_to_line((0, 0, 0), original_components[0]))
         pca_lines.append(points_to_line((0, 0, 0), original_components[1]))

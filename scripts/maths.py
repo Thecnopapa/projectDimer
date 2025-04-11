@@ -212,10 +212,15 @@ def find_com(atoms):
     y = 0
     z = 0
     for atom in atoms:
-        #print(com, atom.coord)
-        x += atom.coord[0]
-        y += atom.coord[1]
-        z += atom.coord[2]
+        if isinstance(atom, np.ndarray):
+            x += atom[0]
+            y += atom[1]
+            z += atom[2]
+        else:
+            #print(com, atom.coord)
+            x += atom.coord[0]
+            y += atom.coord[1]
+            z += atom.coord[2]
     x /= len(atoms)
     y /= len(atoms)
     z /= len(atoms)
