@@ -51,11 +51,12 @@ def define_faces_from_list(self, list):
         pass
 
 
-def get_ref_pca(reference, n_components = 3):
+def get_pca(structure, n_components = 3, com = None):
     from sklearn.decomposition import PCA
     pca = PCA(n_components=n_components)
-    coords = [atom.coord for atom in reference.structure.get_atoms()]
-    com = find_com(coords)
+    coords = [atom.coord for atom in structure.get_atoms()]
+    if com is None:
+        com = find_com(coords)
     print("COM:", com)
     coords = [c-com for c in coords]
     pca.fit(coords)

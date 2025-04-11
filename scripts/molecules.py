@@ -291,8 +291,10 @@ class Monomer(BioObject):
                 from surface import get_monomer_sasa
                 get_monomer_sasa(self)
         from maths import find_com
+        from faces import get_pca
         if self.replaced is not None:
             self.com = find_com(self.replaced.get_atoms())
+            self.pca = get_pca(self.replaced, com=self.com)
 
         self.pickle()
 
@@ -783,6 +785,8 @@ class Reference(Monomer):
         self.face_dict = None
         if self.name == "GR":
             self.face_dict = None
+        from faces import get_pca
+        self.pca = get_pca(self.structure)
 
     def reshape_face_dict(self):
         from faces import GR_dict
