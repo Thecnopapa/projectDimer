@@ -222,10 +222,11 @@ if __name__ == "__main__":
         else:
             QUIET = False'''
 
+    import setup
     print(sys.argv)
     if len(sys.argv) > 2 and not "all" in sys.argv:
         DO_ONLY = [arg.upper() for arg in sys.argv[1:]]
-    import setup
+
 
     # Imports that need globals initialised:
     from Globals import root, local, vars
