@@ -345,15 +345,10 @@ def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centre
             return fig_path
         cc_out = pd.read_csv(in_path, index_col=0)
         if subset is not None:
-            print(subset)
-            #print([print(i, subset, i == subset) for i in cc_out["cluster"]])
-            print(len(cc_out))
             cc_out = cc_out[cc_out["cluster"] == subset]
-            print(len(cc_out))
             cc_out.reset_index(drop=True, inplace=True)
-            #cc_out = cc_out.reindex(index = range(len(cc_out)))
 
-    print(cc_out)
+    #print(cc_out)
 
     import matplotlib.pyplot as plt
     fig = plt.figure(figsize=(10, 10))
@@ -415,7 +410,7 @@ def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centre
                 texts.append(ax.annotate(centre[0], (centre[3],centre[2]), size=10))
 
 
-    print(cc_out)
+    #print(cc_out)
     #print(cc_out.iloc[0])
     for n in range(len(cc_out)):
         index = cc_out["index"][n]
@@ -446,6 +441,7 @@ def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centre
                     only_move={'points': 'y', 'text': 'y'}, force_points=0.15,
                     arrowprops=dict(arrowstyle="->", color='blue', lw=0.5))
     fig.tight_layout()
+    ax.set_aspect('equal')
     if subset is None:
         print2("Saving at {}".format(fig_path))
         fig.savefig(fig_path, dpi=300)

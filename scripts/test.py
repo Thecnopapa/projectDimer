@@ -15,8 +15,10 @@ vars["references"] = load_references(force_reload=False)
 print1("References loaded")
 
 
-from clustering import split_by_faces
+from faces import *
 for reference in vars.references:
     if reference.name != "GR":
         continue
-    split_by_faces(reference)
+    from faces import get_ref_pca
+    get_ref_pca(reference)
+    plot_atoms(reference.structure)

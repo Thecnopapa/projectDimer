@@ -3,8 +3,16 @@ from utilities import *
 from Globals import root, local, vars
 import numpy as np
 import pandas as pd
+from maths import *
 
 
+
+import matplotlib
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.patches import FancyArrowPatch
+from mpl_toolkits.mplot3d import proj3d
+matplotlib.use('TkAgg')
 
 
 GR_dict = {
@@ -41,6 +49,62 @@ def define_faces_from_list(self, list):
     for contact in self.contacts:
         print(contact)
         pass
+
+
+def get_ref_pca(reference, n_components = 3):
+    from sklearn.decomposition import PCA
+    pca = PCA(n_components=n_components)
+    coords = [atom.coord for atom in reference.structure.get_atoms()]
+    print(coords)
+    pca.fit(coords)
+    print(pca)
+    print(pca.explained_variance_ratio_)
+    print(pca.singular_values_)
+    return pca
+
+def plot_atoms(structure, pca = None):
+    import matplotlib.pyplot as plt
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.set_title(structure.id)
+
+    marker2c = dict(marker='o', linestyle=':',# markersize=15,
+                           color='darkgrey',
+                           markerfacecolor='tab:blue',
+                           markerfacecoloralt='lightsteelblue',
+                           markeredgecolor='brown',
+                           fillstyle='right')
+
+    for atom in structure.get_atoms():
+        colours = []
+        print(atom.parent.id[1])
+        for face in GR_dict.keys():
+            if atom.parent.id[1] in GR_dict[face]:
+                colours.append(GR_colours[face])
+        print(colours)
+        if len(colours) == 0:
+            ax.scatter(*atom.coord, c="gray")
+        else:
+            for col in colours:
+                ax.scatter(*atom.coord, c=col)
+
+    if pca is not None:
+        pca_lines = []
+        pca_lines.append(points_to_line((0, 0, 0), original_components[0]))
+        pca_lines.append(points_to_line((0, 0, 0), original_components[1]))
+        pca_lines.append(points_to_line((0, 0, 0), original_components[2]))
+        # print(pca_lines)
+        for line in pca_lines:
+            # print("line:", line)
+            # print("line items:", line[0][0], line[0][1], line[1][0], line[1][1], line[2][0], line[2][1])
+            ax.plot(line[0], line[1], line[2], color='orange')
+
+
+    fig.tight_layout()
+    ax.set_aspect('equal')
+    plt.show(block=True)
+
+
 
 
 

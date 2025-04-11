@@ -300,10 +300,10 @@ if __name__ == "__main__":
         if "plot" in sys.argv or "mpl" in sys.argv:
             from clustering import plot_cc
             reference = load_references(identifier = "GR")[0]
-            print(reference)
+            #print(reference)
             in_path = os.path.join(root.clustered_GR, face+".csv")
-            print(in_path)
-            print(pd.read_csv(in_path))
+            #print(in_path)
+            #print(pd.read_csv(in_path))
             plot_cc(reference=reference, subset=c, subfolder=face, in_path=in_path, labels=True)
 
 
