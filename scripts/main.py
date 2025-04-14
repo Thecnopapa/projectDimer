@@ -258,7 +258,7 @@ if __name__ == "__main__":
          BALL_SIZE=1.6, # DEPRECATED
 
          # Clustering, from SM to plotting
-         SKIP_CLUSTERING=True, # Skip th entire block (overridden by PROCESS_ALL)
+         SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
 
          COMPARE = False, # Compare GR clustering to EVA clustering
          ONLY_GR = True, # Whether to only clusterise GR

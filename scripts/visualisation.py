@@ -348,6 +348,17 @@ if __name__ == "__main__":
             #print(pd.read_csv(in_path))
             plot_cc(reference=reference, subset=c, subfolder=face, in_path=in_path, labels=True)
 
+        if "pca" in sys.argv:
+            from faces import plot_pcas
+            pcas = []
+            for row in subset.itertuples():
+                dimers = load_single_pdb(identifier=row.id, pickle_folder=local.dimers)
+                for diemer in dimers:
+                    pcas.append(dimer.pca)
+            plot_pcas(pcas, title= "GR:({} : cluster {} / N = {})".format(face, c, len(pcas)))
+
+
+
 
 
 
