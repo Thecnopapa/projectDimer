@@ -1,4 +1,6 @@
 import os
+
+from imports import load_single_pdb
 from utilities import *
 from Globals import root, local, vars
 import numpy as np
@@ -172,7 +174,7 @@ def plot_pcas(pca_list, title=""):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.set_title(title)
-    ax.scatter(0,0,0, marker= "o", c="red")
+    #ax.scatter(0,0,0, marker= "o", c="red")
     for pca in pca_list:
         print(pca.explained_variance_)
         ax.scatter(*pca.explained_variance_)
@@ -184,7 +186,30 @@ def plot_pcas(pca_list, title=""):
 
 
 
+def get_pca_df(in_path, subfolder, only_pcas = False, force = False):
+    pcas = []
+    pca_df = pd.DataFrame(columns = ["id", "P0", "P1", "P2", "variance_0", "variance_1", "variance_2"])
+    root["pcas"] = "dataframes/clustering/pcas"
+    contacts_df = pd.read_csv(in_path)
+    name = os.path.basename(in_path).split(".")[0]
+    subfolder = subfolder.format("pcas")
+    os.makedirs(os.path.join(root.pcas, subfolder), exist_ok=True)
+    pca_path = os.path.join(root.pcas, subfolder, name + ".csv")
+    if name + ".csv" in os.listdir(os.path.join(root.pcas, subfolder)) and not force:
+        print2("Skipping pca load for {}".format(name))
+        return pca_path
+    from imports import load_single_pdb
+    for d in contacts_df.columns:
+        dimers = load_single_pdb(d, pickle_folder=local.dimers)
+        for dimer in dimers:
+            pcas.append(dimer.pca)
+            pca_df.loc[dimer.id] = [dimer.id, *dimer.pca.components_, *dimer.pca.explained_variance_]
 
+    if only_pcas:
+        return pcas
+    else:
+        pca_df.to_csv(pca_path)
+        return pca_path
 
 
 

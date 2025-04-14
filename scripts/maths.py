@@ -179,7 +179,7 @@ def are_different_sign(angle1, angle2):
         return False
 
 def get_closest_point(point, points):
-    shortest_dist = 5
+    shortest_dist = 999
     shortest_coords = None
     for p in points:
         #print("shorter?",point,p)
