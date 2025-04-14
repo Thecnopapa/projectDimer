@@ -227,7 +227,7 @@ def pymol_get_all_objects():
     return pymol.cmd.get_names(type='objects')
 
 
-def pymol_move(sele, distance = [25, 0, 0], camera = 1, state = 0):
+def pymol_move(sele, distance = [50, 0, 0], camera = 0, state = 0):
     pymol.cmd.translate(distance, sele , state,camera)
 
 
