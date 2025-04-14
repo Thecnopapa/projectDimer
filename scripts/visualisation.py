@@ -67,7 +67,8 @@ def show_objects(obj_list, args):
         sprint(obj.id)
         #print(obj.__dict__)
         for key, item in obj.__dict__.items():
-            if key in ["lines", "c_lines", "sasas1D", "sasas2D", "full_array","contacts_faces1", "contacts_faces2" ]:
+            if key in ["lines", "c_lines", "sasas1D", "sasas2D", "full_array","contacts_faces1", "contacts_faces2",
+                       "contacts", "contacts_symm", "contacts_sasa" ]:
                 try:
                     print1(key, ": OMITTED (len: {})".format(len(item)))
                 except:

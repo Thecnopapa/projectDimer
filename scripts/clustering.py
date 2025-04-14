@@ -252,6 +252,8 @@ def cc_analysis(reference, dimensions=3, force =False, subfolder = None, in_path
     print(cc_out, "\n")
     return ccs_path
 
+
+
 def clusterize_cc(reference, force=False, n_clusters = 20, dimensions=3, subfolder=None, in_path=None, use_csv =True):
     print1("Clustering of {}".format(reference.name))
 
@@ -312,10 +314,69 @@ def clusterize_cc(reference, force=False, n_clusters = 20, dimensions=3, subfold
     return clustered_path
 
 
+def clusterize_pcas(reference, force=False, n_clusters = 20, dimensions=3, subfolder=None, in_path=None, use_csv =True):
+    print1("Clustering of {}".format(reference.name))
 
 
+    root["clustered_pca"] = "dataframes/clustering/clustered_pca"
+    if subfolder is None:
+        print("Please provide subfolder for clusterize pca")
+        assert 1+1 == 3
+        clustered_path = os.path.join(root.ccs, '{}.csv'.format(reference.name))
+        centres_path = os.path.join(root.ccs, '{}_centres.csv'.format(reference.name))
+        if "{}.csv".format(reference.name) in os.listdir(root.clustered) and not force:
+            print2("Skipping clustering for {}".format(reference.name))
+            return clustered_path
+        if use_csv:
+            cc_out = pd.read_csv(os.path.join(root.ccs, "{}.csv".format(reference.name)))
+        else:
+            cc_out = reference.ccs_df
+    else:
+        assert in_path is not None
+        name = os.path.basename(in_path).split(".")[0]
+        subfolder = subfolder.format("clustered")
+        os.makedirs(os.path.join(root.clustered, subfolder), exist_ok=True)
+        clustered_path = os.path.join(root.clustered, subfolder, name + ".csv")
+        centres_path = os.path.join(root.clustered, subfolder, name + "_centres.csv")
+        if name+".csv" in os.listdir(os.path.join(root.clustered, subfolder)) and not force:
+            print2("Skipping clustering for {}".format(name))
+            return clustered_path
+        cc_out = pd.read_csv(in_path)
 
-def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centres=True, adjust=False, subfolder=None, in_path=None, use_csv = True, plot_centres=True, subset = None):
+    print(cc_out)
+    from sklearn.cluster import KMeans
+    #if len(cc_out) < 30 and len(cc_out) > 6:
+        #n_clusters = 5
+    model = KMeans(n_clusters=n_clusters, random_state=6, algorithm="elkan")
+    cols = []
+    for n in range(dimensions):
+        cols.append(str(n + 1))
+    model.fit(cc_out.loc[:, cols])
+    #pred = model.fit(cc_out.loc[:, ["1", "2", "3"]])
+
+    #print(model.cluster_centers_)
+    for n in range(len(cc_out)):
+        cluster = model.labels_[n]
+        cc_out.loc[n, "cluster"] = cluster
+        new_colour = "".join(["C", str(cluster)])
+
+        if new_colour == "C":
+            new_colour = "black"
+        cc_out.loc[n, "colour"] = new_colour
+
+    cluster_centres = pd.DataFrame(model.cluster_centers_)
+    print(cluster_centres)
+    print(cc_out)
+    cluster_centres.to_csv(centres_path, index=False)
+    cc_out.to_csv(clustered_path)
+
+    if subfolder is None:
+        reference.cluster_centres = cluster_centres
+        reference.clustered_df = cc_out
+    return clustered_path
+
+
+def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centres=True, adjust=False, subfolder=None, in_path=None, use_csv = True, plot_centres=True, subset = None, pca=False):
     print1("Plotting: {}, Dimensions: {}".format(reference.name, dimensions))
 
     if dimensions > 3:
@@ -323,13 +384,22 @@ def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centre
         return None
 
     root["cc_figs"] = "images/cc_figs"
+    root["pca_figs"] = "images/pca_figs"
+    if pca:
+        fig_folder = root.pca_figs
+        fig_folder_name = "pca_figs"
+        clustered_folder = root.clustered_pca
+    else:
+        fig_folder = root.cc_figs
+        fig_folder_name = "cc_figs"
+        clustered_folder = root.clustered
     if subfolder is None:
-        fig_path = os.path.join(root.cc_figs, '{}.png'.format(reference.name))
-        if "{}.png".format(reference.name) in os.listdir(root.cc_figs) and not force:
+        fig_path = os.path.join(fig_folder, '{}.png'.format(reference.name))
+        if "{}.png".format(reference.name) in os.listdir(fig_folder) and not force:
             print2("Skipping plotting for {}".format(reference.name))
             return fig_path
         if use_csv:
-            cc_out = pd.read_csv(os.path.join(root.clustered, "{}.csv".format(reference.name)))
+            cc_out = pd.read_csv(os.path.join(clustered_folder, "{}.csv".format(reference.name)))
         else:
             cc_out = reference.clustered_df
 
@@ -337,10 +407,10 @@ def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centre
         assert in_path is not None
         name = os.path.basename(in_path).split(".")[0]
         clustered_subfolder = subfolder.format("clustered")
-        subfolder = subfolder.format("cc_figs")
-        os.makedirs(os.path.join(root.cc_figs, subfolder), exist_ok=True)
-        fig_path = os.path.join(root.cc_figs, subfolder, name + ".png")
-        if name+".png" in os.listdir(os.path.join(root.cc_figs, subfolder)) and not force:
+        subfolder = subfolder.format(fig_folder_name)
+        os.makedirs(os.path.join(fig_folder, subfolder), exist_ok=True)
+        fig_path = os.path.join(fig_folder, subfolder, name + ".png")
+        if name+".png" in os.listdir(os.path.join(fig_folder, subfolder)) and not force:
             print2("Skipping plotting for {}".format(name))
             return fig_path
         cc_out = pd.read_csv(in_path, index_col=0)
@@ -368,7 +438,7 @@ def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centre
         if subfolder is None:
             cluster_centres = reference.cluster_centres
         else:
-            cluster_centres = pd.read_csv(os.path.join(root.clustered,clustered_subfolder, "{}_centres.csv".format(name)))
+            cluster_centres = pd.read_csv(os.path.join(clustered_folder,clustered_subfolder, "{}_centres.csv".format(name)))
 
         from maths import get_closest_point, points_to_line
 
@@ -676,15 +746,20 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, sc
     for file in os.listdir(root[subfolder_name.format("contacts")]):
         sprint(file)
         contacts_path = os.path.join(root[subfolder_name.format("contacts")], file)
-
-        sms_path= generate_sm(reference, force=FORCE_SM, subfolder = subfolder_name, in_path = contacts_path)
-        ccs_path = cc_analysis(reference, force=FORCE_CC, dimensions=DIMENSIONS, subfolder = subfolder_name, in_path = sms_path)
-        if ccs_path is None:
-            print("CC analysis failed")
-            return
-        clustered_path = clusterize_cc(reference, force=FORCE_CLUSTER, dimensions=DIMENSIONS, n_clusters=n_clusters, subfolder = subfolder_name, in_path = ccs_path)
-        plot_path = plot_cc(reference, labels=False, labels_centres=True, # force = FORCE_PLOT
-                                      dimensions=DIMENSIONS, subfolder = subfolder_name, in_path = clustered_path)
+        if not pca:
+            sms_path= generate_sm(reference, force=FORCE_SM, subfolder = subfolder_name, in_path = contacts_path)
+            ccs_path = cc_analysis(reference, force=FORCE_CC, dimensions=DIMENSIONS, subfolder = subfolder_name, in_path = sms_path)
+            if ccs_path is None:
+                print("CC analysis failed")
+                return
+            clustered_path = clusterize_cc(reference, force=FORCE_CLUSTER, dimensions=DIMENSIONS, n_clusters=n_clusters, subfolder = subfolder_name, in_path = ccs_path)
+            plot_path = plot_cc(reference, labels=False, labels_centres=True, # force = FORCE_PLOT
+                                          dimensions=DIMENSIONS, subfolder = subfolder_name, in_path = clustered_path)
+        else:
+            pcas_path = get_pca_df()
+            clustered_path = clusterize_pcas(reference, force=FORCE_CLUSTER, dimensions=DIMENSIONS, n_clusters=n_clusters, subfolder = subfolder_name, in_path = pcas_path)
+            plot_path = plot_cc(reference, labels=False, labels_centres=True,  # force = FORCE_PLOT
+                                dimensions=DIMENSIONS, subfolder=subfolder_name, in_path=clustered_path)
     return
 
 

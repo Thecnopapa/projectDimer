@@ -172,7 +172,7 @@ def plot_pcas(pca_list, title=""):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.set_title(title)
-
+    ax.scatter(0,0,0, marker= "o", c="red")
     for pca in pca_list:
         print(pca.explained_variance_)
         ax.scatter(*pca.explained_variance_)

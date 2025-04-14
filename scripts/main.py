@@ -179,7 +179,7 @@ def main(PROCESS_ALL = False,
                 continue
             if SPLIT_FACES:
                 split_by_faces(reference, force=FORCE_SPLIT)
-                cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, n_clusters=N_CLUSTERS)
+                cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, n_clusters=N_CLUSTERS, pca=CLUSTER_BY_PCA)
             else:
                 cluster(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL)
             reference.pickle()
