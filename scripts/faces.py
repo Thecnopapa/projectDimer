@@ -54,10 +54,10 @@ def define_faces_from_list(self, list):
         pass
 
 
-def get_pca(structure, n_components = 3, com = None, closer_to = None):
+def get_pca(structure, n_components = 3, com = None, closer_to = None, solver = "covariance_eigh"):
     print3("Getting PCA")
     from sklearn.decomposition import PCA
-    pca = PCA(n_components=n_components, random_state=6, svd_solver="covariance_eigh")
+    pca = PCA(n_components=n_components, random_state=6, svd_solver=solver)
     coords = [atom.coord for atom in structure.get_atoms()]
     if com is None:
         com = find_com(coords)
@@ -83,7 +83,11 @@ def get_pca(structure, n_components = 3, com = None, closer_to = None):
                 print(pca.components_[n])
     else:
         for n, component in enumerate(pca.components_):
-            print4("Component {}: {} - Value: {}". format(n, pca.components_[n], pca.explained_variance_[n]))
+            print4("Component {}: {} / Value: {} --> Vector: {}".format(n,
+                                                                         pca.components_[n],
+                                                                         pca.explained_variance_[n],
+                                                                         pca.components_[n] *
+                                                                         pca.explained_variance_[n]))
 
 
 
@@ -91,7 +95,7 @@ def get_pca(structure, n_components = 3, com = None, closer_to = None):
     return pca
 
 def pca_to_lines(pca, com, just_points = False):
-    components = pca.components_ * pca.explained_variance_ratio_ # * pca.singular_values_
+    components = pca.components_ * pca.explained_variance_ # * pca.singular_values_
     points = []
     lines = []
     #print("COmponents:", components)
@@ -145,7 +149,7 @@ def plot_atoms(structure, pca = None):
                 ax.scatter(*coord, c=col, marker = "o", s=50)
 
     if pca is not None:
-        original_components = pca.components_ * pca.explained_variance_ratio_#*pca.singular_values_
+        original_components = pca.components_ * pca.explained_variance_#*pca.singular_values_
         pca_lines = []
         pca_lines.append(points_to_line((0, 0, 0), original_components[0]))
         pca_lines.append(points_to_line((0, 0, 0), original_components[1]))
@@ -161,6 +165,21 @@ def plot_atoms(structure, pca = None):
     ax.set_aspect('equal')
     plt.show(block=True)
 
+
+
+
+def plot_pcas(pca_list, title=""):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.set_title(title)
+
+    for pca in pca_list:
+        print(pca.explained_variance_)
+        ax.scatter(*pca.explained_variance_)
+
+    fig.tight_layout()
+    ax.set_aspect('equal')
+    plt.show(block=True)
 
 
 

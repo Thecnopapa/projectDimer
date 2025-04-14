@@ -656,7 +656,7 @@ def split_by_faces(reference, force= False):
 
     #print(pd.DataFrame(reference.faces_dfs))
 
-def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, score_id="", thread=False):
+def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, score_id="", pca = True):
 
     if FORCE_ALL:
         FORCE_SM = True

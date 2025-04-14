@@ -16,15 +16,13 @@ print1("References loaded")
 
 from faces import *
 for reference in vars.references:
-    if reference.name != "GR":
-        continue
     from faces import get_pca
     pca = get_pca(reference.structure)
-    plot_atoms(reference.structure, pca)
+    #plot_atoms(reference.structure, pca)
 
-monomers = load_single_pdb("1OJ5", pickle_folder=local.monomers)
-for monomer in monomers:
-    print("Best Fit:", monomer.best_fit)
-    pca = get_pca(monomer.replaced)
-    plot_atoms(monomer.replaced, pca)
+dimers = load_single_pdb("1A52", pickle_folder=local.dimers)
+pcas = []
+for dimer in dimers:
+    pcas.append(dimer.pca)
+plot_pcas(pcas)
 

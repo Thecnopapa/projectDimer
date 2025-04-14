@@ -74,6 +74,16 @@ def show_objects(obj_list, args):
                     print1(key, ": OMITTED (no len)")
                 continue
             #print(str(type(item)))
+            elif key == "pca":
+                print1("pca:")
+                pca = item
+                for n, component in enumerate(pca.components_):
+                    print2("Component {}: {} / Value: {} --> Vector: {}".format(n,
+                                                                                pca.components_[n],
+                                                                                pca.explained_variance_[n],
+                                                                                pca.components_[n] *
+                                                                                pca.explained_variance_[n]))
+
             elif type(item) in (list, tuple, set):
                 print1(key,":")
                 for i in item:
@@ -128,11 +138,12 @@ def show_objects(obj_list, args):
                                 pca = obj.pca["pca"]
                             else:
                                 pca = obj.pca
+                            print(obj.com)
                             point_list = pca_to_lines(pca, com=obj.com, just_points=True)
                             for p in point_list:
                                 pymol_draw_line(coord1=p[0], coord2=p[1], name="pca")
 
-                        if "pca1" in obj.__dict__.keys():
+                        elif "pca1" in obj.__dict__.keys():
                             from faces import pca_to_lines
                             for pca in [obj.pca1, obj.pca2]:
                                 point_list = pca_to_lines(pca["pca"], com=pca["com"], just_points=True)
@@ -198,6 +209,7 @@ def print_available_commands():
     print2("clusters-eva")
     print2("clusters-cc + [reference_name] e.g. GR (includes all data from clusters-eva)")
     print2("clusters-score (only for GR)")
+    print2("clusters-faces (only for GR)")
 
 
 
