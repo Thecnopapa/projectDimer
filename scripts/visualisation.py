@@ -353,7 +353,7 @@ if __name__ == "__main__":
             pcas = []
             for row in subset.itertuples():
                 dimers = load_single_pdb(identifier=row.id, pickle_folder=local.dimers)
-                for diemer in dimers:
+                for dimer in dimers:
                     pcas.append(dimer.pca)
             plot_pcas(pcas, title= "GR:({} : cluster {} / N = {})".format(face, c, len(pcas)))
 
