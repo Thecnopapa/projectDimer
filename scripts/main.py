@@ -34,7 +34,8 @@ def main(PROCESS_ALL = False,
          QUIET = False,
          SPLIT_FACES = True,
          FORCE_SPLIT = False,
-    N_CLUSTERS = 4,
+         CLUSTER_BY_PCA = True,
+         N_CLUSTERS = 4,
          ):
 
 
@@ -266,6 +267,7 @@ if __name__ == "__main__":
          SPLIT_FACES = True,
          FORCE_SPLIT = False,
          N_CLUSTERS = 4,
+         CLUSTER_BY_PCA = True,
 
 
 

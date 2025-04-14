@@ -588,9 +588,7 @@ class Dimer(BioObject):
         self.com2 = find_com(self.replaced_structure.get_list()[0].get_list()[1].get_atoms())
         self.pca1 = monomer1.pca
         self.pca2 = monomer2.pca
-        from faces import get_pca
-        self.com = find_com(self.replaced_structure.get_atoms())
-        self.pca = get_pca(self.replaced_structure)
+
         #print(self.com)
         self.pickle()
 
@@ -674,6 +672,11 @@ class Dimer(BioObject):
         else:
             self.incomplete = False
             self.original_structure, self.replaced_structure, self.merged_structure = self.merge_structures()
+            from faces import get_pca
+            from maths import find_com
+            self.com = find_com(self.replaced_structure.get_atoms())
+            self.pca = get_pca(self.replaced_structure)
+
             #_, _, self.merged_structure = self.merge_structures()
             #[print(chain) for chain in self.merged_structure.get_chains()]
 
