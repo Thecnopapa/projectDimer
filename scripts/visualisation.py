@@ -294,8 +294,8 @@ if __name__ == "__main__":
                 dimers = load_single_pdb(identifier=row.id, pickle_folder=local.dimers)
                 for dimer in dimers:
                     # TODO: delete after full run
-                    dimer.get_contacts(force=True)
-                    dimer.get_faces()
+                    #dimer.get_contacts(force=True)
+                    #dimer.get_faces()
                     #############################
                     pymol_load_path(dimer.merged_path, dimer.id)
                     if dimer.face1 == dimer.face2:
@@ -316,12 +316,12 @@ if __name__ == "__main__":
                     pymol_paint_contacts(os.path.basename(dimer.id), dimer.contacts_faces2[1:],
                                              colour=dimer.contacts_faces2[0])
 
-                    from faces import pca_to_lines
+                    '''from faces import pca_to_lines
                     for pca in [dimer.pca1, dimer.pca2]:
                         point_list = pca_to_lines(pca["pca"], com=pca["com"], just_points=True)
-                        print("point list:", point_list)
+                        #print("point list:", point_list)
                         for p in point_list:
-                            pymol_draw_line(coord1=p[0], coord2=p[1], name="pca", quiet=False)
+                            pymol_draw_line(coord1=p[0], coord2=p[1], name="pca", quiet=False)'''
 
             pymol_set_state(2)
             pymol_align_chains(chains_to_align)

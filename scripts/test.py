@@ -21,3 +21,10 @@ for reference in vars.references:
     from faces import get_pca
     pca = get_pca(reference.structure)
     plot_atoms(reference.structure, pca)
+
+monomers = load_single_pdb("1OJ5", pickle_folder=local.monomers)
+for monomer in monomers:
+    print("Best Fit:", monomer.best_fit)
+    pca = get_pca(monomer.replaced)
+    plot_atoms(monomer.replaced, pca)
+
