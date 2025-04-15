@@ -102,14 +102,24 @@ def dot(v, w):
 
 
 def length(v):
-    x, y, z = v
-    return math.sqrt(x * x + y * y + z * z)
+    if len(v) == 3:
+        x, y, z = v
+        return math.sqrt(x * x + y * y + z * z)
+    elif len(v) == 2:
+        x, y = v
+        return math.sqrt(x * x + y * y)
+
 
 
 def vector(b, e):
-    x, y, z = b
-    X, Y, Z = e
-    return (X - x, Y - y, Z - z)
+    if len(b) == 3:
+        x, y, z = b
+        X, Y, Z = e
+        return (X - x, Y - y, Z - z)
+    elif len(b) == 2:
+        x, y = b
+        X, Y = e
+        return (X - x, Y - y)
 
 
 def unit(v):

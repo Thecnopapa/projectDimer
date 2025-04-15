@@ -662,7 +662,7 @@ def split_by_faces(reference, force= False):
     #print(pd.DataFrame(reference.faces_dfs))
 
 
-def clusterize_pcas(subfolder, name, in_path, force = False, n_clusters = 3 ):
+def clusterize_pcas(subfolder, name, in_path, force = False, n_clusters = 3 , dimensions = [0,1,2]):
 
     root["clustered_pcas"] = "dataframes/clustering/clustered_pcas"
     subfolder = subfolder.format("clustered_pcas")
@@ -677,9 +677,11 @@ def clusterize_pcas(subfolder, name, in_path, force = False, n_clusters = 3 ):
     pca_df = pd.read_csv(in_path)
     print(pca_df)
 
+    columns = ["variance_{}".format(d) for d in dimensions]
+
     from sklearn.cluster import KMeans
     model = KMeans(n_clusters=n_clusters, random_state=6, algorithm="elkan")
-    model.fit(pca_df.loc[:, ["variance_0", "variance_1", "variance_2"]])
+    model.fit(pca_df.loc[:, columns])
 
     for n in range(len(pca_df)):
         cluster = model.labels_[n]
@@ -698,8 +700,10 @@ def clusterize_pcas(subfolder, name, in_path, force = False, n_clusters = 3 ):
     return clustered_path
 
 
-def plot_clustered_pcas(reference, force=True, dimensions = 3, labels = False, labels_centres=False, adjust=False, subfolder=None, in_path=None, use_csv = True, plot_centres=True, subset = None, pca=False):
+def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = [0,1,2], labels = False, labels_centres=False, adjust=False, subfolder=None, in_path=None, use_csv = True, plot_centres=True, subset = None, pca=False):
     print1("Plotting: {}, Dimensions: {}".format(reference.name, dimensions))
+
+    columns = ["variance_{}".format(d) for d in pca_dimensions]
 
     if dimensions > 3:
         print2("Plotting more than 3 dimensions not currently supported")
@@ -729,7 +733,7 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, labels = False, l
     # ax.scatter(0,0,0, marker= "o", c="red")
     for row in pca_df.itertuples():
         #print(row.variance_0, row.variance_1, row.variance_2)
-        ax.scatter(row.variance_0, row.variance_1, row.variance_2, c=row.colour)
+        ax.scatter(*[row.__getattribute__(v) for v in columns], c=row.colour)
 
     texts = []
     if plot_centres and subset is None:
@@ -743,13 +747,15 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, labels = False, l
         print(cluster_centres)
         #print(cluster_centres)
         #print(cluster_centres.columns)
-        ax.scatter(cluster_centres["0"].values, cluster_centres["1"].values,cluster_centres["2"].values, color="black", marker=".")
+        ax.scatter(*[cluster_centres[str(v)].values for v in pca_dimensions], color="black", marker=".")
 
         centres = []
         for centre in cluster_centres.itertuples():
             #print(centre[0])
             #print(centre[1:])
-            centres.append(centre[1:])
+            print(centre)
+            print(*[x+1 for x in pca_dimensions])
+            centres.append([centre.__getattribute__("_"+str(x+1)) for x in pca_dimensions])
             # print(centre[0],centre[2],centre[3])
 
         lines = []
@@ -757,9 +763,9 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, labels = False, l
         n = 0
 
         for row in pca_df.itertuples():
-            point = row.variance_0, row.variance_1, row.variance_2
-            #print("point:", point)
-            # print("point:", point)
+            point = [row.__getattribute__(v) for v in columns]
+            print("point:", point)
+            print("centres:", centres)
             closest = get_closest_point(point, centres)
             # print("closest:",closest)
             #print(closest)
@@ -772,7 +778,7 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, labels = False, l
         # print(lines)
         for line in lines:
             # print(line)
-            ax.plot(line[0], line[1], line[2], c="black")
+            ax.plot(*line, c="black")
         # scripts.Mpl.plot_lines(lines, ax)
         # ax.plot(data=lines(lines[2],lines[1]))
 
@@ -783,103 +789,9 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, labels = False, l
     print2("Saving at {}".format(fig_path))
     fig.savefig(fig_path, dpi=300)
     return fig_path
-    quit()
-    if dimensions == 2:
-        ax.scatter(cc_out["1"], cc_out["2"], c=cc_out["colour"])
-    elif dimensions == 3:
-        ax.scatter(cc_out["3"], cc_out["2"],c=cc_out["colour"])
-    ax.scatter(0, 0, color='red')
-
-    texts = []
-
-    if plot_centres and subset is None:
-        print2("Plotting cluster centres")
-        if subfolder is None:
-            cluster_centres = reference.cluster_centres
-        else:
-            cluster_centres = pd.read_csv(os.path.join(clustered_folder,clustered_subfolder, "{}_centres.csv".format(name)))
-
-        from maths import get_closest_point, points_to_line
-
-        #print(cluster_centres)
-        #print(cluster_centres.columns)
-        ax.scatter(cluster_centres["2"].values, cluster_centres["1"].values, color="black", marker=".")
-
-        centres = []
-        for centre in cluster_centres.itertuples():
-            #print(centre[0])
-            #print(centre[1:])
-            centres.append(centre[1:])
-            # print(centre[0],centre[2],centre[3])
-
-        lines = []
-        # print("points")
-        n = 0
-
-        for point in cc_out[["1", "2", "3"]].itertuples():
-            # print(point)
-            point = point[1:]
-            # print("point:", point)
-            closest = get_closest_point(point, centres)
-            # print("closest:",closest)
-
-            lines.append(points_to_line(closest, point))
-            # print("point to line:", points_to_line(closest,point))
-            # lines[str(n)] = line
-
-        # print("lines")
-        # print(lines)
-        for line in lines:
-            # print(line)
-            ax.plot(line[2], line[1], c="black")
-        # scripts.Mpl.plot_lines(lines, ax)
-        # ax.plot(data=lines(lines[2],lines[1]))
-        if labels_centres:
-            for centre in cluster_centres.itertuples():
-                texts.append(ax.annotate(centre[0], (centre[3],centre[2]), size=10))
 
 
-    #print(cc_out)
-    #print(cc_out.iloc[0])
-    for n in range(len(cc_out)):
-        index = cc_out["index"][n]
-        # print(cc_out["index"])
-        if dimensions == 3:
-            X = cc_out["3"][n]
-            Y = cc_out["2"][n]
-        else:
-            X = cc_out["1"][n]
-            Y = cc_out["2"][n]
-        if labels:
-            texts.append(
-                ax.annotate(cc_out.loc[:, "id"][n], (X, Y)))  # ax.annotate(labels[n]
-        '''else:
-            texts.append(
-                ax.annotate(df.loc[:, "ID"][n], (X, Y)))  # ax.annotate(labels[n]'''
-
-    if subfolder is None:
-        ax.set_title("CC analysis + Kmeans for {} (n= {})".format(reference.name, len(cc_out)))
-    else:
-        if subset is None:
-            ax.set_title("CC analysis + Kmeans for {} ({}) (n= {})".format(reference.name, name, len(cc_out)))
-        else:
-            ax.set_title("CC analysis + Kmeans for {} ({}) CLUSTER {} (n= {})".format(reference.name, name, subset, len(cc_out)))
-    if adjust:
-        from adjustText import adjust_text
-        adjust_text(texts, autoalign='y',
-                    only_move={'points': 'y', 'text': 'y'}, force_points=0.15,
-                    arrowprops=dict(arrowstyle="->", color='blue', lw=0.5))
-    fig.tight_layout()
-    ax.set_aspect('equal')
-    if subset is None:
-        print2("Saving at {}".format(fig_path))
-        fig.savefig(fig_path, dpi=300)
-        return fig_path
-    else:
-        plt.show(block=True)
-
-
-def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, score_id="", pca = True):
+def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, score_id="", pca = True, pca_dimensions = [0,1,2]):
 
     if FORCE_ALL:
         FORCE_SM = True
@@ -912,9 +824,9 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, sc
             from faces import get_pca_df, plot_pcas
             pca_path = get_pca_df(in_path=contacts_path, subfolder=subfolder_name, force=FORCE_CC)
             #plot_pcas(pcas, title="GR: {}  (N = {})".format(file.split(".")[0], len(pcas)))
-            clustered_path = clusterize_pcas(name=file, subfolder=subfolder_name, in_path = pca_path, force=FORCE_CLUSTER)
+            clustered_path = clusterize_pcas(name=file, subfolder=subfolder_name, in_path = pca_path, force=FORCE_CLUSTER, dimensions=pca_dimensions)
             plot_path = plot_clustered_pcas(reference, labels=False, labels_centres=True,  # force = FORCE_PLOT
-                                dimensions=DIMENSIONS, subfolder=subfolder_name, in_path=clustered_path, pca = True)
+                                dimensions=DIMENSIONS, subfolder=subfolder_name, in_path=clustered_path, pca = True, pca_dimensions=pca_dimensions)
     return
 
 

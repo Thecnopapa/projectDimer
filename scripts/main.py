@@ -36,6 +36,7 @@ def main(PROCESS_ALL = False,
          FORCE_SPLIT = False,
          CLUSTER_BY_PCA = True,
          N_CLUSTERS = 4,
+         DIMENSIONS_PCA = [0,1,2],
          ):
 
 
@@ -179,7 +180,7 @@ def main(PROCESS_ALL = False,
                 continue
             if SPLIT_FACES:
                 split_by_faces(reference, force=FORCE_SPLIT)
-                cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, n_clusters=N_CLUSTERS, pca=CLUSTER_BY_PCA)
+                cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, n_clusters=N_CLUSTERS, pca=CLUSTER_BY_PCA, pca_dimensions = DIMENSIONS_PCA)
             else:
                 cluster(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL)
             reference.pickle()
@@ -268,6 +269,7 @@ if __name__ == "__main__":
          FORCE_SPLIT = False,
          N_CLUSTERS = 4,
          CLUSTER_BY_PCA = True,
+         DIMENSIONS_PCA = [1,2]
 
 
 

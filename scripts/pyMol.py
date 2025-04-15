@@ -181,8 +181,13 @@ def pymol_group(identifier = "sym", name = None):
         name = identifier
     print("(PyMol) Grouping:", identifier, "in", name)
     for obj in pymol.cmd.get_names(type='objects'):
-        if identifier in obj:
-            group.append(obj)
+        if type(identifier) is str:
+            if identifier in obj:
+                group.append(obj)
+        if type(identifier) is list:
+            for i in identifier:
+                if i in obj:
+                    group.append(obj)
 
     pymol.cmd.group(name, " ".join(group))
 

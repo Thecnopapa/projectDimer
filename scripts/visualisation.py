@@ -3,7 +3,7 @@ import sys
 
 from Globals import root, local, vars
 from pyMol import pymol_start, pymol_load_name, pymol_load_path, pymol_set_state, pymol_align_chains, pymol_align_all, \
-    pymol_paint_contacts, pymol_colour, pymol_draw_line, pymol_move
+    pymol_paint_contacts, pymol_colour, pymol_draw_line, pymol_move, pymol_orient, pymol_group
 from utilities import *
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -352,7 +352,7 @@ if __name__ == "__main__":
                         pymol_paint_contacts(os.path.basename(dimer.id), dimer.contacts_faces2[1:],
                                                  colour=dimer.contacts_faces2[0])
 
-                        pymol_move(sele=dimer.id, distance=[100*n,0,0])
+
 
                         '''from faces import pca_to_lines
                         for pca in [dimer.pca1, dimer.pca2]:
@@ -361,9 +361,15 @@ if __name__ == "__main__":
                             for p in point_list:
                                 pymol_draw_line(coord1=p[0], coord2=p[1], name="pca", quiet=False)'''
 
-                pymol_set_state(2)
+
                 print(chains_to_align)
                 pymol_align_chains(chains_to_align)
+                sele = "({})".format(" or ".join(chain[0] for chain in chains_to_align))
+                print(sele)
+                pymol_move(sele=sele, distance=[150*n, 0, 0])
+                pymol_group([chain[0] for chain in chains_to_align], name=str(n))
+            pymol_set_state(2)
+            pymol_orient()
 
 
         if "plot" in sys.argv or "mpl" in sys.argv:
