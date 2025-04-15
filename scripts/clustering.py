@@ -700,7 +700,7 @@ def clusterize_pcas(subfolder, name, in_path, force = False, n_clusters = 3 , di
     return clustered_path
 
 
-def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = [0,1,2], labels = False, labels_centres=False, adjust=False, subfolder=None, in_path=None, use_csv = True, plot_centres=True, subset = None, pca=False):
+def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = (0,1,2), labels = False, labels_centres=True, adjust=False, subfolder=None, in_path=None, use_csv = True, plot_centres=True, subset = None, pca=False):
     print1("Plotting: {}, Dimensions: {}".format(reference.name, dimensions))
 
     columns = ["variance_{}".format(d) for d in pca_dimensions]
@@ -728,7 +728,10 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
     import matplotlib.pyplot as plt
     title = "PCA CLUSTERING for {}: {}  (N = {})".format(reference.name,name, len(pca_df))
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    if len(pca_dimensions) == 3:
+        ax = fig.add_subplot(111, projection='3d')
+    elif len(pca_dimensions) == 2:
+        ax = fig.add_subplot(111)
     ax.set_title(title)
     # ax.scatter(0,0,0, marker= "o", c="red")
     for row in pca_df.itertuples():
@@ -744,28 +747,34 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
             cluster_centres = pd.read_csv(os.path.join(clustered_folder,clustered_subfolder, "{}_centres.csv".format(name)))
 
         from maths import get_closest_point, points_to_line
-        print(cluster_centres)
         #print(cluster_centres)
+        #print(cluster_centres.values)
         #print(cluster_centres.columns)
-        ax.scatter(*[cluster_centres[str(v)].values for v in pca_dimensions], color="black", marker=".")
+        for centre in cluster_centres.itertuples():
+            print(centre)
+            ax.scatter(*[centre.__getattribute__("_"+str(x+1)) for x in range(len(pca_dimensions))], color="black", marker=".")
+            if labels_centres:
+                print("annotating", centre[0], centre[1:])
+                #ax.annotate(centre[0], [c+.1 for c in centre[1:]], color="C{}".format(centre[0]))
 
         centres = []
         for centre in cluster_centres.itertuples():
             #print(centre[0])
             #print(centre[1:])
-            print(centre)
-            print(*[x+1 for x in pca_dimensions])
-            centres.append([centre.__getattribute__("_"+str(x+1)) for x in pca_dimensions])
+            #print(centre)
+            #print(*[x+1 for x in pca_dimensions])
+            #centres.append([centre.__getattribute__("_"+str(x+1)) for x in pca_dimensions])
+            centres.append(centre[1:])
             # print(centre[0],centre[2],centre[3])
 
         lines = []
-        print(centres)
+        #print(centres)
         n = 0
 
         for row in pca_df.itertuples():
             point = [row.__getattribute__(v) for v in columns]
-            print("point:", point)
-            print("centres:", centres)
+            #print("point:", point)
+            #print("centres:", centres)
             closest = get_closest_point(point, centres)
             # print("closest:",closest)
             #print(closest)
@@ -801,7 +810,7 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, sc
     else:
         FORCE_SM = False
         FORCE_CC = False
-        FORCE_CLUSTER = False
+        FORCE_CLUSTER = True
         FORCE_PLOT = True
 
     subfolder_name = "{}_" + reference.name
