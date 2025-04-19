@@ -15,14 +15,29 @@ print1("References loaded")
 
 
 from faces import *
-for reference in vars.references:
-    from faces import get_pca
-    pca = get_pca(reference.structure)
-    #plot_atoms(reference.structure, pca)
 
-dimers = load_single_pdb("1A52", pickle_folder=local.dimers)
+objects = load_single_pdb("all", pickle_folder=local.dimers)
+for dimer in objects:
+    #print(dimer.face1, dimer.face2)
+    print(get_dimer_faces(dimer))
+    dimer.pickle()
+
+
+'''objects = load_single_pdb("1M2Z", pickle_folder=local.monomers)
 pcas = []
-for dimer in dimers:
-    pcas.append(dimer.pca)
-plot_pcas(pcas)
+for obj in objects:
+    obj.face_coms = get_face_coms(obj)
+    fig, ax = plot_atoms(obj.replaced, block = False)
+
+    for face, com in obj.face_coms.items():
+        fig.tight_layout()
+        com = [c-o for c, o in zip(com, obj.com)]
+
+
+        ax.scatter(*com, s=500, c=GR_colours[face])
+    ax.set_aspect('equal')
+    plt.show(block=False)
+    plt.savefig("test.png")
+    quit()'''
+
 

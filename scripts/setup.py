@@ -25,10 +25,13 @@ try:
 except:
     pass
 
+
 if os.name == "nt":
     setup("C:/Users/iainv/localdata/projectB")
 elif "cri4" in __file__:
     setup("/localdata/iain/_local/projectB")
+elif "WSL2-x86_64" in platform.platform():
+    setup("/mnt/d/localdata/projectB")
 else:
     setup()
 

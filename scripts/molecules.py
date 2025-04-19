@@ -291,9 +291,10 @@ class Monomer(BioObject):
                 from surface import get_monomer_sasa
                 get_monomer_sasa(self)
         from maths import find_com
-        from faces import get_pca
+        from faces import get_pca, get_face_coms
         if self.replaced is not None:
             self.com = find_com(self.replaced.get_atoms())
+            self.face_coms = get_face_coms(self)
             self.pca = dict(pca = get_pca(self.replaced, com=self.com),
                             com = self.com,
                             chain = self.chain)

@@ -15,10 +15,12 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import FancyArrowPatch
 from mpl_toolkits.mplot3d import proj3d
 try:
-    matplotlib.use('TkAgg')
-except:
     matplotlib.use('QtAgg')
-
+except:
+    try:
+        matplotlib.use('TkAgg')
+    except:
+        matplotlib.use('Agg')
 
 GR_dict = {
     "front":     [526, 527, 528, 529, 530, 531, 532,
@@ -54,6 +56,48 @@ def define_faces_from_list(self, list):
     for contact in self.contacts:
         print(contact)
         pass
+
+def get_face_coms(monomer):
+    assert monomer.best_fit == "GR"
+    assert monomer.replaced is not None
+    coms = {face: [] for face in GR_dict.keys()}
+    print(coms)
+    for atom in monomer.replaced.get_atoms():
+        resn = atom.parent.id[1]
+        for face in GR_dict:
+            if resn in GR_dict[face]:
+                coms[face].append(atom.coord)
+
+    for face in coms.keys():
+        x, y, z = 0, 0, 0
+        l = len(coms[face])
+        for coord in coms[face]:
+            x += coord[0]
+            y += coord[1]
+            z += coord[2]
+
+        coms[face] = x/l, y/l, z/l
+    print(coms)
+    return coms
+
+
+def get_dimer_faces(dimer):
+    shortest = (None, None, 999)
+    ## Development
+    dimer.monomer1.face_coms = get_face_coms(dimer.monomer1)
+    dimer.monomer2.face_coms = get_face_coms(dimer.monomer2)
+    dimer.monomer1.pickle()
+    dimer.monomer2.pickle()
+    ##
+    for face1, com1 in dimer.monomer1.face_coms.items():
+        for face2, com2 in dimer.monomer2.face_coms.items():
+            d = distance(com1, com2)
+            if d < shortest[2]:
+                shortest = (face1, face2, d)
+    return shortest
+
+
+
 
 
 def get_pca(structure, n_components = 3, com = None, closer_to = None, solver = "covariance_eigh"):
@@ -120,7 +164,7 @@ def get_terminals(structure):
 
 
 
-def plot_atoms(structure, pca = None):
+def plot_atoms(structure, pca = None, block = True):
     import matplotlib.pyplot as plt
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -165,7 +209,8 @@ def plot_atoms(structure, pca = None):
 
     fig.tight_layout()
     ax.set_aspect('equal')
-    plt.show(block=True)
+    plt.show(block=block)
+    return fig, ax
 
 
 
