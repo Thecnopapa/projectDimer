@@ -58,10 +58,11 @@ def define_faces_from_list(self, list):
         pass
 
 def get_face_coms(monomer):
+
     assert monomer.best_fit == "GR"
     assert monomer.replaced is not None
     coms = {face: [] for face in GR_dict.keys()}
-    print(coms)
+    #print(coms)
     for atom in monomer.replaced.get_atoms():
         resn = atom.parent.id[1]
         for face in GR_dict:

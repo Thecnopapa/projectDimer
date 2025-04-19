@@ -16,11 +16,19 @@ print1("References loaded")
 
 from faces import *
 
-objects = load_single_pdb("all", pickle_folder=local.dimers)
-for dimer in objects:
-    #print(dimer.face1, dimer.face2)
-    print(get_dimer_faces(dimer))
-    dimer.pickle()
+dimer_list = os.listdir(local.dimers)
+progress = ProgressBar(len(dimer_list))
+for dimer_name in dimer_list:
+    sprint(dimer_name)
+    dimers = load_single_pdb(dimer_name, pickle_folder=local.dimers)
+    for dimer in dimers:
+        #print(dimer.face1, dimer.face2)
+        if dimer.best_fit != "GR":
+            progress.add(info=dimer.id)
+            continue
+        dimer.face1, dimer.face2, dimer.interface_distance = get_dimer_faces(dimer)
+        dimer.pickle()
+        progress.add(info=dimer.id)
 
 
 '''objects = load_single_pdb("1M2Z", pickle_folder=local.monomers)

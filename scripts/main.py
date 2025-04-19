@@ -16,7 +16,7 @@ def main(PROCESS_ALL = False,
          SKIP_DIMERS = False,
          SKIP_CLUSTERING = False,
          FORCE_CONTACTS = False,
-         COMPARE = False,
+         COMPARE = True,
          ONLY_GR = False,
          FORCE_CLUSTERING = False,
          LARGE_DATASET = True,
@@ -262,7 +262,7 @@ if __name__ == "__main__":
          # Clustering, from SM to plotting
          SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
 
-         COMPARE = False, # Compare GR clustering to EVA clustering
+         COMPARE = True, # Compare GR clustering to EVA clustering
          ONLY_GR = True, # Whether to only clusterise GR
          FORCE_CLUSTERING = False, # Force clustering if already calculated (overridden by PROCESS_ALL)
          SPLIT_FACES = True,
