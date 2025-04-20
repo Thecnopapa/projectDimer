@@ -254,7 +254,7 @@ class Contact:
         self.face = None
         self.face_opposite = None
         if ref_dict is not None:
-            self.get_faces(ref_dict)
+            self.get_contact_faces(ref_dict)
 
     def __repr__(self):
         import math
@@ -268,7 +268,7 @@ class Contact:
                                                                                      self.shortest_contact["face"])
 
 
-    def get_faces(self, ref_dict):
+    def get_contact_faces(self, ref_dict):
         for face, res_list in ref_dict.items():
             #print(self.atom.parent.id[1], res_list,self.atom.parent.id[1] in res_list )
             if self.atom.parent.id[1] in res_list:
