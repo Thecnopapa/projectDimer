@@ -141,7 +141,8 @@ def main(PROCESS_ALL = False,
                     if dimer.incomplete:
                         continue
                     dimer.get_contacts(max_distance=CONTACT_DISTANCE_CLUSTERING)
-                    dimer.get_faces(by_com = FACES_BY_COM)
+                    if dimer.best_fit == "GR":
+                        dimer.get_faces(by_com = FACES_BY_COM)
                     build_contact_arrays(dimer, c_arrays, sasa=SASA, force=FORCE_CONTACTS or PROCESS_ALL, max_contact_length=CONTACT_DISTANCE_CLUSTERING)
                     dimer.pickle()
             progress.add(info=m)
