@@ -85,10 +85,12 @@ def get_face_coms(monomer):
 def get_dimer_faces(dimer):
     shortest = (None, None, 999)
     ## Development
-    dimer.monomer1.face_coms = get_face_coms(dimer.monomer1)
-    dimer.monomer2.face_coms = get_face_coms(dimer.monomer2)
-    dimer.monomer1.pickle()
-    dimer.monomer2.pickle()
+    if "face_coms" not in dimer.monomer1.__dict__:
+        dimer.monomer1.face_coms = get_face_coms(dimer.monomer1)
+        dimer.monomer1.pickle()
+    if "face_coms" not in dimer.monomer2.__dict__:
+        dimer.monomer2.face_coms = get_face_coms(dimer.monomer2)
+        dimer.monomer2.pickle()
     ##
     for face1, com1 in dimer.monomer1.face_coms.items():
         for face2, com2 in dimer.monomer2.face_coms.items():

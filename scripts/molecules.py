@@ -613,46 +613,52 @@ class Dimer(BioObject):
                 self.contacts.append(contact)
                 #print(contact)
 
-    def get_faces(self):
-        print2("Identifying faces")
-        m1faces = None
-        m2faces = None
+    def get_faces(self, by_com = True):
+        print2("Identifying faces, by COM: {}".format(by_com))
 
-        for contact in self.contacts:
-            if contact.face is not None:
-                if m1faces is None:
-                    m1faces = {contact.face: 1}
-                elif contact.face in m1faces.keys():
-                    m1faces[contact.face] += 1
-                else:
-                    m1faces[contact.face] = 1
+        if by_com:
+            from faces import get_dimer_faces
+            self.face1, self.face2, self.interface_distance = get_dimer_faces(self)
 
-            if contact.face_opposite is not None:
-                if m2faces is None:
-                    m2faces = {contact.face_opposite: 1}
-                elif contact.face_opposite in m2faces.keys():
-                    m2faces[contact.face_opposite] += 1
-                else:
-                    m2faces[contact.face_opposite] = 1
+        else:
+            m1faces = None
+            m2faces = None
 
-        # m1 and m2 swapped as face 1 is actually monomer2
-        if m2faces is not None:
-            self.face1 = sort_dict(m2faces, as_list=True)[0][0]
+            for contact in self.contacts:
+                if contact.face is not None:
+                    if m1faces is None:
+                        m1faces = {contact.face: 1}
+                    elif contact.face in m1faces.keys():
+                        m1faces[contact.face] += 1
+                    else:
+                        m1faces[contact.face] = 1
 
-        if m1faces is not None:
-            self.face2 = sort_dict(m1faces, as_list=True)[0][0]
+                if contact.face_opposite is not None:
+                    if m2faces is None:
+                        m2faces = {contact.face_opposite: 1}
+                    elif contact.face_opposite in m2faces.keys():
+                        m2faces[contact.face_opposite] += 1
+                    else:
+                        m2faces[contact.face_opposite] = 1
 
-        if self.face1 is not None:
-            from faces import GR_dict, GR_colours
-            self.contacts_faces1 = [GR_colours[self.face1]]
-            for res in GR_dict[self.face1]:
-                self.contacts_faces1.append([self.monomer1.chain, res])
+            # m1 and m2 swapped as face 1 is actually monomer2
+            if m2faces is not None:
+                self.face1 = sort_dict(m2faces, as_list=True)[0][0]
 
-        if self.face2 is not None:
-            from faces import GR_dict, GR_colours
-            self.contacts_faces2 = [GR_colours[self.face2]]
-            for res in GR_dict[self.face2]:
-                self.contacts_faces2.append([self.monomer2.chain, res])
+            if m1faces is not None:
+                self.face2 = sort_dict(m1faces, as_list=True)[0][0]
+
+            if self.face1 is not None:
+                from faces import GR_dict, GR_colours
+                self.contacts_faces1 = [GR_colours[self.face1]]
+                for res in GR_dict[self.face1]:
+                    self.contacts_faces1.append([self.monomer1.chain, res])
+
+            if self.face2 is not None:
+                from faces import GR_dict, GR_colours
+                self.contacts_faces2 = [GR_colours[self.face2]]
+                for res in GR_dict[self.face2]:
+                    self.contacts_faces2.append([self.monomer2.chain, res])
 
 
 

@@ -37,6 +37,7 @@ def main(PROCESS_ALL = False,
          CLUSTER_BY_PCA = True,
          N_CLUSTERS = 4,
          DIMENSIONS_PCA = [0,1,2],
+         FACES_BY_COM = True
          ):
 
 
@@ -140,7 +141,7 @@ def main(PROCESS_ALL = False,
                     if dimer.incomplete:
                         continue
                     dimer.get_contacts(max_distance=CONTACT_DISTANCE_CLUSTERING)
-                    dimer.get_faces()
+                    dimer.get_faces(by_com = FACES_BY_COM)
                     build_contact_arrays(dimer, c_arrays, sasa=SASA, force=FORCE_CONTACTS or PROCESS_ALL, max_contact_length=CONTACT_DISTANCE_CLUSTERING)
                     dimer.pickle()
             progress.add(info=m)
@@ -174,7 +175,6 @@ def main(PROCESS_ALL = False,
                 save_dfs(general=False, clustering=True)
                 add_info_to_classified(reference)
                 reference.clusters_eva = get_clusters(reference.classified, column = "Best_Match", ref_name=reference.name)
-
             if reference.name != "GR" and ONLY_GR:
                 reference.pickle()
                 continue
@@ -253,6 +253,7 @@ if __name__ == "__main__":
          SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL)
          FORCE_CONTACTS = True,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
          CONTACT_DISTANCE_CLUSTERING = 12,
+         FACES_BY_COM = True,
 
          # SASA related (BROKEN)
          SASA = False, # Whether to run SASA calculations, currently broken
@@ -262,8 +263,8 @@ if __name__ == "__main__":
          # Clustering, from SM to plotting
          SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
 
-         COMPARE = True, # Compare GR clustering to EVA clustering
-         ONLY_GR = True, # Whether to only clusterise GR
+         COMPARE = True, # REQUIRED / Compare GR clustering to EVA clustering
+         ONLY_GR = True, # Whether to only cluster GR
          FORCE_CLUSTERING = False, # Force clustering if already calculated (overridden by PROCESS_ALL)
          SPLIT_FACES = True,
          FORCE_SPLIT = False,
