@@ -175,7 +175,7 @@ def main(PROCESS_ALL = False,
                 from clustering import add_info_to_classified
                 save_dfs(general=False, clustering=True)
                 add_info_to_classified(reference)
-                reference.clusters_eva = get_clusters(reference.classified, column = "Best_Match", ref_name=reference.name)
+                reference.clusters_eva = get_clusters(reference.classified_df, column = "Best_Match", ref_name=reference.name)
             if reference.name != "GR" and ONLY_GR:
                 reference.pickle()
                 continue
@@ -251,7 +251,7 @@ if __name__ == "__main__":
          MINIMUM_CONTACTS=0,  # Minimum number of contacts to consider a dimer interface
 
          # Dimer processing, includes contact calculation and face identification, generates contact dataframes
-         SKIP_DIMERS = False, # Skip the entire block (overridden by PROCESS_ALL)
+         SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL)
          FORCE_CONTACTS = True,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
          CONTACT_DISTANCE_CLUSTERING = 12,
          FACES_BY_COM = True,
@@ -264,9 +264,9 @@ if __name__ == "__main__":
          # Clustering, from SM to plotting
          SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
 
-         COMPARE = True, # REQUIRED / Compare GR clustering to EVA clustering
+         COMPARE = False, # REQUIRED / Compare GR clustering to EVA clustering
          ONLY_GR = True, # Whether to only cluster GR
-         FORCE_CLUSTERING = False, # Force clustering if already calculated (overridden by PROCESS_ALL)
+         FORCE_CLUSTERING = True, # Force clustering if already calculated (overridden by PROCESS_ALL)
          SPLIT_FACES = True,
          FORCE_SPLIT = False,
          N_CLUSTERS = 4,

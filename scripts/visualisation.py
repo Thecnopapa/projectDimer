@@ -77,7 +77,10 @@ def show_objects(obj_list, args):
             #print(str(type(item)))
             elif key == "pca":
                 print1("pca:")
-                pca = item
+                if type(item) is dict:
+                    pca = item["pca"]
+                else:
+                    pca = item
                 for n, component in enumerate(pca.components_):
                     print2("Component {}: {} / Value: {} --> Vector: {}".format(n,
                                                                                 pca.components_[n],

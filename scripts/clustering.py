@@ -633,7 +633,7 @@ def add_info_to_classified(reference):
     reference.faces_df = vars.clustering["faces"][reference.name]
     vars.clustering["classified"][reference.name].to_csv(os.path.join(root.classified, reference.name + ".csv"))
 
-def add_clusters_to_classified(reference):
+def add_clusters_to_classified(reference, pca=True):
     classified_path = os.path.join(root.classified, reference.name + ".csv")
     classified = pd.read_csv(classified_path, index_col=0)
     classified.sort_values("ID", ascending=True, inplace=True)
@@ -641,7 +641,10 @@ def add_clusters_to_classified(reference):
     #empty_cluster = pd.DataFrame([None]*len(classified), columns=["cluster"])
     #classified = pd.concat([classified, empty_face, empty_cluster ], axis=1, ignore_index=True)
     print(classified)
-    for path in os.listdir(root["clustered_{}".format(reference.name)]):
+    pca_string = ""
+    if pca:
+        pca_string = "pcas_"
+    for path in os.listdir(root["clustered_{}{}".format(pca_string, reference.name)]):
         if "centres" not in path:
             df = pd.read_csv(os.path.join(root.clustered,"clustered_{}".format(reference.name), path))
             print(df)
@@ -857,8 +860,7 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, sc
             clustered_path = clusterize_pcas(name=file, subfolder=subfolder_name, in_path = pca_path, force=FORCE_CLUSTER, dimensions=pca_dimensions)
             plot_path = plot_clustered_pcas(reference, labels=False, labels_centres=True,  force = FORCE_PLOT,
                                 dimensions=DIMENSIONS, subfolder=subfolder_name, in_path=clustered_path, pca = True, pca_dimensions=pca_dimensions)
-    if pca:
-        add_clusters_to_classified(reference)
+    add_clusters_to_classified(reference, pca = pca)
     return
 
 

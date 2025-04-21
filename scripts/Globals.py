@@ -34,6 +34,7 @@ class Directory:
     def load_folders(self, path):
         for folder in os.listdir(path):
             if os.path.isdir(os.path.join(path, folder)) and not folder.startswith('.'):
+                print(folder, end = "\r")
                 self.children[folder] = os.path.join(path, folder)
                 self.load_folders(os.path.join(path, folder))
 
