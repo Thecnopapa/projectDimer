@@ -173,7 +173,7 @@ def main(PROCESS_ALL = False,
         for reference in vars.references:
             sprint(reference.name)
             if reference.name == "GR":
-                reference.classified_df = compare_contacts(reference, force = FORCE_COMPARE)
+                reference.classified_df = compare_contacts(reference, force = FORCE_COMPARE or PROCESS_ALL)
                 from clustering import add_info_to_classified
                 #save_dfs(general=False, clustering=True)
                 add_info_to_classified(reference)
