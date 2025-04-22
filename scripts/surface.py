@@ -236,8 +236,7 @@ def build_contact_arrays(self, c_arrays, sasa = False, force=False, max_contact_
     #contact_df = vars["clustering"]["contacts"][self.best_fit]
     #contact_df[self.id] = self.full_array  # Poor performance according to pandas
     #print(vars["clustering"]["faces"])
-    face_df = vars["clustering"]["faces"][self.best_fit]
-    face_df.loc[self.id] = [self.id, self.face1, self.face2]
+
     #print(contact_df)
 
 
