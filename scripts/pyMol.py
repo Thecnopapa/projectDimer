@@ -255,7 +255,8 @@ def pymol_disable(sele = "all"):
 
 
 
-
+def pymol_paint_all_faces(obj):
+    pass
 
 
 

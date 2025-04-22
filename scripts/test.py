@@ -16,14 +16,7 @@ print1("References loaded")
 from faces import *
 
 for self in vars["references"]:
-    self.best_fit = self.name
-    self.replaced = self.structure
-    self.com = find_com(self.structure.get_atoms())
-    if self.name == "GR":
-        self.face_coms = get_face_coms(self)
-    self.pca = dict(pca=get_pca(self.structure, com=self.com),
-                    com=self.com,
-                    chain=self.chain)
+    self.is_reference = True
     self.pickle()
 
 quit()

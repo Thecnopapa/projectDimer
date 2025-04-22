@@ -799,7 +799,7 @@ class Reference(Monomer):
         self.chain = self.structure.id
         self.structure.id = self.chain
         self.id = "reference_{}_{}".format(self.name, self.chain)
-
+        self.is_reference = True
         self.export()
 
         self.raw_monomers_entries = []

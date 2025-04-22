@@ -120,9 +120,13 @@ def show_objects(obj_list, args, mates = False, merged = False):
                         elif "pdb_" in item:
                             pymol_load_path(item, os.path.basename(item) + "_processed")
                         else:
-                            pymol_load_path(item)
+                            pymol_load_path(item, os.path.basename(item))
                         pymol_format("surface", os.path.basename(item), colour= "gray")
-                        if "faces" in args or True:
+                        if "is_reference" in obj.__dict__.keys():
+                            if obj.name == "GR" and obj.is_reference:
+                                pymol_paint_all_faces(item)
+
+                        elif "faces" in args or True:
                             #print("Painting faces")
                             if "contacts_faces1" in obj.__dict__.keys():
                                 pymol_paint_contacts(os.path.basename(item), obj.contacts_faces1[1:],
@@ -206,7 +210,7 @@ def show_objects(obj_list, args, mates = False, merged = False):
                 pymol_disable("c")
             except:
                 pass
-            pymol_group(identifier="rep", name="replaced")
+            #pymol_group(identifier="rep", name="replaced")
             # pymol_group(identifier= "dimer")
             if mates:
                 pymol_group(identifier="mate", name="mates")
@@ -217,7 +221,7 @@ def show_objects(obj_list, args, mates = False, merged = False):
                 pymol_group(identifier = "sym")
             except:
                 pass
-    pymol_set_state(2)
+        pymol_set_state(2)
 
 
 
