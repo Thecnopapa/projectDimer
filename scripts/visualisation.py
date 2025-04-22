@@ -62,7 +62,7 @@ def generate_html():
     pass
 
 
-def show_objects(obj_list, args, mates = False, merged = False):
+def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces =True):
     for obj in obj_list:
         sprint(obj.id)
         #print(obj.__dict__)
@@ -122,11 +122,12 @@ def show_objects(obj_list, args, mates = False, merged = False):
                         else:
                             pymol_load_path(item, os.path.basename(item))
                         pymol_format("surface", os.path.basename(item), colour= "gray")
-                        if "is_reference" in obj.__dict__.keys():
-                            if obj.name == "GR" and obj.is_reference:
-                                pymol_paint_all_faces(item)
+                        if "is_reference" in obj.__dict__.keys() or paint_all_faces:
+                            if obj.best_fit == "GR":
+                                from pyMol import pymol_paint_all_faces
+                                pymol_paint_all_faces(obj)
 
-                        elif "faces" in args or True:
+                        elif "faces" in args and not paint_all_faces:
                             #print("Painting faces")
                             if "contacts_faces1" in obj.__dict__.keys():
                                 pymol_paint_contacts(os.path.basename(item), obj.contacts_faces1[1:],
@@ -197,9 +198,14 @@ def show_objects(obj_list, args, mates = False, merged = False):
                 ###
 
             from pyMol import pymol_format, pymol_orient, pymol_show_cell, pymol_hide, pymol_disable
-            pymol_format("spheres", "neighbour", "all", colour="rainbow", spectrum="b")
-            pymol_format("mesh", "original", "all", colour="white")
-            pymol_format("mesh", "processed", "all", colour="blue")
+            if paint_all_faces:
+                pymol_format("spheres", "neighbour", "all", colour="rainbow", spectrum="b")
+                pymol_format("mesh", "original", "all")
+                pymol_format("mesh", "processed", "all")
+            else:
+                pymol_format("spheres", "neighbour", "all", colour="rainbow", spectrum="b")
+                pymol_format("mesh", "original", "all", colour="white")
+                pymol_format("mesh", "processed", "all", colour="blue")
             pymol_set_state(0)
             pymol_orient()
             pymol_show_cell()

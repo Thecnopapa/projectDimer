@@ -223,7 +223,7 @@ def cc_analysis(reference, dimensions=3, force =False, subfolder = None, in_path
     print(cc_out)
 
     if "{}.csv".format(reference.name) in os.listdir(root.classified):
-        classified_df = pd.read_csv(os.path.join(root.classified, "{}.csv".format(reference.name)), index_col=0)
+        classified_df = pd.read_csv(os.path.join(root.classified, "{}.csv".format(reference.name)))
         #print(classified_df)
         classified_ids = classified_df["ID"].values
         groups = []
@@ -535,11 +535,11 @@ def compare_contacts(reference, force = False):
     classified_path = os.path.join(root.classified, "GR.csv")
 
     if os.path.exists(classified_path) and not force:
-        vars.clustering["classified"][reference.name] = pd.read_csv(classified_path, index_col=0)
+        vars.clustering["classified"][reference.name] = pd.read_csv(classified_path)
         return vars.clustering["classified"][reference.name]
 
     vars["clustering"]["classified"][reference.name] = pd.DataFrame(
-        columns=["ID", "Best_Fit", "Best_Match", "Similarity", "Inverse"])
+        columns=["ID", "Best_Fit", "Best_Match","Best_Match_String", "Similarity", "Inverse"])
     print2(reference)
     df_path = os.path.join(root.contacts, reference.name+".csv")
     contacts_df = pd.read_csv(df_path)
@@ -606,11 +606,15 @@ def compare_contacts(reference, force = False):
             similarities.append((group + 1, max([diffX, diffx]), inverse))
             print1(similarities[-1][0], round(similarities[-1][1], 2))
         best_match = max(similarities, key=lambda x: x[1])
-        print("Best match for {}: {}, with {}% similarity, inverse: {}\n".format(dimer_id, best_match[0],
+        from faces import GR_groups
+        best_match_string = GR_groups[best_match[0]]
+        print("Best match for {}: {} ({}), with {}% similarity, inverse: {}\n".format(dimer_id, best_match[0],
+                                                                                 best_match_string,
                                                                                  round(100 * best_match[1]),
                                                                                  best_match[2]))
 
         vars.clustering["classified"][reference.name].loc[dimer_id] = [dimer_id, reference.name, best_match[0],
+                                                                       best_match_string,
                                                  round(best_match[1] * 100), best_match[2]]
         progress.add()
     #classified_path = os.path.join(root.dataframes, "classified_df.csv")
@@ -642,7 +646,7 @@ def add_info_to_classified(reference):
 
 def add_clusters_to_classified(reference, pca=True):
     classified_path = os.path.join(root.classified, reference.name + ".csv")
-    classified = pd.read_csv(classified_path, index_col=0)
+    classified = pd.read_csv(classified_path)
     classified.sort_values("ID", ascending=True, inplace=True)
     #empty_face = pd.DataFrame([None]*len(classified), columns=["face_group"])
     #empty_cluster = pd.DataFrame([None]*len(classified), columns=["cluster"])
@@ -692,7 +696,16 @@ def split_by_faces(reference, force= False):
     #print(pd.DataFrame(reference.faces_dfs))
 
 
-def clusterize_pcas(subfolder, name, in_path, force = False, n_clusters = 3 , dimensions = [0,1,2]):
+def clusterize_pcas(subfolder, name, in_path, force = False, n_clusters = None , dimensions = [0,1,2]):
+
+    if n_clusters is None:
+        from faces import GR_groups
+        n_clusters = 0
+        faces = os.path.basename(in_path).split(".")[0].split("_")
+        for value in GR_groups:
+            if faces[0] == value[0] and faces[1] == value[1]:
+                n_clusters += 1
+
 
     root["clustered_pcas"] = "dataframes/clustering/clustered_pcas"
     subfolder = subfolder.format("clustered_pcas")

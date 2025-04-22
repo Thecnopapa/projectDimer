@@ -4,7 +4,7 @@ import os
 import setup
 import time
 import sys
-# Imports that need globals initialised:
+# Imports that need globals initialized:
 from Globals import root, local, vars
 from utilities import *
 from imports import *
@@ -15,6 +15,10 @@ print1("References loaded")
 
 from faces import *
 
+for ref in vars["references"]:
+    ref.best_fit = ref.name
+    ref.pickle()
+quit()
 
 dimer_list = sorted(os.listdir(local.dimers))
 progress = ProgressBar(len(dimer_list))

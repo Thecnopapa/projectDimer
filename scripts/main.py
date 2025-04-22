@@ -253,7 +253,7 @@ if __name__ == "__main__":
          MINIMUM_CONTACTS=0,  # Minimum number of contacts to consider a dimer interface
 
          # Dimer processing, includes contact calculation and face identification, generates contact dataframes
-         SKIP_DIMERS = False, # Skip the entire block (overridden by PROCESS_ALL)
+         SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL)
          FORCE_CONTACTS = False,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
          CONTACT_DISTANCE_CLUSTERING = 12,
          FACES_BY_COM = True,
@@ -270,7 +270,7 @@ if __name__ == "__main__":
          ONLY_GR = True, # Whether to only cluster GR
          FORCE_CLUSTERING = True, # Force clustering if already calculated (overridden by PROCESS_ALL)
          SPLIT_FACES = True,
-         FORCE_SPLIT = False,
+         FORCE_SPLIT = True,
          N_CLUSTERS = 4,
          CLUSTER_BY_PCA = True,
          DIMENSIONS_PCA = [0,1,2]

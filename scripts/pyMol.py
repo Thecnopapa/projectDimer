@@ -256,7 +256,15 @@ def pymol_disable(sele = "all"):
 
 
 def pymol_paint_all_faces(obj):
-    pass
+    from faces import GR_colours, GR_dict
+    assert obj.best_fit == "GR"
+    for o in pymol_get_all_objects():
+        if obj.id in o:
+            for face, ress in GR_dict.items():
+                sele = "({})".format(" or ".join( "i. {}".format(res) for res in ress))
+                print(sele)
+                pymol_colour(GR_colours[face], o, sele)
+
 
 
 

@@ -46,6 +46,29 @@ GR_dict = {
                   770, 771, 772, 773, 774, 775, 776, 777],
 }
 
+GR_groups = {1: ("front", "front"),
+             2: ("front", "front"),
+             3: ("front", "back"),
+             4: ("front", "back"),
+             5: ("front", "base"),
+             6: ("front", "front"),
+             7: ("front", "top"),
+             8: ("front", "top"),
+             9: ("front", "front"),
+             10: ("front", "front"),
+             11: ("front", "front"),
+             12: ("base", "base"),
+             13: ("base", "top"),
+             14: ("base", "back"),
+             15: ("back", "back"),
+             16: ("back", "back"),
+             17: ("back", "back"),
+             18: ("back", "top"),
+             19: ("back", "top"),
+             20: ("top", "top"),
+             }
+GR_groups = {key:sorted(value) for key, value in GR_groups.items()}
+
 GR_colours = {"front": "purple",
               "base": "salmon",
               "back": "cyan",
