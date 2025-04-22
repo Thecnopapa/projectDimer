@@ -221,7 +221,7 @@ def show_objects(obj_list, args, mates = False, merged = False):
                 pymol_group(identifier = "sym")
             except:
                 pass
-        pymol_set_state(2)
+            pymol_set_state(2)
 
 
 

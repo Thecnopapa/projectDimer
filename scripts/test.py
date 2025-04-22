@@ -15,12 +15,8 @@ print1("References loaded")
 
 from faces import *
 
-for self in vars["references"]:
-    self.is_reference = True
-    self.pickle()
 
-quit()
-dimer_list = os.listdir(local.dimers)
+dimer_list = sorted(os.listdir(local.dimers))
 progress = ProgressBar(len(dimer_list))
 for dimer_name in dimer_list:
     sprint(dimer_name)
@@ -30,8 +26,7 @@ for dimer_name in dimer_list:
         if dimer.best_fit != "GR":
             progress.add(info=dimer.id)
             continue
-        dimer.face1, dimer.face2, dimer.interface_distance = get_dimer_faces(dimer)
-        dimer.pickle()
+        dimer.reprocess()
         progress.add(info=dimer.id)
 
 def plot_face_coms():

@@ -569,29 +569,39 @@ class Dimer(BioObject):
         self.extra_id = monomer2.extra_id
         self.id = "{}_{}{}{}".format(self.name, monomer1.chain, monomer2.chain, self.extra_id, sasa = False)
         self.incomplete = True
-
         self.failed_entries = []
-        self.validate()
         self.contacts_sasa = []
         self.contacts_symm = []
         self.contacts = []
         self.full_array = None
-        if self.incomplete:
-            return
         self.face1 = None
         self.face2 = None
+        self.com1 = None
+        self.com2 = None
+        self.pca1 = None
+        self.pca2 = None
+
+        self.process(sasa = sasa)
+
+    def process(self, sasa = False):
+        self.validate()
+        if self.incomplete:
+            return
         if sasa:
             from surface import get_dimer_sasa
             get_dimer_sasa(self)
-
         from maths import find_com
-
         self.com1 = find_com(self.replaced_structure.get_list()[0].get_list()[0].get_atoms())
         self.com2 = find_com(self.replaced_structure.get_list()[0].get_list()[1].get_atoms())
-        self.pca1 = monomer1.pca
-        self.pca2 = monomer2.pca
-
+        self.pca1 = self.monomer1.pca
+        self.pca2 = self.monomer2.pca
         #print(self.com)
+        self.pickle()
+
+    def reprocess(self):
+        self.process()
+        self.get_contacts()
+        self.get_faces()
         self.pickle()
 
 
