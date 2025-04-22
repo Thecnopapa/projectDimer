@@ -262,7 +262,7 @@ def pymol_paint_all_faces(obj):
         if obj.id in o:
             for face, ress in GR_dict.items():
                 sele = "({})".format(" or ".join( "i. {}".format(res) for res in ress))
-                print(sele)
+                #print(sele)
                 pymol_colour(GR_colours[face], o, sele)
 
 

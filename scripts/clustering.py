@@ -639,7 +639,11 @@ def add_info_to_classified(reference):
     print(classified)
     print(faces)
     print(faces.columns)
-    vars.clustering["classified"][reference.name] = pd.concat([classified, faces[["face1", "face2"]]], axis=1)
+    if "face1" in classified.columns:
+        original_cols = list(classified.columns).remove(["face1", "face2"])
+    else:
+        original_cols = list(classified.columns)
+    vars.clustering["classified"][reference.name] = pd.concat([classified[original_cols], faces[["face1", "face2"]]], axis=1)
     reference.classified_df = vars.clustering["classified"][reference.name]
     reference.faces_df = vars.clustering["faces"][reference.name]
     vars.clustering["classified"][reference.name].to_csv(os.path.join(root.classified, reference.name + ".csv"))
@@ -702,7 +706,7 @@ def clusterize_pcas(subfolder, name, in_path, force = False, n_clusters = None ,
         from faces import GR_groups
         n_clusters = 0
         faces = os.path.basename(in_path).split(".")[0].split("_")
-        for value in GR_groups:
+        for value in GR_groups.values():
             if faces[0] == value[0] and faces[1] == value[1]:
                 n_clusters += 1
 
