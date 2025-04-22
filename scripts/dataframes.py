@@ -64,7 +64,7 @@ def create_clustering_dfs(references):
             ref_data["ResNum"].append(res.id[1])
             ref_data["ResName"].append(res.resname)
         vars["clustering"]["contacts"][reference.name] = pd.DataFrame(data=ref_data)
-        vars["clustering"]["faces"][reference.name] = pd.DataFrame(columns=["ID", "face1", "face2"])
+        vars["clustering"]["faces"][reference.name] = pd.DataFrame(columns=["ID", "face1", "face2", "contact_face1", "contact_face2"])
 
 
 

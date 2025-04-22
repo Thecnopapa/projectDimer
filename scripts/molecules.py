@@ -659,8 +659,11 @@ class Dimer(BioObject):
             self.contact_face2 = sort_dict(m1faces, as_list=True)[0][0]
 
         if not by_com:
-            self.face1 = self.contact_face1
-            self.face2 = self.contact_face2
+            face1 = self.contact_face1
+            face2 = self.contact_face2
+        else:
+            face1 = self.face1
+            face2 = self.face2
 
         if self.face1 is not None:
             from faces import GR_dict, GR_colours

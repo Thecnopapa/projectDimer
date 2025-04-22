@@ -624,7 +624,7 @@ def compare_contacts(reference, force = False):
     return vars.clustering["classified"][reference.name]
 
 def add_info_to_classified(reference):
-    classified = vars.clustering["classified"][reference.name]
+    classified = pd.read_csv(os.path.join(root.classified, "{}.csv".format(reference.name)), index_col=0)
     faces = vars.clustering["faces"][reference.name]
     try:
         assert len(classified) == len(faces)
@@ -634,27 +634,53 @@ def add_info_to_classified(reference):
         print(classified),
         print(faces)
         quit()
-    classified.sort_values("ID", ascending=True, inplace=True)
+    if "ID" in classified.columns:
+        classified.sort_values("ID", ascending=True, inplace=True)
+    else:
+        classified.sort_values(classified.columns[0], ascending=True, inplace=True)
+    print(classified)
     faces.sort_values("ID", ascending=True, inplace=True)
     print(classified)
     print(faces)
-    print(faces.columns)
-    if "face1" in classified.columns:
-        original_cols = list(classified.columns).remove(["face1", "face2"])
-    else:
-        original_cols = list(classified.columns)
-    vars.clustering["classified"][reference.name] = pd.concat([classified[original_cols], faces[["face1", "face2"]]], axis=1)
+    print(list(classified.columns))
+    original_cols = list(classified.columns)
+    print(original_cols)
+    from copy import deepcopy
+    for c in deepcopy(original_cols):
+        #print(c)
+        #print(original_cols)
+        if "face1" in c or "face2" in c or "Unnamed" in c:
+            #print("removing:", c)
+            original_cols.remove(c)
+            #print(original_cols)
+
+    print(original_cols)
+    vars.clustering["classified"][reference.name] = pd.concat([classified[original_cols], faces[["face1", "face2", "contact_face1", "contact_face2"]]], axis=1)
     reference.classified_df = vars.clustering["classified"][reference.name]
     reference.faces_df = vars.clustering["faces"][reference.name]
     vars.clustering["classified"][reference.name].to_csv(os.path.join(root.classified, reference.name + ".csv"))
 
 def add_clusters_to_classified(reference, pca=True):
     classified_path = os.path.join(root.classified, reference.name + ".csv")
-    classified = pd.read_csv(classified_path)
-    classified.sort_values("ID", ascending=True, inplace=True)
+    classified = pd.read_csv(classified_path, index_col="ID")
+    if "ID" in classified.columns:
+        classified.sort_values("ID", ascending=True, inplace=True)
+    else:
+        classified.sort_values(classified.columns[0], ascending=True, inplace=True)
+    print(classified)
     #empty_face = pd.DataFrame([None]*len(classified), columns=["face_group"])
     #empty_cluster = pd.DataFrame([None]*len(classified), columns=["cluster"])
     #classified = pd.concat([classified, empty_face, empty_cluster ], axis=1, ignore_index=True)
+    original_cols = list(classified.columns)
+    print(original_cols)
+    from copy import deepcopy
+    for c in deepcopy(original_cols):
+        # print(c)
+        # print(original_cols)
+        if "Unnamed" in c:
+            # print("removing:", c)
+            original_cols.remove(c)
+    classified = classified[original_cols]
     print(classified)
     pca_string = ""
     if pca:
@@ -667,26 +693,34 @@ def add_clusters_to_classified(reference, pca=True):
                 classified.loc[row.id, "face_group"]= path.split(".")[0]
                 classified.loc[row.id, "cluster"]= row.cluster
     print(classified)
+    vars.clustering["classified"][reference.name] = classified
+    reference.classified_df = classified
     classified.to_csv(classified_path)
 
 
 
 
-def split_by_faces(reference, force= False):
+def split_by_faces(reference, force= False, by_com = True):
     if "face_contacts" in reference.__dict__.keys() and not force:
         return
     faces_dict = {}
     for row in reference.faces_df.itertuples():
-        if row.face1 is None or row.face2 is None:
+        if by_com:
+            face1 = row.face1
+            face2 = row.face2
+        else:
+            face1 = row.contact_face1
+            face2 = row.contact_face2
+
+        if face1 is None or face2 is None:
             continue
-        faces = "_".join(sorted([row.face1, row.face2]))
+        faces = "_".join(sorted([face1, face2]))
         if faces not in faces_dict.keys():
             faces_dict[faces] = [row.ID]
         else:
             faces_dict[faces].append(row.ID)
         #print(faces)
         #print(row)
-
 
     reference.face_contacts = {}
     contacts_df = reference.contacts_df

@@ -144,7 +144,7 @@ def main(PROCESS_ALL = False,
                     if dimer.best_fit == "GR":
                         dimer.get_faces(by_com = FACES_BY_COM)
                         face_df = vars["clustering"]["faces"][dimer.best_fit]
-                        face_df.loc[dimer.id] = [dimer.id, dimer.face1, dimer.face2]
+                        face_df.loc[dimer.id] = [dimer.id, dimer.face1, dimer.face2, dimer.contact_face1, dimer.contact_face2]
                     build_contact_arrays(dimer, c_arrays, sasa=SASA, force=FORCE_CONTACTS or PROCESS_ALL, max_contact_length=CONTACT_DISTANCE_CLUSTERING)
                     dimer.pickle()
             progress.add(info=m)
@@ -182,12 +182,12 @@ def main(PROCESS_ALL = False,
                 reference.pickle()
                 continue
             if SPLIT_FACES:
-                split_by_faces(reference, force=FORCE_SPLIT)
+                split_by_faces(reference, force=FORCE_SPLIT, by_com= FACES_BY_COM)
                 cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, n_clusters=N_CLUSTERS, pca=CLUSTER_BY_PCA, pca_dimensions = DIMENSIONS_PCA)
             else:
                 cluster(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL)
             reference.pickle()
-        save_dfs(general=False, clustering=True)
+        #save_dfs(general=False, clustering=True)
 
 
 
@@ -253,10 +253,10 @@ if __name__ == "__main__":
          MINIMUM_CONTACTS=0,  # Minimum number of contacts to consider a dimer interface
 
          # Dimer processing, includes contact calculation and face identification, generates contact dataframes
-         SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL)
-         FORCE_CONTACTS = False,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
+         SKIP_DIMERS = False, # Skip the entire block (overridden by PROCESS_ALL)
+         FORCE_CONTACTS = True,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
          CONTACT_DISTANCE_CLUSTERING = 12,
-         FACES_BY_COM = True,
+         FACES_BY_COM = False,
 
          # SASA related (BROKEN)
          SASA = False, # Whether to run SASA calculations, currently broken
@@ -265,10 +265,9 @@ if __name__ == "__main__":
 
          # Clustering, from SM to plotting
          SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
-
          FORCE_COMPARE = False, #  Compare GR clustering to EVA clustering
          ONLY_GR = True, # Whether to only cluster GR
-         FORCE_CLUSTERING = True, # Force clustering if already calculated (overridden by PROCESS_ALL)
+         FORCE_CLUSTERING = False, # Force clustering if already calculated (overridden by PROCESS_ALL)
          SPLIT_FACES = True,
          FORCE_SPLIT = True,
          N_CLUSTERS = 4,
