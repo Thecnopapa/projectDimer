@@ -236,6 +236,22 @@ def pymol_move(sele, distance = [50, 0, 0], camera = 0, state = 0):
     pymol.cmd.translate(distance, sele , state,camera)
 
 
+def pymol_sphere(coords, name = None, colour="white", state = -1, scale = 8):
+    if name is None:
+        n_spheres = sum(1 for a in ("tmp_sphere" in obj for obj in pymol_get_all_objects()) if a)
+        name = "tmp_sphere_{}".format(n_spheres)
+    print(name)
+    #pymol.cmd.pseudoatom(pos = coords, object = name)
+    pymol.cmd.pseudoatom(object=name, pos=coords, color = colour, elem="Ca", state = state)
+    pymol.cmd.set("sphere_scale", scale)#, selection="({})".format(name))
+    pymol.cmd.set("sphere_transparency", 0.25)
+    pymol_format("sphere", name)
+
+
+def pymol_disable(sele = "all"):
+    pymol.cmd.disable(name = sele )
+
+
 
 
 

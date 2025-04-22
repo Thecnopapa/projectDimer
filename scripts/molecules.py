@@ -793,7 +793,9 @@ class Reference(Monomer):
         self.o_path = path
         self.parse_structure(parse_original=True)
         self.name = os.path.basename(path).split(".")[0]
+        self.best_fit = self.name
         self.structure = [chain for chain in self.structure.get_chains()][0]
+        self.replaced = self.structure
         self.chain = self.structure.id
         self.structure.id = self.chain
         self.id = "reference_{}_{}".format(self.name, self.chain)
@@ -808,11 +810,18 @@ class Reference(Monomer):
         self.face_dict = None
         if self.name == "GR":
             self.face_dict = None
-        from faces import get_pca, get_terminals
+        from faces import get_pca, get_terminals, find_com, get_face_coms
         self.terminals = get_terminals(self.structure)
-        self.pca = get_pca(self.structure)
+        #self.pca = get_pca(self.structure)
+        self.com = find_com(self.structure.get_atoms())
+        if self.name == "GR":
+            self.face_coms = get_face_coms(self)
+        self.pca = dict(pca=get_pca(self.structure, com=self.com),
+                        com=self.com,
+                        chain=self.chain)
 
 
     def reshape_face_dict(self):
         from faces import GR_dict
         self.face_dict = GR_dict.copy()
+

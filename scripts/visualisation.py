@@ -62,7 +62,7 @@ def generate_html():
     pass
 
 
-def show_objects(obj_list, args):
+def show_objects(obj_list, args, mates = False, merged = False):
     for obj in obj_list:
         sprint(obj.id)
         #print(obj.__dict__)
@@ -109,11 +109,12 @@ def show_objects(obj_list, args):
             else:
                 print1(key, ":", item)
         if "pymol" in args:
-            from pyMol import pymol_start, pymol_load_path, pymol_symmetries, pymol_group, pymol_paint_contacts, pymol_format, pymol_draw_line
+            from pyMol import pymol_start, pymol_load_path, pymol_symmetries, pymol_group, pymol_paint_contacts, pymol_format, pymol_draw_line, pymol_set_state
             pymol_start(show=True)
             for key, item in obj.__dict__.items():
                 if type(item) == str:
-                    if item.endswith(".pdb") and not "fractional" in item:
+                    #print(item.endswith(".pdb"), not "fractional" in item, not "merged" in item, not merged)
+                    if item.endswith(".pdb") and not "fractional" in item and (not "merged" in item and not merged):
                         if "many_pdbs" in item:
                             og = pymol_load_path(item, os.path.basename(item)+"_original")
                         elif "pdb_" in item:
@@ -122,14 +123,14 @@ def show_objects(obj_list, args):
                             pymol_load_path(item)
                         pymol_format("surface", os.path.basename(item), colour= "gray")
                         if "faces" in args or True:
-                            print("Painting faces")
+                            #print("Painting faces")
                             if "contacts_faces1" in obj.__dict__.keys():
                                 pymol_paint_contacts(os.path.basename(item), obj.contacts_faces1[1:],
                                                      colour=obj.contacts_faces1[0])
                             if "contacts_faces2" in obj.__dict__.keys():
                                 pymol_paint_contacts(os.path.basename(item), obj.contacts_faces2[1:],
                                                      colour=obj.contacts_faces2[0])
-                            print("Faces painted")
+                            #print("Faces painted")
                         if "contacts_sasa" in obj.__dict__.keys():
                             pymol_paint_contacts(os.path.basename(item), obj.contacts_sasa, colour ="red")
                             pass
@@ -142,7 +143,7 @@ def show_objects(obj_list, args):
                                 pca = obj.pca["pca"]
                             else:
                                 pca = obj.pca
-                            print(obj.com)
+                            #print(obj.com)
                             point_list = pca_to_lines(pca, com=obj.com, just_points=True)
                             for p in point_list:
                                 pymol_draw_line(coord1=p[0], coord2=p[1], name="pca")
@@ -155,10 +156,21 @@ def show_objects(obj_list, args):
                                 for p in point_list:
 
                                     pymol_draw_line(coord1=p[0], coord2=p[1], name="pca", quiet=False)
+                        if "face_coms" in obj.__dict__.keys():
+                            from faces import GR_colours
+                            from pyMol import pymol_sphere
+                            for face, com in obj.face_coms.items():
+                                pymol_sphere(com, colour=GR_colours[face], name="face_" + obj.id)
+                if key == "monomer1" or key == "monomer2":
+                    from faces import GR_colours
+                    from pyMol import pymol_sphere
+                    if "face_coms" in obj.__getattribute__(key).__dict__.keys():
+                        for face, com in obj.__getattribute__(key).face_coms.items():
+                            pymol_sphere(com, colour=GR_colours[face], name="face_"+obj.id)
 
 
                 ### Development
-                if key == "mate_paths" or key == "dimer_paths":
+                if key == "mate_paths" or key == "dimer_paths" and mates:
                     for mate in item:
                         #print(mate)
                         pymol_load_path(mate, os.path.basename(mate))
@@ -180,26 +192,32 @@ def show_objects(obj_list, args):
 
                 ###
 
-            from pyMol import pymol_format, pymol_set_state, pymol_orient, pymol_show_cell, pymol_hide
+            from pyMol import pymol_format, pymol_orient, pymol_show_cell, pymol_hide, pymol_disable
             pymol_format("spheres", "neighbour", "all", colour="rainbow", spectrum="b")
             pymol_format("mesh", "original", "all", colour="white")
             pymol_format("mesh", "processed", "all", colour="blue")
-            pymol_set_state(1)
+            pymol_set_state(0)
             pymol_orient()
             pymol_show_cell()
+            pymol_disable("pca")
+            pymol_group(identifier="face", name="faces")
             try:
                 pymol_hide("c", "label")
+                pymol_disable("c")
             except:
                 pass
-            pymol_group(identifier="mate", name="mates")
-            #pymol_group(identifier= "dimer")
             pymol_group(identifier="rep", name="replaced")
-            pymol_group(identifier="merged", name="merged")
+            # pymol_group(identifier= "dimer")
+            if mates:
+                pymol_group(identifier="mate", name="mates")
+            if merged:
+                pymol_group(identifier="merged", name="merged")
             try:
                 pymol_symmetries(og)
                 pymol_group(identifier = "sym")
             except:
                 pass
+    pymol_set_state(2)
 
 
 
