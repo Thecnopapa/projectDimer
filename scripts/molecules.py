@@ -580,6 +580,8 @@ class Dimer(BioObject):
         self.contact_face2 = None
         self.contacts_faces1 = None
         self.contacts_faces2 = None
+        self.m1faces = None
+        self.m2faces = None
 
         self.com1 = None
         self.com2 = None
@@ -632,9 +634,9 @@ class Dimer(BioObject):
     def get_faces(self, by_com = True):
         print2("Identifying faces, by COM: {}".format(by_com))
 
-        if by_com:
-            from faces import get_dimer_faces
-            self.face1, self.face2, self.interface_distance = get_dimer_faces(self)
+        #if by_com:
+        from faces import get_dimer_faces
+        self.face1, self.face2, self.interface_distance = get_dimer_faces(self)
 
         m1faces = None
         m2faces = None
@@ -658,12 +660,15 @@ class Dimer(BioObject):
 
         # m1 and m2 swapped as face 1 is actually monomer2
         if m2faces is not None:
-            self.contact_face1 = sort_dict(m2faces, as_list=True)[0][0]
+            self.m1faces = sort_dict(m2faces, as_list=True)
+            self.contact_face1 = self.m1faces[0][0]
         else:
             self.contact_face1 = None
 
         if m1faces is not None:
-            self.contact_face2 = sort_dict(m1faces, as_list=True)[0][0]
+            self.m2faces = sort_dict(m1faces, as_list=True)
+            self.contact_face2 = self.m2faces[0][0]
+
         else:
             self.contact_face2 = None
 
