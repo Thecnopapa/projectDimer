@@ -668,7 +668,6 @@ class Dimer(BioObject):
         if m1faces is not None:
             self.m2faces = sort_dict(m1faces, as_list=True)
             self.contact_face2 = self.m2faces[0][0]
-
         else:
             self.contact_face2 = None
 

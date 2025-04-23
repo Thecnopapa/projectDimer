@@ -15,25 +15,23 @@ print1("References loaded")
 
 
 
-from visualisation import *
-gene
 
 from faces import *
 
 dimer_list = sorted(os.listdir(local.dimers))
 progress = ProgressBar(len(dimer_list))
-face_df = pd.read_csv("/cri4/iain/projectB/dataframes/clustering/faces/GR.csv")
+face_df = pd.DataFrame(columns=["ID", "face1", "face2", "contact_face1", "contact_face2"])
+print(face_df)
+
 for dimer_name in dimer_list:
     sprint(dimer_name)
     dimers = load_single_pdb(dimer_name, pickle_folder=local.dimers)
     for dimer in dimers:
-        #print(dimer.face1, dimer.face2)
         if dimer.best_fit != "GR":
             progress.add(info=dimer.id)
             continue
-
+        print(dimer.face1, dimer.face2, dimer.contact_face1, dimer.contact_face2)
         face_df.loc[dimer.id] = [dimer.id, dimer.face1, dimer.face2, dimer.contact_face1, dimer.contact_face2]
-        dimer.pickle()
         progress.add(info=dimer.id)
 face_df.to_csv("/cri4/iain/projectB/dataframes/clustering/faces/GR.csv")
 
