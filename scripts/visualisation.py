@@ -11,35 +11,43 @@ import matplotlib.pyplot as plt
 
 
 
-def generate_piechart(df_name:str, column, extra_data:dict[str, int] = None):
-    if df_name in os.listdir(root.dataframes):
-        data = pd.read_csv(os.path.join(root.dataframes, df_name))
-        if len(data) > 0:
-            labels = list(data[column].unique())
-            sizes = []
-            large_labels = []
-            for label in labels:
-                sizes.append(len(data[data[column] == label]))
-            if extra_data is not None:
-                for key, value in extra_data.items():
-                    labels += [key]
-                    sizes += [value]
+def generate_piechart(df_name:str = None, column = None, extra_data:dict[str, int] = None, name= None):
+    labels = []
+    sizes = []
+    large_labels = []
+    if df_name is not None:
+        assert column is not None
+        if df_name in os.listdir(root.dataframes):
+            data = pd.read_csv(os.path.join(root.dataframes, df_name))
+            if len(data) > 0:
+                labels = list(data[column].unique())
+                for label in labels:
+                    sizes.append(len(data[data[column] == label]))
+    else:
+        assert extra_data is not None
+    if extra_data is not None:
+        for key, value in extra_data.items():
+            labels += [key]
+            sizes += [value]
 
-            total = sum(sizes)
-            for index, (label, size) in enumerate(zip(labels, sizes)):
-                labels[index] = "{} ({}%)".format(label, round(size / total * 100))
-                if round(size / total * 100) >= 3:
-                    large_labels.append(label)
-                else:
-                    large_labels.append("")
-            fig, ax = plt.subplots()
-            ax.pie(sizes, labels=large_labels, startangle=90)
-            ax.set_title("{} in {} (N = {})".format(column, df_name, total))
-            fig.legend(title="Best Fit:", labels=labels, loc="lower right")
-            fig_name = "{}.png".format(df_name.split(".")[0])
-            fig_path = os.path.join(root.charts, fig_name)
-            fig.savefig(fig_path)
-            print1("{} generated".format(fig_name))
+    total = sum(sizes)
+    for index, (label, size) in enumerate(zip(labels, sizes)):
+        labels[index] = "{} ({}%)".format(label, round(size / total * 100))
+        if round(size / total * 100) >= 3:
+            large_labels.append(label)
+        else:
+            large_labels.append("")
+    fig, ax = plt.subplots()
+    ax.pie(sizes, labels=large_labels, startangle=90)
+    if df_name is not None:
+        ax.set_title("{} in {} (N = {})".format(column, df_name, total))
+    else:
+        ax.set_title("{} (N = {})".format(name, total))
+    fig.legend(title="Best Fit:", labels=labels, loc="lower right")
+    fig_name = "{}.png".format(df_name.split(".")[0])
+    fig_path = os.path.join(root.charts, fig_name)
+    fig.savefig(fig_path)
+    print1("{} generated".format(fig_name))
 
 
 
@@ -57,6 +65,20 @@ def generate_charts():
 
     # Errors piechart:
     generate_piechart("failed_df.csv", "error")
+
+    # Classified piechart
+    classified_chart()
+
+
+def classified_chart(ref_name="GR"):
+    root["charts"] = "charts"
+    classified_df = pd.read_csv(os.path.join(root.classified, ref_name+".csv"))
+    data = {}
+    for n in range(10):
+        subset = classified_df[classified_df["Similarity"] <= n and classified_df["Similarity"] > n-1 ]
+        data[str(n*10)] =  len(subset)
+    generate_piechart(extra_data=data, name = "Classified Similarities of GR")
+
 
 def generate_html():
     pass

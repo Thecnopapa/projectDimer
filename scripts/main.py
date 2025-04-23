@@ -178,7 +178,9 @@ def main(PROCESS_ALL = False,
                 from clustering import add_info_to_classified
                 #save_dfs(general=False, clustering=True)
                 add_info_to_classified(reference)
-                reference.clusters_eva = get_clusters(reference.classified_df, column = "Best_Match", ref_name=reference.name)
+                from visualisation import classified_chart
+                classified_chart()
+                #reference.clusters_eva = get_clusters(reference.classified_df, column = "Best_Match", ref_name=reference.name)
             if reference.name != "GR" and ONLY_GR:
                 reference.pickle()
                 continue
