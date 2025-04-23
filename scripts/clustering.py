@@ -883,7 +883,7 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
     return fig_path
 
 
-def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, score_id="", pca = True, pca_dimensions = [0,1,2]):
+def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, minimum_score=0, pca = True, pca_dimensions = [0,1,2]):
 
     if FORCE_ALL:
         FORCE_SM = True
@@ -903,6 +903,27 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, sc
     for file in os.listdir(root[subfolder_name.format("contacts")]):
         sprint(file)
         contacts_path = os.path.join(root[subfolder_name.format("contacts")], file)
+        if minimum_score > 0:
+            contacts_df = pd.read_csv(contacts_path)
+            original_len = len(contacts_df)
+            classified_df = pd.read_csv(os.path.join(root.classified, "{}.csv".format(reference.name)))
+            cols = list(contacts_df.columns)
+            for col in cols:
+                if col in ["ResNum", "ResName"]:
+                    continue
+                class_row = classified_df[classified_df["ID"] == col].itertuples()
+                assert len(class_row) == 1
+                class_row = class_row[0]
+                if class_row.Similarity < minimum_score:
+                    cols.remove(col)
+            filtered_len = len(cols)
+            print(contacts_df[cols])
+            print("Filtered {} dimers with a threshold of {}".format(original_len-filtered_len, minimum_score))
+            contacts_path = os.path.join(root[subfolder_name.format("contacts")], "filtered_{}_".format(minimum_score) + file)
+            contacts_df[cols].to_csv(contacts_path)
+
+
+
         if not pca:
             sms_path= generate_sm(reference, force=FORCE_SM, subfolder = subfolder_name, in_path = contacts_path)
             ccs_path = cc_analysis(reference, force=FORCE_CC, dimensions=DIMENSIONS, subfolder = subfolder_name, in_path = sms_path)

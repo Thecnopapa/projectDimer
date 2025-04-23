@@ -183,7 +183,7 @@ def main(PROCESS_ALL = False,
                 continue
             if SPLIT_FACES:
                 split_by_faces(reference, force=FORCE_SPLIT, by_com= FACES_BY_COM)
-                cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, n_clusters=N_CLUSTERS, pca=CLUSTER_BY_PCA, pca_dimensions = DIMENSIONS_PCA)
+                cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, minimum_score=30, n_clusters=N_CLUSTERS, pca=CLUSTER_BY_PCA, pca_dimensions = DIMENSIONS_PCA)
             else:
                 cluster(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL)
             reference.pickle()
