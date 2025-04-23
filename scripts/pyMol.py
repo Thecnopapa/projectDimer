@@ -74,11 +74,12 @@ def pymol_hide(sele, hide = None, silent = True):
             print("(PyMol) Hiding:", sele)
         pymol.cmd.hide(representation=hide, selection=sele)
 
-def pymol_format(representation,identifier="", hide="all", colour = None, spectrum=None):
+def pymol_format(representation,identifier="", hide="all", colour = None, spectrum=None, quiet=False):
     for obj in get_all_obj():
         if identifier in obj:
             pymol_hide(obj, hide=hide)
-            print("(PyMol) Formatting:", obj, representation)
+            if not quiet:
+                print("(PyMol) Formatting:", obj, representation)
             pymol.cmd.show(representation=representation, selection=obj)
             if colour is not None:
                 pymol_colour(colour, obj=obj, spectrum=spectrum)
@@ -245,7 +246,7 @@ def pymol_sphere(coords, name = None, colour="white", state = -1, scale = 8):
     pymol.cmd.pseudoatom(object=name, pos=coords, color = colour, elem="Ca", state = state)
     pymol.cmd.set("sphere_scale", scale)#, selection="({})".format(name))
     pymol.cmd.set("sphere_transparency", 0.25)
-    pymol_format("sphere", name)
+    pymol_format("sphere", name, quiet= True)
 
 
 def pymol_disable(sele = "all"):
@@ -263,7 +264,7 @@ def pymol_paint_all_faces(obj):
             for face, ress in GR_dict.items():
                 sele = "({})".format(" or ".join( "i. {}".format(res) for res in ress))
                 #print(sele)
-                pymol_colour(GR_colours[face], o, sele)
+                pymol_colour(GR_colours[face], o, sele, silent=True)
 
 
 
