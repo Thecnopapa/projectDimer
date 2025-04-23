@@ -51,11 +51,14 @@ def create_dfs(references):
     vars["alignments_df"] = pd.DataFrame(columns=columns_alignment)'''
 
 def create_clustering_dfs(references):
-    root["clustering"] = "dataframes/clustering"
     vars["clustering"] = {}
+    root["clustering"] = "dataframes/clustering"
     vars["clustering"]["contacts"] = {}
+    root["contacts"] = "dataframes/clustering/contacts"
     vars["clustering"]["faces"] = {}
+    root["faces"] = "dataframes/clustering/faces"
     vars["clustering"]["classified"] = {}
+    root["classified"] = "dataframes/clustering/classified"
     for reference in references:
         print("Reference:", reference.name)
         ref_data = {"ResNum": [],
@@ -65,6 +68,7 @@ def create_clustering_dfs(references):
             ref_data["ResName"].append(res.resname)
         vars["clustering"]["contacts"][reference.name] = pd.DataFrame(data=ref_data)
         vars["clustering"]["faces"][reference.name] = pd.DataFrame(columns=["ID", "face1", "face2", "contact_face1", "contact_face2"])
+
 
 
 

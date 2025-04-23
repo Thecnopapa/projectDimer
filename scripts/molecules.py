@@ -576,6 +576,11 @@ class Dimer(BioObject):
         self.full_array = None
         self.face1 = None
         self.face2 = None
+        self.contact_face1 = None
+        self.contact_face2 = None
+        self.contacts_faces1 = None
+        self.contacts_faces2 = None
+
         self.com1 = None
         self.com2 = None
         self.pca1 = None
@@ -654,9 +659,16 @@ class Dimer(BioObject):
         # m1 and m2 swapped as face 1 is actually monomer2
         if m2faces is not None:
             self.contact_face1 = sort_dict(m2faces, as_list=True)[0][0]
+        else:
+            self.contact_face1 = None
 
         if m1faces is not None:
             self.contact_face2 = sort_dict(m1faces, as_list=True)[0][0]
+        else:
+            self.contact_face2 = None
+
+        face1 = None
+        face2 = None
 
         if not by_com:
             face1 = self.contact_face1
@@ -665,16 +677,16 @@ class Dimer(BioObject):
             face1 = self.face1
             face2 = self.face2
 
-        if self.face1 is not None:
+        if face1 is not None:
             from faces import GR_dict, GR_colours
-            self.contacts_faces1 = [GR_colours[self.face1]]
-            for res in GR_dict[self.face1]:
+            self.contacts_faces1 = [GR_colours[face1]]
+            for res in GR_dict[face1]:
                 self.contacts_faces1.append([self.monomer1.chain, res])
 
-        if self.face2 is not None:
+        if face2 is not None:
             from faces import GR_dict, GR_colours
-            self.contacts_faces2 = [GR_colours[self.face2]]
-            for res in GR_dict[self.face2]:
+            self.contacts_faces2 = [GR_colours[face2]]
+            for res in GR_dict[face2]:
                 self.contacts_faces2.append([self.monomer2.chain, res])
 
 

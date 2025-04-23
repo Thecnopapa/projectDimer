@@ -541,6 +541,7 @@ def compare_contacts(reference, force = False):
     vars["clustering"]["classified"][reference.name] = pd.DataFrame(
         columns=["ID", "Best_Fit", "Best_Match","Best_Match_String", "Similarity", "Inverse"])
     print2(reference)
+
     df_path = os.path.join(root.contacts, reference.name+".csv")
     contacts_df = pd.read_csv(df_path)
     print(contacts_df)
