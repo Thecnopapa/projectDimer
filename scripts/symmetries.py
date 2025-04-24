@@ -244,20 +244,33 @@ class Contact:
             self.coord = coord
         self.atom = atom
         self.max_distance = max_distance
+        if self.max_distance is None:
+            self.backup_distance = None
+        else:
+            self.backup_distance = max_distance-2
         self.min_contacts = min_contacts
         self.count_to_min = count_to_min
         self.params = params
-        self.position = position
+        self.position = position["position"]
+        #self.target_list = target_list
+        #self.ref_dict = ref_dict
         self.shortest_contact = None
         self.is_contact = False
-        self.get_contacts(target_list)
+        self.is_backup = False
         self.face = None
+        self.backup_face = None
         self.face_opposite = None
-        if ref_dict is not None:
-            self.get_contact_faces(ref_dict)
+        self.backup_face_opposite = None
+        self.num_backup_contacts = 0
+        self.num_contacts = 0
+        self.all_contacts = []
+
+        self.reprocess_contacts(target_list, ref_dict)
+
 
     def __repr__(self):
         import math
+        #return "Contact in c. {} r. {} ({}-{}) d: {} b: {} N:[{}/{}]".format(self.atom.get_full_id()[-2][1], self.atom.get_full_id()[-3], self.face, self. face_opposite, round(self.shortest_contact["distance"]), self.is_backup, self.num_contacts,self.num_backup_contacts)
 
         return "Contacts ({}) in res {} (chain {}, face: {}), shortest: {} A (res: {}, face: {})".format(self.num_contacts,
                                                                                      self.atom.get_full_id()[-2][1],
@@ -267,35 +280,54 @@ class Contact:
                                                                                      self.shortest_contact["target_atom"].parent.id[1],
                                                                                      self.shortest_contact["face"])
 
+    def reprocess_contacts(self, target_list= None, ref_dict=None):
+        if target_list is not None:
+            self.get_contact_contacts(target_list)
+        if ref_dict is not None:
+            self.get_contact_faces(ref_dict)
+
 
     def get_contact_faces(self, ref_dict):
+        face_dict = {}
+        backup_face_dict = {}
+        op_face_dict = {}
+        op_backup_face_dict = {}
         for face, res_list in ref_dict.items():
             #print(self.atom.parent.id[1], res_list,self.atom.parent.id[1] in res_list )
             if self.atom.parent.id[1] in res_list:
-                if self.face is None:
-                    self.face = {face:1}
-                elif face in self.face.keys():
-                    self.face[face] += 1
+                if face in face_dict.keys():
+                    face_dict[face] += 1
                 else:
-                    self.face[face] = 1
+                    face_dict[face] = 1
+                    backup_face_dict[face] = 0
+                if self.is_backup:
+                    backup_face_dict[face] += 1
+
             for contact in self.all_contacts:
                 if contact["target_atom"].parent.id[1] in res_list:
-                    if self.face_opposite is None:
-                        self.face_opposite = {face: 1}
-                        contact["face"] = face
-                    elif face in self.face_opposite.keys():
-                        self.face_opposite[face] += 1
+                    contact["face"] = face
+                    if face in op_face_dict.keys():
+                        op_face_dict[face] += 1
                     else:
-                        self.face_opposite[face] = 1
-        if self.face is not None:
-            self.face = sort_dict(self.face, as_list=True)[0][0]
-        if self.face_opposite is not None:
-            self.face_opposite = sort_dict(self.face_opposite, as_list=True)[0][0]
+                        op_face_dict[face] = 1
+                        backup_face_dict[face] = 0
+                    if contact["backup"]:
+                        backup_face_dict[face] += 1
+
+        if len(face_dict) > 0:
+            self.face = sort_dict(face_dict, as_list=True)[0][0]
+            if len(backup_face_dict) > 0:
+                self.backup_face = sort_dict(backup_face_dict, as_list=True)[0][0]
+
+        if len(op_face_dict) > 0:
+            self.face_opposite = sort_dict(op_face_dict, as_list=True)[0][0]
+            if len(op_backup_face_dict) > 0:
+                self.backup_face_opposite = sort_dict(op_backup_face_dict, as_list=True)[0][0]
 
 
 
 
-    def get_contacts(self, target_atoms):
+    def get_contact_contacts(self, target_atoms):
 
         if self.params is not None:
             distance_fun = get_fractional_distance
@@ -306,25 +338,38 @@ class Contact:
             distance_fun = d2
             if self.max_distance is not None:
                 max_distance = self.max_distance ** 2
+        if self.backup_distance is None:
+            self.backup_distance = self.max_distance/2
+        backup_distance = self.backup_distance ** 2
         self.is_contact = False
+        self.is_backup = False
         self.num_contacts = 0
         self.all_contacts = []
+        self.num_backup_contacts = 0
         for atom in target_atoms:
             #print("  ",atom.parent.id[1])
             dist = distance_fun(self.coord, atom.coord, params=self.params)
             #print(dist)
             if self.max_distance is None or dist <= max_distance:
+                backup = False
+                self.num_contacts += 1
+                if dist <= backup_distance:
+                    backup = True
+                    self.is_backup = True
+                    self.num_backup_contacts += 1
                 line = [[c for c in self.coord], [c for c in atom.coord]]
                 if self.params is not None:
                     line = [convertFromFracToOrth(coord, self.params) for coord in line]
-                self.num_contacts += 1
+
                 new_contact = {
                     "atom": self.atom,
                     "target_atom": atom,
                     "line":  line,
                     "distance": dist,
+                    "backup_distance": backup_distance,
                     "maximum_distance": max_distance,
-                    "face": None
+                    "face": None,
+                    "backup": backup,
                 }
                 self.all_contacts.append(new_contact)
                 if self.shortest_contact is None or dist < self.shortest_contact["distance"]:

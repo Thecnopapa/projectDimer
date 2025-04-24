@@ -582,6 +582,7 @@ class Dimer(BioObject):
         self.contacts_faces2 = None
         self.m1faces = None
         self.m2faces = None
+        self.used_backup = False
 
         self.com1 = None
         self.com2 = None
@@ -605,14 +606,15 @@ class Dimer(BioObject):
         #print(self.com)
         self.pickle()
 
-    def reprocess(self):
+    def reprocess(self, by_com = False):
         self.process()
-        self.get_contacts()
-        self.get_faces()
+        self.get_contacts(force = True)
+        self.get_faces(by_com=by_com)
         self.pickle()
 
 
     def get_contacts(self, max_distance= 16, force = False):
+        self.contacts = []
         if len(self.contacts) != 0 and not force:
             return
         print2("Calculating contacts")
@@ -631,45 +633,94 @@ class Dimer(BioObject):
                 self.contacts.append(contact)
                 #print(contact)
 
-    def get_faces(self, by_com = True):
+    def _count_contacts(self, backup=False):
+        print3("Counting Contacts, backup:", backup)
+        m1faces = None
+        m2faces = None
+        # print(self.contacts)
+        for contact in self.contacts:
+            print(contact)
+            print("normal:", contact.face, contact.face_opposite)
+            print("backup:",contact.backup_face , contact.backup_face_opposite)
+            if backup:
+                face = contact.backup_face
+                face_opposite = contact.backup_face_opposite
+            else:
+                face = contact.face
+                face_opposite = contact.face_opposite
+            # print(contact)
+            '''if face is None and face_opposite is None:
+                contact.reprocess_contacts()'''
+            # print_dict(contact.__dict__)
+
+            if face is not None:
+                if m2faces is None:
+                    m2faces = {face: 1}
+                elif face in m2faces.keys():
+                    m2faces[face] += 1
+                else:
+                    m2faces[face] = 1
+
+            if face_opposite is not None:
+                if m1faces is None:
+                    m1faces = {face_opposite: 1}
+                elif face_opposite in m1faces.keys():
+                    m1faces[face_opposite] += 1
+                else:
+                    m1faces[face_opposite] = 1
+
+        # m1 and m2 swapped as face 1 is actually monomer2 # NOT ANYMORE
+        need_backup = False
+        if m1faces is not None:
+            print("#", m1faces)
+            if len(m1faces) > 0:
+                self.m1faces = sort_dict(m1faces, as_list=True)
+                if len(self.m1faces) > 1:
+                    if self.m1faces[0][1] == self.m1faces[1][1]:
+                        need_backup = True
+                self.contact_face1 = self.m1faces[0][0]
+            elif not backup:
+                self.contact_face1 = None
+                self.m1faces = None
+        elif not backup:
+            self.contact_face1 = None
+            self.m1faces = None
+        print("##", m1faces)
+
+        if m2faces is not None:
+            if len(m2faces) > 0:
+                self.m2faces = sort_dict(m2faces, as_list=True)
+                if len(self.m2faces) > 1:
+                    if self.m2faces[0][1] == self.m2faces[1][1]:
+                        need_backup = True
+                self.contact_face2 = self.m2faces[0][0]
+            elif not backup:
+                self.contact_face2 = None
+                self.m2faces = None
+        elif not backup:
+            self.contact_face2 = None
+            self.m2faces = None
+
+        print("self:")
+        print(self.m1faces)
+        print(self.m2faces)
+
+        print("new: (backup: {})".format(backup))
+        print(m1faces)
+        print(m2faces)
+        if need_backup and not backup:
+            print3("Backup for dimer:", self)
+            self.used_backup = True
+            self._count_contacts(backup=True)
+
+    def get_faces(self, by_com = False):
         print2("Identifying faces, by COM: {}".format(by_com))
 
         #if by_com:
         from faces import get_dimer_faces
         self.face1, self.face2, self.interface_distance = get_dimer_faces(self)
 
-        m1faces = None
-        m2faces = None
-
-        for contact in self.contacts:
-            if contact.face is not None:
-                if m1faces is None:
-                    m1faces = {contact.face: 1}
-                elif contact.face in m1faces.keys():
-                    m1faces[contact.face] += 1
-                else:
-                    m1faces[contact.face] = 1
-
-            if contact.face_opposite is not None:
-                if m2faces is None:
-                    m2faces = {contact.face_opposite: 1}
-                elif contact.face_opposite in m2faces.keys():
-                    m2faces[contact.face_opposite] += 1
-                else:
-                    m2faces[contact.face_opposite] = 1
-
-        # m1 and m2 swapped as face 1 is actually monomer2
-        if m2faces is not None:
-            self.m1faces = sort_dict(m2faces, as_list=True)
-            self.contact_face1 = self.m1faces[0][0]
-        else:
-            self.contact_face1 = None
-
-        if m1faces is not None:
-            self.m2faces = sort_dict(m1faces, as_list=True)
-            self.contact_face2 = self.m2faces[0][0]
-        else:
-            self.contact_face2 = None
+        self._count_contacts()
 
         face1 = None
         face2 = None

@@ -70,5 +70,17 @@ else:
     vars["quiet"] = False
 
 
+def get_sys_vars():
+    for n, arg in enumerate(sys.argv):
+        if arg.startswith("--") or arg.startswith("-"):
+            arg = arg.strip("-")
+            value = sys.argv[n + 1]
+            try:
+                value = int(value)
+            except:
+                pass
+
+
+
 
 

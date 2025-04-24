@@ -96,8 +96,11 @@ def supress(fun, *args, **kwargs):
     try:
         return fun(*args, **kwargs)
     except:
-        pass
+        return None
 
+def print_dict(dict):
+    for k, v in dict.items():
+        print("{}: {}".format(k, v))
 
 
 class ProgressBar:

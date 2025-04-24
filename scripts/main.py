@@ -141,7 +141,7 @@ def main(PROCESS_ALL = False,
                     print1(dimer)
                     if dimer.incomplete:
                         continue
-                    dimer.get_contacts(max_distance=CONTACT_DISTANCE_CLUSTERING)
+                    dimer.get_contacts(max_distance=CONTACT_DISTANCE_CLUSTERING, force= FORCE_CONTACTS)
                     if dimer.best_fit == "GR":
                         dimer.get_faces(by_com = FACES_BY_COM)
                         face_df = vars["clustering"]["faces"][dimer.best_fit]
@@ -256,7 +256,7 @@ if __name__ == "__main__":
          MINIMUM_CONTACTS=0,  # Minimum number of contacts to consider a dimer interface
 
          # Dimer processing, includes contact calculation and face identification, generates contact dataframes
-         SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL)
+         SKIP_DIMERS = False, # Skip the entire block (overridden by PROCESS_ALL)
          FORCE_CONTACTS = True,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
          CONTACT_DISTANCE_CLUSTERING = 12,
          FACES_BY_COM = False,
@@ -267,7 +267,7 @@ if __name__ == "__main__":
          BALL_SIZE=1.6, # DEPRECATED
 
          # Clustering, from SM to plotting
-         SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
+         SKIP_CLUSTERING=True, # Skip th entire block (overridden by PROCESS_ALL)
          FORCE_COMPARE = False, #  Compare GR clustering to EVA clustering
          ONLY_GR = True, # Whether to only cluster GR
          FORCE_CLUSTERING = False, # Force clustering if already calculated (overridden by PROCESS_ALL)
