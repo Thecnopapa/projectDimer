@@ -17,6 +17,7 @@
 ![GR_cc_clustered.png](images/cc/GR_cc.png)
 
 ## Current Data distribution:
+![GR_similarity.png](charts/Classified Similarities of GR.png)
 ![monomers_df.png](charts/monomers_df.png)
 ![failed_df.png](charts/failed_df.png)
 

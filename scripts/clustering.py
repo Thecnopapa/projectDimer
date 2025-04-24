@@ -626,7 +626,7 @@ def compare_contacts(reference, force = False):
 
 def add_info_to_classified(reference):
     classified = pd.read_csv(os.path.join(root.classified, "{}.csv".format(reference.name)), index_col=0)
-    faces = vars.clustering["faces"][reference.name]
+    faces = pd.read_csv(os.path.join(root.faces, "{}.csv".format(reference.name)), index_col=0)
     try:
         assert len(classified) == len(faces)
     except AssertionError:
@@ -662,6 +662,7 @@ def add_info_to_classified(reference):
     vars.clustering["classified"][reference.name].to_csv(os.path.join(root.classified, reference.name + ".csv"))
 
 def add_clusters_to_classified(reference, pca=True):
+
     classified_path = os.path.join(root.classified, reference.name + ".csv")
     classified = pd.read_csv(classified_path, index_col="ID")
     if "ID" in classified.columns:
@@ -683,12 +684,15 @@ def add_clusters_to_classified(reference, pca=True):
             original_cols.remove(c)
     classified = classified[original_cols]
     print(classified)
-    pca_string = ""
+
     if pca:
-        pca_string = "pcas_"
-    for path in os.listdir(root["clustered_{}{}".format(pca_string, reference.name)]):
+        clustered_folder = root["clustered_pcas_{}".format(reference.name)]
+    else:
+        clustered_folder = root["clustered_{}".format(reference.name)]
+
+    for path in os.listdir(clustered_folder):
         if "centres" not in path:
-            df = pd.read_csv(os.path.join(root.clustered,"clustered_{}".format(reference.name), path))
+            df = pd.read_csv(os.path.join(clustered_folder, path))
             print(df)
             for row in df.itertuples():
                 classified.loc[row.id, "face_group"]= path.split(".")[0]
@@ -740,8 +744,9 @@ def clusterize_pcas(subfolder, name, in_path, force = False, n_clusters = None ,
     if n_clusters is None:
         from faces import GR_groups
         n_clusters = 0
-        faces = os.path.basename(in_path).split(".")[0].split("_")
+        faces = os.path.basename(in_path).split(".")[0].split("_")[-2:]
         for value in GR_groups.values():
+            print(faces, value)
             if faces[0] == value[0] and faces[1] == value[1]:
                 n_clusters += 1
 
@@ -901,6 +906,8 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
     #print(root[subfolder_name.format("contacts")])
 
     for file in os.listdir(root[subfolder_name.format("contacts")]):
+        if "filtered" in file:
+            continue
         sprint(file)
         contacts_path = os.path.join(root[subfolder_name.format("contacts")], file)
         if minimum_score > 0:
@@ -911,9 +918,13 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
             for col in cols:
                 if col in ["ResNum", "ResName"]:
                     continue
-                class_row = classified_df[classified_df["ID"] == col].itertuples()
+                print(col)
+                print(classified_df[classified_df["ID"] == col])
+                class_row = classified_df[classified_df["ID"] == col]
+                print(class_row)
                 assert len(class_row) == 1
-                class_row = class_row[0]
+                class_row = class_row.iloc[0]
+                print(class_row.Similarity)
                 if class_row.Similarity < minimum_score:
                     cols.remove(col)
             filtered_len = len(cols)

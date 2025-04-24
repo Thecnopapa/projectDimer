@@ -41,10 +41,12 @@ def generate_piechart(df_name:str = None, column = None, extra_data:dict[str, in
     ax.pie(sizes, labels=large_labels, startangle=90)
     if df_name is not None:
         ax.set_title("{} in {} (N = {})".format(column, df_name, total))
+        fig_name = "{}.png".format(df_name.split(".")[0])
     else:
         ax.set_title("{} (N = {})".format(name, total))
+        fig_name = "{}.png".format(name)
     fig.legend(title="Best Fit:", labels=labels, loc="lower right")
-    fig_name = "{}.png".format(df_name.split(".")[0])
+
     fig_path = os.path.join(root.charts, fig_name)
     fig.savefig(fig_path)
     print1("{} generated".format(fig_name))
@@ -74,10 +76,12 @@ def classified_chart(ref_name="GR"):
     root["charts"] = "charts"
     classified_df = pd.read_csv(os.path.join(root.classified, ref_name+".csv"))
     data = {}
-    for n in range(10):
-        subset = classified_df[classified_df["Similarity"] <= n and classified_df["Similarity"] > n-1 ]
-        data[str(n*10)] =  len(subset)
+    for n in range(11):
+        subset = classified_df[classified_df["Similarity"] <= n*10 ]
+        subset = subset[subset["Similarity"] > (n-1)*10]
+        data[str((n-1)*10+1)+"-"+str(n*10)] =  len(subset)
     generate_piechart(extra_data=data, name = "Classified Similarities of GR")
+    print(data)
 
 
 def generate_html():
