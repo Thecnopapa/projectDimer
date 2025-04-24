@@ -325,10 +325,22 @@ if __name__ == "__main__":
         else:
             pca = False
         tprint("Showing clustered data by interaction faces")
+
+        filtered = None
+        if len(sys.argv) >= 3:
+            filtered = sys.argv[2]
+
+
+
         if pca:
             faces = os.listdir(root.pca_figs_GR)
         else:
             faces = os.listdir(root.cc_figs_GR)
+        if filtered is not None:
+            for f in faces.copy():
+                if not str(filtered) in f:
+                    faces.remove(f)
+
         sprint("Clustered face-face combinations for GR:")
         for n, f in enumerate(faces):
             print1("{}: {}".format(n,f.split(".")[0]))

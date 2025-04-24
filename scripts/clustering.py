@@ -918,18 +918,18 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
             for col in cols:
                 if col in ["ResNum", "ResName"]:
                     continue
-                print(col)
-                print(classified_df[classified_df["ID"] == col])
+                #print(col)
+                #print(classified_df[classified_df["ID"] == col])
                 class_row = classified_df[classified_df["ID"] == col]
-                print(class_row)
+                #print(class_row)
                 assert len(class_row) == 1
                 class_row = class_row.iloc[0]
                 print(class_row.Similarity)
                 if class_row.Similarity < minimum_score:
                     cols.remove(col)
             filtered_len = len(cols)
-            print(contacts_df[cols])
-            print("Filtered {} dimers with a threshold of {}".format(original_len-filtered_len, minimum_score))
+            #print(contacts_df[cols])
+            print1("Filtered {} dimers with a threshold of {}".format(original_len-filtered_len, minimum_score))
             contacts_path = os.path.join(root[subfolder_name.format("contacts")], "filtered_{}_".format(minimum_score) + file)
             contacts_df[cols].to_csv(contacts_path)
 
