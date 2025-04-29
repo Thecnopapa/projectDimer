@@ -89,6 +89,10 @@ def generate_html():
 
 
 def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces =True):
+
+    merged = "merged" in sys.argv
+
+
     for obj in obj_list:
         sprint(obj.id)
         #print(obj.__dict__)
@@ -140,7 +144,9 @@ def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces 
             for key, item in obj.__dict__.items():
                 if type(item) == str:
                     #print(item.endswith(".pdb"), not "fractional" in item, not "merged" in item, not merged)
-                    if item.endswith(".pdb") and not "fractional" in item and (not "merged" in item and not merged):
+                    if item.endswith(".pdb"):
+                        if "fractional" in item or ("merged" in item and not merged):
+                            continue
                         if "many_pdbs" in item:
                             og = pymol_load_path(item, os.path.basename(item)+"_original")
                         elif "pdb_" in item:
@@ -328,18 +334,27 @@ if __name__ == "__main__":
 
         filtered = None
         if len(sys.argv) >= 3:
-            filtered = sys.argv[2]
+            filtered = sys.argv[-1]
+            print("Subset:", filtered)
 
 
 
         if pca:
             faces = os.listdir(root.pca_figs_GR)
+            print("PCA clustering")
+            print(faces)
         else:
             faces = os.listdir(root.cc_figs_GR)
-        if filtered is not None:
+
+        try:
+            int(filtered)
+            print("Filtering")
             for f in faces.copy():
                 if not str(filtered) in f:
                     faces.remove(f)
+        except:
+            pass
+
 
         sprint("Clustered face-face combinations for GR:")
         for n, f in enumerate(faces):

@@ -259,7 +259,7 @@ if __name__ == "__main__":
          SKIP_DIMERS = False, # Skip the entire block (overridden by PROCESS_ALL)
          FORCE_CONTACTS = True,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
          CONTACT_DISTANCE_CLUSTERING = 12,
-         FACES_BY_COM = False,
+         FACES_BY_COM = True,
 
          # SASA related (BROKEN)
          SASA = False, # Whether to run SASA calculations, currently broken
@@ -267,7 +267,7 @@ if __name__ == "__main__":
          BALL_SIZE=1.6, # DEPRECATED
 
          # Clustering, from SM to plotting
-         SKIP_CLUSTERING=True, # Skip th entire block (overridden by PROCESS_ALL)
+         SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
          FORCE_COMPARE = False, #  Compare GR clustering to EVA clustering
          ONLY_GR = True, # Whether to only cluster GR
          FORCE_CLUSTERING = False, # Force clustering if already calculated (overridden by PROCESS_ALL)

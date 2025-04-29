@@ -633,21 +633,27 @@ class Dimer(BioObject):
                 self.contacts.append(contact)
                 #print(contact)
 
-    def _count_contacts(self, backup=False):
-        print3("Counting Contacts, backup:", backup)
+    def _count_contacts(self, backup1=False, backup2=False, use_backups = False):
+        print3("Counting Contacts, backup:", backup1, backup2)
         m1faces = None
         m2faces = None
         # print(self.contacts)
         for contact in self.contacts:
-            print(contact)
-            print("normal:", contact.face, contact.face_opposite)
-            print("backup:",contact.backup_face , contact.backup_face_opposite)
-            if backup:
-                face = contact.backup_face
+            #print(contact)
+            #print("normal:", contact.face, contact.face_opposite)
+            #print("backup:",contact.backup_face , contact.backup_face_opposite)
+            contact.backup_distance = contact.backup_distance - 2
+            contact.reprocess_contacts()
+            if backup1:
                 face_opposite = contact.backup_face_opposite
             else:
-                face = contact.face
                 face_opposite = contact.face_opposite
+
+            if backup2:
+                face = contact.backup_face
+            else:
+                face = contact.face
+
             # print(contact)
             '''if face is None and face_opposite is None:
                 contact.reprocess_contacts()'''
@@ -670,48 +676,55 @@ class Dimer(BioObject):
                     m1faces[face_opposite] = 1
 
         # m1 and m2 swapped as face 1 is actually monomer2 # NOT ANYMORE
-        need_backup = False
+        need_backup1 = False
+        need_backup2 = False
         if m1faces is not None:
-            print("#", m1faces)
+            print("#1", m1faces)
             if len(m1faces) > 0:
                 self.m1faces = sort_dict(m1faces, as_list=True)
                 if len(self.m1faces) > 1:
                     if self.m1faces[0][1] == self.m1faces[1][1]:
-                        need_backup = True
+                        need_backup1 = True
                 self.contact_face1 = self.m1faces[0][0]
-            elif not backup:
+            elif not backup1:
                 self.contact_face1 = None
                 self.m1faces = None
-        elif not backup:
+        elif not backup1:
             self.contact_face1 = None
             self.m1faces = None
-        print("##", m1faces)
+        print("##1", m1faces)
 
         if m2faces is not None:
             if len(m2faces) > 0:
+                print("#2", m2faces)
                 self.m2faces = sort_dict(m2faces, as_list=True)
                 if len(self.m2faces) > 1:
                     if self.m2faces[0][1] == self.m2faces[1][1]:
-                        need_backup = True
+                        need_backup2 = True
                 self.contact_face2 = self.m2faces[0][0]
-            elif not backup:
+            elif not backup2:
                 self.contact_face2 = None
                 self.m2faces = None
-        elif not backup:
+        elif not backup2:
             self.contact_face2 = None
             self.m2faces = None
+        print("##2", m2faces)
 
         print("self:")
-        print(self.m1faces)
-        print(self.m2faces)
+        print("#1#", self.m1faces)
+        print("#2#", self.m2faces)
 
-        print("new: (backup: {})".format(backup))
+        print("new: (backup: ", backup1, backup2)
         print(m1faces)
         print(m2faces)
-        if need_backup and not backup:
+        self.used_backup = (backup1 or backup2)
+        if (need_backup1 or need_backup2) and not (backup1 or backup2) and use_backups:
             print3("Backup for dimer:", self)
-            self.used_backup = True
-            self._count_contacts(backup=True)
+            self._count_contacts(backup1=need_backup1, backup2=need_backup2)
+        else:
+            print3("Contacts counted for dimer:", self)
+            print("#1 {}#".format(backup1), self.m1faces)
+            print("#2 {}#". format(backup2), self.m2faces)
 
     def get_faces(self, by_com = False):
         print2("Identifying faces, by COM: {}".format(by_com))

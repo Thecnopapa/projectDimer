@@ -252,8 +252,8 @@ class Contact:
         self.count_to_min = count_to_min
         self.params = params
         self.position = position["position"]
-        #self.target_list = target_list
-        #self.ref_dict = ref_dict
+        self.target_list = target_list
+        self.ref_dict = ref_dict
         self.shortest_contact = None
         self.is_contact = False
         self.is_backup = False
@@ -265,7 +265,7 @@ class Contact:
         self.num_contacts = 0
         self.all_contacts = []
 
-        self.reprocess_contacts(target_list, ref_dict)
+        self.reprocess_contacts(self.target_list, self.ref_dict)
 
 
     def __repr__(self):
