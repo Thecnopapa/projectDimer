@@ -318,7 +318,8 @@ def clusterize_cc(reference, force=False, n_clusters = 20, dimensions=3, subfold
 
 
 
-def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centres=True, adjust=False, subfolder=None, in_path=None, use_csv = True, plot_centres=True, subset = None, pca=False):
+def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centres=True, adjust=False, subfolder=None,
+            in_path=None, use_csv = True, plot_centres=True, subset = None, pca=False):
     print1("Plotting: {}, Dimensions: {}".format(reference.name, dimensions))
 
     if dimensions > 3:
@@ -684,9 +685,11 @@ def add_clusters_to_classified(reference, pca=True, splitted = True):
             # print("removing:", c)
             original_cols.remove(c)
     classified = classified[original_cols]
+    print("########################################")
     print(classified)
 
     for splitted in [True, False]:
+        print("##########", splitted)
         if pca:
             if splitted:
                 clustered_folder = root["clustered_pcas_{}".format(reference.name)]
@@ -698,14 +701,14 @@ def add_clusters_to_classified(reference, pca=True, splitted = True):
         for path in os.listdir(clustered_folder):
             if "centres" not in path and "clustered" not in path:
                 df = pd.read_csv(os.path.join(clustered_folder, path))
-                print(df)
+                #print(df)
                 for row in df.itertuples():
                     if splitted:
                         classified.loc[row.id, "face_group"]= path.split(".")[0]
                         classified.loc[row.id, "cluster"]= row.cluster
                     else:
                         classified.loc[row.id, "global_cluster"]= row.cluster
-    print(classified)
+        print(classified)
     vars.clustering["classified"][reference.name] = classified
     reference.classified_df = classified
     classified.to_csv(classified_path)

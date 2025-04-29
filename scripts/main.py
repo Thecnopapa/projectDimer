@@ -262,13 +262,13 @@ if __name__ == "__main__":
 
          # Clustering, from SM to plotting
          SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
-         FORCE_CLUSTERING=False,  # Force clustering if already calculated (overridden by PROCESS_ALL)
+         FORCE_CLUSTERING=True,  # Force clustering if already calculated (overridden by PROCESS_ALL)
          ONLY_GR = True, # Whether to only cluster GR
 
 
          N_CLUSTERS = 4,
          CLUSTER_BY_PCA = True,
-         DIMENSIONS_PCA = [0,1,2],
+         DIMENSIONS_PCA = [1,2],
          MINIMUM_SCORE = 40,
 
 

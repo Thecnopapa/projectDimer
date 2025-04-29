@@ -380,11 +380,12 @@ if __name__ == "__main__":
                 clustered_df = pd.read_csv(os.path.join(root.clustered_pcas, face + ".csv"), index_col=0)
             else:
                 clustered_df = pd.read_csv(os.path.join(root.clustered_pcas_GR, face + ".csv"), index_col=0)
-            clustered_df.sort_values(by=[cluster_colname], inplace=True)
+            #print(clustered_df)
+            clustered_df.sort_values(by=["cluster"], inplace=True)
 
         else:
             clustered_df = pd.read_csv(os.path.join(root.clustered_GR, face+".csv"), index_col=0)
-            clustered_df.sort_values(by=[cluster_colname, "similarity"], inplace=True)
+            clustered_df.sort_values(by=["cluster", "similarity"], inplace=True)
         print(clustered_df.to_string(index=False))
 
         while True:
@@ -396,11 +397,11 @@ if __name__ == "__main__":
                 break
             except: pass
         if c != "all":
-            subset = clustered_df[clustered_df[cluster_colname] == int(c)]
+            subset = clustered_df[clustered_df["cluster"] == int(c)]
         else:
             subset = clustered_df
         #subset.sort_values(by = "similarity", inplace = True)
-        print(subset.to_string(index=False))
+        #print(subset.to_string(index=False))
         if not pca:
             threshold = input("\n # Please select minimum similarity threshold (int):\n >> ")
             if threshold == "":
@@ -472,18 +473,26 @@ if __name__ == "__main__":
             from clustering import plot_cc
             reference = load_references(identifier = "GR")[0]
             #print(reference)
-            in_path = os.path.join(root.clustered_GR, face+".csv")
+            if pca:
+                if global_pca:
+                    in_path = os.path.join(root.clustered_pcas, face+".csv")
+                else:
+                    in_path = os.path.join(root.clustered_pcas_GR, face + ".csv")
+
             #print(in_path)
             #print(pd.read_csv(in_path))
-            plot_cc(reference=reference, subset=c, subfolder=face, in_path=in_path, labels=True)
+            plot_cc(reference=reference, subset=c, subfolder=face, in_path=in_path, labels=True, pca=pca)
 
         if "pca" in sys.argv:
+            print1("Plotting cluster PCAs")
             from faces import plot_pcas
             pcas = []
+            progress = ProgressBar(len(subset))
             for row in subset.itertuples():
-                dimers = load_single_pdb(identifier=row.id, pickle_folder=local.dimers)
+                dimers = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)
                 for dimer in dimers:
                     pcas.append(dimer.pca)
+                    progress.add(info=dimer.id)
             plot_pcas(pcas, title= "GR:({} : cluster {} / N = {})".format(face, c, len(pcas)))
 
 
