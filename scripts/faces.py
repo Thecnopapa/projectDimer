@@ -240,18 +240,24 @@ def plot_atoms(structure, pca = None, block = True):
 
 
 
-def plot_pcas(pca_list, title=""):
+def plot_pcas(pca_list, title="", dimensions = (0,1,2)):
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    if len(pca_list) == 3:
+        ax = fig.add_subplot(111, projection='3d')
+    else:
+        ax = fig.add_subplot(111)
     ax.set_title(title)
     #ax.scatter(0,0,0, marker= "o", c="red")
     for pca in pca_list:
-        print(pca.explained_variance_)
-        ax.scatter(*pca.explained_variance_)
+        #print(pca.explained_variance_)
+        #print(pca.explained_variance_[[*dimensions]])
+        coords = pca.explained_variance_[[*dimensions]]
+        #print(coords)
+        ax.scatter(*coords)
 
     fig.tight_layout()
     ax.set_aspect('equal')
-    plt.show(block=True)
+    plt.show(block=vars.block)
 
 
 

@@ -251,7 +251,10 @@ class Contact:
         self.min_contacts = min_contacts
         self.count_to_min = count_to_min
         self.params = params
-        self.position = position["position"]
+        if type(position) == list or type(position) == tuple:
+            self.position = position
+        elif type(position) == dict:
+            self.position = position["position"]
         self.target_list = target_list
         self.ref_dict = ref_dict
         self.shortest_contact = None

@@ -413,7 +413,7 @@ class Monomer(BioObject):
         for ref_name, data in self.superpositions.items():
             #print(ref_name, data)
             data["coverage"] = (data["aligned_residues"] / data["nres"]*100, data["aligned_residues"] / data["ref_nres"]*100)
-            if  data["coverage"] >= (80, 80):
+            if  data["coverage"] >= (90, 90):
                 finalists.append((ref_name,data))
                 criteria.append(data["identity"])
             else:

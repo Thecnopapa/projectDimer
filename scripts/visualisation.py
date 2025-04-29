@@ -3,7 +3,8 @@ import sys
 
 from Globals import root, local, vars
 from pyMol import pymol_start, pymol_load_name, pymol_load_path, pymol_set_state, pymol_align_chains, pymol_align_all, \
-    pymol_paint_contacts, pymol_colour, pymol_draw_line, pymol_move, pymol_orient, pymol_group
+    pymol_paint_contacts, pymol_colour, pymol_draw_line, pymol_move, pymol_orient, pymol_group, pymol_align_chains_best, \
+    pymol_paint_all_faces
 from utilities import *
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -274,6 +275,8 @@ def print_available_commands():
     print2("clusters-cc + [reference_name] e.g. GR (includes all data from clusters-eva)")
     print2("clusters-score (only for GR)")
     print2("clusters-faces (only for GR)")
+    print2("clusters-pca [pymol] [pca] [filter-threshold]")
+    print2("clusters-pca-global [pymol] [pca] (filter-threshold !last)")
 
 
 
@@ -367,13 +370,16 @@ if __name__ == "__main__":
         sprint("Clustered face-face combinations for GR:")
         for n, f in enumerate(faces):
             print1("{}: {}".format(n,f.split(".")[0]))
-        while True:
-            face = input("\n # Please select cluster to display (using the associated number):\n >> ")
-            try:
-                face = faces[int(face)].split(".")[0]
-                break
-            except:
-                pass
+        if len(faces) > 1:
+            while True:
+                face = input("\n # Please select cluster to display (using the associated number):\n >> ")
+                try:
+                    face = faces[int(face)].split(".")[0]
+                    break
+                except:
+                    pass
+        else:
+            face = faces[0].split(".")[0]
         sprint("Selected interaction: {}".format(face))
         if pca:
             if global_pca:
@@ -403,7 +409,7 @@ if __name__ == "__main__":
         #subset.sort_values(by = "similarity", inplace = True)
         #print(subset.to_string(index=False))
         if not pca:
-            threshold = input("\n # Please select minimum similarity threshold (int):\n >> ")
+            threshold = input("\n # Please select minimum similarity threshold (int or all):\n >> ")
             if threshold == "":
                 threshold = 0
             subset = subset[subset["similarity"] >= float(threshold)]
@@ -435,20 +441,21 @@ if __name__ == "__main__":
                         #dimer.get_faces()
                         #############################
                         pymol_load_path(dimer.merged_path, dimer.id)
-                        if first_to_align is None:
+                        '''if first_to_align is None:
                             first_to_align = dimer.face1
                         if dimer.face1 == first_to_align:
                                 chains_to_align.append((row.id, row.id.split("_")[-3][-2]))
                         else:
-                            chains_to_align.append((row.id, row.id.split("_")[-3][-1]))
+                            chains_to_align.append((row.id, row.id.split("_")[-3][-1]))'''
 
+                        chains_to_align.append((row.id, *row.id.split("_")[-3][-2:]))
 
                         pymol_colour("gray", dimer.id)
-                        pymol_paint_contacts(os.path.basename(dimer.id), dimer.contacts_faces1[1:],
-                                                 colour=dimer.contacts_faces1[0])
-                        pymol_paint_contacts(os.path.basename(dimer.id), dimer.contacts_faces2[1:],
-                                                 colour=dimer.contacts_faces2[0])
 
+                        #pymol_paint_contacts(os.path.basename(dimer.id), dimer.contacts_faces1[1:], colour=dimer.contacts_faces1[0])
+                        #pymol_paint_contacts(os.path.basename(dimer.id), dimer.contacts_faces2[1:], colour=dimer.contacts_faces2[0])
+
+                        pymol_paint_all_faces(dimer)
 
 
                         '''from faces import pca_to_lines
@@ -460,14 +467,15 @@ if __name__ == "__main__":
 
 
                 print(chains_to_align)
-                pymol_align_chains(chains_to_align)
+                #pymol_align_chains(chains_to_align)
+                #pymol_align_chains_best(chains_to_align, double_best=True)
+                pymol_align_all()
                 sele = "({})".format(" or ".join(chain[0] for chain in chains_to_align))
                 print(sele)
                 pymol_move(sele=sele, distance=[150*n, 0, 0])
                 pymol_group([chain[0] for chain in chains_to_align], name=str(n))
             pymol_set_state(2)
             pymol_orient()
-
 
         if "plot" in sys.argv or "mpl" in sys.argv:
             from clustering import plot_cc
@@ -493,7 +501,13 @@ if __name__ == "__main__":
                 for dimer in dimers:
                     pcas.append(dimer.pca)
                     progress.add(info=dimer.id)
-            plot_pcas(pcas, title= "GR:({} : cluster {} / N = {})".format(face, c, len(pcas)))
+            dimensions = [0,1,2]
+            for arg in sys.argv:
+                if "d=" in arg:
+                    dimensions = [int(i) for i in arg.split("=")[1]]
+            #print("dimension:", dimensions)
+            plot_pcas(pcas, title= "GR:({} : cluster {} / N = {})".format(face, c, len(pcas)), dimensions=dimensions)
+
 
 
 

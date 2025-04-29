@@ -138,10 +138,15 @@ def pymol_align_all():
     pymol.cmd.orient("(all)")
 
 
-def pymol_align__obj(obj1, obj2):
-    pymol.cmd.align(obj2, obj1)
-    print3("aligned:", obj1, obj2)
-    pymol.cmd.orient("(all)")
+def pymol_align__obj(obj1, obj2, orient = True, quiet=False):
+    r = pymol.cmd.align(obj2, obj1)
+    if not quiet:
+        print3("aligned:", obj1, obj2)
+    if orient:
+        pymol.cmd.orient("(all)")
+    return r
+
+
 
 
 def pymol_align_chains(chains_to_align):
@@ -155,6 +160,42 @@ def pymol_align_chains(chains_to_align):
             #print(sele1)
             #print(sele2)
             pymol_align__obj(sele1, sele2)
+
+def pymol_align_chains_best(chains_to_align, double_best = False):
+    #all_obj = pymol.cmd.get_names(type='objects')
+    #print1(all_obj)
+    obj1, chain1a, chain1b = chains_to_align[0]
+    sele1a = "{} and c. {}".format(obj1, chain1a)
+    sele1b = "{} and c. {}".format(obj1, chain1b)
+
+
+    for obj2, chain2a, chain2b in chains_to_align[1:]:
+        sele2a = "{} and c. {}".format(obj2, chain2a)
+        sele2b = "{} and c. {}".format(obj2, chain2b)
+        if obj2 != obj1:
+            ali2a = pymol_align__obj(sele1a, sele2a, orient=False)
+            print4(ali2a)
+            ali2b = pymol_align__obj(sele1a, sele2b, orient=False)
+            print4(ali2b)
+            if ali2a[0] > ali2b[0]:
+                ali1a = pymol_align__obj(sele1a, sele2a, orient=False, quiet=True), sele2a
+            else:
+                ali1a = ali2b, sele2b
+
+            if double_best:
+                ali2a = pymol_align__obj(sele1b, sele2a, orient=False)
+                print4(ali2a)
+                ali2b = pymol_align__obj(sele1b, sele2b, orient=False)
+                print4(ali2b)
+                if ali2a[0] < ali2b[0]:
+                    ali1b = pymol_align__obj(sele1b, sele2a, orient=False, quiet=True), sele2a
+                else:
+                    ali1b = ali2a, sele2b
+
+                if ali1a[0][0] < ali1b[0][0]:
+                    ali = pymol_align__obj(sele1a, ali1a[1], orient=False,quiet=True)
+
+
 
 
 def pymol_symmetries(obj = None):
@@ -257,6 +298,7 @@ def pymol_disable(sele = "all"):
 
 
 def pymol_paint_all_faces(obj):
+    print("(PyMOL) paining all faces in {}".format(obj.id))
     from faces import GR_colours, GR_dict
     assert obj.best_fit == "GR"
     for o in pymol_get_all_objects():
