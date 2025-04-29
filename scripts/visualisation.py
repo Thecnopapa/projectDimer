@@ -325,9 +325,17 @@ if __name__ == "__main__":
 
 
 
-    elif "clusters-face" in sys.argv[1] or "clusters-pca" in sys.argv[1]:
-        if "clusters-pca" in sys.argv[1]:
+    elif any(arg in sys.argv[1] for arg in ["clusters-face", "clusters-pca", "clusters-pca-global"]):
+        global_pca = False
+        cluster_colname = "cluster"
+        if "pca" in sys.argv[1]:
             pca = True
+            if "global" in sys.argv[1]:
+                global_pca = True
+                cluster_colname = "global_cluster"
+            else:
+                global_pca = False
+
         else:
             pca = False
         tprint("Showing clustered data by interaction faces")
@@ -337,10 +345,10 @@ if __name__ == "__main__":
             filtered = sys.argv[-1]
             print("Subset:", filtered)
 
-
-
         if pca:
             faces = os.listdir(root.pca_figs_GR)
+            if global_pca:
+                faces = [face for face in os.listdir(root.pca_figs) if "figs" not in face]
             print("PCA clustering")
             print(faces)
         else:
@@ -368,11 +376,15 @@ if __name__ == "__main__":
                 pass
         sprint("Selected interaction: {}".format(face))
         if pca:
-            clustered_df = pd.read_csv(os.path.join(root.clustered_pcas_GR, face + ".csv"), index_col=0)
-            clustered_df.sort_values(by=["cluster"], inplace=True)
+            if global_pca:
+                clustered_df = pd.read_csv(os.path.join(root.clustered_pcas, face + ".csv"), index_col=0)
+            else:
+                clustered_df = pd.read_csv(os.path.join(root.clustered_pcas_GR, face + ".csv"), index_col=0)
+            clustered_df.sort_values(by=[cluster_colname], inplace=True)
+
         else:
             clustered_df = pd.read_csv(os.path.join(root.clustered_GR, face+".csv"), index_col=0)
-            clustered_df.sort_values(by=["cluster", "similarity"], inplace=True)
+            clustered_df.sort_values(by=[cluster_colname, "similarity"], inplace=True)
         print(clustered_df.to_string(index=False))
 
         while True:
@@ -384,7 +396,7 @@ if __name__ == "__main__":
                 break
             except: pass
         if c != "all":
-            subset = clustered_df[clustered_df["cluster"] == int(c)]
+            subset = clustered_df[clustered_df[cluster_colname] == int(c)]
         else:
             subset = clustered_df
         #subset.sort_values(by = "similarity", inplace = True)

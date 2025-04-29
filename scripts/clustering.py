@@ -686,24 +686,25 @@ def add_clusters_to_classified(reference, pca=True, splitted = True):
     classified = classified[original_cols]
     print(classified)
 
-    if pca:
-        if splitted:
-            clustered_folder = root["clustered_pcas_{}".format(reference.name)]
+    for splitted in [True, False]:
+        if pca:
+            if splitted:
+                clustered_folder = root["clustered_pcas_{}".format(reference.name)]
+            else:
+                clustered_folder = root["clustered_pcas"]
         else:
-            clustered_folder = root["clustered_pcas"]
-    else:
-        clustered_folder = root["clustered_{}".format(reference.name)]
+            clustered_folder = root["clustered_{}".format(reference.name)]
 
-    for path in os.listdir(clustered_folder):
-        if "centres" not in path and "clustered" not in path:
-            df = pd.read_csv(os.path.join(clustered_folder, path))
-            print(df)
-            for row in df.itertuples():
-                if splitted:
-                    classified.loc[row.id, "face_group"]= path.split(".")[0]
-                    classified.loc[row.id, "cluster"]= row.cluster
-                else:
-                    classified.loc[row.id, "global_cluster"]= row.cluster
+        for path in os.listdir(clustered_folder):
+            if "centres" not in path and "clustered" not in path:
+                df = pd.read_csv(os.path.join(clustered_folder, path))
+                print(df)
+                for row in df.itertuples():
+                    if splitted:
+                        classified.loc[row.id, "face_group"]= path.split(".")[0]
+                        classified.loc[row.id, "cluster"]= row.cluster
+                    else:
+                        classified.loc[row.id, "global_cluster"]= row.cluster
     print(classified)
     vars.clustering["classified"][reference.name] = classified
     reference.classified_df = classified
