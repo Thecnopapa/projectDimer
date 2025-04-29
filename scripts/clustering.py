@@ -662,7 +662,7 @@ def add_info_to_classified(reference):
     reference.faces_df = vars.clustering["faces"][reference.name]
     vars.clustering["classified"][reference.name].to_csv(os.path.join(root.classified, reference.name + ".csv"))
 
-def add_clusters_to_classified(reference, pca=True):
+def add_clusters_to_classified(reference, pca=True, splitted = True):
 
     classified_path = os.path.join(root.classified, reference.name + ".csv")
     classified = pd.read_csv(classified_path, index_col="ID")
@@ -687,17 +687,23 @@ def add_clusters_to_classified(reference, pca=True):
     print(classified)
 
     if pca:
-        clustered_folder = root["clustered_pcas_{}".format(reference.name)]
+        if splitted:
+            clustered_folder = root["clustered_pcas_{}".format(reference.name)]
+        else:
+            clustered_folder = root["clustered_pcas"]
     else:
         clustered_folder = root["clustered_{}".format(reference.name)]
 
     for path in os.listdir(clustered_folder):
-        if "centres" not in path:
+        if "centres" not in path and "clustered" not in path:
             df = pd.read_csv(os.path.join(clustered_folder, path))
             print(df)
             for row in df.itertuples():
-                classified.loc[row.id, "face_group"]= path.split(".")[0]
-                classified.loc[row.id, "cluster"]= row.cluster
+                if splitted:
+                    classified.loc[row.id, "face_group"]= path.split(".")[0]
+                    classified.loc[row.id, "cluster"]= row.cluster
+                else:
+                    classified.loc[row.id, "global_cluster"]= row.cluster
     print(classified)
     vars.clustering["classified"][reference.name] = classified
     reference.classified_df = classified
@@ -913,8 +919,7 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
     print2("Saving at {}".format(fig_path))
     print(fig_path)
     fig.savefig(fig_path, dpi=300)
-    import sys
-    plt.show(block="block" in sys.argv)
+    plt.show(block=vars.block)
     return fig_path
 
 
@@ -996,8 +1001,7 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
             plot_path = plot_clustered_pcas(reference, labels=False, labels_centres=True,  force = FORCE_PLOT,
                                 dimensions=DIMENSIONS, subfolder=subfolder_name, in_path=clustered_path, pca = True,
                                             pca_dimensions=pca_dimensions, splitted=splitted)
-    return
-    add_clusters_to_classified(reference, pca = pca)
+    add_clusters_to_classified(reference, pca = pca, splitted=splitted)
     return
 
 

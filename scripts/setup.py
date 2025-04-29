@@ -61,13 +61,20 @@ if "verbose" in sys.argv or "-v" in sys.argv:
 else:
     vars["verbose"] = False
 
-
 if "quiet" in sys.argv or "-q" in sys.argv:
     supress(sys.argv.remove, "quiet")
     supress(sys.argv.remove, "-q")
     vars["quiet"] = True
 else:
     vars["quiet"] = False
+
+
+if "block" in sys.argv or "-q" in sys.argv:
+    supress(sys.argv.remove, "block")
+    supress(sys.argv.remove, "-b")
+    vars["block"] = True
+else:
+    vars["block"] = False
 
 
 def get_sys_vars():
