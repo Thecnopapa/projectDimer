@@ -256,18 +256,25 @@ def plot_pcas(pca_list, title=""):
 
 
 
-def get_pca_df(in_path, subfolder, only_pcas = False, force = False):
+def get_pca_df(in_path, subfolder, only_pcas = False, force = False, splitted=True):
     pcas = []
     pca_df = pd.DataFrame(columns = ["id", "P0", "P1", "P2", "variance_0", "variance_1", "variance_2"])
     root["pcas"] = "dataframes/clustering/pcas"
     contacts_df = pd.read_csv(in_path)
     name = os.path.basename(in_path).split(".")[0]
-    subfolder = subfolder.format("pcas")
-    os.makedirs(os.path.join(root.pcas, subfolder), exist_ok=True)
-    pca_path = os.path.join(root.pcas, subfolder, name + ".csv")
-    if name + ".csv" in os.listdir(os.path.join(root.pcas, subfolder)) and not force:
-        print2("Skipping pca load for {}".format(name))
-        return pca_path
+    if splitted:
+        subfolder = subfolder.format("pcas")
+        os.makedirs(os.path.join(root.pcas, subfolder), exist_ok=True)
+        pca_path = os.path.join(root.pcas, subfolder, name + ".csv")
+        if name + ".csv" in os.listdir(os.path.join(root.pcas, subfolder)) and not force:
+            print2("Skipping pca load for {}".format(name))
+            return pca_path
+    else:
+        pca_path = os.path.join(root.pcas, name + ".csv")
+        if name + ".csv" in os.listdir(os.path.join(root.pcas)) and not force:
+            print2("Skipping pca load for {}".format(name))
+            return pca_path
+
 
 
     from imports import load_single_pdb
@@ -280,6 +287,7 @@ def get_pca_df(in_path, subfolder, only_pcas = False, force = False):
     if only_pcas:
         return pcas
     else:
+        print(pca_path)
         pca_df.to_csv(pca_path)
         return pca_path
 

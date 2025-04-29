@@ -888,7 +888,9 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
     return fig_path
 
 
-def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, minimum_score=0, pca = True, pca_dimensions = [0,1,2]):
+def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, minimum_score=0, pca = True, pca_dimensions = [0,1,2], splitted=True):
+
+
 
     if FORCE_ALL:
         FORCE_SM = True
@@ -901,13 +903,23 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
         FORCE_CLUSTER = False
         FORCE_PLOT = False
 
-    subfolder_name = "{}_" + reference.name
+    if splitted:
+        subfolder_name = "{}_" + reference.name
+    else:
+        subfolder_name = "{}"
 
     #print(root[subfolder_name.format("contacts")])
 
     for file in os.listdir(root[subfolder_name.format("contacts")]):
+
         if "filtered" in file:
             continue
+        if not splitted:
+            if "GR" not in file:
+                continue
+            if "contacts" in file:
+                continue
+
         sprint(file)
         contacts_path = os.path.join(root[subfolder_name.format("contacts")], file)
         if minimum_score > 0:
@@ -918,7 +930,7 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
             for col in cols:
                 if col in ["ResNum", "ResName"]:
                     continue
-                #print(col)
+                #print(classified_df)
                 #print(classified_df[classified_df["ID"] == col])
                 class_row = classified_df[classified_df["ID"] == col]
                 #print(class_row)
@@ -946,8 +958,9 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
                                           dimensions=DIMENSIONS, subfolder = subfolder_name, in_path = clustered_path)
         else:
             from faces import get_pca_df, plot_pcas
-            pca_path = get_pca_df(in_path=contacts_path, subfolder=subfolder_name, force=FORCE_CC)
+            pca_path = get_pca_df(in_path=contacts_path, subfolder=subfolder_name, force=FORCE_CC, splitted=splitted)
             #plot_pcas(pcas, title="GR: {}  (N = {})".format(file.split(".")[0], len(pcas)))
+            quit()
             clustered_path = clusterize_pcas(name=file, subfolder=subfolder_name, in_path = pca_path, force=FORCE_CLUSTER, dimensions=pca_dimensions)
             plot_path = plot_clustered_pcas(reference, labels=False, labels_centres=True,  force = FORCE_PLOT,
                                 dimensions=DIMENSIONS, subfolder=subfolder_name, in_path=clustered_path, pca = True, pca_dimensions=pca_dimensions)

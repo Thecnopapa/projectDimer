@@ -38,7 +38,8 @@ def main(PROCESS_ALL = False,
          N_CLUSTERS = 4,
          DIMENSIONS_PCA = [0,1,2],
          FACES_BY_COM = True,
-         MINIMUM_SCORE = 0
+         MINIMUM_SCORE = 0,
+         COMPARE = True,
          ):
 
 
@@ -173,7 +174,7 @@ def main(PROCESS_ALL = False,
         from clustering import compare_contacts, get_clusters, cluster, split_by_faces, cluster_by_face
         for reference in vars.references:
             sprint(reference.name)
-            if reference.name == "GR":
+            if reference.name == "GR" and COMPARE:
                 reference.classified_df = compare_contacts(reference, force = FORCE_COMPARE or PROCESS_ALL)
                 from clustering import add_info_to_classified
                 #save_dfs(general=False, clustering=True)
@@ -186,9 +187,9 @@ def main(PROCESS_ALL = False,
                 continue
             if SPLIT_FACES:
                 split_by_faces(reference, force=FORCE_SPLIT, by_com= FACES_BY_COM)
-                cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, minimum_score=MINIMUM_SCORE, n_clusters=N_CLUSTERS, pca=CLUSTER_BY_PCA, pca_dimensions = DIMENSIONS_PCA)
-            else:
-                cluster(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL)
+            cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, minimum_score=MINIMUM_SCORE,
+                            n_clusters=N_CLUSTERS, pca=CLUSTER_BY_PCA, pca_dimensions = DIMENSIONS_PCA,
+                            splitted=SPLIT_FACES)
             reference.pickle()
         #save_dfs(general=False, clustering=True)
 
@@ -207,36 +208,20 @@ def main(PROCESS_ALL = False,
 
 
 if __name__ == "__main__":
+
+    import setup
+
     # Setup paths and globals
     print(sys.argv)
     DO_ONLY = []
-    '''    if "force" in sys.argv or "-f" in sys.argv:
-            PROCESS_ALL = True
-            supress(sys.argv.remove, "force")
-            supress(sys.argv.remove, "-f")
-        else:
-            PROCESS_ALL = False
-        if "verbose" in sys.argv or "-v" in sys.argv:
-            VERBOSE = True
-            supress(sys.argv.remove, "verbose")
-            supress(sys.argv.remove, "-v")
-        else:
-            VERBOSE = False
-    
-        if "quiet" in sys.argv or "-q" in sys.argv:
-            QUIET = True
-            supress(sys.argv.remove, "quiet")
-            supress(sys.argv.remove, "-q")
-        else:
-            QUIET = False'''
 
-    import setup
+
     print(sys.argv)
     if len(sys.argv) > 2 and not "all" in sys.argv:
         DO_ONLY = [arg.upper() for arg in sys.argv[1:]]
 
 
-    # Imports that need globals initialised:
+    # Imports that need globals initialized:
     from Globals import root, local, vars
     from utilities import *
 
@@ -256,7 +241,7 @@ if __name__ == "__main__":
          MINIMUM_CONTACTS=0,  # Minimum number of contacts to consider a dimer interface
 
          # Dimer processing, includes contact calculation and face identification, generates contact dataframes
-         SKIP_DIMERS = False, # Skip the entire block (overridden by PROCESS_ALL)
+         SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL)
          FORCE_CONTACTS = True,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
          CONTACT_DISTANCE_CLUSTERING = 12,
          FACES_BY_COM = True,
@@ -266,13 +251,21 @@ if __name__ == "__main__":
          FORCE_SASA=True, # DEPRECATED
          BALL_SIZE=1.6, # DEPRECATED
 
+
+         # Compare GR clustering to EVA clustering
+         COMPARE = False,
+         FORCE_COMPARE= False,
+
+         # Split by faces based on Eva
+         SPLIT_FACES=False,
+         FORCE_SPLIT=True,
+
          # Clustering, from SM to plotting
          SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
-         FORCE_COMPARE = False, #  Compare GR clustering to EVA clustering
+         FORCE_CLUSTERING=True,  # Force clustering if already calculated (overridden by PROCESS_ALL)
          ONLY_GR = True, # Whether to only cluster GR
-         FORCE_CLUSTERING = False, # Force clustering if already calculated (overridden by PROCESS_ALL)
-         SPLIT_FACES = True,
-         FORCE_SPLIT = True,
+
+
          N_CLUSTERS = 4,
          CLUSTER_BY_PCA = True,
          DIMENSIONS_PCA = [0,1,2],
