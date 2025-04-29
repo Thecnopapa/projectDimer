@@ -257,6 +257,7 @@ def plot_pcas(pca_list, title=""):
 
 
 def get_pca_df(in_path, subfolder, only_pcas = False, force = False, splitted=True):
+    print1("Generating PCA df")
     pcas = []
     pca_df = pd.DataFrame(columns = ["id", "P0", "P1", "P2", "variance_0", "variance_1", "variance_2"])
     root["pcas"] = "dataframes/clustering/pcas"
@@ -278,11 +279,13 @@ def get_pca_df(in_path, subfolder, only_pcas = False, force = False, splitted=Tr
 
 
     from imports import load_single_pdb
+    progress = ProgressBar(len(contacts_df.columns))
     for d in contacts_df.columns:
-        dimers = load_single_pdb(d, pickle_folder=local.dimers)
+        dimers = load_single_pdb(d, pickle_folder=local.dimers, quiet=True)
         for dimer in dimers:
             pcas.append(dimer.pca)
             pca_df.loc[dimer.id] = [dimer.id, *dimer.pca.components_, *dimer.pca.explained_variance_]
+            progress.add(info=dimer.id)
 
     if only_pcas:
         return pcas
