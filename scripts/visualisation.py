@@ -349,9 +349,9 @@ if __name__ == "__main__":
             print("Subset:", filtered)
 
         if pca:
-            faces = os.listdir(root.pca_figs_GR)
+            faces = os.listdir(root.clustered_pcas_GR)
             if global_pca:
-                faces = [face for face in os.listdir(root.pca_figs) if "figs" not in face]
+                faces = [face for face in os.listdir(root.clustered_pcas) if "clustered" not in face]
             print("PCA clustering")
             print(faces)
         else:
@@ -378,8 +378,12 @@ if __name__ == "__main__":
                     break
                 except:
                     pass
-        else:
+        elif len(faces) == 1:
             face = faces[0].split(".")[0]
+        else:
+            print(faces)
+            print("No clustered dataframes found")
+            print(faces[0])
         sprint("Selected interaction: {}".format(face))
         if pca:
             if global_pca:

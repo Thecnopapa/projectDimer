@@ -697,17 +697,18 @@ def add_clusters_to_classified(reference, pca=True, splitted = True):
                 clustered_folder = root["clustered_pcas"]
         else:
             clustered_folder = root["clustered_{}".format(reference.name)]
-
+        print(classified)
         for path in os.listdir(clustered_folder):
             if "centres" not in path and "clustered" not in path:
                 df = pd.read_csv(os.path.join(clustered_folder, path))
                 #print(df)
                 for row in df.itertuples():
-                    if splitted:
-                        classified.loc[row.id, "face_group"]= path.split(".")[0]
-                        classified.loc[row.id, "cluster"]= row.cluster
-                    else:
-                        classified.loc[row.id, "global_cluster"]= row.cluster
+                    if row.id in classified.index:
+                        if splitted:
+                            classified.loc[row.id, "face_group"]= path.split(".")[0]
+                            classified.loc[row.id, "cluster"]= row.cluster
+                        else:
+                            classified.loc[row.id, "global_cluster"]= row.cluster
         print(classified)
     vars.clustering["classified"][reference.name] = classified
     reference.classified_df = classified
@@ -961,19 +962,23 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
 
         sprint(file)
         contacts_path = os.path.join(root[subfolder_name.format("contacts")], file)
+        print(contacts_path)
         if minimum_score > 0:
             contacts_df = pd.read_csv(contacts_path)
             original_len = len(contacts_df)
             classified_df = pd.read_csv(os.path.join(root.classified, "{}.csv".format(reference.name)))
+            print(classified_df)
             cols = list(contacts_df.columns)
             for col in cols:
                 if col in ["ResNum", "ResName"]:
                     continue
-                #print(classified_df)
-                #print(classified_df[classified_df["ID"] == col])
+                print(col)
+                print(classified_df[classified_df["ID"] == col])
                 class_row = classified_df[classified_df["ID"] == col]
-                #print(class_row)
-                assert len(class_row) == 1
+                print(class_row)
+                if len(class_row) < 1 :
+                    cols.remove(col)
+                    continue
                 class_row = class_row.iloc[0]
                 #print(class_row.Similarity)
                 if class_row.Similarity < minimum_score:

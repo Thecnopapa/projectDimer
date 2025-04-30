@@ -40,6 +40,7 @@ def main(PROCESS_ALL = False,
          FACES_BY_COM = True,
          MINIMUM_SCORE = 0,
          COMPARE = True,
+         SPLIT_FACES_ANYWAY = False,
          ):
 
 
@@ -123,7 +124,7 @@ def main(PROCESS_ALL = False,
     ###### DIMER ANALYSIS ##############################################################################################
     tprint("DIMER ANALYSIS")
 
-    if not SKIP_DIMERS or PROCESS_ALL:
+    if not SKIP_DIMERS or PROCESS_ALL or (SPLIT_FACES_ANYWAY and FORCE_SPLIT):
         #print(list(vars.clustering["contacts"].keys()))
         progress = ProgressBar(len(molecule_list))
         from surface import build_contact_arrays
@@ -174,7 +175,12 @@ def main(PROCESS_ALL = False,
         from clustering import compare_contacts, get_clusters, cluster, split_by_faces, cluster_by_face
         for reference in vars.references:
             sprint(reference.name)
-            if reference.name == "GR" and COMPARE:
+            if reference.name != "GR" and ONLY_GR:
+                reference.pickle()
+                continue
+            if SPLIT_FACES or SPLIT_FACES_ANYWAY:
+                split_by_faces(reference, force=FORCE_SPLIT, by_com= FACES_BY_COM)
+            if reference.name == "GR" and (COMPARE or PROCESS_ALL or FORCE_COMPARE):
                 reference.classified_df = compare_contacts(reference, force = FORCE_COMPARE or PROCESS_ALL)
                 from clustering import add_info_to_classified
                 #save_dfs(general=False, clustering=True)
@@ -182,11 +188,8 @@ def main(PROCESS_ALL = False,
                 from visualisation import classified_chart
                 classified_chart()
                 #reference.clusters_eva = get_clusters(reference.classified_df, column = "Best_Match", ref_name=reference.name)
-            if reference.name != "GR" and ONLY_GR:
-                reference.pickle()
-                continue
-            if SPLIT_FACES:
-                split_by_faces(reference, force=FORCE_SPLIT, by_com= FACES_BY_COM)
+
+
             cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, minimum_score=MINIMUM_SCORE,
                             n_clusters=N_CLUSTERS, pca=CLUSTER_BY_PCA, pca_dimensions = DIMENSIONS_PCA,
                             splitted=SPLIT_FACES)
@@ -253,11 +256,12 @@ if __name__ == "__main__":
 
 
          # Compare GR clustering to EVA clustering
-         COMPARE = False,
+         COMPARE = True,
          FORCE_COMPARE= False,
 
          # Split by faces based on Eva
          SPLIT_FACES=False,
+         SPLIT_FACES_ANYWAY = False,
          FORCE_SPLIT=True,
 
          # Clustering, from SM to plotting
