@@ -1,5 +1,6 @@
-import os
+import os, sys
 
+from clustering import quick_cluster
 from imports import load_single_pdb
 from utilities import *
 from Globals import root, local, vars
@@ -240,7 +241,7 @@ def plot_atoms(structure, pca = None, block = True):
 
 
 
-def plot_pcas(pca_list, title="", dimensions = [0,1,2]):
+def plot_pcas(pca_list, title="", dimensions = [0,1,2], mode="variance", comps=[0,1], cluster=None):
     fig = plt.figure()
     print("N dimensions:", len(dimensions))
     if len(dimensions) == 3:
@@ -249,18 +250,57 @@ def plot_pcas(pca_list, title="", dimensions = [0,1,2]):
         ax = fig.add_subplot(111)
     ax.set_title(title)
     #ax.scatter(0,0,0, marker= "o", c="red")
+    points = []
     for pca in pca_list:
-        #print(pca.explained_variance_)
-        #print(pca.explained_variance_[[*dimensions]])
-        #print([pca.explained_variance_[[*dimensions]]])
-        coords = pca.explained_variance_[[*dimensions]]
-        #print(coords)
-        ax.scatter(*coords)
+        if mode == "variance":
+            #print(pca.explained_variance_)
+            #print(pca.explained_variance_[[*dimensions]])
+            #print([pca.explained_variance_[[*dimensions]]])
+            coords = pca.explained_variance_[[*dimensions]]
+            #print(coords)
+            ax.scatter(*coords)
+            points.append(coords)
+        elif mode == "components":
+            print(pca.components_)
+            c = 0
+            for comp in pca.components_:
+                print("component:", comp)
+                if c in comps:
+                    ax.scatter(*comp, c="C{}".format(c))
+                    points.append(comp)
+                c+=1
+
+    if cluster is None:
+        fig.tight_layout()
+        ax.set_aspect('equal')
+        plt.show(block=vars.block)
+    else:
+        print(points)
+        df = pd.DataFrame(points)
+        print(df)
+        df["cluster"] = quick_cluster(df, n_clusters = cluster)
+        print(df)
+        plot_points(df)
+        return df
+
+
+def plot_points(df, title = ""):
+    fig = plt.figure()
+    dimensions = [d for d in df.columns if type(d) is int]
+    print("N dimensions:", len(dimensions))
+    if len(dimensions) == 3:
+        ax = fig.add_subplot(111, projection='3d')
+    else:
+        ax = fig.add_subplot(111)
+    ax.set_title(title)
+
+    for point, cluster in zip(df[[*dimensions]].values, df[["cluster"]].values):
+        ax.scatter(*point, c="C{}".format(cluster[0]) )
 
     fig.tight_layout()
     ax.set_aspect('equal')
-    plt.show(block=vars.block)
-
+    if not "pymol" in sys.argv:
+        plt.show(block=vars.block)
 
 
 

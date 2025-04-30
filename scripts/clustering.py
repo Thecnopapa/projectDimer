@@ -928,6 +928,15 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
     return fig_path
 
 
+def quick_cluster(coords, n_clusters=3):
+    from sklearn.cluster import KMeans
+    model = KMeans(n_clusters=n_clusters, random_state=6, algorithm="elkan")
+    model.fit(coords)
+    print(model.labels_)
+    return model.labels_
+
+
+
 def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, minimum_score=0, pca = True, pca_dimensions = [0,1,2], splitted=True):
 
 
