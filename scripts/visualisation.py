@@ -435,7 +435,7 @@ if __name__ == "__main__":
                 first_to_align = None
                 print("CLUSTER", n, l[n])
                 if c == "all":
-                    subset = clustered_df[clustered_df["cluster"] == l[n]]
+                    subset = sorted(clustered_df[clustered_df["cluster"] == l[n]], lambda x: x.ID)
                 print(subset)
                 for row in subset.itertuples():
                     dimers = load_single_pdb(identifier=row.id, pickle_folder=local.dimers)
@@ -472,8 +472,8 @@ if __name__ == "__main__":
 
                 print(chains_to_align)
                 #pymol_align_chains(chains_to_align)
-                #pymol_align_chains_best(chains_to_align, double_best=True)
-                pymol_align_all()
+                pymol_align_chains_best(chains_to_align, double_best=True)
+                #pymol_align_all()
                 sele = "({})".format(" or ".join(chain[0] for chain in chains_to_align))
                 print(sele)
                 pymol_move(sele=sele, distance=[150*n, 0, 0])

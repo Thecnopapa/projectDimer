@@ -252,7 +252,7 @@ def plot_pcas(pca_list, title="", dimensions = [0,1,2]):
     for pca in pca_list:
         #print(pca.explained_variance_)
         #print(pca.explained_variance_[[*dimensions]])
-        print([pca.explained_variance_[[*dimensions]]])
+        #print([pca.explained_variance_[[*dimensions]]])
         coords = pca.explained_variance_[[*dimensions]]
         #print(coords)
         ax.scatter(*coords)
