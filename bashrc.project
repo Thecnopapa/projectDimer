@@ -13,6 +13,12 @@ alias show="python scripts/visualisation.py"
 run(){
         python /home/iain/projectB/scripts/$1.py $2 $3 $4 $5
 }
+diagram(){
+    python -m pyflowchart scripts/$1.py -o diagrams/$1.html -f $2
+}
+
+
+
 alias bashrc="vim /home/iain/.bashrc"
 alias ..="cd .."
 alias ...="cd ../.."

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>main.html</title>
+        <style type="text/css">
+          .end-element { fill : #FFCCFF; }
+        </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.17.1/flowchart.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.1/js/bootstrap.bundle.min.js"></script>
+        <!-- <script src="../release/flowchart.min.js"></script> -->
+        <script>
+
+            window.onload = function () {
+                var btn = document.getElementById("run"),
+                    cd = document.getElementById("code"),
+                    chart;
+                    
+                (btn.onclick = function () {
+                    var code = cd.value;
+
+                    if (chart) {
+                      chart.clean();
+                    }
+
+                    chart = flowchart.parse(code);
+                    chart.drawSVG('canvas', {
+                      'x': 0,
+                      'y': 0,
+                      'line-width': 3,
+                      //'maxWidth': 15,//ensures the flowcharts fits within a certain width
+                      'line-length': 50,
+                      'text-margin': 10,
+                      'font-size': 14,
+                      'font': 'normal',
+                      'font-family': 'Helvetica',
+                      'font-weight': 'normal',
+                      'font-color': 'black',
+                      'line-color': 'black',
+                      'element-color': 'black',
+                      'fill': 'white',
+                      'yes-text': 'yes',
+                      'no-text': 'no',
+                      'arrow-end': 'block',
+                      'scale': 1,
+                      'symbols': {
+                        'start': {
+                          'font-size': 14,
+                          'font-color': 'yellow',
+                          'element-color': 'blue',
+                          'fill': 'green',
+                          'class': 'start-element'
+                        },
+                        'inputoutput': {
+                          'font-color': 'black',
+                          'element-color': 'black',
+                          'fill': 'bisque'
+                        },
+                        'operation': {
+                          'font-color': 'black',
+                          'element-color': 'black',
+                          'fill': 'linen'
+                        },
+                        'subroutine': {
+                          'font-color': 'black',
+                          'element-color': 'blue',
+                          'fill': 'lightgreen'
+                        },
+                        'condition': {
+                          'font-color': 'red',
+                          'element-color': 'black',
+                          'fill': 'yellow'
+                        },
+                        'end':{
+                          'font-size': 20,
+                          'class': 'end-element'
+                        }
+                      },
+                      'flowstate' : {
+                        //'past' : { 'fill' : '#CCCCCC', 'font-size' : 12},
+                        //'current' : {'fill' : 'yellow', 'font-color' : 'red', 'font-weight' : 'bold'},
+                        //'future' : { 'fill' : '#FFFF99'},
+                        'request' : { 'fill' : 'blue'},
+                        'invalid': {'fill' : '#444444'},
+                        'approved' : { 'fill' : '#58C4A3', 'font-size' : 12, 'yes-text' : 'APPROVED', 'no-text' : 'n/a' },
+                        'rejected' : { 'fill' : '#C45879', 'font-size' : 12, 'yes-text' : 'n/a', 'no-text' : 'REJECTED' }
+                      }
+                    });
+                    //create base64 encoding of SVG to generate download link for title(without html or htm).SVG
+                    var currentCanvasDIV = document.getElementById('canvas')
+                    var currentDrawSVG = currentCanvasDIV.innerHTML.replaceAll('ë','e');
+
+                    const OUTsvgBASE64 = btoa(currentDrawSVG)
+                    doctitle = document.title.replace('.html','');
+                    doctitle = doctitle.replace('.htm','');
+
+
+                    var currentCanvasDIV = document.getElementById('canvas')
+                    var currentDrawSVG = currentCanvasDIV.innerHTML.replaceAll('ë','e');
+                    svgSource = currentDrawSVG
+                    svgXML = currentDrawSVG;
+                    // Use SVG Height and Width from the SVG XML to set canvas size
+                    svgXMLsubstringHeight = svgXML.substring(svgXML.indexOf('height='), svgXML.indexOf('version='));
+                    svgXMLsubstringWidth = svgXML.substring(svgXML.indexOf('width='), svgXML.indexOf('xmlns='));
+                    HeightValue = svgXMLsubstringHeight.substring(svgXMLsubstringHeight.indexOf('"')+1,svgXMLsubstringHeight.lastIndexOf('"'));
+                    WidthValue = svgXMLsubstringWidth.substring(svgXMLsubstringWidth.indexOf('"')+1,svgXMLsubstringWidth.lastIndexOf('"'));
+                    HeightValueInt = Math.round(HeightValue)
+                    WidthValueInt = Math.round(WidthValue)
+                    // setup input for base64SvgToBase64Png
+                    let svgSrc = "data:image/svg+xml;base64,"+OUTsvgBASE64;
+                    var pngBase
+                    imageUtil.base64SvgToBase64Png(svgSrc, WidthValueInt, HeightValueInt).then(pngSrc => {
+                    pngBase = pngSrc
+                    // output download link for base64 PNG converted on download from base64
+                    var pngOutHtml = `<a href="${pngBase}" download="${doctitle}.png">PNG - Click here to download current rendered flowchart as ${doctitle}.png</a>`
+                    document.getElementById("pngbase64").innerHTML=pngOutHtml;
+                    });    
+                    // output download link for base64 SVG converted on download from base64
+                    var svgOutHtml = `<a href="data:image/svg+xml;base64,${OUTsvgBASE64}" download=${doctitle}.svg>SVG - Click here to download current rendered flowchart as ${doctitle}.svg</a> `
+                        document.getElementById("svgbase64").innerHTML=svgOutHtml;
+                    })();
+
+                            };
+                 
+
+// derived from https://stackoverflow.com/a/64800570
+// we need to use web browser canvas to generate a image. In this case png
+let imageUtil = {};
+/**
+ * converts a base64 encoded data url SVG image to a PNG image
+ * @param originalBase64 data url of svg image
+ * @param width target width in pixel of PNG image
+ * @param secondTry used internally to prevent endless recursion
+ * @return {Promise<unknown>} resolves to png data url of the image
+ */
+imageUtil.base64SvgToBase64Png = function (originalBase64, width, height, secondTry) {
+    return new Promise(resolve => {
+        let img = document.createElement('img');
+        img.onload = function () {
+            if (!secondTry && (img.naturalWidth === 0 || img.naturalHeight === 0)) {
+                let svgDoc = base64ToSvgDocument(originalBase64);
+                let fixedDoc = fixSvgDocumentFF(svgDoc);
+                return imageUtil.base64SvgToBase64Png(svgDocumentToBase64(fixedDoc), width, height, true).then(result => {
+                    resolve(result);
+                });
+            }
+            //document.body.appendChild(img);
+            let canvas2 = document.createElement("canvas");
+            //document.body.removeChild(img);
+            canvas2.width = width;
+            canvas2.height = height;
+            let ctx = canvas2.getContext("2d");
+            ctx.drawImage(img, 0, 0, canvas2.width, canvas2.height);
+            try {
+                let data = canvas2.toDataURL('image/png');
+                resolve(data);
+            } catch (e) {
+                resolve(null);
+            }
+        };
+        img.src = originalBase64;
+    });
+}
+
+//needed because Firefox doesn't correctly handle SVG with size = 0, see https://bugzilla.mozilla.org/show_bug.cgi?id=700533
+function fixSvgDocumentFF(svgDocument) {
+    try {
+        let widthInt = parseInt(svgDocument.documentElement.width.baseVal.value) || 500;
+        let heightInt = parseInt(svgDocument.documentElement.height.baseVal.value) || 500;
+        svgDocument.documentElement.width.baseVal.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, widthInt);
+        svgDocument.documentElement.height.baseVal.newValueSpecifiedUnits(SVGLength.SVG_LENGTHTYPE_PX, heightInt);
+        return svgDocument;
+    } catch (e) {
+        return svgDocument;
+    }
+}
+
+function svgDocumentToBase64(svgDocument) {
+    try {
+        let base64EncodedSVG = btoa(new XMLSerializer().serializeToString(svgDocument));
+        return 'data:image/svg+xml;base64,' + base64EncodedSVG;
+    } catch (e) {
+        return null;
+    }
+}
+
+function base64ToSvgDocument(base64) {
+    let svg = atob(base64.substring(base64.indexOf('base64,') + 7));
+    svg = svg.substring(svg.indexOf('<svg'));
+    let parser = new DOMParser();
+    return parser.parseFromString(svg, "image/svg+xml");
+} 
+        </script>
+
+        <script>
+            function HelpText() {
+              var x = document.getElementById("HelpTextBlock");
+              if (x.style.display === "none") {
+                x.style.display = "block";
+              } else {
+                x.style.display = "none";
+              }
+            }
+        </script>
+    </head>
+    <body>
+        <div><textarea id="code" style="width: 100%;" rows="11">op2=>operation: import os, sys
+op4=>operation: import pandas as pd
+op6=>operation: from utilities import *
+op8=>operation: import platform
+op10=>operation: import numpy as np
+st13=>start: start main
+io15=>inputoutput: input: PROCESS_ALL, SKIP_SYMMETRY, SKIP_DIMERS, SKIP_CLUSTERING, FORCE_CONTACTS, FORCE_COMPARE, ONLY_GR, FORCE_CLUSTERING, LARGE_DATASET, DO_ONLY, GENERATE_SYMMETRIES, MAX_THREADS, MINIMUM_CHAIN_LENGTH, CONTACT_DISTANCE_SYMMETRY, CONTACT_DISTANCE_CLUSTERING, MINIMUM_CONTACTS, SASA, FORCE_SASA, BALL_SIZE, VERBOSE, QUIET, SPLIT_FACES, FORCE_SPLIT, CLUSTER_BY_PCA, N_CLUSTERS, DIMENSIONS_PCA, FACES_BY_COM, MINIMUM_SCORE, COMPARE, SPLIT_FACES_ANYWAY
+sub18=>subroutine: tprint('SET UP')
+op20=>operation: vars['do_only'] = DO_ONLY
+sub22=>subroutine: enable_garbage_collector()
+op24=>operation: from dataframes import save_dfs, create_dfs, create_clustering_dfs
+op26=>operation: from imports import pickle, export, download_pdbs, load_references, load_single_pdb
+sub28=>subroutine: sprint('Downloading large dataset')
+cond31=>operation: download_pdbs(os.path.join(root.pdb_lists, 'list_1500'), 'many_pdbs', terminal=True) if  (('many_pdbs' not in local.list()) and LARGE_DATASET)
+sub41=>subroutine: print1('Large dataset downloaded')
+sub43=>subroutine: sprint('Loading References')
+op45=>operation: vars['references'] = load_references(force_reload=PROCESS_ALL)
+sub47=>subroutine: print1('References loaded')
+sub49=>subroutine: sprint('Creating dataframes')
+sub51=>subroutine: create_dfs(vars.references)
+sub53=>subroutine: create_clustering_dfs(vars.references)
+cond56=>condition: for reference in vars.references
+sub65=>subroutine: reference.restore_reference_dfs(reset=PROCESS_ALL)
+sub67=>subroutine: reference.pickle()
+sub71=>subroutine: print1('Dataframes created')
+sub73=>subroutine: sprint('Obtaining molecule list')
+cond76=>condition: if LARGE_DATASET
+op80=>operation: molecule_folder = local.many_pdbs
+op87=>operation: molecule_list = sorted(os.listdir(molecule_folder))
+cond90=>operation: molecule_list = [f for f in molecule_list if any([(s in f) for s in vars.do_only])] if  (len(vars.do_only) > 0)
+sub100=>subroutine: print1('Molecule list obtained:', len(molecule_list), 'molecules, DO_ONLY = ', DO_ONLY)
+sub102=>subroutine: eprint('SET UP')
+sub104=>subroutine: tprint('SYMMETRY & DIMER GENERATION')
+cond107=>condition: if ((not SKIP_SYMMETRY) or PROCESS_ALL)
+op111=>operation: progress = ProgressBar(len(molecule_list))
+cond114=>condition: for m in molecule_list
+cond158=>condition: if ('lock' in m)
+sub162=>subroutine: sprint('.lock file detected:', m)
+sub164=>subroutine: progress.add(info=m)
+sub166=>subroutine: continue
+op171=>operation: filename = m.split('.')[0]
+sub173=>subroutine: sprint(filename)
+op175=>operation: molecules = load_single_pdb(filename, local.molecules, molecule_folder, force_reload=PROCESS_ALL)
+cond178=>condition: for molecule in molecules
+sub187=>subroutine: molecule.get_all_dimers(force=PROCESS_ALL, minimum_chain_length=MINIMUM_CHAIN_LENGTH, contact_distance=CONTACT_DISTANCE_SYMMETRY, min_contacts=MINIMUM_CONTACTS)
+sub189=>subroutine: molecule.pickle()
+sub193=>subroutine: progress.add(info=m)
+sub197=>subroutine: save_dfs()
+sub202=>subroutine: eprint('SYMMETRY & DIMER GENERATION')
+sub204=>subroutine: tprint('DIMER ANALYSIS')
+cond207=>condition: if ((not SKIP_DIMERS) or PROCESS_ALL or (SPLIT_FACES_ANYWAY and FORCE_SPLIT))
+op211=>operation: progress = ProgressBar(len(molecule_list))
+op213=>operation: from surface import build_contact_arrays
+op215=>operation: c_arrays = {ref.name: [] for ref in vars.references}
+cond218=>condition: for m in molecule_list
+cond406=>condition: if ('lock' in m)
+sub410=>subroutine: sprint('.lock file detected:', m)
+sub412=>subroutine: progress.add(info=m)
+sub414=>subroutine: continue
+op419=>operation: filename = m.split('.')[0]
+sub421=>subroutine: sprint(filename)
+op423=>operation: molecules = load_single_pdb(filename, local.molecules)
+cond426=>condition: for molecule in molecules
+op507=>operation: dimers = molecule.dimers
+cond510=>condition: for dimer in dimers
+sub548=>subroutine: print1(dimer)
+cond551=>operation: continue if  dimer.incomplete
+sub561=>subroutine: dimer.get_contacts(max_distance=CONTACT_DISTANCE_CLUSTERING, force=FORCE_CONTACTS)
+cond564=>condition: if (dimer.best_fit == 'GR')
+sub568=>subroutine: dimer.get_faces(by_com=FACES_BY_COM)
+op570=>operation: face_df = vars['clustering']['faces'][dimer.best_fit]
+op572=>operation: face_df.loc[dimer.id] = [dimer.id, dimer.face1, dimer.face2, dimer.contact_face1, dimer.contact_face2]
+sub577=>subroutine: build_contact_arrays(dimer, c_arrays, sasa=SASA, force=(FORCE_CONTACTS or PROCESS_ALL), max_contact_length=CONTACT_DISTANCE_CLUSTERING)
+sub579=>subroutine: dimer.pickle()
+sub585=>subroutine: progress.add(info=m)
+cond590=>condition: for key in c_arrays.keys()
+op599=>operation: vars.clustering['contacts'][key] = pd.concat([vars.clustering['contacts'][key].iloc[(:, 0:2)], *c_arrays[key]], axis=1)
+sub601=>subroutine: print(vars.clustering['contacts'][key])
+sub605=>subroutine: save_dfs(general=False, clustering=True)
+cond608=>condition: for reference in vars.references
+sub625=>subroutine: sprint('Faces and contact dfs for {}'.format(reference.name))
+op627=>operation: reference.faces_df = vars.clustering['faces'][reference.name]
+op629=>operation: reference.contacts_df = vars.clustering['contacts'][reference.name]
+sub631=>subroutine: reference.pickle()
+sub633=>subroutine: print(reference.faces_df)
+sub635=>subroutine: print(reference.contacts_df)
+sub642=>subroutine: eprint('DIMER ANALYSIS')
+sub644=>subroutine: tprint('CLUSTERING')
+cond647=>condition: if ((not SKIP_CLUSTERING) or (PROCESS_ALL and False))
+op651=>operation: from clustering import compare_contacts, get_clusters, cluster, split_by_faces, cluster_by_face
+cond654=>condition: for reference in vars.references
+sub706=>subroutine: sprint(reference.name)
+cond709=>condition: if ((reference.name != 'GR') and ONLY_GR)
+sub713=>subroutine: reference.pickle()
+sub715=>subroutine: continue
+cond721=>operation: split_by_faces(reference, force=FORCE_SPLIT, by_com=FACES_BY_COM) if  (SPLIT_FACES or SPLIT_FACES_ANYWAY)
+cond732=>condition: if ((reference.name == 'GR') and (COMPARE or PROCESS_ALL or FORCE_COMPARE))
+op736=>operation: reference.classified_df = compare_contacts(reference, force=(FORCE_COMPARE or PROCESS_ALL))
+op738=>operation: from clustering import add_info_to_classified
+sub740=>subroutine: add_info_to_classified(reference)
+op742=>operation: from visualisation import classified_chart
+sub744=>subroutine: classified_chart()
+sub749=>subroutine: cluster_by_face(reference, FORCE_ALL=(FORCE_CLUSTERING or PROCESS_ALL), minimum_score=MINIMUM_SCORE, n_clusters=N_CLUSTERS, pca=CLUSTER_BY_PCA, pca_dimensions=DIMENSIONS_PCA, splitted=SPLIT_FACES)
+sub751=>subroutine: reference.pickle()
+sub758=>subroutine: eprint('CLUSTERING')
+sub760=>subroutine: tprint('SAVE & EXIT')
+sub762=>subroutine: ring_bell(times=3)
+sub764=>subroutine: eprint('DONE')
+e766=>end: end main
+cond770=>condition: if (__name__ == '__main__')
+op774=>operation: import setup
+sub776=>subroutine: print(sys.argv)
+op778=>operation: DO_ONLY = []
+sub780=>subroutine: print(sys.argv)
+cond783=>operation: DO_ONLY = [arg.upper() for arg in sys.argv[1:]] if  ((len(sys.argv) > 2) and (not ('all' in sys.argv)))
+op793=>operation: from Globals import root, local, vars
+op795=>operation: from utilities import *
+sub797=>subroutine: main(PROCESS_ALL=vars.force, VERBOSE=vars.verbose, QUIET=vars.quiet, DO_ONLY=DO_ONLY, LARGE_DATASET=True, MAX_THREADS=1, SKIP_SYMMETRY=True, MINIMUM_CHAIN_LENGTH=100, CONTACT_DISTANCE_SYMMETRY=8, MINIMUM_CONTACTS=0, SKIP_DIMERS=True, FORCE_CONTACTS=True, CONTACT_DISTANCE_CLUSTERING=12, FACES_BY_COM=True, SASA=False, FORCE_SASA=True, BALL_SIZE=1.6, COMPARE=True, FORCE_COMPARE=False, SPLIT_FACES=False, SPLIT_FACES_ANYWAY=False, FORCE_SPLIT=True, SKIP_CLUSTERING=False, FORCE_CLUSTERING=True, ONLY_GR=True, N_CLUSTERS=4, CLUSTER_BY_PCA=True, DIMENSIONS_PCA=[1, 2], MINIMUM_SCORE=40)
+op84=>operation: molecule_folder = local.experimental
+
+op2->op4
+op4->op6
+op6->op8
+op8->op10
+op10->st13
+st13->io15
+io15->sub18
+sub18->op20
+op20->sub22
+sub22->op24
+op24->op26
+op26->sub28
+sub28->cond31
+cond31->sub41
+sub41->sub43
+sub43->op45
+op45->sub47
+sub47->sub49
+sub49->sub51
+sub51->sub53
+sub53->cond56
+cond56(yes)->sub65
+sub65->sub67
+sub67(left)->cond56
+cond56(no)->sub71
+sub71->sub73
+sub73->cond76
+cond76(yes)->op80
+op80->op87
+op87->cond90
+cond90->sub100
+sub100->sub102
+sub102->sub104
+sub104->cond107
+cond107(yes)->op111
+op111->cond114
+cond114(yes)->cond158
+cond158(yes)->sub162
+sub162->sub164
+sub164->sub166
+cond158(no)->op171
+op171->sub173
+sub173->op175
+op175->cond178
+cond178(yes)->sub187
+sub187->sub189
+sub189(left)->cond178
+cond178(no)->sub193
+sub193(left)->cond114
+cond114(no)->sub197
+sub197->sub202
+sub202->sub204
+sub204->cond207
+cond207(yes)->op211
+op211->op213
+op213->op215
+op215->cond218
+cond218(yes)->cond406
+cond406(yes)->sub410
+sub410->sub412
+sub412->sub414
+cond406(no)->op419
+op419->sub421
+sub421->op423
+op423->cond426
+cond426(yes)->op507
+op507->cond510
+cond510(yes)->sub548
+sub548->cond551
+cond551->sub561
+sub561->cond564
+cond564(yes)->sub568
+sub568->op570
+op570->op572
+op572->sub577
+sub577->sub579
+sub579(left)->cond510
+cond564(no)->sub577
+cond510(no)->cond426
+cond426(no)->sub585
+sub585(left)->cond218
+cond218(no)->cond590
+cond590(yes)->op599
+op599->sub601
+sub601(left)->cond590
+cond590(no)->sub605
+sub605->cond608
+cond608(yes)->sub625
+sub625->op627
+op627->op629
+op629->sub631
+sub631->sub633
+sub633->sub635
+sub635(left)->cond608
+cond608(no)->sub642
+sub642->sub644
+sub644->cond647
+cond647(yes)->op651
+op651->cond654
+cond654(yes)->sub706
+sub706->cond709
+cond709(yes)->sub713
+sub713->sub715
+cond709(no)->cond721
+cond721->cond732
+cond732(yes)->op736
+op736->op738
+op738->sub740
+sub740->op742
+op742->sub744
+sub744->sub749
+sub749->sub751
+sub751(left)->cond654
+cond732(no)->sub749
+cond654(no)->sub758
+sub758->sub760
+sub760->sub762
+sub762->sub764
+sub764->e766
+e766->cond770
+cond770(yes)->op774
+op774->sub776
+sub776->op778
+op778->sub780
+sub780->cond783
+cond783->op793
+op793->op795
+op795->sub797
+cond647(no)->sub758
+cond207(no)->sub642
+cond107(no)->sub202
+cond76(no)->op84
+op84->op87
+</textarea></div>
+        <div><button id="run" type="button">Run</button> <button onclick="HelpText()">Format Help</button></div>
+        <div id="HelpTextBlock" style="display:none"><br/>Conditions can also be redirected like cond(yes, bottom) or cond(yes, right)
+... and the other symbols too... like sub1(right)<br/>
+You can also tweak the <b>diagram.drawSVG('diagram', {});</b> script in this file for more changes<br/>
+This is based on <a href="https://github.com/adrai/flowchart.js">flowchart.js on github</a> and <a href="http://flowchart.js.org">http://flowchart.js.org</a> more documentation can be found over there.
+</div><br/><div id="svgbase64"></div>
+        <div id="pngbase64"></div>
+
+        <div id="canvas"></div>
+    </body>
+</html>
