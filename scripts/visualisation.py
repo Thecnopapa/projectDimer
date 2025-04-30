@@ -351,7 +351,7 @@ if __name__ == "__main__":
         if pca:
             faces = os.listdir(root.clustered_pcas_GR)
             if global_pca:
-                faces = [face for face in os.listdir(root.clustered_pcas) if "clustered" not in face]
+                faces = [face for face in os.listdir(root.clustered_pcas) if ("clustered" not in face and "centres" not in face)]
             print("PCA clustering")
             print(faces)
         else:
@@ -509,7 +509,7 @@ if __name__ == "__main__":
             for arg in sys.argv:
                 if "d=" in arg:
                     dimensions = [int(i) for i in arg.split("=")[1]]
-            #print("dimension:", dimensions)
+            print("dimension:", dimensions)
             plot_pcas(pcas, title= "GR:({} : cluster {} / N = {})".format(face, c, len(pcas)), dimensions=dimensions)
 
 

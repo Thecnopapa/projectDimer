@@ -240,9 +240,10 @@ def plot_atoms(structure, pca = None, block = True):
 
 
 
-def plot_pcas(pca_list, title="", dimensions = (0,1,2)):
+def plot_pcas(pca_list, title="", dimensions = [0,1,2]):
     fig = plt.figure()
-    if len(pca_list) == 3:
+    print("N dimensions:", len(dimensions))
+    if len(dimensions) == 3:
         ax = fig.add_subplot(111, projection='3d')
     else:
         ax = fig.add_subplot(111)
@@ -251,6 +252,7 @@ def plot_pcas(pca_list, title="", dimensions = (0,1,2)):
     for pca in pca_list:
         #print(pca.explained_variance_)
         #print(pca.explained_variance_[[*dimensions]])
+        print([pca.explained_variance_[[*dimensions]]])
         coords = pca.explained_variance_[[*dimensions]]
         #print(coords)
         ax.scatter(*coords)
