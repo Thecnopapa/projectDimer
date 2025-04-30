@@ -10,7 +10,9 @@ import re
 import sys
 
 # The names of the files to be merged
-files = os.listdir("scripts").remove("cc_analysis.py", "spaceGroups.py")
+print(os.listdir("./"))
+files = os.listdir("./")
+[files.remove(file) for file in ["cc_analysis.py", "spaceGroups.py", "__pycache__", "merge_scripts.py"]]
 
 # The name of the output file
 output = "merged.py"
