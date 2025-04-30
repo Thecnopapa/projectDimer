@@ -1,29 +1,34 @@
 
 #source '/opt/xtal/ccp4-9/bin/ccp4.setup-sh' # Find in installation log in ccp4/
+
+# add this to .bashrc
 #if [ -f ~/projectB/bashrc.project ]; then
 #    source ~/projectB/bashrc.project
 #fi
 
 
 
-cd /home/iain/projectB
+cd ~/projectB
 conda activate py312np2 || conda activate biop
-alias show="python scripts/visualisation.py"
+alias show="python ~/projectB/scripts/visualisation.py"
 
 run(){
-        python /home/iain/projectB/scripts/$1.py $2 $3 $4 $5
+        python ~/projectB/scripts/$1.py $2 $3 $4 $5
 }
 diagram(){
-    python -m pyflowchart scripts/$1.py -o diagrams/$1.html -f $2
+    python ~/projectB/scripts/diagram.py $1 $2 && xdg-open /cri4/iain/projectB/diagrams/$1.html
 }
 
 
-
-alias bashrc="vim /home/iain/.bashrc"
+alias bashrc="vim ~/.bashrc"
 alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
 
 alias cloc="find . -name '*.py' | xargs wc -l"
+# alias cloc="cloc scripts/*.py --by-file --exclude-list-file=cloc_exclude.txt" # please apt-get install cloc
+
 
 alias top="echo -en \"\033]0;Top\a\" && top"
+
+alias please="sudo"
