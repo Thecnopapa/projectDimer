@@ -272,7 +272,7 @@ if __name__ == "__main__":
 
          N_CLUSTERS = 4,
          CLUSTER_BY_PCA = True,
-         DIMENSIONS_PCA = [1,2],
+         DIMENSIONS_PCA = [0,1,2],
          MINIMUM_SCORE = 40,
 
 

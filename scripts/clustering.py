@@ -962,7 +962,7 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
 
         sprint(file)
         contacts_path = os.path.join(root[subfolder_name.format("contacts")], file)
-        print(contacts_path)
+        #print(contacts_path)
         if minimum_score > 0:
             contacts_df = pd.read_csv(contacts_path)
             original_len = len(contacts_df)
@@ -972,10 +972,10 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
             for col in cols:
                 if col in ["ResNum", "ResName"]:
                     continue
-                print(col)
-                print(classified_df[classified_df["ID"] == col])
+                #print(col)
+                #print(classified_df[classified_df["ID"] == col])
                 class_row = classified_df[classified_df["ID"] == col]
-                print(class_row)
+                #print(class_row)
                 if len(class_row) < 1 :
                     cols.remove(col)
                     continue

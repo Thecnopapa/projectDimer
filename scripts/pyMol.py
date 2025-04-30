@@ -1,6 +1,5 @@
 import os
 
-from pkg_resources import non_empty_lines
 
 from utilities import *
 from Globals import root, local, vars
