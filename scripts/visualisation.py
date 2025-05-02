@@ -477,7 +477,7 @@ if __name__ == "__main__":
                 break
             except: pass
         if c != "all":
-            subset = subset[subset[cluster_colname] == int(c)]
+            subset = subset[subset["cluster"] == int(c)]
         else:
             subset = subset
         #subset.sort_values(by = "similarity", inplace = True)

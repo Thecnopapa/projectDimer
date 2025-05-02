@@ -937,7 +937,42 @@ def quick_cluster(coords, n_clusters=3):
 
 
 
-def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, minimum_score=0, pca = True, pca_dimensions = [0,1,2], splitted=True):
+def remove_redundancy(in_path):
+    pca_df = pd.read_csv(in_path)
+    pca_df.sort_values(by=["variance_0", "variance_1", "variance_2"], inplace=True)
+    print(pca_df)
+
+    pca_df.reset_index( inplace=True)
+    print(pca_df)
+
+    dimer_list = list(pca_df["id"].values)
+    starting_len = len(dimer_list)
+    print(dimer_list)
+    print("Starting_len:", starting_len)
+
+    for row1 in pca_df.itertuples():
+        #print1(row1)
+        sprint(row1.id, row1.Index)
+        for row2 in pca_df.iloc[row1.Index+1:,:].itertuples():
+            print2(row2.Index, end="\r")
+            if abs(row1.variance_0-row2.variance_0) < 1:
+                if abs(row1.variance_1-row2.variance_1) < 1:
+                    if abs(row1.variance_2 - row2.variance_2) < 1:
+                        print3("Removing:", row1.id, row1.Index)
+                        dimer_list.remove(row1.id)
+                        break
+    print(dimer_list)
+
+    print("Removed {} redundant dimers".format(starting_len - len(dimer_list)))
+    pca_df = pca_df.loc[pca_df["id"].isin(dimer_list)]
+    print(pca_df)
+    pca_df.to_csv(in_path)
+    print("Saved at:", in_path)
+    return in_path
+
+
+
+def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, minimum_score=0, pca = True, pca_dimensions = [0,1,2], splitted=True, rem_red = True):
 
 
 
@@ -1013,6 +1048,8 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
         else:
             from faces import get_pca_df, plot_pcas
             pca_path = get_pca_df(in_path=contacts_path, subfolder=subfolder_name, force=FORCE_CC, splitted=splitted)
+            if rem_red:
+                pca_path = remove_redundancy(pca_path)
             #plot_pcas(pcas, title="GR: {}  (N = {})".format(file.split(".")[0], len(pcas)))
             clustered_path = clusterize_pcas(name=file, subfolder=subfolder_name, in_path = pca_path, force=FORCE_CLUSTER,
                                              dimensions=pca_dimensions,splitted=splitted)

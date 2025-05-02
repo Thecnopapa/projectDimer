@@ -41,6 +41,7 @@ def main(PROCESS_ALL = False,
          MINIMUM_SCORE = 0,
          COMPARE = True,
          SPLIT_FACES_ANYWAY = False,
+         REMOVE_REDUNDANCY = True,
          ):
 
 
@@ -192,7 +193,7 @@ def main(PROCESS_ALL = False,
 
             cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, minimum_score=MINIMUM_SCORE,
                             n_clusters=N_CLUSTERS, pca=CLUSTER_BY_PCA, pca_dimensions = DIMENSIONS_PCA,
-                            splitted=SPLIT_FACES)
+                            splitted=SPLIT_FACES, rem_red=REMOVE_REDUNDANCY)
             reference.pickle()
         #save_dfs(general=False, clustering=True)
 
@@ -268,7 +269,7 @@ if __name__ == "__main__":
          SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
          FORCE_CLUSTERING=True,  # Force clustering if already calculated (overridden by PROCESS_ALL)
          ONLY_GR = True, # Whether to only cluster GR
-
+         REMOVE_REDUNDANCY = True,
 
          N_CLUSTERS = 4,
          CLUSTER_BY_PCA = True,
