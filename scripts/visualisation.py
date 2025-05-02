@@ -547,8 +547,9 @@ if __name__ == "__main__":
 
                 sele = "({})".format(" or ".join(chain[0] for chain in chains_to_align))
                 print(sele)
+
                 pymol_move(sele=sele, distance=[150 * n, 0, 0])
-                pymol_group([chain[0] for chain in chains_to_align], name=str(n))
+                pymol_group([chain[0] for chain in chains_to_align], name=str(l[n]))
             pymol_set_state(2)
             pymol_orient()
 
