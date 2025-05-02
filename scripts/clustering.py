@@ -751,7 +751,7 @@ def split_by_faces(reference, force= False, by_com = True):
     #print(pd.DataFrame(reference.faces_dfs))
 
 
-def clusterize_pcas(subfolder, in_path,method="KMeans", force = False, n_clusters = None , dimensions = [0,1,2], splitted = True):
+def clusterize_pcas(subfolder, in_path,method="KMeans", quantile=0.1, n_sample_multiplier=0.5, force = False, n_clusters = None , dimensions = [0,1,2], splitted = True):
     print1("Clusterizing PCAs")
     if n_clusters is None:
         if splitted:
@@ -796,15 +796,20 @@ def clusterize_pcas(subfolder, in_path,method="KMeans", force = False, n_cluster
         print(X)
         from sklearn.cluster import MeanShift, estimate_bandwidth
 
-        bandwidth = estimate_bandwidth(X, quantile=0.1, n_samples=int(round(len(X)*0.1)))
+        bandwidth = estimate_bandwidth(X, quantile=quantile, n_samples=int(round(len(X)*n_sample_multiplier)))
 
-        model = MeanShift(bandwidth=bandwidth, bin_seeding=True)
+        model = MeanShift(bandwidth=bandwidth, bin_seeding=False, cluster_all=False, n_jobs=-1)
         model.fit(X)
         labels = model.labels_
         labels_unique = np.unique(labels)
         n_clusters_ = len(labels_unique)
 
-        print("number of estimated clusters : %d" % n_clusters_)
+        sprint("Number of estimated clusters : {}, bandwith: {}".format(n_clusters_, bandwidth))
+
+
+    elif method == "SpectralClustering":
+        from sklearn.cluster import SpectralClustering
+        pass
 
     else:
         print("Please use a valid clustering algorithm")
@@ -876,13 +881,16 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
     fig = plt.figure()
     if len(pca_dimensions) == 3:
         ax = fig.add_subplot(111, projection='3d')
-    elif len(pca_dimensions) == 2:
+    elif len(pca_dimensions) <= 2:
         ax = fig.add_subplot(111)
     ax.set_title(title)
     # ax.scatter(0,0,0, marker= "o", c="red")
     for row in pca_df.itertuples():
         #print(row.variance_0, row.variance_1, row.variance_2)
-        ax.scatter(*[row.__getattribute__(v) for v in columns], c=row.colour)
+        if row.cluster == -1:
+            ax.scatter(*[row.__getattribute__(v) for v in columns], c="black")
+        else:
+            ax.scatter(*[row.__getattribute__(v) for v in columns], c=row.colour)
 
     texts = []
     if plot_centres and subset is None:
@@ -902,11 +910,12 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
         #print(cluster_centres.columns)
         for centre in cluster_centres.itertuples():
             #print(centre)
-            ax.scatter(*[centre.__getattribute__("_"+str(x+1)) for x in range(len(pca_dimensions))], color="black", marker=".")
-            if labels_centres:
-                print3("annotating", centre[0], end="\r")#, centre[1:])
-                ax.text( *[c+.1 for c in centre[1:]], centre[0], color="C{}".format(centre[0]))
-                pass
+            if centre[0] != -1:
+                ax.scatter(*[centre.__getattribute__("_"+str(x+1)) for x in range(len(pca_dimensions))], color="black", marker=".")
+                if labels_centres:
+                    print3("annotating", centre[0], end="\r")#, centre[1:])
+                    ax.text( *[c+.1 for c in centre[1:]], centre[0], color="C{}".format(centre[0]))
+                    pass
 
         centres = []
         for centre in cluster_centres.itertuples():
@@ -962,7 +971,7 @@ def quick_cluster(coords, n_clusters=3):
 
 
 
-def remove_redundancy(in_path):
+def remove_redundancy(in_path, threshold=3):
     pca_df = pd.read_csv(in_path)
     pca_df.sort_values(by=["variance_0", "variance_1", "variance_2"], inplace=True)
     print(pca_df)
@@ -980,9 +989,9 @@ def remove_redundancy(in_path):
         sprint(row1.id, row1.Index)
         for row2 in pca_df.iloc[row1.Index+1:,:].itertuples():
             print2(row2.Index, end="\r")
-            if abs(row1.variance_0-row2.variance_0) < 1:
-                if abs(row1.variance_1-row2.variance_1) < 1:
-                    if abs(row1.variance_2 - row2.variance_2) < 1:
+            if abs(row1.variance_0-row2.variance_0) < threshold:
+                if abs(row1.variance_1-row2.variance_1) < threshold:
+                    if abs(row1.variance_2 - row2.variance_2) < threshold:
                         print3("Removing:", row1.id, row1.Index)
                         dimer_list.remove(row1.id)
                         break
@@ -998,7 +1007,7 @@ def remove_redundancy(in_path):
 
 
 def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, minimum_score=0, pca = True,
-                    pca_dimensions = [0,1,2], splitted=True, rem_red = True, method = "KMeans"):
+                    pca_dimensions = [0,1,2], splitted=True, rem_red = True, method = "KMeans", quantile=0.1, n_sample_multiplier = 0.5,):
 
 
 
@@ -1078,7 +1087,7 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
                 pca_path = remove_redundancy(pca_path)
             #plot_pcas(pcas, title="GR: {}  (N = {})".format(file.split(".")[0], len(pcas)))
             clustered_path = clusterize_pcas(method=method, subfolder=subfolder_name, in_path = pca_path, force=FORCE_CLUSTER,
-                                             dimensions=pca_dimensions,splitted=splitted)
+                                             dimensions=pca_dimensions,splitted=splitted, quantile =quantile, n_sample_multiplier=n_sample_multiplier)
             plot_path = plot_clustered_pcas(reference, labels=False, labels_centres=True,  force = FORCE_PLOT,
                                 dimensions=DIMENSIONS, subfolder=subfolder_name, in_path=clustered_path, pca = True,
                                             pca_dimensions=pca_dimensions, splitted=splitted)

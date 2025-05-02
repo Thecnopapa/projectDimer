@@ -42,7 +42,9 @@ def main(PROCESS_ALL = False,
          COMPARE = True,
          SPLIT_FACES_ANYWAY = False,
          REMOVE_REDUNDANCY = True,
-         CLUSTERING_METHOD = "KMeans"
+         CLUSTERING_METHOD = "KMeans",
+         N_SAMPLE_MULTIPLIER = 0.5,
+         QUANTILE = 0.1,
          ):
 
 
@@ -194,7 +196,8 @@ def main(PROCESS_ALL = False,
 
             cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, minimum_score=MINIMUM_SCORE,
                             n_clusters=N_CLUSTERS, pca=CLUSTER_BY_PCA, pca_dimensions = DIMENSIONS_PCA,
-                            splitted=SPLIT_FACES, rem_red=REMOVE_REDUNDANCY, method = CLUSTERING_METHOD)
+                            splitted=SPLIT_FACES, rem_red=REMOVE_REDUNDANCY, method = CLUSTERING_METHOD,
+                            quantile=QUANTILE, n_sample_multiplier=N_SAMPLE_MULTIPLIER)
             reference.pickle()
         #save_dfs(general=False, clustering=True)
 
@@ -272,11 +275,13 @@ if __name__ == "__main__":
          ONLY_GR = True, # Whether to only cluster GR
          REMOVE_REDUNDANCY = True,
          CLUSTERING_METHOD = "MeanShift",
+         QUANTILE= 0.1,
+         N_SAMPLE_MULTIPLIER = 0.1,
 
          N_CLUSTERS = 4,
          CLUSTER_BY_PCA = True,
-         DIMENSIONS_PCA = [1,2],
-         MINIMUM_SCORE = 40,
+         DIMENSIONS_PCA = [0,1,2],
+         MINIMUM_SCORE = 0,
 
 
 
