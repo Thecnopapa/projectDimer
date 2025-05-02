@@ -127,8 +127,9 @@ def generate_preview(path, folder="", state = 0,save_session=True):
     preview_path = pymol_save_small(name.upper(), local[folder], dpi=50, height=150, width=150)
     return preview_path
 
-def pymol_align_all():
-    all_obj = pymol.cmd.get_names(type='objects')
+def pymol_align_all(all_obj = None):
+    if all_obj is None:
+        all_obj = pymol.cmd.get_names(type='objects')
     #print(all_obj)
     obj1 = all_obj[0]
     for obj2 in all_obj:
@@ -160,6 +161,8 @@ def pymol_align_chains(chains_to_align):
             #print(sele2)
             pymol_align__obj(sele1, sele2)
 
+
+
 def pymol_align_chains_best(chains_to_align, double_best = False):
     #all_obj = pymol.cmd.get_names(type='objects')
     #print1(all_obj)
@@ -173,26 +176,39 @@ def pymol_align_chains_best(chains_to_align, double_best = False):
         sele2b = "{} and c. {}".format(obj2, chain2b)
         if obj2 != obj1:
             ali2a = pymol_align__obj(sele1a, sele2a, orient=False)
+            ali2a = pymol_align__obj(obj1, obj2, orient=False, quiet=True)
             print4(ali2a)
+            #input()
             ali2b = pymol_align__obj(sele1a, sele2b, orient=False)
+            ali2b = pymol_align__obj(obj1, obj2, orient=False, quiet=True)
             print4(ali2b)
+            #input()
             if ali2a[0] > ali2b[0]:
-                ali1a = pymol_align__obj(sele1a, sele2a, orient=False, quiet=True), sele2a
+                ali1a = pymol_align__obj(sele1a, sele2a, orient=False, quiet=True)
+                ali1a = pymol_align__obj(obj1, obj2, orient=False, quiet=True), sele2a
             else:
                 ali1a = ali2b, sele2b
 
             if double_best:
                 ali2a = pymol_align__obj(sele1b, sele2a, orient=False)
+                ali2a = pymol_align__obj(obj1, obj2, orient=False, quiet=True)
                 print4(ali2a)
+                #input()
                 ali2b = pymol_align__obj(sele1b, sele2b, orient=False)
+                ali2b = pymol_align__obj(obj1, obj2, orient=False, quiet=True)
                 print4(ali2b)
+                #input()
                 if ali2a[0] < ali2b[0]:
-                    ali1b = pymol_align__obj(sele1b, sele2a, orient=False, quiet=True), sele2a
+                    ali1b = pymol_align__obj(sele1b, sele2a, orient=False, quiet=True)
+                    ali1b = pymol_align__obj(obj1, obj2, orient=False, quiet=True), sele2a
                 else:
                     ali1b = ali2a, sele2b
 
                 if ali1a[0][0] < ali1b[0][0]:
                     ali = pymol_align__obj(sele1a, ali1a[1], orient=False,quiet=True)
+
+            ali = pymol_align__obj(obj1, obj2, orient=False,quiet=True)
+
 
 
 

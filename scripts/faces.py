@@ -271,9 +271,11 @@ def plot_pcas(pca_list, title="", dimensions = [0,1,2], mode="variance", comps=[
                 c+=1
 
     if cluster is None:
-        fig.tight_layout()
-        ax.set_aspect('equal')
-        plt.show(block=vars.block)
+        if "pymol" not in sys.argv:
+            fig.tight_layout()
+            ax.set_aspect('equal')
+            plt.show(block=vars.block)
+        return None
     else:
         print(points)
         df = pd.DataFrame(points)

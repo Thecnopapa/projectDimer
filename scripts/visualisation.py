@@ -463,31 +463,33 @@ if __name__ == "__main__":
             subcluster_df = plot_pcas(pcas, title= "GR:({} : cluster {} / N = {})".format(face, c, len(pcas)),
                       dimensions=dimensions, mode=mode, comps=comps, cluster=cluster)
 
-            subset["subcluster"] = subcluster_df["cluster"]
-            print(subset)
-            cluster_colname = "subcluster"
 
+            if subcluster_df is not None:
+                subset["subcluster"] = subcluster_df["cluster"]
+                cluster_colname = "subcluster"
+                print(subset)
+                while True:
+                    c = input("\n # Please select cluster to display (int):\n >> ")
+                    try:
+                        if c == "all":
+                            break
+                        c = int(c)
+                        break
+                    except:
+                        pass
+                if c != "all":
+                    subset = subset[subset["cluster"] == int(c)]
+                else:
+                    subset = subset
+                # subset.sort_values(by = "similarity", inplace = True)
+                # print(subset.to_string(index=False))
+                if not pca:
+                    threshold = input("\n # Please select minimum similarity threshold (int or all):\n >> ")
+                    if threshold == "":
+                        threshold = 0
+                    subset = subset[subset["similarity"] >= float(threshold)]
+                print(subset.to_string(index=False))
 
-        while True:
-            c = input("\n # Please select cluster to display (int):\n >> ")
-            try:
-                if c == "all":
-                    break
-                c = int(c)
-                break
-            except: pass
-        if c != "all":
-            subset = subset[subset["cluster"] == int(c)]
-        else:
-            subset = subset
-        #subset.sort_values(by = "similarity", inplace = True)
-        #print(subset.to_string(index=False))
-        if not pca:
-            threshold = input("\n # Please select minimum similarity threshold (int or all):\n >> ")
-            if threshold == "":
-                threshold = 0
-            subset = subset[subset["similarity"] >= float(threshold)]
-        print(subset.to_string(index=False))
 
 
 
@@ -497,7 +499,7 @@ if __name__ == "__main__":
 
 
             if c == "all":
-                l = list(subset[cluster_colname].unique())
+                l = list(subset["cluster"].unique())
             else:
                 l = [c]
             for n in range(len(l)):
@@ -505,7 +507,7 @@ if __name__ == "__main__":
                 first_to_align = None
                 print("CLUSTER", n, l[n])
                 if c == "all":
-                    subset = sorted(clustered_df[clustered_df["cluster"] == l[n]], lambda x: x.ID)
+                    subset = clustered_df[clustered_df["cluster"] == l[n]].sort_values(by="id", ascending=True)
                 print(subset)
                 for row in subset.itertuples():
                     dimers = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)
@@ -540,7 +542,7 @@ if __name__ == "__main__":
 
                 print(chains_to_align)
                 # pymol_align_chains(chains_to_align)
-                pymol_align_all()
+                pymol_align_all([obj[0] for obj in chains_to_align])
                 pymol_align_chains_best(chains_to_align, double_best=True)
 
                 sele = "({})".format(" or ".join(chain[0] for chain in chains_to_align))

@@ -751,7 +751,7 @@ def split_by_faces(reference, force= False, by_com = True):
     #print(pd.DataFrame(reference.faces_dfs))
 
 
-def clusterize_pcas(subfolder, name, in_path, force = False, n_clusters = None , dimensions = [0,1,2], splitted = True):
+def clusterize_pcas(subfolder, in_path,method="KMeans", force = False, n_clusters = None , dimensions = [0,1,2], splitted = True):
     print1("Clusterizing PCAs")
     if n_clusters is None:
         if splitted:
@@ -785,10 +785,35 @@ def clusterize_pcas(subfolder, name, in_path, force = False, n_clusters = None ,
     print(pca_df)
 
     columns = ["variance_{}".format(d) for d in dimensions]
+    if method == "KMeans":
+        from sklearn.cluster import KMeans
+        model = KMeans(n_clusters=n_clusters, random_state=6, algorithm="elkan")
+        model.fit(pca_df.loc[:, columns])
 
-    from sklearn.cluster import KMeans
-    model = KMeans(n_clusters=n_clusters, random_state=6, algorithm="elkan")
-    model.fit(pca_df.loc[:, columns])
+
+    elif method == "MeanShift":
+        X = pca_df.loc[:, columns].values
+        print(X)
+        from sklearn.cluster import MeanShift, estimate_bandwidth
+
+        bandwidth = estimate_bandwidth(X, quantile=0.1, n_samples=int(round(len(X)*0.1)))
+
+        model = MeanShift(bandwidth=bandwidth, bin_seeding=True)
+        model.fit(X)
+        labels = model.labels_
+        labels_unique = np.unique(labels)
+        n_clusters_ = len(labels_unique)
+
+        print("number of estimated clusters : %d" % n_clusters_)
+
+    else:
+        print("Please use a valid clustering algorithm")
+        print("Introduced value:", method)
+        quit()
+
+
+
+
 
     for n in range(len(pca_df)):
         cluster = model.labels_[n]
@@ -972,7 +997,8 @@ def remove_redundancy(in_path):
 
 
 
-def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, minimum_score=0, pca = True, pca_dimensions = [0,1,2], splitted=True, rem_red = True):
+def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, minimum_score=0, pca = True,
+                    pca_dimensions = [0,1,2], splitted=True, rem_red = True, method = "KMeans"):
 
 
 
@@ -1051,7 +1077,7 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
             if rem_red:
                 pca_path = remove_redundancy(pca_path)
             #plot_pcas(pcas, title="GR: {}  (N = {})".format(file.split(".")[0], len(pcas)))
-            clustered_path = clusterize_pcas(name=file, subfolder=subfolder_name, in_path = pca_path, force=FORCE_CLUSTER,
+            clustered_path = clusterize_pcas(method=method, subfolder=subfolder_name, in_path = pca_path, force=FORCE_CLUSTER,
                                              dimensions=pca_dimensions,splitted=splitted)
             plot_path = plot_clustered_pcas(reference, labels=False, labels_centres=True,  force = FORCE_PLOT,
                                 dimensions=DIMENSIONS, subfolder=subfolder_name, in_path=clustered_path, pca = True,
