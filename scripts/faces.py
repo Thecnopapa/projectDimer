@@ -241,7 +241,7 @@ def plot_atoms(structure, pca = None, block = True):
 
 
 
-def plot_pcas(pca_list, title="", dimensions = [0,1,2], mode="variance", comps=[0,1], cluster=None):
+def plot_pcas(pca_list, title="", dimensions = [0,1,2], mode="variance", comps=[0,1,2], cluster=None):
     fig = plt.figure()
     print("N dimensions:", len(dimensions))
     if len(dimensions) == 3:
@@ -251,6 +251,7 @@ def plot_pcas(pca_list, title="", dimensions = [0,1,2], mode="variance", comps=[
     ax.set_title(title)
     #ax.scatter(0,0,0, marker= "o", c="red")
     points = []
+    labels = []
     for pca in pca_list:
         if mode == "variance":
             #print(pca.explained_variance_)
@@ -260,6 +261,7 @@ def plot_pcas(pca_list, title="", dimensions = [0,1,2], mode="variance", comps=[
             #print(coords)
             ax.scatter(*coords)
             points.append(coords)
+            labels.append(pca.parent_id)
         elif mode == "components":
             print(pca.components_)
             c = 0
@@ -268,10 +270,14 @@ def plot_pcas(pca_list, title="", dimensions = [0,1,2], mode="variance", comps=[
                 if c in comps:
                     ax.scatter(*comp, c="C{}".format(c))
                     points.append(comp)
+                    labels.append(pca.parent_id)
                 c+=1
+        else:
+            print("mode:", mode, "not valid, available: variance, components")
+            quit()
 
     if cluster is None:
-        if "pymol" not in sys.argv:
+        if "pymol" not in sys.argv or True:
             fig.tight_layout()
             ax.set_aspect('equal')
             plt.show(block=vars.block)
@@ -281,6 +287,7 @@ def plot_pcas(pca_list, title="", dimensions = [0,1,2], mode="variance", comps=[
         df = pd.DataFrame(points)
         print(df)
         df["cluster"] = quick_cluster(df, n_clusters = cluster)
+        df["id"] = labels
         print(df)
         plot_points(df)
         return df
@@ -288,20 +295,41 @@ def plot_pcas(pca_list, title="", dimensions = [0,1,2], mode="variance", comps=[
 
 def plot_points(df, title = ""):
     fig = plt.figure()
-    dimensions = [d for d in df.columns if type(d) is int]
+    dimensions = []
+    new_cols = {}
+    for col in df.columns:
+        if type(col) is int:
+            dimensions.append(col)
+            new_cols[col] = str(col).replace("_", "")
+        else:
+            new_cols[col] = col
+
+    df.rename(columns=new_cols, inplace=True)
     print("N dimensions:", len(dimensions))
     if len(dimensions) == 3:
         ax = fig.add_subplot(111, projection='3d')
     else:
         ax = fig.add_subplot(111)
     ax.set_title(title)
+    print(df)
+    '''for point, cluster in zip(df[[*dimensions]].values, df[["cluster"]].values):
+        ax.scatter(*point, c="C{}".format(cluster[0]) )'''
 
-    for point, cluster in zip(df[[*dimensions]].values, df[["cluster"]].values):
-        ax.scatter(*point, c="C{}".format(cluster[0]) )
+    ax.set_xlabel(dimensions[0])
+    ax.set_ylabel(dimensions[1])
+    if len(dimensions) > 2:
+        ax.set_zlabel(dimensions[2])
+    for row in df.itertuples():
+        coords = [row.__getattribute__("_"+str(d+1)) for d in dimensions]
+        ax.scatter(*coords, c="C{}".format(row.cluster) )
+        if "id" in df.columns:
+            ax.text(*coords, s=row.id, c="C{}".format(row.cluster) )
+
+
 
     fig.tight_layout()
     ax.set_aspect('equal')
-    if not "pymol" in sys.argv:
+    if not "pymol" in sys.argv or True:
         plt.show(block=vars.block)
 
 

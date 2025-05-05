@@ -325,10 +325,16 @@ def pymol_paint_all_faces(obj):
 
 
 
+def pymol_save_temp_session(path=None):
+    if path is None:
+        path = os.path.join(local.temp, "temp_session.pse")
+    pymol.cmd.save(path)
+    return path
 
 
-
-
+def open_session_terminal(path):
+    import subprocess
+    subprocess.Popen(["nohup", "xdg-open", path], start_new_session=True)
 
 
 

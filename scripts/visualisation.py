@@ -441,9 +441,11 @@ if __name__ == "__main__":
 
             subset.sort_values("id", inplace=True)
             subset.reset_index(inplace=True)
+            print(subset)
             for row in subset.itertuples():
                 dimers = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)
                 for dimer in dimers:
+                    dimer.pca.parent_id = dimer.id
                     pcas.append(dimer.pca)
                     progress.add(info=dimer.id)
             dimensions = [0,1,2]
@@ -463,7 +465,7 @@ if __name__ == "__main__":
             subcluster_df = plot_pcas(pcas, title= "GR:({} : cluster {} / N = {})".format(face, c, len(pcas)),
                       dimensions=dimensions, mode=mode, comps=comps, cluster=cluster)
 
-
+            print(subcluster_df)
             if subcluster_df is not None:
                 subset["subcluster"] = subcluster_df["cluster"]
                 cluster_colname = "subcluster"
@@ -478,38 +480,35 @@ if __name__ == "__main__":
                     except:
                         pass
                 if c != "all":
-                    subset = subset[subset["cluster"] == int(c)]
+                    subset = subset[subset[cluster_colname] == int(c)]
                 else:
                     subset = subset
-                # subset.sort_values(by = "similarity", inplace = True)
-                # print(subset.to_string(index=False))
-                if not pca:
-                    threshold = input("\n # Please select minimum similarity threshold (int or all):\n >> ")
-                    if threshold == "":
-                        threshold = 0
-                    subset = subset[subset["similarity"] >= float(threshold)]
-                print(subset.to_string(index=False))
+
 
 
 
 
         if "pymol" in sys.argv:
             from pyMol import  *
-            pymol_start(show=True)
+            pymol_start(show=False)
 
 
             if c == "all":
-                l = list(subset["cluster"].unique())
+                clusters_to_display = list(subset[cluster_colname].unique())
             else:
-                l = [c]
-            for n in range(len(l)):
+                clusters_to_display = [c]
+            sprint("Displaying clusters:",cluster_colname, clusters_to_display)
+            for n in clusters_to_display:
                 chains_to_align = []
                 first_to_align = None
-                print("CLUSTER", n, l[n])
-                if c == "all":
-                    subset = clustered_df[clustered_df["cluster"] == l[n]].sort_values(by="id", ascending=True)
+                print("CLUSTER", n)
                 print(subset)
-                for row in subset.itertuples():
+                if c == "all":
+                    pymol_subset = subset[subset[cluster_colname] == n].sort_values(by="id", ascending=True)
+                else:
+                    pymol_subset = subset
+                print(pymol_subset)
+                for row in pymol_subset.itertuples():
                     dimers = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)
                     for dimer in dimers:
                         # TODO: delete after full run
@@ -546,12 +545,17 @@ if __name__ == "__main__":
                 pymol_align_chains_best(chains_to_align, double_best=True)
 
                 sele = "({})".format(" or ".join(chain[0] for chain in chains_to_align))
-                print(sele)
-
                 pymol_move(sele=sele, distance=[150 * n, 0, 0])
-                pymol_group([chain[0] for chain in chains_to_align], name=str(l[n]))
+                pymol_group([chain[0] for chain in chains_to_align], name=str(n))
+
+                print(pymol_subset.to_string())
+
             pymol_set_state(2)
             pymol_orient()
+            print(subset.to_string())
+            session_path = pymol_save_temp_session()
+            pymol_close()
+            open_session_terminal(session_path)
 
 
 
