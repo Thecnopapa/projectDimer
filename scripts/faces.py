@@ -241,7 +241,7 @@ def plot_atoms(structure, pca = None, block = True):
 
 
 
-def plot_pcas(pca_list, title="", dimensions = [0,1,2], mode="variance", comps=[0,1,2], cluster=None):
+def plot_pcas(pca_list, title="", dimensions = [0,1,2], mode="variance", comps=[0,1,2], cluster=None,bandwidth=0.2, method="MeanShift"):
     fig = plt.figure()
     print("N dimensions:", len(dimensions))
     if len(dimensions) == 3:
@@ -266,6 +266,7 @@ def plot_pcas(pca_list, title="", dimensions = [0,1,2], mode="variance", comps=[
             print(pca.components_)
             c = 0
             for comp in pca.components_:
+                comp = comp[dimensions]
                 print("component:", comp)
                 if c in comps:
                     ax.scatter(*comp, c="C{}".format(c))
@@ -276,17 +277,18 @@ def plot_pcas(pca_list, title="", dimensions = [0,1,2], mode="variance", comps=[
             print("mode:", mode, "not valid, available: variance, components")
             quit()
 
+    fig.tight_layout()
+    ax.set_aspect('equal')
     if cluster is None:
         if "pymol" not in sys.argv or True:
-            fig.tight_layout()
-            ax.set_aspect('equal')
+
             plt.show(block=vars.block)
         return None
     else:
         print(points)
         df = pd.DataFrame(points)
         print(df)
-        df["cluster"] = quick_cluster(df, n_clusters = cluster)
+        df["cluster"] = quick_cluster(df, n_clusters = cluster, bandwidth= bandwidth, method=method)
         df["id"] = labels
         print(df)
         plot_points(df)
@@ -321,9 +323,14 @@ def plot_points(df, title = ""):
         ax.set_zlabel(dimensions[2])
     for row in df.itertuples():
         coords = [row.__getattribute__("_"+str(d+1)) for d in dimensions]
-        ax.scatter(*coords, c="C{}".format(row.cluster) )
+
+        if row.cluster == -1:
+            c ="black"
+        else:
+            c = "C{}".format(row.cluster)
+        ax.scatter(*coords, c=c )
         if "id" in df.columns:
-            ax.text(*coords, s=row.id, c="C{}".format(row.cluster) )
+            ax.text(*coords, s=row.id, c=c)
 
 
 

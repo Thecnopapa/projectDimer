@@ -708,7 +708,7 @@ def add_clusters_to_classified(reference, pca=True, splitted = True):
                             classified.loc[row.id, "face_group"]= path.split(".")[0]
                             classified.loc[row.id, "cluster"]= row.cluster
                         else:
-                            classified.loc[row.id, "global_cluster"]= row.cluster
+                            classified.loc[row.id, "global_cluster"]= row.global_cluster
         print(classified)
     vars.clustering["classified"][reference.name] = classified
     reference.classified_df = classified
@@ -795,8 +795,10 @@ def clusterize_pcas(subfolder, in_path,method="KMeans", quantile=0.1, n_sample_m
         X = pca_df.loc[:, columns].values
         print(X)
         from sklearn.cluster import MeanShift, estimate_bandwidth
-
-        bandwidth = estimate_bandwidth(X, quantile=quantile, n_samples=int(round(len(X)*n_sample_multiplier)))
+        if n_sample_multiplier is not None:
+            bandwidth = estimate_bandwidth(X, quantile=quantile, n_samples=int(round(len(X)*n_sample_multiplier)))
+        else:
+            bandwidth = estimate_bandwidth(X, quantile=quantile)
 
         model = MeanShift(bandwidth=bandwidth, bin_seeding=False, cluster_all=False, n_jobs=-1)
         model.fit(X)
@@ -822,7 +824,10 @@ def clusterize_pcas(subfolder, in_path,method="KMeans", quantile=0.1, n_sample_m
 
     for n in range(len(pca_df)):
         cluster = model.labels_[n]
-        pca_df.loc[n, "cluster"] = cluster
+        if splitted:
+            pca_df.loc[n, "cluster"] = cluster
+        else:
+            pca_df.loc[n, "global_cluster"] = cluster
         new_colour = "".join(["C", str(cluster)])
 
         if new_colour == "C":
@@ -876,6 +881,10 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
     pca_df = pd.read_csv(in_path)
     print(pca_df)
 
+    if not splitted:
+        cluster_column = "global_cluster"
+    else:
+        cluster_column = "cluster"
     import matplotlib.pyplot as plt
     title = "PCA CLUSTERING for {}: {}  (N = {})".format(reference.name,name, len(pca_df))
     fig = plt.figure()
@@ -887,7 +896,7 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
     # ax.scatter(0,0,0, marker= "o", c="red")
     for row in pca_df.itertuples():
         #print(row.variance_0, row.variance_1, row.variance_2)
-        if row.cluster == -1:
+        if row.__getattribute__(cluster_column) == -1:
             ax.scatter(*[row.__getattribute__(v) for v in columns], c="black")
         else:
             ax.scatter(*[row.__getattribute__(v) for v in columns], c=row.colour)
@@ -962,9 +971,21 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
     return fig_path
 
 
-def quick_cluster(coords, n_clusters=3):
-    from sklearn.cluster import KMeans
-    model = KMeans(n_clusters=n_clusters, random_state=6, algorithm="elkan")
+def quick_cluster(coords, n_clusters=3, method ="MeanShift",bandwidth = None):
+
+    if method=="KMeans":
+        from sklearn.cluster import KMeans
+        model = KMeans(n_clusters=n_clusters, random_state=6, algorithm="elkan")
+    elif method=="MeanShift":
+        from sklearn.cluster import MeanShift, estimate_bandwidth
+        print1("Clustering with MeanShift, bandwith:", end=" ")
+
+        if bandwidth is None:
+            bandwidth = estimate_bandwidth(coords)
+        print2(bandwidth)
+        model = MeanShift(bandwidth=bandwidth, bin_seeding=False, cluster_all=False, n_jobs=-1)
+
+
     model.fit(coords)
     print(model.labels_)
     return model.labels_

@@ -389,11 +389,11 @@ if __name__ == "__main__":
             else:
                 clustered_df = pd.read_csv(os.path.join(root.clustered_pcas_GR, face + ".csv"), index_col=0)
             #print(clustered_df)
-            clustered_df.sort_values(by=["cluster"], inplace=True)
+            clustered_df.sort_values(by=[cluster_colname], inplace=True)
 
         else:
             clustered_df = pd.read_csv(os.path.join(root.clustered_GR, face+".csv"), index_col=0)
-            clustered_df.sort_values(by=["cluster", "similarity"], inplace=True)
+            clustered_df.sort_values(by=[cluster_colname, "similarity"], inplace=True)
         print(clustered_df.to_string(index=False))
 
         while True:
@@ -405,7 +405,7 @@ if __name__ == "__main__":
                 break
             except: pass
         if c != "all":
-            subset = clustered_df[clustered_df["cluster"] == int(c)]
+            subset = clustered_df[clustered_df[cluster_colname] == int(c)]
         else:
             subset = clustered_df
         #subset.sort_values(by = "similarity", inplace = True)
@@ -452,6 +452,7 @@ if __name__ == "__main__":
             comps = [0,1,2]
             mode = "variance"
             cluster = None
+            bandwidth=None
             for arg in sys.argv:
                 if "d=" in arg:
                     dimensions = [int(i) for i in arg.split("=")[1]]
@@ -461,9 +462,11 @@ if __name__ == "__main__":
                     mode = arg.split("=")[1]
                 if "cluster=" in arg:
                     cluster = int(arg.split("=")[1])
+                if "bandwidth=" in arg:
+                    bandwidth = float(arg.split("=")[1])
             print("dimension:", dimensions)
             subcluster_df = plot_pcas(pcas, title= "GR:({} : cluster {} / N = {})".format(face, c, len(pcas)),
-                      dimensions=dimensions, mode=mode, comps=comps, cluster=cluster)
+                      dimensions=dimensions, mode=mode, bandwidth=bandwidth, comps=comps, cluster=cluster)
 
             print(subcluster_df)
             if subcluster_df is not None:
@@ -491,7 +494,7 @@ if __name__ == "__main__":
         if "pymol" in sys.argv:
             from pyMol import  *
             pymol_start(show=False)
-
+            pymol_set_state(2)
 
             if c == "all":
                 clusters_to_display = list(subset[cluster_colname].unique())
@@ -550,11 +553,14 @@ if __name__ == "__main__":
 
                 print(pymol_subset.to_string())
 
+
             pymol_set_state(2)
             pymol_orient()
             print(subset.to_string())
             session_path = pymol_save_temp_session()
             pymol_close()
+            print("Session temporarily saved at:")
+            print(session_path)
             open_session_terminal(session_path)
 
 
