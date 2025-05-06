@@ -8,6 +8,41 @@ if os.name == 'nt':
 else:
     Globals.vars["gesamt"] = "gesamt"
 
+
+
+
+def superpose_multiple(path_list, file_name="GESAMT_multiple_superposition.pdb", save_folder=None):
+    import subprocess
+    if save_folder is None:
+        save_folder = local.temp
+
+    out_path = os.path.join(save_folder, file_name)
+
+    super_line = [Globals.vars.gesamt, *path_list, "-o", out_path]
+    gesamt_out = subprocess.run(super_line, capture_output=True, text=True)
+    if "show_gesamt" in vars:
+        if not (len(vars.do_only) == 0 or vars.do_only is None):
+            print(gesamt_out.stdout)
+            print(gesamt_out.stderr)
+    if vars.verbose:
+        print(gesamt_out.stdout)
+
+    data = {"out_path": out_path}
+    return data
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def superpose_single(id, fixed, moving):
     import subprocess
     local["super_raw"] = "superposed/super_raw"

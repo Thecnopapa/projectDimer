@@ -799,7 +799,8 @@ def clusterize_pcas(subfolder, in_path,method="KMeans", quantile=0.1, n_sample_m
             bandwidth = estimate_bandwidth(X, quantile=quantile, n_samples=int(round(len(X)*n_sample_multiplier)))
         else:
             bandwidth = estimate_bandwidth(X, quantile=quantile)
-
+        #TODO: define it at main
+        bandwidth = 0.02
         model = MeanShift(bandwidth=bandwidth, bin_seeding=False, cluster_all=False, n_jobs=-1)
         model.fit(X)
         labels = model.labels_
@@ -923,7 +924,7 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
                 ax.scatter(*[centre.__getattribute__("_"+str(x+1)) for x in range(len(pca_dimensions))], color="black", marker=".")
                 if labels_centres:
                     print3("annotating", centre[0], end="\r")#, centre[1:])
-                    ax.text( *[c+.1 for c in centre[1:]], centre[0], color="C{}".format(centre[0]))
+                    ax.text( *[c+.001 for c in centre[1:]], centre[0], color="C{}".format(centre[0]))
                     pass
 
         centres = []
@@ -964,6 +965,7 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
 
     fig.tight_layout()
     ax.set_aspect('equal')
+    ax.view_init(elev=45, azim=45)
     print2("Saving at {}".format(fig_path))
     print(fig_path)
     fig.savefig(fig_path, dpi=300)
@@ -992,7 +994,7 @@ def quick_cluster(coords, n_clusters=3, method ="MeanShift",bandwidth = None):
 
 
 
-def remove_redundancy(in_path, threshold=3):
+def remove_redundancy(in_path, threshold=0.001):
     pca_df = pd.read_csv(in_path)
     pca_df.sort_values(by=["variance_0", "variance_1", "variance_2"], inplace=True)
     print(pca_df)

@@ -118,6 +118,7 @@ class ProgressBar:
         self.style = style
 
     def add(self, info = "", increment=1, show_time = False):
+        info = str(info)
         self.current += increment
         if self.current == self.total:
             self.finish()

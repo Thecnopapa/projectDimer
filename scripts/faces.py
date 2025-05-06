@@ -257,7 +257,8 @@ def plot_pcas(pca_list, title="", dimensions = [0,1,2], mode="variance", comps=[
             #print(pca.explained_variance_)
             #print(pca.explained_variance_[[*dimensions]])
             #print([pca.explained_variance_[[*dimensions]]])
-            coords = pca.explained_variance_[[*dimensions]]
+            #coords = pca.explained_variance_[[*dimensions]]
+            coords = pca.explained_variance_ratio_[[*dimensions]]
             #print(coords)
             ax.scatter(*coords)
             points.append(coords)
@@ -344,7 +345,7 @@ def plot_points(df, title = ""):
 def get_pca_df(in_path, subfolder, only_pcas = False, force = False, splitted=True):
     print1("Generating PCA df")
     pcas = []
-    pca_df = pd.DataFrame(columns = ["id", "P0", "P1", "P2", "variance_0", "variance_1", "variance_2"])
+    pca_df = pd.DataFrame(columns = ["id", "P0", "P1", "P2", "variance_0", "variance_1", "variance_2", "singular_0", "singular_1", "singular_2"])
     root["pcas"] = "dataframes/clustering/pcas"
     contacts_df = pd.read_csv(in_path)
     name = os.path.basename(in_path).split(".")[0]
@@ -369,7 +370,8 @@ def get_pca_df(in_path, subfolder, only_pcas = False, force = False, splitted=Tr
         dimers = load_single_pdb(d, pickle_folder=local.dimers, quiet=True)
         for dimer in dimers:
             pcas.append(dimer.pca)
-            pca_df.loc[dimer.id] = [dimer.id, *dimer.pca.components_, *dimer.pca.explained_variance_]
+            #pca_df.loc[dimer.id] = [dimer.id, *dimer.pca.components_, *dimer.pca.explained_variance_]
+            pca_df.loc[dimer.id] = [dimer.id, *dimer.pca.components_, *dimer.pca.explained_variance_ratio_, *dimer.pca.singular_values_]
             progress.add(info=dimer.id)
 
     if only_pcas:

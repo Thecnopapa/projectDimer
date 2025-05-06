@@ -163,25 +163,25 @@ def pymol_align_chains(chains_to_align):
 
 
 
-def pymol_align_chains_best(chains_to_align, double_best = False):
+def pymol_align_chains_best(chains_to_align, double_best = False, cluster = None):
     #all_obj = pymol.cmd.get_names(type='objects')
     #print1(all_obj)
     obj1, chain1a, chain1b = chains_to_align[0]
     sele1a = "{} and c. {}".format(obj1, chain1a)
     sele1b = "{} and c. {}".format(obj1, chain1b)
 
-
+    progress = ProgressBar(len(chains_to_align), silent=True)
     for obj2, chain2a, chain2b in chains_to_align[1:]:
         sele2a = "{} and c. {}".format(obj2, chain2a)
         sele2b = "{} and c. {}".format(obj2, chain2b)
         if obj2 != obj1:
-            ali2a = pymol_align__obj(sele1a, sele2a, orient=False)
+            ali2a = pymol_align__obj(sele1a, sele2a, orient=False, quiet=True)
             ali2a = pymol_align__obj(obj1, obj2, orient=False, quiet=True)
-            print4(ali2a)
+            #print4(ali2a)
             #input()
-            ali2b = pymol_align__obj(sele1a, sele2b, orient=False)
-            ali2b = pymol_align__obj(obj1, obj2, orient=False, quiet=True)
-            print4(ali2b)
+            ali2b = pymol_align__obj(sele1a, sele2b, orient=False, quiet=True)
+            #ali2b = pymol_align__obj(obj1, obj2, orient=False, quiet=True)
+            #print4(ali2b)
             #input()
             if ali2a[0] > ali2b[0]:
                 ali1a = pymol_align__obj(sele1a, sele2a, orient=False, quiet=True)
@@ -190,13 +190,13 @@ def pymol_align_chains_best(chains_to_align, double_best = False):
                 ali1a = ali2b, sele2b
 
             if double_best:
-                ali2a = pymol_align__obj(sele1b, sele2a, orient=False)
+                ali2a = pymol_align__obj(sele1b, sele2a, orient=False, quiet=True)
                 ali2a = pymol_align__obj(obj1, obj2, orient=False, quiet=True)
-                print4(ali2a)
+                #print4(ali2a)
                 #input()
-                ali2b = pymol_align__obj(sele1b, sele2b, orient=False)
+                ali2b = pymol_align__obj(sele1b, sele2b, orient=False, quiet=True)
                 ali2b = pymol_align__obj(obj1, obj2, orient=False, quiet=True)
-                print4(ali2b)
+                #print4(ali2b)
                 #input()
                 if ali2a[0] < ali2b[0]:
                     ali1b = pymol_align__obj(sele1b, sele2a, orient=False, quiet=True)
@@ -208,6 +208,8 @@ def pymol_align_chains_best(chains_to_align, double_best = False):
                     ali = pymol_align__obj(sele1a, ali1a[1], orient=False,quiet=True)
 
             ali = pymol_align__obj(obj1, obj2, orient=False,quiet=True)
+        progress.add(info=cluster)
+
 
 
 

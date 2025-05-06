@@ -45,6 +45,7 @@ def main(PROCESS_ALL = False,
          CLUSTERING_METHOD = "KMeans",
          N_SAMPLE_MULTIPLIER = 0.5,
          QUANTILE = 0.1,
+         BANDWIDTH = 0.1
          ):
 
 
@@ -277,10 +278,11 @@ if __name__ == "__main__":
          CLUSTERING_METHOD = "MeanShift",
          QUANTILE= 0.1,
          N_SAMPLE_MULTIPLIER = None,
+         BANDWIDTH = 0.1,
 
          N_CLUSTERS = 4,
          CLUSTER_BY_PCA = True,
-         DIMENSIONS_PCA = [0,0],
+         DIMENSIONS_PCA = [0,1,2],
          MINIMUM_SCORE = 0,
 
 

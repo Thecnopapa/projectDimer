@@ -433,6 +433,9 @@ if __name__ == "__main__":
             #print(pd.read_csv(in_path))
             plot_cc(reference=reference, subset=c, subfolder=face, in_path=in_path, labels=True, pca=pca)
 
+
+
+
         if "pca" in sys.argv:
             print1("Plotting cluster PCAs")
             from faces import plot_pcas
@@ -488,16 +491,41 @@ if __name__ == "__main__":
                     subset = subset
 
 
+        if "gesamt" in sys.argv:
+            if c == "all":
+                clusters_to_display = sorted(list(subset[cluster_colname].unique()))
+            else:
+                clusters_to_display = [c]
+            sprint("Displaying clusters:",cluster_colname, clusters_to_display)
+            for n in clusters_to_display:
+                chains_to_align = []
+                first_to_align = None
+                print("CLUSTER", n)
+                print(subset)
+                if c == "all":
+                    pymol_subset = subset[subset[cluster_colname] == n].sort_values(by="id", ascending=True)
+                else:
+                    pymol_subset = subset
+                print(pymol_subset)
+                for row in pymol_subset.itertuples():
+                    dimers = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)
+                    for dimer in dimers:
+                        chains_to_align.append(dimer.replaced_path)
+
+                from superpose import superpose_multiple
+                data = superpose_multiple(chains_to_align)
+                print(data)
+                quit()
 
 
 
-        if "pymol" in sys.argv:
+        elif "pymol" in sys.argv:
             from pyMol import  *
             pymol_start(show=False)
             pymol_set_state(2)
 
             if c == "all":
-                clusters_to_display = list(subset[cluster_colname].unique())
+                clusters_to_display = sorted(list(subset[cluster_colname].unique()))
             else:
                 clusters_to_display = [c]
             sprint("Displaying clusters:",cluster_colname, clusters_to_display)
@@ -545,7 +573,8 @@ if __name__ == "__main__":
                 print(chains_to_align)
                 # pymol_align_chains(chains_to_align)
                 pymol_align_all([obj[0] for obj in chains_to_align])
-                pymol_align_chains_best(chains_to_align, double_best=True)
+
+                pymol_align_chains_best(chains_to_align, double_best=True, cluster=n)
 
                 sele = "({})".format(" or ".join(chain[0] for chain in chains_to_align))
                 pymol_move(sele=sele, distance=[150 * n, 0, 0])
