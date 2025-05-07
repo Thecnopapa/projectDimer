@@ -402,11 +402,13 @@ if __name__ == "__main__":
             try:
                 if c == "all":
                     break
-                c = int(c)
+                c = [int(n) for n in c.split("/")]
+                print(c)
                 break
             except: pass
         if c != "all":
-            subset = clustered_df[clustered_df[cluster_colname] == int(c)]
+            print(clustered_df.query(" | ".join(["{} == {}".format(cluster_colname, n) for n in c])))
+            subset = clustered_df.query(" | ".join(["{} == {}".format(cluster_colname, n) for n in c]))
         else:
             subset = clustered_df
         #subset.sort_values(by = "similarity", inplace = True)
@@ -482,12 +484,13 @@ if __name__ == "__main__":
                     try:
                         if c == "all":
                             break
-                        c = int(c)
+                        c = [int(n) for n in c.split("/")]
                         break
                     except:
                         pass
                 if c != "all":
-                    subset = subset[subset[cluster_colname] == int(c)]
+                    print(clustered_df.query(" | ".join(["{} == {}".format(cluster_colname, n) for n in c])))
+                    subset = clustered_df.query(" | ".join(["{} == {}".format(cluster_colname, n) for n in c]))
                 else:
                     subset = subset
 
@@ -503,10 +506,7 @@ if __name__ == "__main__":
                 first_to_align = None
                 print("CLUSTER", n)
                 print(subset)
-                if c == "all":
-                    pymol_subset = subset[subset[cluster_colname] == n].sort_values(by="id", ascending=True)
-                else:
-                    pymol_subset = subset
+                pymol_subset = subset[subset[cluster_colname] == n].sort_values(by="id", ascending=True)
                 print(pymol_subset)
                 for row in pymol_subset.itertuples():
                     dimers = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)
@@ -522,31 +522,26 @@ if __name__ == "__main__":
 
         elif "pymol" in sys.argv:
             from pyMol import  *
-            pymol_start(show=False)
+            pymol_start(show=True)
             pymol_set_state(2)
-
+            cluster_paths = []
             if c == "all":
                 clusters_to_display = sorted(list(subset[cluster_colname].unique()))
             else:
-                clusters_to_display = [c]
+                clusters_to_display = [*c]
             sprint("Displaying clusters:",cluster_colname, clusters_to_display)
             for n in clusters_to_display:
                 chains_to_align = []
                 first_to_align = None
                 print("CLUSTER", n)
                 print(subset)
-                if c == "all":
-                    pymol_subset = subset[subset[cluster_colname] == n].sort_values(by="id", ascending=True)
-                else:
-                    pymol_subset = subset
+                pymol_subset = subset[subset[cluster_colname] == n].sort_values(by="id", ascending=True)
+
                 print(pymol_subset)
                 for row in pymol_subset.itertuples():
                     dimers = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)
                     for dimer in dimers:
-                        # TODO: delete after full run
-                        # dimer.get_contacts(force=True)
-                        # dimer.get_faces()
-                        #############################
+
                         pymol_load_path(dimer.merged_path, dimer.id)
                         '''if first_to_align is None:
                             first_to_align = dimer.face1
@@ -582,17 +577,43 @@ if __name__ == "__main__":
                 pymol_group([chain[0] for chain in chains_to_align], name=str(n))
 
                 print(pymol_subset.to_string())
+                cluster_path = pymol_save_cluster(chains_to_align, name="CLUSTER_{}.pdb".format(n) )
+                cluster_paths.append([cluster_path, chains_to_align])
 
 
             pymol_set_state(2)
             pymol_orient()
             print(subset.to_string())
             session_path = pymol_save_temp_session()
-            pymol_close()
             print("Session temporarily saved at:")
             print(session_path)
-            open_session_terminal(session_path)
+            #pymol_close()
 
+
+            if "post-pca" in sys.argv:
+                from Bio.PDB import PDBParser
+                from faces import *
+                print(cluster_paths)
+                for data in cluster_paths:
+                    print(data)
+                    cluster_objects = [chain_info[0] for chain_info in data[1]]
+                    path = data[0]
+                    cluster_structure = PDBParser(QUIET=True).get_structure(os.path.basename(path.split(".")[0]), path)
+                    #print(cluster_structure.__dict__)
+                    [print(model) for model in cluster_structure.get_models()]
+                    models = [model for model in cluster_structure.get_models() if model.id % 2 == 0]
+                    [print(model, name) for model, name in zip(models, cluster_objects)]
+                    for model, name in zip(models, cluster_objects):
+                        print(model, list(model.get_chains()))
+                        com = find_com(model.get_atoms())
+                        pca = get_pca(model, com=com)
+                        print(pca.components_)
+                        for n, (component, variance) in enumerate(zip(pca.components_, pca.explained_variance_)):
+                            print(com, component, variance)
+                            pymol_draw_line(com, tuple([c+(co*variance) for c, co in zip(com, component)]), name="{}_component_{}".format(name, n), quiet=False)
+
+            else:
+                open_session_terminal(session_path)
 
 
 

@@ -358,7 +358,9 @@ def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centre
             return fig_path
         cc_out = pd.read_csv(in_path, index_col=0)
         if subset is not None:
-            cc_out = cc_out[cc_out["cluster"] == subset]
+            cc_out = cc_out.query(" | ".join(["{} == {}".format("cluster", n) for n in subset]))
+
+            #cc_out = cc_out[cc_out["cluster"] == subset]
             cc_out.reset_index(drop=True, inplace=True)
 
     #print(cc_out)
@@ -751,7 +753,7 @@ def split_by_faces(reference, force= False, by_com = True):
     #print(pd.DataFrame(reference.faces_dfs))
 
 
-def clusterize_pcas(subfolder, in_path,method="KMeans", quantile=0.1, n_sample_multiplier=0.5, force = False, n_clusters = None , dimensions = [0,1,2], splitted = True):
+def clusterize_pcas(subfolder, in_path,method="KMeans", quantile=0.1, n_sample_multiplier=0.5, force = False, n_clusters = None , dimensions = [0,1,2], splitted = True, bandwidth=0.1):
     print1("Clusterizing PCAs")
     if n_clusters is None:
         if splitted:
@@ -795,12 +797,13 @@ def clusterize_pcas(subfolder, in_path,method="KMeans", quantile=0.1, n_sample_m
         X = pca_df.loc[:, columns].values
         print(X)
         from sklearn.cluster import MeanShift, estimate_bandwidth
-        if n_sample_multiplier is not None:
-            bandwidth = estimate_bandwidth(X, quantile=quantile, n_samples=int(round(len(X)*n_sample_multiplier)))
-        else:
-            bandwidth = estimate_bandwidth(X, quantile=quantile)
+        if bandwidth is None:
+            if n_sample_multiplier is not None:
+                bandwidth = estimate_bandwidth(X, quantile=quantile, n_samples=int(round(len(X)*n_sample_multiplier)))
+            else:
+                bandwidth = estimate_bandwidth(X, quantile=quantile)
         #TODO: define it at main
-        bandwidth = 0.02
+        bandwidth = bandwidth
         model = MeanShift(bandwidth=bandwidth, bin_seeding=False, cluster_all=False, n_jobs=-1)
         model.fit(X)
         labels = model.labels_
@@ -965,7 +968,10 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
 
     fig.tight_layout()
     ax.set_aspect('equal')
-    ax.view_init(elev=45, azim=45)
+    try:
+        ax.view_init(elev=45, azim=45)
+    except:
+        pass
     print2("Saving at {}".format(fig_path))
     print(fig_path)
     fig.savefig(fig_path, dpi=300)
@@ -1030,14 +1036,15 @@ def remove_redundancy(in_path, threshold=0.001):
 
 
 def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, minimum_score=0, pca = True,
-                    pca_dimensions = [0,1,2], splitted=True, rem_red = True, method = "KMeans", quantile=0.1, n_sample_multiplier = 0.5,):
+                    pca_dimensions = [0,1,2], splitted=True, rem_red = True, method = "KMeans", quantile=0.1, n_sample_multiplier = 0.5,
+                    bandwidth=0.1):
 
 
 
     if FORCE_ALL:
         FORCE_SM = True
         FORCE_CC = True
-        FORCE_CLUSTER = True
+        FORCE_CLUSTER = False
         FORCE_PLOT = True
     else:
         FORCE_SM = False
@@ -1110,7 +1117,7 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
                 pca_path = remove_redundancy(pca_path)
             #plot_pcas(pcas, title="GR: {}  (N = {})".format(file.split(".")[0], len(pcas)))
             clustered_path = clusterize_pcas(method=method, subfolder=subfolder_name, in_path = pca_path, force=FORCE_CLUSTER,
-                                             dimensions=pca_dimensions,splitted=splitted, quantile =quantile, n_sample_multiplier=n_sample_multiplier)
+                                             dimensions=pca_dimensions,splitted=splitted, quantile =quantile, n_sample_multiplier=n_sample_multiplier, bandwidth=bandwidth)
             plot_path = plot_clustered_pcas(reference, labels=False, labels_centres=True,  force = FORCE_PLOT,
                                 dimensions=DIMENSIONS, subfolder=subfolder_name, in_path=clustered_path, pca = True,
                                             pca_dimensions=pca_dimensions, splitted=splitted)

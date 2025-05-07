@@ -342,10 +342,22 @@ def plot_points(df, title = ""):
 
 
 
+def get_component_angles(components):
+    angles = []
+    for n, component in enumerate(components):
+        i = n+1
+        if i == len(components):
+            i = 0
+        a = angle_between_vectors(component, components[i])
+        angles.append(a)
+    return angles
+
+
+
 def get_pca_df(in_path, subfolder, only_pcas = False, force = False, splitted=True):
     print1("Generating PCA df")
     pcas = []
-    pca_df = pd.DataFrame(columns = ["id", "P0", "P1", "P2", "variance_0", "variance_1", "variance_2", "singular_0", "singular_1", "singular_2"])
+    pca_df = pd.DataFrame(columns = ["id", "P0", "P1", "P2", "variance_0", "variance_1", "variance_2", "singular_0", "singular_1", "singular_2", "a01", "a12", "a20"])
     root["pcas"] = "dataframes/clustering/pcas"
     contacts_df = pd.read_csv(in_path)
     name = os.path.basename(in_path).split(".")[0]
@@ -371,7 +383,8 @@ def get_pca_df(in_path, subfolder, only_pcas = False, force = False, splitted=Tr
         for dimer in dimers:
             pcas.append(dimer.pca)
             #pca_df.loc[dimer.id] = [dimer.id, *dimer.pca.components_, *dimer.pca.explained_variance_]
-            pca_df.loc[dimer.id] = [dimer.id, *dimer.pca.components_, *dimer.pca.explained_variance_ratio_, *dimer.pca.singular_values_]
+            angles = get_component_angles(dimer.pca.components_)
+            pca_df.loc[dimer.id] = [dimer.id, *dimer.pca.components_, *dimer.pca.explained_variance_ratio_, *dimer.pca.singular_values_, *angles]
             progress.add(info=dimer.id)
 
     if only_pcas:

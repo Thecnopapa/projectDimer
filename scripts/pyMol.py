@@ -340,4 +340,16 @@ def open_session_terminal(path):
 
 
 
-
+def pymol_save_cluster(obj_list, name="CLUSTER_X.pdb", folder=None, state=0):
+    if folder is None:
+        folder = local.temp
+    objects = []
+    for obj in obj_list:
+        if type(obj) is list or type(obj) is tuple:
+            obj = obj[0]
+        objects.append(obj)
+        print(obj)
+    print(objects)
+    path = os.path.join(folder, name)
+    pymol.cmd.multisave(path, pattern=" or ".join(objects), state=state)
+    return path

@@ -198,7 +198,7 @@ def main(PROCESS_ALL = False,
             cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, minimum_score=MINIMUM_SCORE,
                             n_clusters=N_CLUSTERS, pca=CLUSTER_BY_PCA, pca_dimensions = DIMENSIONS_PCA,
                             splitted=SPLIT_FACES, rem_red=REMOVE_REDUNDANCY, method = CLUSTERING_METHOD,
-                            quantile=QUANTILE, n_sample_multiplier=N_SAMPLE_MULTIPLIER)
+                            quantile=QUANTILE, n_sample_multiplier=N_SAMPLE_MULTIPLIER, bandwidth = BANDWIDTH)
             reference.pickle()
         #save_dfs(general=False, clustering=True)
 
@@ -278,7 +278,7 @@ if __name__ == "__main__":
          CLUSTERING_METHOD = "MeanShift",
          QUANTILE= 0.1,
          N_SAMPLE_MULTIPLIER = None,
-         BANDWIDTH = 0.1,
+         BANDWIDTH = 0.05,
 
          N_CLUSTERS = 4,
          CLUSTER_BY_PCA = True,
