@@ -24,6 +24,7 @@ class BioObject:
         local["pickles"] = "pickles"
         pickle_folder = os.path.join(local.pickles, self.pickle_folder)
         os.makedirs(pickle_folder, exist_ok=True)
+        local[self.pickle_folder] = self.pickle_folder
         file_name = "{}{}".format(self.id, self.pickle_extension)
         self.pickle_path = os.path.join(pickle_folder, file_name)
         with open(self.pickle_path, 'wb') as f:

@@ -154,9 +154,10 @@ def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces 
                             pymol_load_path(item, os.path.basename(item))
                         pymol_format("surface", os.path.basename(item), colour= "gray")
                         if "is_reference" in obj.__dict__.keys() or paint_all_faces:
-                            if obj.best_fit == "GR":
-                                from pyMol import pymol_paint_all_faces
-                                pymol_paint_all_faces(obj)
+                            if "best_fit" in obj.__dict__.keys():
+                                if obj.best_fit == "GR":
+                                    from pyMol import pymol_paint_all_faces
+                                    pymol_paint_all_faces(obj)
 
                         elif "faces" in args and not paint_all_faces:
                             #print("Painting faces")
