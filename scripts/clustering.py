@@ -1044,7 +1044,7 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
     if FORCE_ALL:
         FORCE_SM = True
         FORCE_CC = True
-        FORCE_CLUSTER = False
+        FORCE_CLUSTER = True
         FORCE_PLOT = True
     else:
         FORCE_SM = False

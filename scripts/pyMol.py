@@ -255,9 +255,21 @@ def pymol_draw_line(coord1, coord2, name = "d", state = -1, quiet= True):
         print("(PyMol) ({}) Line between:".format(name), coord1, "and", coord2, end="\r")
     pymol.cmd.pseudoatom("tmp1", pos=coord1, state=state)
     pymol.cmd.pseudoatom("tmp2", pos=coord2, state=state)
-    pymol.cmd.distance(name, "tmp1","tmp2", state=state)
-    pymol.cmd.delete("tmp1")
-    pymol.cmd.delete("tmp2")
+    n=0
+    print("Waiting for pymol... {} currently: {}".format(n, pymol_get_all_objects()), end="\r")
+
+    while "tmp1" in pymol_get_all_objects():
+        print("Waiting for pymol... {} currently: {}".format(n, pymol_get_all_objects()), end="\r")
+        n+=1
+        try:
+            pymol.cmd.distance(name, "(tmp1)","tmp2", state=state)
+            pymol.cmd.delete("tmp1")
+            pymol.cmd.delete("tmp2")
+        except:
+            pymol.cmd.delete("tmp1")
+            pymol.cmd.delete("tmp2")
+            pymol.cmd.pseudoatom("tmp1", pos=coord1, state=state)
+            pymol.cmd.pseudoatom("tmp2", pos=coord2, state=state)
 
 def pymol_paint_contacts(obj, contact_list, colour ="yellow"):
     print("(PyMol) Colouring contacts in {}".format(obj))
@@ -327,9 +339,9 @@ def pymol_paint_all_faces(obj):
 
 
 
-def pymol_save_temp_session(path=None):
+def pymol_save_temp_session(path=None, name="temp_session.pse"):
     if path is None:
-        path = os.path.join(local.temp, "temp_session.pse")
+        path = os.path.join(local.temp, name)
     pymol.cmd.save(path)
     return path
 

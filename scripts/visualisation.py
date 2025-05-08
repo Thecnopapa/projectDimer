@@ -2,6 +2,7 @@ import os
 import sys
 
 from Globals import root, local, vars
+from maths import angle_between_vectors
 
 from utilities import *
 import pandas as pd
@@ -522,7 +523,7 @@ if __name__ == "__main__":
 
         elif "pymol" in sys.argv:
             from pyMol import  *
-            pymol_start(show=True)
+            pymol_start(show=False)
             pymol_set_state(2)
             cluster_paths = []
             if c == "all":
@@ -584,36 +585,109 @@ if __name__ == "__main__":
             pymol_set_state(2)
             pymol_orient()
             print(subset.to_string())
-            session_path = pymol_save_temp_session()
-            print("Session temporarily saved at:")
-            print(session_path)
-            #pymol_close()
+
+
 
 
             if "post-pca" in sys.argv:
                 from Bio.PDB import PDBParser
                 from faces import *
                 print(cluster_paths)
+
+
+
                 for data in cluster_paths:
                     print(data)
+                    cluster_data = {"names": [],
+                                    "models": [],
+                                    "pcas": [],
+                                    "path": "",
+                                    "corners": [],
+                                    "coms": []}
                     cluster_objects = [chain_info[0] for chain_info in data[1]]
+                    cluster_data["names"] = cluster_objects
                     path = data[0]
+                    cluster_data["path"] = path
                     cluster_structure = PDBParser(QUIET=True).get_structure(os.path.basename(path.split(".")[0]), path)
                     #print(cluster_structure.__dict__)
                     [print(model) for model in cluster_structure.get_models()]
                     models = [model for model in cluster_structure.get_models() if model.id % 2 == 0]
                     [print(model, name) for model, name in zip(models, cluster_objects)]
+                    spheres = []
                     for model, name in zip(models, cluster_objects):
                         print(model, list(model.get_chains()))
                         com = find_com(model.get_atoms())
                         pca = get_pca(model, com=com)
-                        print(pca.components_)
-                        for n, (component, variance) in enumerate(zip(pca.components_, pca.explained_variance_)):
+                        cluster_data["models"].append(model)
+                        cluster_data["pcas"].append(pca)
+                        cluster_data["coms"].append(com)
+
+                        components = pca.components_
+                        variances = pca.explained_variance_
+                        if pca.inverse:
+                            components[1], components[2] = components[2].copy(), components[1].copy()
+                            variances[1], variances[2] = variances[2].copy(), variances[1].copy()
+                        sphere_coords = com
+                        for n, (component, variance) in enumerate(zip(components, variances)):
+                            print("sphere-coords:", sphere_coords)
                             print(com, component, variance)
                             pymol_draw_line(com, tuple([c+(co*variance) for c, co in zip(com, component)]), name="{}_component_{}".format(name, n), quiet=False)
+                            sphere_coords = add(sphere_coords, tuple([co*variance for co in component]))
+                        print("sphere-coords:",sphere_coords)
+                        spheres.append(sphere_coords)
+                        cluster_data["corners"].append(sphere_coords)
+                        pymol_sphere(sphere_coords)
+                    pymol_group("component", name="components")
+                    print(cluster_data)
+                    df = pd.DataFrame(cluster_data)
+                    print(df)
+
+                    #df["id"] = cluster_data["names"]
+                    #df["com"] = cluster_data["coms"]
+                    if "sm" in sys.argv:
+                        sm = pd.DataFrame(columns=["id1", "id2", "angle"])
+                        done= []
+                        for row1 in df.itertuples():
+                            for row2 in df.itertuples():
+                                if row2.names in done or row1.names == row2.names:
+                                    continue
+                                angle = angle_between_vectors(vector(row1.coms, row1.corners), vector(row2.coms, row2.corners))
+                                print(angle)
+                                sm.loc[len(sm)] = [row1.names, row2.names, angle]
+                            done.append(row1.names)
+                        print(sm)
+                        quit()
+
+                        pass
+
+
+                    else:
+                        #sele = "({})".format(" or ".join(chain[0] for chain in cluster_data["names"]))
+                        #pymol_move(sele=sele, distance=[150 * n, 0, 0])
+                        #points=[add_multiple(pca.components_[1,2] for pca in cluster_data["pcas"]]
+                        #print(points)
+
+                        print(df)
+                        df["cluster"] = quick_cluster(df, bandwidth=10)
+
+                        print(df)
+
+
+                    for row in df.itertuples():
+                        pymol_group(row.id, path.split(".")[0][-1]+"_sc_"+str(row.cluster))
+
+                    session_path = pymol_save_temp_session(name=os.path.basename(path).split(".")[0]+".pse")
+                    open_session_terminal(session_path)
+                    plot_points(df)
+
+
 
             else:
+                session_path = pymol_save_temp_session()
                 open_session_terminal(session_path)
+                print("Session temporarily saved at:")
+                print(session_path)
+                pymol_close()
 
 
 

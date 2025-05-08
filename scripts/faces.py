@@ -126,7 +126,7 @@ def get_dimer_faces(dimer):
 
 
 
-def get_pca(structure, n_components = 3, com = None, closer_to = None, solver = "covariance_eigh"):
+def get_pca(structure, n_components = 3, com = None, closer_to = None, solver = "covariance_eigh", clockwise =True):
     print3("Getting PCA")
     from sklearn.decomposition import PCA
     pca = PCA(n_components=n_components, random_state=6, svd_solver=solver)
@@ -153,13 +153,24 @@ def get_pca(structure, n_components = 3, com = None, closer_to = None, solver = 
                 print4("Reverse component", n, pca.components_[n], "-->", end=" ")
                 pca.components_[n] = component * -1
                 print(pca.components_[n])
+
+
     else:
+        pca.inverse = False
+        if clockwise:
+            dh1 = dihedral_angle(pca.components_[1], com, pca.components_[0], add(pca.components_[2], com))
+            dh2 = dihedral_angle(pca.components_[2], com, pca.components_[0], add(pca.components_[1], com))
+            print(dh1, dh2)
+            if dh1 < dh2:
+                pca.inverse = True
+
+
         for n, component in enumerate(pca.components_):
-            print4("Component {}: {} / Value: {} --> Vector: {}".format(n,
+            print4("Component {}: {} / Value: {} --> Vector: {} / Inverse: {}".format(n,
                                                                          pca.components_[n],
                                                                          pca.explained_variance_[n],
-                                                                         pca.components_[n] *
-                                                                         pca.explained_variance_[n]))
+                                                                         pca.components_[n] * pca.explained_variance_[n],
+                                                                         pca.inverse))
 
 
 

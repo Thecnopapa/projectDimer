@@ -6,13 +6,14 @@ import numpy as np
 import math
 
 
-def new_dihedral(p):
+def dihedral_angle(p0, p1, p2, p3):
     """Praxeolitic formula
     1 sqrt, 1 cross product"""
-    p0 = p[0]
-    p1 = p[1]
-    p2 = p[2]
-    p3 = p[3]
+
+    #p0 = p[0]
+    #p1 = p[1]
+    #p2 = p[2]
+    #p3 = p[3]
 
     b0 = -1.0*(p1 - p0)
     b1 = p2 - p1
@@ -142,8 +143,15 @@ def scale(v, sc):
     x, y, z = v
     return (x * sc, y * sc, z * sc)
 
+def add_multiple(vectors):
+    total = [0] * len(vectors[0])
+    for v in vectors:
+        total = add(total, v)
+    return total
+
 
 def add(v, w):
+    #TODO: make this take any dimensions
     x, y, z = v
     X, Y, Z = w
     return (x + X, y + Y, z + Z)
