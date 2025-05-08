@@ -76,7 +76,7 @@ def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None,
         if not quiet:
             print2("Loading PDB pickle from:", pickle_folder)
         for file in os.listdir(pickle_folder):
-            if (identifier == "ALL" or identifier in file.upper()) and "lock" not in file:
+            if (identifier == "ALL" or identifier in file.upper()) and "lock" not in file and not any([bl in file for bl in vars.blacklist]):
                 p = unpickle(os.path.join(pickle_folder, file))
                 p.restore_dfs()
                 if object_class == Reference:
@@ -149,7 +149,8 @@ def download_pdbs(list_path:str=None , save_folder=None, pdb_list:list = None, t
     open(pdb_links, "w")
     with open(pdb_links, "a") as f:
         for pdb in pdb_list:
-            f.write("https://files.rcsb.org/download/{}.pdb\n".format(pdb))
+            if not any([bl in pdb for bl in vars.blacklist]):
+                f.write("https://files.rcsb.org/download/{}.pdb\n".format(pdb))
     print1("Links saved at {}".format(pdb_links))
 
     if not terminal:

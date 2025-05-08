@@ -372,6 +372,7 @@ def get_pca_df(in_path, subfolder, only_pcas = False, force = False, splitted=Tr
     root["pcas"] = "dataframes/clustering/pcas"
     contacts_df = pd.read_csv(in_path)
     name = os.path.basename(in_path).split(".")[0]
+
     if splitted:
         subfolder = subfolder.format("pcas")
         os.makedirs(os.path.join(root.pcas, subfolder), exist_ok=True)
@@ -389,14 +390,19 @@ def get_pca_df(in_path, subfolder, only_pcas = False, force = False, splitted=Tr
 
     from imports import load_single_pdb
     progress = ProgressBar(len(contacts_df.columns))
+    print(contacts_df.columns)
     for d in contacts_df.columns:
+        print1(d)
         dimers = load_single_pdb(d, pickle_folder=local.dimers, quiet=True)
+        print2(dimers)
         for dimer in dimers:
+            print(dimer)
             pcas.append(dimer.pca)
             #pca_df.loc[dimer.id] = [dimer.id, *dimer.pca.components_, *dimer.pca.explained_variance_]
             angles = get_component_angles(dimer.pca.components_)
             pca_df.loc[dimer.id] = [dimer.id, *dimer.pca.components_, *dimer.pca.explained_variance_ratio_, *dimer.pca.singular_values_, *angles]
             progress.add(info=dimer.id)
+    print(pca_df)
 
     if only_pcas:
         return pcas

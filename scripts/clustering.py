@@ -629,15 +629,17 @@ def compare_contacts(reference, force = False):
     return vars.clustering["classified"][reference.name]
 
 def add_info_to_classified(reference):
-    classified = pd.read_csv(os.path.join(root.classified, "{}.csv".format(reference.name)), index_col=0)
+    #classified = pd.read_csv(os.path.join(root.classified, "{}.csv".format(reference.name)), index_col=0)
+    classified = reference.classified_df
+    print(classified)
     faces = pd.read_csv(os.path.join(root.faces, "{}.csv".format(reference.name)), index_col=0)
     try:
         assert len(classified) == len(faces)
     except AssertionError:
-        print("Classified and faces dataframes do not have the same length:")
-        print(len(classified), len(faces))
         print(classified),
         print(faces)
+        print("Classified and faces dataframes do not have the same length:")
+        print(len(classified), len(faces))
         quit()
     if "ID" in classified.columns:
         classified.sort_values("ID", ascending=True, inplace=True)
@@ -647,6 +649,7 @@ def add_info_to_classified(reference):
     faces.sort_values("ID", ascending=True, inplace=True)
     print(classified)
     print(faces)
+
     print(list(classified.columns))
     original_cols = list(classified.columns)
     print(original_cols)
@@ -660,8 +663,10 @@ def add_info_to_classified(reference):
             #print(original_cols)
 
     print(original_cols)
-    vars.clustering["classified"][reference.name] = pd.concat([classified[original_cols], faces[["face1", "face2", "contact_face1", "contact_face2"]]], axis=1)
-    reference.classified_df = vars.clustering["classified"][reference.name]
+    print([classified[original_cols], faces[["face1", "face2", "contact_face1", "contact_face2"]]])
+
+    vars.clustering["classified"][reference.name] = classified[original_cols].join(faces[["face1", "face2", "contact_face1", "contact_face2"]])
+    #reference.classified_df = vars.clustering["classified"][reference.name]
     reference.faces_df = vars.clustering["faces"][reference.name]
     vars.clustering["classified"][reference.name].to_csv(os.path.join(root.classified, reference.name + ".csv"))
 

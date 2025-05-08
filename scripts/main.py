@@ -62,6 +62,7 @@ def main(PROCESS_ALL = False,
     from dataframes import save_dfs, create_dfs, create_clustering_dfs
     from imports import pickle, export, download_pdbs, load_references, load_single_pdb
 
+    sprint("Blacklist:", vars.blacklist)
 
     # Download large dataset
     sprint("Downloading large dataset")
@@ -185,8 +186,9 @@ def main(PROCESS_ALL = False,
                 continue
             if SPLIT_FACES or SPLIT_FACES_ANYWAY:
                 split_by_faces(reference, force=FORCE_SPLIT, by_com= FACES_BY_COM)
-            if reference.name == "GR" and (COMPARE or PROCESS_ALL or FORCE_COMPARE):
-                reference.classified_df = compare_contacts(reference, force = FORCE_COMPARE or PROCESS_ALL)
+            if reference.name == "GR" and (COMPARE or PROCESS_ALL):
+                if not "classified_df" in reference.__dict__ or (FORCE_COMPARE or PROCESS_ALL):
+                    reference.classified_df = compare_contacts(reference, force = FORCE_COMPARE or PROCESS_ALL)
                 from clustering import add_info_to_classified
                 #save_dfs(general=False, clustering=True)
                 add_info_to_classified(reference)
@@ -251,7 +253,7 @@ if __name__ == "__main__":
 
          # Dimer processing, includes contact calculation and face identification, generates contact dataframes
          SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL)
-         FORCE_CONTACTS = True,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
+         FORCE_CONTACTS = False,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
          CONTACT_DISTANCE_CLUSTERING = 12,
          FACES_BY_COM = True,
 

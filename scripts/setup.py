@@ -1,5 +1,8 @@
 import os, sys, platform
 
+from scipy.ndimage import black_tophat
+
+
 def setup(local_path=None, deepness_of_script =2):
 
     import Globals
@@ -39,6 +42,8 @@ else:
 from Globals import root, local, vars
 from utilities import *
 local["molecules"] = "pickles/molecules"
+local["monomers"] = "pickles/monomers"
+local["dimers"] = "pickles/dimers"
 local["temp"] = "temp"
 vars["pymol_started"] = False
 try:
@@ -46,6 +51,11 @@ try:
 except:
     pass
 
+vars["blacklist"] = []
+if "blacklist" in os.listdir(root.pdb_lists):
+    with open(os.path.join(root.pdb_lists, "blacklist"), "r") as f:
+        for line in f:
+            vars["blacklist"].append(line)
 
 if "force" in sys.argv or "-f" in sys.argv:
     vars["force"] = True

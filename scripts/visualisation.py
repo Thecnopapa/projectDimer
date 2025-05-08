@@ -642,8 +642,8 @@ if __name__ == "__main__":
                     df = pd.DataFrame(cluster_data)
                     print(df)
 
-                    #df["id"] = cluster_data["names"]
-                    #df["com"] = cluster_data["coms"]
+                    df["id"] = cluster_data["names"]
+                    df["_0","_1","_2"] = cluster_data["corners"]
                     if "sm" in sys.argv:
                         sm = pd.DataFrame(columns=["id1", "id2", "angle"])
                         done= []
@@ -656,9 +656,9 @@ if __name__ == "__main__":
                                 sm.loc[len(sm)] = [row1.names, row2.names, angle]
                             done.append(row1.names)
                         print(sm)
-                        quit()
 
-                        pass
+
+
 
 
                     else:
