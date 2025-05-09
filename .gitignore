@@ -256,4 +256,5 @@ fabric.properties
 /dataframes/
 /diagrams/
 
-/data/experimental
+
+/data/experimental/
