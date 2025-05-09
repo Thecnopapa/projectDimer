@@ -22,9 +22,12 @@ class BioObject:
     def pickle(self):
         import pickle
         local["pickles"] = "pickles"
+        #print(local.pickles, self.pickle_folder)
         pickle_folder = os.path.join(local.pickles, self.pickle_folder)
+        #print(pickle_folder)
+
         os.makedirs(pickle_folder, exist_ok=True)
-        local[self.pickle_folder] = self.pickle_folder
+        local[self.pickle_folder] = "pickles/{}".format(pickle_folder)
         file_name = "{}{}".format(self.id, self.pickle_extension)
         self.pickle_path = os.path.join(pickle_folder, file_name)
         with open(self.pickle_path, 'wb') as f:

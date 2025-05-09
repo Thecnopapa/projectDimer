@@ -270,6 +270,8 @@ class Contact:
 
         self.reprocess_contacts(self.target_list, self.ref_dict)
 
+        self.residue_list={"monomer1":[], "monomer2":[], "distance":None}
+
 
     def __repr__(self):
         import math

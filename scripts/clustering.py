@@ -534,19 +534,21 @@ def calculate_scores_GR(df, name="undefined", save = True):
 
 
 def compare_contacts(reference, force = False):
-    print1("Comparing contacts for GR")
+    print1("Comparing contacts for GR / force= {}".format(force))
 
     classified_path = os.path.join(root.classified, "GR.csv")
-
+    print(classified_path)
     if os.path.exists(classified_path) and not force:
         vars.clustering["classified"][reference.name] = pd.read_csv(classified_path)
-        return vars.clustering["classified"][reference.name]
+        if len(vars.clustering["classified"][reference.name]) != 0:
+            return vars.clustering["classified"][reference.name]
 
     vars["clustering"]["classified"][reference.name] = pd.DataFrame(
         columns=["ID", "Best_Fit", "Best_Match","Best_Match_String", "Similarity", "Inverse"])
     print2(reference)
 
     df_path = os.path.join(root.contacts, reference.name+".csv")
+
     contacts_df = pd.read_csv(df_path)
     print(contacts_df)
     if reference.name != "GR":

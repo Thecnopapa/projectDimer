@@ -156,6 +156,7 @@ def main(PROCESS_ALL = False,
                         face_df.loc[dimer.id] = [dimer.id, dimer.face1, dimer.face2, dimer.contact_face1, dimer.contact_face2]
                     build_contact_arrays(dimer, c_arrays, sasa=SASA, force=FORCE_CONTACTS or PROCESS_ALL, max_contact_length=CONTACT_DISTANCE_CLUSTERING)
                     dimer.pickle()
+
             progress.add(info=m)
 
         for key in c_arrays.keys():
@@ -265,7 +266,7 @@ if __name__ == "__main__":
 
          # Compare GR clustering to EVA clustering
          COMPARE = True,
-         FORCE_COMPARE= False,
+         FORCE_COMPARE= True,
 
          # Split by faces based on Eva
          SPLIT_FACES=False,
