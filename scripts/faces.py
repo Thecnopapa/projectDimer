@@ -307,25 +307,30 @@ def plot_pcas(pca_list, title="", dimensions = [0,1,2], mode="variance", comps=[
         return df
 
 
-def plot_points(df, title = ""):
+def plot_points(df, title = "", labels = True):
     fig = plt.figure()
     dimensions = []
-    new_cols = {}
+    coord_cols = []
+    print(df)
     for col in df.columns:
-        if type(col) is int:
-            dimensions.append(col)
-            new_cols[col] = str(col).replace("_", "")
-        else:
-            new_cols[col] = col
+        if type(col) is int or col[0] == "_":
+            int_col = int(str(col).replace("_", ""))
+            dimensions.append(int_col)
+            coord_cols.append(col)
 
-    df.rename(columns=new_cols, inplace=True)
+    #print(dimensions)
+    #print(coord_cols)
+    coord_df = df
+    #print(coord_df)
+    axis = [a for a in ["x", "y", "z"][:len(dimensions)]]
+    coord_df.rename(columns={col:str(a) for a, col in zip(axis, coord_cols)}, inplace=True)
     print("N dimensions:", len(dimensions))
     if len(dimensions) == 3:
         ax = fig.add_subplot(111, projection='3d')
     else:
         ax = fig.add_subplot(111)
     ax.set_title(title)
-    print(df)
+    #print(coord_df)
     '''for point, cluster in zip(df[[*dimensions]].values, df[["cluster"]].values):
         ax.scatter(*point, c="C{}".format(cluster[0]) )'''
 
@@ -333,21 +338,34 @@ def plot_points(df, title = ""):
     ax.set_ylabel(dimensions[1])
     if len(dimensions) > 2:
         ax.set_zlabel(dimensions[2])
-    for row in df.itertuples():
-        coords = [row.__getattribute__("_"+str(d+1)) for d in dimensions]
+    print(coord_df)
+    #print(dimensions)
+    for row in coord_df.itertuples():
+        #print(row)
 
-        if row.cluster == -1:
-            c ="black"
+        coords = [row.__getattribute__(a) for a in axis]
+
+        #print(coords)
+        if "cluster" in  df.columns:
+            if row.cluster == -1:
+                c ="black"
+            else:
+                c = "C{}".format(row.cluster)
+            ax.scatter(*coords, c=c )
         else:
-            c = "C{}".format(row.cluster)
-        ax.scatter(*coords, c=c )
-        if "id" in df.columns:
-            ax.text(*coords, s=row.id, c=c)
+            ax.scatter(*coords)
+        if labels and "id" in df.columns:
+            if "id" in df.columns:
+                if "cluster" in df.columns:
+                    ax.text(*coords, s=row.id, c=c)
+                else:
+                    ax.text(*coords, s=row.id)
 
 
 
     fig.tight_layout()
     ax.set_aspect('equal')
+    plt.savefig(os.path.join(local.temp, "temp_plot.png"))
     if not "pymol" in sys.argv or True:
         plt.show(block=vars.block)
 
@@ -390,13 +408,13 @@ def get_pca_df(in_path, subfolder, only_pcas = False, force = False, splitted=Tr
 
     from imports import load_single_pdb
     progress = ProgressBar(len(contacts_df.columns))
-    print(contacts_df.columns)
+    #print(contacts_df.columns)
     for d in contacts_df.columns:
-        print1(d)
+        #print1(d)
         dimers = load_single_pdb(d, pickle_folder=local.dimers, quiet=True)
         print2(dimers)
         for dimer in dimers:
-            print(dimer)
+            #print(dimer)
             pcas.append(dimer.pca)
             #pca_df.loc[dimer.id] = [dimer.id, *dimer.pca.components_, *dimer.pca.explained_variance_]
             angles = get_component_angles(dimer.pca.components_)

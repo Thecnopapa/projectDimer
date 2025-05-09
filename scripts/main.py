@@ -265,7 +265,7 @@ if __name__ == "__main__":
 
 
          # Compare GR clustering to EVA clustering
-         COMPARE = True,
+         COMPARE = False,
          FORCE_COMPARE= True,
 
          # Split by faces based on Eva
@@ -281,7 +281,7 @@ if __name__ == "__main__":
          CLUSTERING_METHOD = "MeanShift",
          QUANTILE= 0.1,
          N_SAMPLE_MULTIPLIER = None,
-         BANDWIDTH = 0.05,
+         BANDWIDTH = 0.03,
 
          N_CLUSTERS = 4,
          CLUSTER_BY_PCA = True,

@@ -1553,3 +1553,2512 @@ PyMOL>cmd.orient("16.0",animate=-1)
  Selector: selection "sele" defined with 1 atoms.
 PyMOL>cmd.center("12.0",animate=-1)
 PyMOL>util.color_chains("(2V0V_Ad_6_-10-1)",_self=cmd)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+PyMOL>cmd.center("-1.0",animate=-1)
+PyMOL>cmd.center("0.0",animate=-1)
+PyMOL>cmd.center("2.0",animate=-1)
+PyMOL>cmd.center("1.0",animate=-1)
+PyMOL>cmd.center("3.0",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+PyMOL>cmd.center("0.0",animate=-1)
+PyMOL>cmd.center("2.0",animate=-1)
+PyMOL>cmd.center("0.0",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+PyMOL>cmd.center("0",animate=-1)
+PyMOL>cmd.center("1",animate=-1)
+PyMOL>cmd.center("2",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+PyMOL>cmd.center("0",animate=-1)
+PyMOL>cmd.center("-1",animate=-1)
+PyMOL>cmd.center("0",animate=-1)
+PyMOL>cmd.center("1",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+PyMOL>cmd.center("0",animate=-1)
+PyMOL>cmd.orient("1",animate=-1)
+PyMOL>cmd.center("0",animate=-1)
+PyMOL>cmd.center("1",animate=-1)
+PyMOL>cmd.center("2",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+PyMOL>cmd.center("-1",animate=-1)
+PyMOL>cmd.center("0",animate=-1)
+PyMOL>cmd.center("0",animate=-1)
+PyMOL>cmd.center("1",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+qt.qpa.xcb: QXcbConnection: XCB error: 3 (BadWindow), sequence: 1343, resource id: 22610463, major code: 40 (TranslateCoords), minor code: 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+PyMOL>cmd.center("0.0",animate=-1)
+PyMOL>cmd.orient("0.0",animate=-1)
+PyMOL>cmd.orient("5.0",animate=-1)
+PyMOL>cmd.orient("4.0",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+GL_ERROR : 0x0502
+GL_ERROR : 0x0505
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+GL_ERROR : 0x0505
+PyMOL>cmd.orient("0.0",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+qt.qpa.xcb: QXcbConnection: XCB error: 3 (BadWindow), sequence: 1307, resource id: 21786147, major code: 40 (TranslateCoords), minor code: 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+qt.qpa.xcb: QXcbConnection: XCB error: 3 (BadWindow), sequence: 1218, resource id: 22129398, major code: 40 (TranslateCoords), minor code: 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+qt.qpa.xcb: QXcbConnection: XCB error: 3 (BadWindow), sequence: 1225, resource id: 21533874, major code: 40 (TranslateCoords), minor code: 0
+PyMOL>cmd.center("54",animate=-1)
+PyMOL>cmd.orient("31",animate=-1)
+PyMOL>cmd.orient("31",animate=-1)
+PyMOL>cmd.orient("31",animate=-1)
+PyMOL>cmd.center("7YXO_Ce_1_000",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+PyMOL>cmd.center("13",animate=-1)
+PyMOL>cmd.center("14",animate=-1)
+PyMOL>cmd.orient("14",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+qt.qpa.xcb: QXcbConnection: XCB error: 3 (BadWindow), sequence: 1359, resource id: 21572402, major code: 40 (TranslateCoords), minor code: 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+PyMOL>cmd.orient("31",animate=-1)
+PyMOL>cmd.orient("31",animate=-1)
+PyMOL>cmd.orient("53",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+PyMOL>cmd.center("4",animate=-1)
+PyMOL>cmd.orient("7",animate=-1)
+PyMOL>cmd.orient("4",animate=-1)
+PyMOL>cmd.orient("7",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+qt.qpa.xcb: QXcbConnection: XCB error: 3 (BadWindow), sequence: 1329, resource id: 22157358, major code: 40 (TranslateCoords), minor code: 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+PyMOL>cmd.orient("31.0",animate=-1)
+PyMOL>cmd.orient("53.0",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+qt.qpa.xcb: QXcbConnection: XCB error: 3 (BadWindow), sequence: 1225, resource id: 22250147, major code: 40 (TranslateCoords), minor code: 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 840, 596
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 840, 596
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 840, 596
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+qt.qpa.xcb: QXcbConnection: XCB error: 3 (BadWindow), sequence: 1222, resource id: 21447695, major code: 40 (TranslateCoords), minor code: 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+PyMOL>cmd.center("tmp_sphere_0",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+ You clicked /7YXP_Aa_19_0-1-1//A/SER`602/CA
+ Selector: selection "sele" defined with 1 atoms.
+PyMOL>cmd.center("tmp_sphere_2",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+PyMOL>cmd.center("tmp_sphere_0",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+PyMOL>cmd.center("tmp_sphere_0",animate=-1)
+PyMOL>cmd.center("components",animate=-1)
+PyMOL>cmd.center("4_sc_1",animate=-1)
+PyMOL>cmd.center("tmp_sphere_0",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+ You clicked /7YXO_Aa_15_0-10//a/GLY`547/CA
+ Selector: selection "sele" defined with 1 atoms.
+ You clicked /7YXO_Aa_15_0-10//A/LEU`621/CA
+ Selector: selection "sele" defined with 1 atoms.
+ Save: wrote "/cri4/iain/Desktop/New Folder/7YXO_Aa_15_0-10.cif".
+ Save: wrote "/cri4/iain/Desktop/New Folder/7YXO_Ce_1_000.cif".
+qt.qpa.xcb: QXcbConnection: XCB error: 3 (BadWindow), sequence: 27371, resource id: 22129311, major code: 40 (TranslateCoords), minor code: 0
+ Save: wrote "/cri4/iain/Desktop/New Folder/7YXP_Aa_19_0-1-1.cif".
+ Save: wrote "/cri4/iain/Desktop/New Folder/tmp_sphere_0.cif".
+ Save: wrote "/cri4/iain/Desktop/New Folder/tmp_sphere_1.cif".
+ Save: wrote "/cri4/iain/Desktop/New Folder/tmp_sphere_2.cif".
+ Save: wrote "/cri4/iain/Desktop/New Folder/tmp_sphere_3.cif".
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+qt.qpa.xcb: QXcbConnection: XCB error: 3 (BadWindow), sequence: 1365, resource id: 21168739, major code: 40 (TranslateCoords), minor code: 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+ You clicked /7BK4_Cc_2_000//C/TYR`716/CA
+ Selector: selection "sele" defined with 1 atoms.
+ You clicked /5UC3_Ab_1_000//A/GLN`717/CA
+ Selector: selection "sele" defined with 2 atoms.
+PyMOL>cmd.center("2_sc_10",animate=-1)
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+qt.qpa.xcb: QXcbConnection: XCB error: 3 (BadWindow), sequence: 1238, resource id: 21165218, major code: 40 (TranslateCoords), minor code: 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+PyMOL>cmd.center("2_sc_0",animate=-1)
+PyMOL>cmd.align("polymer and name CA and (1QKU_Cc_5_210)","polymer and name CA and (1P93_Ab_1_000)",quiet=0,object="aln_1QKU_Cc_5_210_to_1P93_Ab_1_000",reset=1)
+ Match: read scoring matrix.
+ Match: assigning 992 x 512 pairwise scores.
+ MatchAlign: aligning residues (992 vs 512)...
+ MatchAlign: score 2266.500
+ ExecutiveAlign: 498 atoms aligned.
+ ExecutiveRMS: 13 atoms rejected during cycle 1 (RMSD=12.04).
+ ExecutiveRMS: 2 atoms rejected during cycle 2 (RMSD=10.87).
+ Executive: RMSD =   10.793 (483 to 483 atoms)
+ Executive: object "aln_1QKU_Cc_5_210_to_1P93_Ab_1_000" created.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+PyMOL>cmd.align("polymer and name CA and (1QKU_Cc_5_210)","polymer and name CA and (1M2Z_Ad_3_00-1)",quiet=0,object="aln_1QKU_Cc_5_210_to_1M2Z_Ad_3_00-1",reset=1)
+ Match: read scoring matrix.
+ Match: assigning 992 x 510 pairwise scores.
+ MatchAlign: aligning residues (992 vs 510)...
+ MatchAlign: score 2286.500
+ ExecutiveAlign: 498 atoms aligned.
+ ExecutiveRMS: 13 atoms rejected during cycle 1 (RMSD=12.23).
+ ExecutiveRMS: 3 atoms rejected during cycle 2 (RMSD=11.03).
+ Executive: RMSD =   10.916 (482 to 482 atoms)
+ Executive: object "aln_1QKU_Cc_5_210_to_1M2Z_Ad_3_00-1" created.
+PyMOL>cmd.align("polymer and name CA and (5UNJ_Aa_4_-10-1)","polymer and name CA and (4UDD_Aa_4_000)",quiet=0,object="aln_5UNJ_Aa_4_-10-1_to_4UDD_Aa_4_000",reset=1)
+ Match: read scoring matrix.
+ Match: assigning 960 x 514 pairwise scores.
+ MatchAlign: aligning residues (960 vs 514)...
+ MatchAlign: score 2344.000
+ ExecutiveAlign: 505 atoms aligned.
+ ExecutiveRMS: 14 atoms rejected during cycle 1 (RMSD=19.35).
+ ExecutiveRMS: 10 atoms rejected during cycle 2 (RMSD=18.29).
+ ExecutiveRMS: 10 atoms rejected during cycle 3 (RMSD=17.59).
+ ExecutiveRMS: 10 atoms rejected during cycle 4 (RMSD=16.95).
+ ExecutiveRMS: 5 atoms rejected during cycle 5 (RMSD=16.33).
+ Executive: RMSD =   16.035 (456 to 456 atoms)
+ Executive: object "aln_5UNJ_Aa_4_-10-1_to_4UDD_Aa_4_000" created.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ PyMOL(TM) 3.0.4 - Incentive Product
+ Copyright (C) Schrodinger, LLC
+ 
+ This Executable Build integrates and extends Open-Source PyMOL.
+Invalid license file syntax.
+Feature:       PYMOL_MAIN
+License path:  /cri4/iain/.pymol/license.lic:
+FlexNet Licensing error:-2,413
+ Detected OpenGL version 4.6. Shaders available.
+ Detected GLSL version 4.60.
+ OpenGL graphics engine:
+  GL_VENDOR:   NVIDIA Corporation
+  GL_RENDERER: NVIDIA GeForce GTX 1080/PCIe/SSE2
+  GL_VERSION:  4.6.0 NVIDIA 535.216.01
+ Detected 36 CPU cores.  Enabled multithreaded rendering.
+ Executive: Loading version 3.000000 session...
+ Session was saved with: viewport 0, 0
+qt.qpa.xcb: QXcbConnection: XCB error: 3 (BadWindow), sequence: 1232, resource id: 22145413, major code: 40 (TranslateCoords), minor code: 0

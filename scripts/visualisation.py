@@ -624,26 +624,29 @@ if __name__ == "__main__":
 
                         components = pca.components_
                         variances = pca.explained_variance_
+                        ratios = pca.explained_variance_ratio_
                         if pca.inverse:
                             components[1], components[2] = components[2].copy(), components[1].copy()
                             variances[1], variances[2] = variances[2].copy(), variances[1].copy()
                         sphere_coords = com
-                        for n, (component, variance) in enumerate(zip(components, variances)):
+                        corner = [0,0,0]
+                        for n, (component, variance, ratio) in enumerate(zip(components, variances, ratios)):
                             print("sphere-coords:", sphere_coords)
                             print(com, component, variance)
                             pymol_draw_line(com, tuple([c+(co*variance) for c, co in zip(com, component)]), name="{}_component_{}".format(name, n), quiet=False)
                             sphere_coords = add(sphere_coords, tuple([co*variance for co in component]))
+                            corner = add(corner, tuple([co*ratio for co in component]))
                         print("sphere-coords:",sphere_coords)
                         spheres.append(sphere_coords)
-                        cluster_data["corners"].append(sphere_coords)
-                        pymol_sphere(sphere_coords)
+                        cluster_data["corners"].append(corner)
+                        pymol_sphere(sphere_coords, name=name+"_corner")
                     pymol_group("component", name="components")
                     print(cluster_data)
                     df = pd.DataFrame(cluster_data)
                     print(df)
 
                     df["id"] = cluster_data["names"]
-                    df["_0","_1","_2"] = cluster_data["corners"]
+                    df[["_0","_1","_2"]] = cluster_data["corners"]
                     if "sm" in sys.argv:
                         sm = pd.DataFrame(columns=["id1", "id2", "angle"])
                         done= []
@@ -668,17 +671,19 @@ if __name__ == "__main__":
                         #print(points)
 
                         print(df)
-                        df["cluster"] = quick_cluster(df, bandwidth=10)
-
-                        print(df)
+                        df["cluster"] = quick_cluster(df[["_0","_1", "_2"]], bandwidth=0.08)
+                        df.sort_values(by=["cluster"], ascending=True, inplace=True)
+                        print(df.to_string())
 
 
                     for row in df.itertuples():
                         pymol_group(row.id, path.split(".")[0][-1]+"_sc_"+str(row.cluster))
 
                     session_path = pymol_save_temp_session(name=os.path.basename(path).split(".")[0]+".pse")
+                    print(df)
                     open_session_terminal(session_path)
                     plot_points(df)
+
 
 
 
