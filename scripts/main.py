@@ -265,7 +265,7 @@ if __name__ == "__main__":
 
 
          # Compare GR clustering to EVA clustering
-         COMPARE = False,
+         COMPARE = True, # requiered
          FORCE_COMPARE= True,
 
          # Split by faces based on Eva

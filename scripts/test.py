@@ -18,22 +18,22 @@ print1("References loaded")
 
 from faces import *
 
-'''dimer_list = sorted(os.listdir(local.dimers))
+dimer_list = sorted(os.listdir(local.dimers))
 progress = ProgressBar(len(dimer_list))
 face_df = pd.DataFrame(columns=["ID", "face1", "face2", "contact_face1", "contact_face2"])
-print(face_df)'''
+#print(dimer_list)
 
-'''for dimer_name in dimer_list:
+for dimer_name in dimer_list:
     sprint(dimer_name)
+    #print(local.dimers)
     dimers = load_single_pdb(dimer_name, pickle_folder=local.dimers)
     for dimer in dimers:
         if dimer.best_fit != "GR":
             progress.add(info=dimer.id)
             continue
-        print(dimer.face1, dimer.face2, dimer.contact_face1, dimer.contact_face2)
-        face_df.loc[dimer.id] = [dimer.id, dimer.face1, dimer.face2, dimer.contact_face1, dimer.contact_face2]
+        dimer.reprocess()
         progress.add(info=dimer.id)
-face_df.to_csv("/cri4/iain/projectB/dataframes/clustering/faces/GR.csv")'''
+
 
 def plot_face_coms():
     objects = load_single_pdb("1M2Z", pickle_folder=local.monomers)
@@ -71,4 +71,4 @@ def find_face_discrpancies(path = "/cri4/iain/projectB/dataframes/clustering/fac
 
     print(discrepancies)
 
-find_face_discrpancies()
+#find_face_discrpancies()

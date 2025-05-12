@@ -1,7 +1,7 @@
 import os
 
 
-from surface import get_dimer_sasa
+from surface import get_dimer_sasa, get_monomer_sasa
 from symmetries import entity_to_orth, print_all_coords, convertFromFracToOrth
 from utilities import *
 from Globals import root, local, vars
@@ -27,11 +27,13 @@ class BioObject:
         #print(pickle_folder)
 
         os.makedirs(pickle_folder, exist_ok=True)
-        local[self.pickle_folder] = "pickles/{}".format(pickle_folder)
+        local[self.pickle_folder] = "pickles/{}".format(self.pickle_folder)
         file_name = "{}{}".format(self.id, self.pickle_extension)
         self.pickle_path = os.path.join(pickle_folder, file_name)
+        #print(self.pickle_path)
         with open(self.pickle_path, 'wb') as f:
             pickle.dump(self, f)
+
 
     def restore_dfs(self):
         for key, entries in self.__dict__.items():
@@ -294,19 +296,24 @@ class Monomer(BioObject):
             if sasa:
                 from surface import get_monomer_sasa
                 get_monomer_sasa(self)
-        from maths import find_com
-        from faces import get_pca, get_face_coms
+
+        from faces import get_face_coms
         if self.replaced is not None:
-            self.com = find_com(self.replaced.get_atoms())
             if self.best_fit == "GR":
                 self.face_coms = get_face_coms(self)
-            self.pca = dict(pca = get_pca(self.replaced, com=self.com),
-                            com = self.com,
-                            chain = self.chain)
+            self.get_monomer_pca()
 
         self.pickle()
 
 
+    def get_monomer_pca(self):
+        from maths import find_com
+        from faces import get_pca
+        self.com = find_com(self.replaced.get_atoms())
+        self.pca = dict(pca=get_pca(self.replaced, com=self.com),
+                        com=self.com,
+                        chain=self.chain)
+        return self.pca
 
     def move_parent_superposition(self,super_path):
         from symmetries import entity_to_orth, entity_to_frac, coord_operation_entity, print_all_coords
@@ -605,8 +612,8 @@ class Dimer(BioObject):
         from maths import find_com
         self.com1 = find_com(self.replaced_structure.get_list()[0].get_list()[0].get_atoms())
         self.com2 = find_com(self.replaced_structure.get_list()[0].get_list()[1].get_atoms())
-        self.pca1 = self.monomer1.pca
-        self.pca2 = self.monomer2.pca
+        self.pca1 = self.monomer1.get_monomer_pca()
+        self.pca2 = self.monomer2.get_monomer_pca()
         #print(self.com)
         self.pickle()
 
@@ -615,6 +622,7 @@ class Dimer(BioObject):
         self.get_contacts(force = True)
         self.get_faces(by_com=by_com)
         self.pickle()
+
 
 
     def get_contacts(self, max_distance= 16, force = False):
@@ -848,6 +856,8 @@ class Dimer(BioObject):
 
         
         return original_structure, replaced_structure, merged_structure
+
+
 
     def export(self):
         if not self.incomplete:

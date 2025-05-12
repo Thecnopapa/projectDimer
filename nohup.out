@@ -4062,3 +4062,26 @@ FlexNet Licensing error:-2,413
  Executive: Loading version 3.000000 session...
  Session was saved with: viewport 0, 0
 qt.qpa.xcb: QXcbConnection: XCB error: 3 (BadWindow), sequence: 1232, resource id: 22145413, major code: 40 (TranslateCoords), minor code: 0
+WARNING: You don't seem to have any mimeinfo.cache files.
+Try running the update-desktop-database command. If you
+don't have this command you should install the
+desktop-file-utils package. This package is available from
+http://freedesktop.org/wiki/Software/desktop-file-utils/
+No applications found for mimetype: application/octet-stream
+./usr/bin/xdg-open: 882: x-www-browser: not found
+/usr/bin/xdg-open: 882: firefox: not found
+/usr/bin/xdg-open: 882: iceweasel: not found
+/usr/bin/xdg-open: 882: seamonkey: not found
+/usr/bin/xdg-open: 882: mozilla: not found
+/usr/bin/xdg-open: 882: epiphany: not found
+/usr/bin/xdg-open: 882: konqueror: not found
+/usr/bin/xdg-open: 882: chromium: not found
+/usr/bin/xdg-open: 882: chromium-browser: not found
+/usr/bin/xdg-open: 882: google-chrome: not found
+/usr/bin/xdg-open: 882: www-browser: not found
+/usr/bin/xdg-open: 882: links2: not found
+/usr/bin/xdg-open: 882: elinks: not found
+/usr/bin/xdg-open: 882: links: not found
+/usr/bin/xdg-open: 882: lynx: not found
+/usr/bin/xdg-open: 882: w3m: not found
+xdg-open: no method available for opening '/home/iain/localdata/projectB/temp/temp_session.pse'

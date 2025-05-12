@@ -349,9 +349,11 @@ if __name__ == "__main__":
             print("Subset:", filtered)
 
         if pca:
-            faces = os.listdir(root.clustered_pcas_GR)
+
             if global_pca:
                 faces = [face for face in os.listdir(root.clustered_pcas) if ("clustered" not in face and "centres" not in face)]
+            else:
+                faces = os.listdir(root.clustered_pcas_GR)
             print("PCA clustering")
             print(faces)
         else:
