@@ -1,10 +1,14 @@
+
+# Conda environment setup
 conda create -n py312np2 python=3.12.0 numpy=2
 conda activate py312np2
 
+# Essential
 conda install conda-forge::biopython
 conda install -c conda-forge -c schrodinger pymol-bundle
 conda install pandas matplotlib unidecode scikit-learn
 
+# Not essential but might require some tweaking to avoid errors
 pip install subprocess.run adjustText
 pip install PyQt5
 
