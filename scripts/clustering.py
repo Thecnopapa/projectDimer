@@ -697,7 +697,9 @@ def add_clusters_to_classified(reference, pca=True, splitted = True):
     print("########################################")
     print(classified)
 
-    for splitted in [True, False]:
+    splitted_in_path = "clustered_pcas_{}".format(reference.name) in root.list()
+
+    for splitted in list(set([splitted_in_path, False])):
         print("##########", splitted)
         if pca:
             if splitted:
