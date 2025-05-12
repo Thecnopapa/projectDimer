@@ -1384,7 +1384,6 @@ https://files.rcsb.org/download/1M13.pdb
 https://files.rcsb.org/download/1SKX.pdb
 https://files.rcsb.org/download/2A66.pdb
 https://files.rcsb.org/download/2Q3Y.pdb
-https://files.rcsb.org/download/2V0V.pdb
 https://files.rcsb.org/download/3CQV.pdb
 https://files.rcsb.org/download/3P0U.pdb
 https://files.rcsb.org/download/3R8D.pdb
