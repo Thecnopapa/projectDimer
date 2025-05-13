@@ -1134,76 +1134,19 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
     return
 
 
+def generate_dihedrals_df(dimer_list = None):
+    from imports import load_single_pdb
+    if dimer_list is None:
+        dimer_list = os.listdir(local.dimers)
+
+    dihedrals_df = pd.DataFrame(columns = ["ID", "is1to2", "dx", "dy", "dz", "rx", "ry", "rz", "d"])
+    for d in dimer_list:
+        dimers = load_single_pdb(d, pickle_folder=local.dimers, quiet=True)
+        for dimer in dimers:
+            dihedrals_df[dimer.id + "a"] = dimer.get_dihedrals(reverse=False)
+            dihedrals_df[dimer.id + "b"] = dimer.get_dihedrals(reverse=True)
 
 
-if __name__ == "__main__":
 
-
-
-
-    import setup
-    from Globals import root, local, vars
-    from imports import load_references, load_single_pdb
-    from dataframes import save_dfs
-
-
-'''    #### CONTACT LENGTH TESTING ########################################################################################
-    vars["references"] = load_references()
-
-    molecule_folder = local.many_pdbs
-    molecule_list = sorted(os.listdir(molecule_folder))
-    # print(len(vars.do_only), vars.do_only)
-    if len(vars.do_only) > 0:
-        molecule_list = [f for f in molecule_list if any([s in f for s in vars.do_only])]
-    # [print(m) for m in sorted(molecule_list)]
-    print1("Molecule list obtained:", len(molecule_list), "molecules")
-
-
-    print(list(vars.clustering["contacts"].keys()))
-    progress = ProgressBar(len(molecule_list))
-    from surface import build_contact_arrays
-    for dist in [3,4,5,6,7,8]:
-        for m in molecule_list:
-            if "lock" in m:
-                sprint(".lock file detected:", m)
-                continue
-            filename = m.split(".")[0]
-            sprint(filename)
-            molecules = load_single_pdb(filename, local.molecules)
-            for molecule in molecules:
-                dimers = molecule.dimers
-                for dimer in dimers:
-                    print1(dimer)
-                    if dimer.incomplete:
-                        continue
-                    build_contact_arrays(dimer, sasa=False, force=True, max_contact_length=dist)
-                    #dimer.pickle()
-                progress.add(info=molecule.id)
-        save_dfs()
-
-        for reference in vars.references:
-            cluster(reference, score_id="under_{}_A_".format(dist))
-    ####################################################################################################################'''
-
-'''#### DIMENSION TESTING ###
-    dimensions = [3,4,5,6,7,8,9,10]
-    for n in dimensions:
-        clustering(FORCE_SM = False,
-                   FORCE_CC = True,
-                   FORCE_CLUSTER = True,
-                   FORCE_PLOT=False,
-                   DIMENSIONS=n,
-                   ONLY_GR = True
-                   )
-    #### DIMENSION TESTING ###'''
-
-# OLD
-'''clustering(FORCE_ALL=False,
-           FORCE_SM=False,
-           FORCE_CC=True,
-           FORCE_CLUSTER=True,
-           FORCE_PLOT=True,
-           DIMENSIONS=5,
-           )'''
-#from github import automatic_push_to_branch
-#automatic_push_to_branch(target="auto")
+def sm_from_angles(dihedrals_path):
+    dihedrals_df = pd.read_csv(dihedrals_path)
