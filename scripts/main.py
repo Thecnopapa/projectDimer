@@ -176,10 +176,29 @@ def main(PROCESS_ALL = False,
 
     eprint("DIMER ANALYSIS")
     ###### CLUSTERING ##################################################################################################
-    tprint("CLUSTERING")
+    tprint("CLUSTERING v2")
 
     if not SKIP_CLUSTERING or PROCESS_ALL and False:
-        from clustering import compare_contacts, get_clusters, cluster, split_by_faces, cluster_by_face
+
+        pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        '''from clustering import compare_contacts, get_clusters, cluster, split_by_faces, cluster_by_face
         for reference in vars.references:
             sprint(reference.name)
             if reference.name != "GR" and ONLY_GR:
@@ -203,11 +222,11 @@ def main(PROCESS_ALL = False,
                             splitted=SPLIT_FACES, rem_red=REMOVE_REDUNDANCY, method = CLUSTERING_METHOD,
                             quantile=QUANTILE, n_sample_multiplier=N_SAMPLE_MULTIPLIER, bandwidth = BANDWIDTH)
             reference.pickle()
-        #save_dfs(general=False, clustering=True)
+        #save_dfs(general=False, clustering=True)'''
 
 
 
-    eprint("CLUSTERING")
+    eprint("CLUSTERING v2")
     ###### SAVE & EXIT #################################################################################################
     tprint("SAVE & EXIT")
 
