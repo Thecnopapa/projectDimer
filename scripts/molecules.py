@@ -647,6 +647,10 @@ class Dimer(BioObject):
                 #print(contact)
 
     def get_dihedrals(self, reverse = False):
+        #from matplotlib import pyplot as plt
+        #fig = plt.figure()
+        #ax = fig.add_subplot(111, projection='3d')
+
         if not reverse:
             pca_data1 = self.pca1
             pca_data2 = self.pca2
@@ -666,16 +670,30 @@ class Dimer(BioObject):
 
         d = vector(com1, com2)
         dist = length(d)
+        #ax.scatter(0,0,0, color = 'yellow')
+        #ax.scatter(*com1, color = 'purple')
         d0 = dihedral_angle2(c0[0], com1, com2, c0[1])
         d1 = dihedral_angle2(c1[0], com1, com2, c1[1])
         d2 = dihedral_angle2(c2[0], com1, com2, c2[1])
 
 
-        a0 =angle_between_vectors(d, c0[0])
-        a1 = angle_between_vectors(d, c1[0])
-        a2 = angle_between_vectors(d, c2[0])
+        #ax.plot(*points_to_line(com1, com2), color="black")
+        #ax.plot(*points_to_line(com1, c0[0]), color = "red")
+        #ax.plot(*points_to_line(com1, c1[0]), color='green')
+        #ax.plot(*points_to_line(com1, c2[0]), color='blue')
 
+        a0 = angle_3_points(c0[0], com1, com2)
+        a1 = angle_3_points(c1[0], com1, com2)
+        a2 = angle_3_points(c2[0], com1, com2)
 
+        #print(d, c0[0], c1[0], c2[0])
+        #print(a0)
+        #print(a1)
+        #print(a2)
+
+        #ax.set_aspect('equal')
+        #plt.show()
+        #quit()
         return [d0, d1, d2, a0, a1, a2, dist]
 
 

@@ -1171,7 +1171,7 @@ def plot_dihedrals(path):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     for point in df.itertuples():
-        ax.scatter(point.a0, point.a2, point.a3)
+        ax.scatter(point.a0, point.a1, point.a2)
     plt.show(block = True)
 
 def sm_from_angles(dihedrals_path):

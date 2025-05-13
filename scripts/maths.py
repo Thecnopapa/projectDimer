@@ -97,6 +97,19 @@ def test():
     get_closest(start, end, point)
 
 
+def angle_3_points(a, b, c):
+    a = np.array(a)
+    b = np.array(b)
+    c = np.array(c)
+
+    ba = a - b
+    bc = c - b
+
+    cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+    angle = np.arccos(cosine_angle)
+
+    return np.degrees(angle)
+
 def angle_between_vectors(u, v):
     dot_product = sum(i * j for i, j in zip(u, v))
     norm_u = math.sqrt(sum(i ** 2 for i in u))
