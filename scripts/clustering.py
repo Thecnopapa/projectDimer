@@ -1135,17 +1135,35 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
 
 
 def generate_dihedrals_df(dimer_list = None):
+    root["clustering2"] = "dataframes/clustering2"
+    root["dihedrals"] = "dataframes/clustering2/dihedrals"
     from imports import load_single_pdb
     if dimer_list is None:
         dimer_list = os.listdir(local.dimers)
-
-    dihedrals_df = pd.DataFrame(columns = ["ID", "is1to2", "dx", "dy", "dz", "rx", "ry", "rz", "d"])
+    dimer_list = sorted(dimer_list)
+    progress = ProgressBar(len(dimer_list))
+    dataframes = {}
     for d in dimer_list:
         dimers = load_single_pdb(d, pickle_folder=local.dimers, quiet=True)
         for dimer in dimers:
-            dihedrals_df[dimer.id + "a"] = dimer.get_dihedrals(reverse=False)
-            dihedrals_df[dimer.id + "b"] = dimer.get_dihedrals(reverse=True)
+            if dimer.best_fit is None or dimer.best_fit =="Missmatch":
+                progress.add(info=dimer.id)
+                continue
+            for is1to2 in [True, False]:
+                if dimer.best_fit in dataframes.keys():
+                    dataframes[dimer.best_fit].append([dimer.id, is1to2] + dimer.get_dihedrals(reverse=not is1to2))
+                else:
+                    dataframes[dimer.best_fit] = [[dimer.id, is1to2] + dimer.get_dihedrals(reverse=not is1to2)]
 
+            progress.add(info=dimer.id)
+    for key in dataframes.keys():
+        print(key)
+        df = pd.DataFrame(columns = ["ID", "is1to2", "d0", "d1", "d2", "a0", "a2", "a3", "d"], data = dataframes[key])
+        print(df)
+
+
+        df.to_csv(os.path.join(root.dihedrals, key + ".csv"))
+    quit()
 
 
 def sm_from_angles(dihedrals_path):

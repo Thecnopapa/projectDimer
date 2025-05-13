@@ -9,6 +9,7 @@ from Bio.PDB import PDBParser, MMCIFParser, PDBIO, StructureBuilder, Structure, 
 import numpy as np
 import pandas as pd
 import string
+from maths import *
 
 
 
@@ -644,6 +645,39 @@ class Dimer(BioObject):
             if contact.is_contact:
                 self.contacts.append(contact)
                 #print(contact)
+
+    def get_dihedrals(self, reverse = False):
+        if not reverse:
+            pca_data1 = self.pca1
+            pca_data2 = self.pca2
+        else:
+            pca_data1 = self.pca2
+            pca_data2 = self.pca1
+
+        pca1 = pca_data1["pca"]
+        pca2 = pca_data2["pca"]
+
+        com1 = pca_data1["com"]
+        com2 = pca_data2["com"]
+
+        c0 = add(com1, pca1.components_[0]), add(com2, pca2.components_[0])
+        c1 = add(com1, pca1.components_[1]), add(com2, pca2.components_[1])
+        c2 = add(com1, pca1.components_[2]), add(com2, pca2.components_[2])
+
+        d = vector(com1, com2)
+        dist = length(d)
+        d0 = dihedral_angle2(c0[0], com1, com2, c0[1])
+        d1 = dihedral_angle2(c1[0], com1, com2, c1[1])
+        d2 = dihedral_angle2(c2[0], com1, com2, c2[1])
+
+
+        a0 =angle_between_vectors(d, c0[0])
+        a1 = angle_between_vectors(d, c1[0])
+        a2 = angle_between_vectors(d, c2[0])
+
+
+        return [d0, d1, d2, a0, a1, a2, dist]
+
 
     def _count_contacts(self, backup1=False, backup2=False, use_backups = False):
         print3("Counting Contacts, backup:", backup1, backup2)
