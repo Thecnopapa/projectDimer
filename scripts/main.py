@@ -180,14 +180,16 @@ def main(PROCESS_ALL = False,
 
     if not SKIP_CLUSTERING or PROCESS_ALL and False:
 
-        from clustering import sm_from_angles, generate_dihedrals_df, plot_dihedrals
-        dihedrals_path = generate_dihedrals_df(force = True)
+        from clustering import generate_dihedrals_df, plot_dihedrals, cluster_dihedrals
+        generate_dihedrals_df(force = False)
 
         for file in os.listdir(root.dihedrals):
-            plot_dihedrals(os.path.join(root.dihedrals, file))
-        quit()
-        angles_path = sm_from_angles(dihedrals_path)
+            dihedrals_path = os.path.join(root.dihedrals, file)
+            clustered_dihedrals_path = cluster_dihedrals(dihedrals_path, bandwidth=45)
 
+        for file in os.listdir(root.dihedral_clusters):
+            dihedrals_path = os.path.join(root.dihedral_clusters, file)
+            plot_dihedrals(dihedrals_path, clusters="cluster")
         pass
 
 

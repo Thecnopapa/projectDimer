@@ -1003,7 +1003,7 @@ def quick_cluster(coords, n_clusters=3, method ="MeanShift",bandwidth = None):
 
 
     model.fit(coords)
-    print(model.labels_)
+    print2("Clusters:", [int(l) for l in set(model.labels_)])
     return model.labels_
 
 
@@ -1159,20 +1159,38 @@ def generate_dihedrals_df(dimer_list = None, force = False):
                 progress.add(info=dimer.id)
         for key in dataframes.keys():
             print(key)
-            df = pd.DataFrame(columns = ["ID", "is1to2", "d0", "d1", "d2", "a0", "a1", "a2", "d"], data = dataframes[key])
+            df = pd.DataFrame(columns = ["id", "is1to2", "d0", "d1", "d2", "a0", "a1", "a2", "d"], data = dataframes[key])
             print(df)
             df_path = os.path.join(root.dihedrals, key + ".csv")
             df.to_csv(df_path)
 
 
-def plot_dihedrals(path):
+def plot_dihedrals(path, clusters=None):
     from matplotlib import  pyplot as plt
     df = pd.read_csv(path)
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     for point in df.itertuples():
-        ax.scatter(point.a0, point.a1, point.a2)
-    plt.show(block = True)
+        if cluster is None:
+            ax.scatter(point.a0, point.a1, point.a2)
+        else:
+            cl = point.__getattribute__(clusters)
+            if cl == -1:
+                col = "black"
+            else:
+                col = "C"+str(cl)
+            ax.scatter(point.a0, point.a1, point.a2, c=col)
+    root["dihedral_figs"] = "images/dihedral_figs"
+    savepath = os.path.join(root.dihedral_figs, os.path.basename(path).split(".")[0] + ".png")
+    plt.savefig(savepath)
+    if vars.block:
+        plt.show(block = vars.block)
 
-def sm_from_angles(dihedrals_path):
+
+def cluster_dihedrals(dihedrals_path, bandwidth = None):
     dihedrals_df = pd.read_csv(dihedrals_path)
+    dihedrals_df["cluster"] = quick_cluster(dihedrals_df[["a0", "a1", "a2"]], bandwidth=bandwidth)
+    root["dihedral_clusters"] = "dataframes/clustering2/dihedral_clusters"
+    dihedrals_df.to_csv(os.path.join(root.dihedral_clusters, os.path.basename(dihedrals_path)))
+
+
