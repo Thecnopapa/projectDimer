@@ -1165,7 +1165,7 @@ def generate_dihedrals_df(dimer_list = None, force = False):
             df.to_csv(df_path)
 
 
-def plot_dihedrals(path, clusters=None):
+def plot_dihedrals(path, clusters=None, labels=["0","1","2"]):
     from matplotlib import  pyplot as plt
     df = pd.read_csv(path)
     fig = plt.figure()
@@ -1180,6 +1180,10 @@ def plot_dihedrals(path, clusters=None):
             else:
                 col = "C"+str(cl)
             ax.scatter(point.a0, point.a1, point.a2, c=col)
+    ax.set_xlabel(labels[0])
+    ax.set_ylabel(labels[1])
+    ax.set_zlabel(labels[2])
+
     root["dihedral_figs"] = "images/dihedral_figs"
     savepath = os.path.join(root.dihedral_figs, os.path.basename(path).split(".")[0] + ".png")
     plt.savefig(savepath)
@@ -1189,8 +1193,9 @@ def plot_dihedrals(path, clusters=None):
 
 def cluster_dihedrals(dihedrals_path, bandwidth = None):
     dihedrals_df = pd.read_csv(dihedrals_path)
-    dihedrals_df["cluster"] = quick_cluster(dihedrals_df[["a0", "a1", "a2"]], bandwidth=bandwidth)
+    dihedrals_df["angle_cluster"] = quick_cluster(dihedrals_df[["a0", "a1", "a2"]], bandwidth=bandwidth)
     root["dihedral_clusters"] = "dataframes/clustering2/dihedral_clusters"
+    print(dihedrals_df)
     dihedrals_df.to_csv(os.path.join(root.dihedral_clusters, os.path.basename(dihedrals_path)))
 
 

@@ -798,11 +798,39 @@ if __name__ == "__main__":
         calculate_scores_GR(pd.read_csv(os.path.join(root.dataframes, "GR_cc_clustered.csv"), index_col=0).sort_values("cluster"), save=False)
 
 
+
+
+
+
+
+    elif "clusters2" in sys.argv[1]:
+        sprint("Showing clusters v2")
+        for n, file in enumerate(os.listdir(root.dihedral_clusters)):
+            print1(n, ":", file)
+
+        i = int_input("Select df to display:\n")
+        file = os.listdir(root.dihedral_clusters)[i]
+        dihedrals_path = os.path.join(root.dihedral_clusters, file)
+        df = pd.read_csv(dihedrals_path, index_col=0)
+        print(df)
+        c = int_input("Select cluster to display {}:\n".format([int(a) for a in set(df["angle_cluster"].values)]))
+        df = df[df["angle_cluster"] == c]
+        print(df.to_string())
+
+        pass
+
+
+
+
+
+
     else:
         print_available_commands()
 
 
     eprint("Done visualising")
+
+
 
 
 

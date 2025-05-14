@@ -285,6 +285,19 @@ def KeepInterpreter():
         # now what?
 
 
+def int_input(prompt):
+    i = None
+    while i is None:
+        try:
+            i = int(input(prompt))
+        except KeyboardInterrupt:
+            quit()
+        except ValueError:
+            i = None
+    return i
+
+
+
 if __name__ == "__main__":
     progress = ThinkingBar()
     while True:

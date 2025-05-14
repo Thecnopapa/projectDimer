@@ -189,7 +189,7 @@ def main(PROCESS_ALL = False,
 
         for file in os.listdir(root.dihedral_clusters):
             dihedrals_path = os.path.join(root.dihedral_clusters, file)
-            plot_dihedrals(dihedrals_path, clusters="cluster")
+            plot_dihedrals(dihedrals_path, clusters="angle_cluster")
         pass
 
 
