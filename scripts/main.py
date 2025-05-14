@@ -181,11 +181,11 @@ def main(PROCESS_ALL = False,
     if not SKIP_CLUSTERING or PROCESS_ALL and False:
 
         from clustering import generate_dihedrals_df, plot_dihedrals, cluster_dihedrals
-        generate_dihedrals_df(force = True)
+        generate_dihedrals_df(force = False)
 
         for file in os.listdir(root.dihedrals):
             dihedrals_path = os.path.join(root.dihedrals, file)
-            clustered_dihedrals_path = cluster_dihedrals(dihedrals_path, bandwidth=45)
+            clustered_dihedrals_path = cluster_dihedrals(dihedrals_path, bandwidth=40)
 
         for file in os.listdir(root.dihedral_clusters):
             dihedrals_path = os.path.join(root.dihedral_clusters, file)
