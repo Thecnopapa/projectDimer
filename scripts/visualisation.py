@@ -3,6 +3,7 @@ import sys
 
 from Globals import root, local, vars
 from maths import angle_between_vectors
+from pyMol import pymol_load_name, pymol_start, pymol_load_path
 
 from utilities import *
 import pandas as pd
@@ -818,8 +819,11 @@ if __name__ == "__main__":
         print(df.to_string())
 
         if "pymol" in sys.argv:
+            from pymol import *
+            pymol_start(show=True)
             for dimer in load_list_1by1(id_list=df["id"].values, pickle_folder = local.dimers):
-                print(dimer)
+                pymol_load_path(dimer.replaced_path)
+
 
 
             pass
