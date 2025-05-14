@@ -817,7 +817,12 @@ if __name__ == "__main__":
         df = df[df["angle_cluster"] == c]
         print(df.to_string())
 
-        pass
+        if "pymol" in sys.argv:
+            for dimer in load_list_1by1(id_list=df["id"].values, pickle_folder = local.dimers):
+                print(dimer)
+
+
+            pass
 
 
 

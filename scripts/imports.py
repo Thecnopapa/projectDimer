@@ -67,6 +67,35 @@ def load_from_files(pdb_folder, load_class = PDB, ignore_selection = False, pick
         print2(obj)
     return loaded
 
+class PickleIterator:
+    def __init__(self, id_list, **kwargs):
+        self.id_list = sorted(id_list)
+        self.kwargs = kwargs
+
+    def __iter__(self):
+        self.n = 0
+        self.progress = ProgressBar(len(self.id_list))
+        return self
+
+    def __next__(self):
+        if self.n >= len(self.id_list):
+            raise StopIteration
+        else:
+
+            loaded = load_single_pdb(self.id_list[self.n], **self.kwargs)
+            assert len(loaded) == 1, "More than one object with the same id! \n{}".format(self.id_list[self.n])
+            self.progress.add(info=self.id_list[self.n])
+            self.n += 1
+            return loaded[0]
+
+def load_list_1by1(id_list=None, **kwargs):
+
+    if id_list is None:
+        assert "pickle_folder" in kwargs, "pickle must be provided"
+        id_list = os.listdir(kwargs["pickle_folder"])
+
+    return iter(PickleIterator(id_list, **kwargs))
+
 def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None, force_reload=False, object_class = PDB, quiet=False):
     if not quiet:
         print1("Loading pdb:", identifier, "-Force reload:", force_reload, "-class:", object_class.__name__)
