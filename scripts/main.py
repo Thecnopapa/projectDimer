@@ -181,7 +181,7 @@ def main(PROCESS_ALL = False,
     if not SKIP_CLUSTERING or PROCESS_ALL and False:
 
         from clustering import generate_dihedrals_df, plot_dihedrals, cluster_dihedrals
-        generate_dihedrals_df(force = False)
+        generate_dihedrals_df(force = True)
 
         for file in os.listdir(root.dihedrals):
             dihedrals_path = os.path.join(root.dihedrals, file)

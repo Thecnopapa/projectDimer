@@ -1147,19 +1147,21 @@ def generate_dihedrals_df(dimer_list = None, force = False):
         for d in dimer_list:
             dimers = load_single_pdb(d, pickle_folder=local.dimers, quiet=True)
             for dimer in dimers:
+
                 if dimer.best_fit is None or dimer.best_fit =="Missmatch":
                     progress.add(info=dimer.id)
                     continue
+                chains = [dimer.monomer1.chain, dimer.monomer2.chain]
                 for is1to2 in [True, False]:
                     if dimer.best_fit in dataframes.keys():
-                        dataframes[dimer.best_fit].append([dimer.id, is1to2] + dimer.get_dihedrals(reverse=not is1to2))
+                        dataframes[dimer.best_fit].append([dimer.id, is1to2] + chains + dimer.get_dihedrals(reverse=not is1to2))
                     else:
-                        dataframes[dimer.best_fit] = [[dimer.id, is1to2] + dimer.get_dihedrals(reverse=not is1to2)]
+                        dataframes[dimer.best_fit] = [[dimer.id, is1to2] + chains + dimer.get_dihedrals(reverse=not is1to2)]
 
                 progress.add(info=dimer.id)
         for key in dataframes.keys():
             print(key)
-            df = pd.DataFrame(columns = ["id", "is1to2", "d0", "d1", "d2", "a0", "a1", "a2", "d"], data = dataframes[key])
+            df = pd.DataFrame(columns = ["id", "is1to2", "mon1", "mon2", "d0", "d1", "d2", "a0", "a1", "a2", "d"], data = dataframes[key])
             print(df)
             df_path = os.path.join(root.dihedrals, key + ".csv")
             df.to_csv(df_path)

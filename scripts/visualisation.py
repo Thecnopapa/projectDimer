@@ -3,7 +3,7 @@ import sys
 
 from Globals import root, local, vars
 from maths import angle_between_vectors
-from pyMol import pymol_load_name, pymol_start, pymol_load_path
+from pyMol import pymol_load_name, pymol_start, pymol_load_path, pymol_align_chains
 
 from utilities import *
 import pandas as pd
@@ -821,8 +821,16 @@ if __name__ == "__main__":
         if "pymol" in sys.argv:
             from pymol import *
             pymol_start(show=True)
-            for dimer in load_list_1by1(id_list=df["id"].values, pickle_folder = local.dimers):
-                pymol_load_path(dimer.replaced_path)
+            chains_to_align = []
+            for row in df.itertuples():
+                dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers)[0]
+                name = pymol_load_path(dimer.replaced_path, row.id + str(row.is1to2))
+                if row.is1to2:
+                    chains_to_align.append([name, row.mon1])
+                else:
+                    chains_to_align.append([name, row.mon2])
+            pymol_align_chains(chains_to_align)
+
 
 
 
