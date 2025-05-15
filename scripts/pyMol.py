@@ -9,13 +9,15 @@ from maths import *
 import pymol
 
 
-def pymol_colour_everything(start_at=0):
-    # List of available colours
-    colours = ['green', 'cyan', 'red', 'yellow', 'violet','blue',
+colours = ['green', 'cyan', 'red', 'yellow', 'violet','blue',
                'salmon', 'lime', 'pink', 'slate', 'magenta', 'orange', 'marine',
                'olive', 'purple', 'teal', 'forest', 'firebrick', 'chocolate',
                'wheat', 'white', 'grey']
-    ncolours = len(colours)
+ncolours = len(colours)
+
+def pymol_colour_everything(start_at=0):
+    # List of available colours
+
     num_states = pymol.cmd.count_states("(all)")
     # Loop over objects
     i = 0
@@ -94,6 +96,11 @@ def pymol_colour(colour, obj = "(all)", sele = None, spectrum=None, silent =Fals
         print("(PyMol) Colouring:", sele_str, colour, spectrum)
     if spectrum is not None:
         pymol.cmd.spectrum(spectrum, colour, sele_str)
+    elif colour == "chainbow":
+        palette = "rainbow"
+        if spectrum is not None:
+            palette = spectrum
+        pymol.cmd.util.chainbow(sele_str, palette=palette)
     else:
         pymol.cmd.colour(colour, sele_str)
 
@@ -235,11 +242,12 @@ def pymol_show_cell():
     print("(PyMol) Displaying cell")
     pymol.cmd.show("cell")
 
-def pymol_group(identifier = "sym", name = None):
+def pymol_group(identifier = "sym", name = None, quiet = False):
     group = []
     if name is None:
         name = identifier
-    print("(PyMol) Grouping:", identifier, "in", name)
+    if not quiet:
+        print("(PyMol) Grouping:", identifier, "in", name)
     for obj in pymol.cmd.get_names(type='objects'):
         if type(identifier) is str:
             if identifier in obj:
@@ -361,8 +369,8 @@ def pymol_save_cluster(obj_list, name="CLUSTER_X.pdb", folder=None, state=0):
         if type(obj) is list or type(obj) is tuple:
             obj = obj[0]
         objects.append(obj)
-        print(obj)
-    print(objects)
+        #print(obj)
+    #print(objects)
     path = os.path.join(folder, name)
     pymol.cmd.multisave(path, pattern=" or ".join(objects), state=state)
     return path

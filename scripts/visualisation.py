@@ -834,31 +834,31 @@ if __name__ == "__main__":
             pymol_start(show=True)
             ref = load_references(identifier=file.split(".")[0])[0]
             pymol_load_path(ref.path, ref.name)
-            chains_to_align = [[ref.name, ref.chain]]
-            chains_to_align_reverse = [[ref.name, ref.chain]]
+            pymol_colour("chainbow", ref.name)
+            input()
             print("Sele:", sele)
             for c in sele:
                 df = df[df["angle_cluster"] == c]
                 print(df)
+                chains_to_align = [[ref.name, ref.chain]]
                 for row in df.itertuples():
                     dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers)[0]
                     name = pymol_load_path(dimer.replaced_path, row.id + str(row.is1to2))
                     if row.is1to2:
                         chains_to_align.append([name, row.mon1])
                     else:
-                        chains_to_align_reverse.append([name, row.mon2])
+                        chains_to_align.append([name, row.mon2])
                 pymol_align_chains(chains_to_align)
-                pymol_align_chains(chains_to_align_reverse)
+                pymol_group([a[0] for a in chains_to_align[1:]], name="--"+str(c), quiet=True)
+                pymol_colour(colours[c%ncolours], "--"+str(c))
 
-
-                print("All groups:")
-                print([obj for obj in pymol_get_all_objects() if obj[0]=="-"])
-
+            print("All groups:")
+            print([obj for obj in pymol_get_all_objects() if obj[:1]=="--"])
 
             input("Press Enter to continue...")
-            obj_list = pymol_get_all_objects()
-            cluster_path = pymol_save_cluster(obj_list)
-            pymol_open_saved_cluster(cluster_path, obj_list, only_even=False)
+            #obj_list = [obj for obj in pymol_get_all_objects() if obj[:1] != "--"]
+            #cluster_path = pymol_save_cluster(obj_list)
+            #pymol_open_saved_cluster(cluster_path, obj_list, only_even=False)
             session_path = pymol_save_temp_session()
             pymol_open_session_terminal(session_path)
 
