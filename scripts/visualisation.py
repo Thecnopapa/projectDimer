@@ -835,13 +835,13 @@ if __name__ == "__main__":
             ref = load_references(identifier=file.split(".")[0])[0]
             pymol_load_path(ref.path, ref.name)
             pymol_colour("chainbow", ref.name)
-            input()
             print("Sele:", sele)
             for c in sele:
-                df = df[df["angle_cluster"] == c]
-                print(df)
+                print("Cluster:", c)
+                subset = df[df["angle_cluster"] == c]
+                print(subset)
                 chains_to_align = [[ref.name, ref.chain]]
-                for row in df.itertuples():
+                for row in subset.itertuples():
                     dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers)[0]
                     name = pymol_load_path(dimer.replaced_path, row.id + str(row.is1to2))
                     if row.is1to2:
@@ -855,7 +855,7 @@ if __name__ == "__main__":
             print("All groups:")
             print([obj for obj in pymol_get_all_objects() if obj[:1]=="--"])
 
-            input("Press Enter to continue...")
+            #input("Press Enter to continue...")
             #obj_list = [obj for obj in pymol_get_all_objects() if obj[:1] != "--"]
             #cluster_path = pymol_save_cluster(obj_list)
             #pymol_open_saved_cluster(cluster_path, obj_list, only_even=False)
