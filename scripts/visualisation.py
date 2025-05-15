@@ -3,7 +3,7 @@ import sys
 
 from Globals import root, local, vars
 from maths import angle_between_vectors
-from pyMol import pymol_load_name, pymol_start, pymol_load_path, pymol_align_chains
+
 
 from utilities import *
 import pandas as pd
@@ -296,6 +296,7 @@ if __name__ == "__main__":
     import setup
     from Globals import root, local, vars
     from imports import *
+    from pyMol import *
 
     import sys
 
@@ -329,7 +330,8 @@ if __name__ == "__main__":
 
 
 
-    elif any(arg in sys.argv[1] for arg in ["clusters-face", "clusters-pca", "clusters-pca-global"]):
+    elif any([arg == sys.argv[1] for arg in ["clusters-face", "clusters-pca", "clusters-pca-global"]]):
+        print([arg == sys.argv[1] for arg in ["clusters-face", "clusters-pca", "clusters-pca-global"]])
         global_pca = False
         cluster_colname = "cluster"
         if "pca" in sys.argv[1]:
@@ -814,42 +816,61 @@ if __name__ == "__main__":
         dihedrals_path = os.path.join(root.dihedral_clusters, file)
         df = pd.read_csv(dihedrals_path, index_col=0)
         print(df)
-        c = int_input("Select cluster to display {}:\n".format([int(a) for a in set(df["angle_cluster"].values)]))
-        df = df[df["angle_cluster"] == c]
+        options = [int(a) for a in set(df["angle_cluster"].values)]
+        sele = int_input("Select cluster to display {}:\n".format(options))
+
+        if sele == "all":
+            sele = options
+        else:
+            sele = [sele]
+        df.query(" | ".join(["{} == {}".format("angle_cluster", n) for n in sele]), inplace=True)
         print(df.to_string())
 
+
+
+
         if "pymol" in sys.argv:
-            from pymol import *
+            from pyMol import *
             pymol_start(show=True)
-            chains_to_align = []
-            chains_to_align_reverse = []
-            i = 0
-            for row in df.itertuples():
-                if i ==10:
-                    break
-                dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers)[0]
-                name = pymol_load_path(dimer.replaced_path, row.id + str(row.is1to2))
-                if row.is1to2:
-                    chains_to_align.append([name, row.mon1])
-                    if i == 0:
-                        chains_to_align_reverse.append([name, row.mon1])
-                else:
-                    chains_to_align_reverse.append([name, row.mon2])
-                    if i == 0:
+            ref = load_references(identifier=file.split(".")[0])[0]
+            pymol_load_path(ref.path, ref.name)
+            chains_to_align = [[ref.name, ref.chain]]
+            chains_to_align_reverse = [[ref.name, ref.chain]]
+            print("Sele:", sele)
+            for c in sele:
+                df = df[df["angle_cluster"] == c]
+                print(df)
+                for row in df.itertuples():
+                    dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers)[0]
+                    name = pymol_load_path(dimer.replaced_path, row.id + str(row.is1to2))
+                    if row.is1to2:
                         chains_to_align.append([name, row.mon1])
-                i+=1
-            pymol_align_chains(chains_to_align)
-            pymol_align_chains(chains_to_align_reverse)
+                    else:
+                        chains_to_align_reverse.append([name, row.mon2])
+                pymol_align_chains(chains_to_align)
+                pymol_align_chains(chains_to_align_reverse)
+
+
+                print("All groups:")
+                print([obj for obj in pymol_get_all_objects() if obj[0]=="-"])
+
+
+            input("Press Enter to continue...")
+            obj_list = pymol_get_all_objects()
+            cluster_path = pymol_save_cluster(obj_list)
+            pymol_open_saved_cluster(cluster_path, obj_list, only_even=False)
+            session_path = pymol_save_temp_session()
+            pymol_open_session_terminal(session_path)
+
+
+
 
         elif "plot" in sys.argv:
             from clustering import plot_dihedrals
-            plot_dihedrals(dihedrals_path, subset_col="angle_cluster", subset=c, save=False, label_col="id", only_first=10)
+            for c in options:
+                plot_dihedrals(dihedrals_path, subset_col="angle_cluster", subset=c, save=False, label_col="id", only_first=10)
 
 
-
-
-
-            pass
 
 
 

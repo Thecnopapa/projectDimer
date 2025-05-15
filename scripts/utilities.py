@@ -285,11 +285,14 @@ def KeepInterpreter():
         # now what?
 
 
-def int_input(prompt):
+def int_input(prompt, all="all"):
     i = None
     while i is None:
         try:
-            i = int(input(prompt))
+            i = input(prompt)
+            if i == all:
+                return i
+            i = int(i)
         except KeyboardInterrupt:
             quit()
         except ValueError:

@@ -3,6 +3,7 @@ import os
 
 from utilities import *
 from Globals import root, local, vars
+from maths import *
 
 
 import pymol
@@ -102,8 +103,8 @@ def pymol_save_small(file_name, folder, dpi=300, height=100, width=100, save_ses
     pymol.cmd.png(image_path, width=width, height=height, dpi=dpi)
     return image_path
 
-def pymol_save_session(file_name, folder):
-    path = os.path.join(folder, file_name + ".pse")
+def pymol_save_session(file_name, folder, mode="pse"):
+    path = os.path.join(folder, file_name + "."+mode)
     pymol.cmd.save(path)
     return path
 
@@ -256,10 +257,9 @@ def pymol_draw_line(coord1, coord2, name = "d", state = -1, quiet= True):
     pymol.cmd.pseudoatom("tmp1", pos=coord1, state=state)
     pymol.cmd.pseudoatom("tmp2", pos=coord2, state=state)
     n=0
-    print("Waiting for pymol... {} currently: {}".format(n, pymol_get_all_objects()), end="\r")
+    #print("Waiting for pymol... {} currently: {}".format(n, pymol_get_all_objects()), end="\r")
 
     while "tmp1" in pymol_get_all_objects():
-        print("Waiting for pymol... {} currently: {}".format(n, pymol_get_all_objects()), end="\r")
         n+=1
         try:
             pymol.cmd.distance(name, "(tmp1)","tmp2", state=state)
@@ -270,7 +270,7 @@ def pymol_draw_line(coord1, coord2, name = "d", state = -1, quiet= True):
             pymol.cmd.delete("tmp2")
             pymol.cmd.pseudoatom("tmp1", pos=coord1, state=state)
             pymol.cmd.pseudoatom("tmp2", pos=coord2, state=state)
-
+        print("Waiting for pymol... {}".format(n), end="\r")
 def pymol_paint_contacts(obj, contact_list, colour ="yellow"):
     print("(PyMol) Colouring contacts in {}".format(obj))
     for chain, resn, in contact_list:
@@ -311,7 +311,7 @@ def pymol_sphere(coords, name = None, colour="white", state = -1, scale = 8):
     if name is None:
         n_spheres = sum(1 for a in ("tmp_sphere" in obj for obj in pymol_get_all_objects()) if a)
         name = "tmp_sphere_{}".format(n_spheres)
-    print(name)
+    #print(name)
     #pymol.cmd.pseudoatom(pos = coords, object = name)
     pymol.cmd.pseudoatom(object=name, pos=coords, color = colour, elem="Ca", state = state)
     pymol.cmd.set("sphere_scale", scale)#, selection="({})".format(name))
@@ -345,7 +345,8 @@ def pymol_save_temp_session(path=None, name="temp_session.pse"):
     pymol.cmd.save(path)
     return path
 
-
+def pymol_open_session_terminal(path):
+    open_session_terminal(path)
 def open_session_terminal(path):
     import subprocess
     subprocess.Popen(["nohup", "xdg-open", path], start_new_session=True)
@@ -365,3 +366,57 @@ def pymol_save_cluster(obj_list, name="CLUSTER_X.pdb", folder=None, state=0):
     path = os.path.join(folder, name)
     pymol.cmd.multisave(path, pattern=" or ".join(objects), state=state)
     return path
+
+def pymol_open_saved_cluster(path, name_list=None, only_even=True, spheres = False):
+    from Bio.PDB import PDBParser
+    from faces import find_com, get_pca
+
+    cluster_data = {"names": name_list,
+                    "models": [],
+                    "chains": [],
+                    "pcas": [],
+                    "path": path,
+                    "corners": [],
+                    "coms": []}
+
+    cluster_structure = PDBParser(QUIET=True).get_structure(os.path.basename(path.split(".")[0]), path)
+    models = cluster_structure.get_models()
+    if only_even:
+        models = [model for model in models if model.id % 2 == 0]
+    spheres = []
+    for model, name in zip(models, cluster_data["names"]):
+        print1(model)
+        cluster_data["models"].append(model)
+        for chain in model.get_chains():
+            print2(chain)
+            cluster_data["chains"].append(chain)
+            com = find_com(chain.get_atoms())
+
+            pca = get_pca(chain, com=com, closer_to="N")
+            cluster_data["coms"].append(com)
+            cluster_data["pcas"].append(pca)
+            if spheres:
+                pymol_sphere(com, name=name + "_" + chain.id + "_com")
+            components = pca.components_
+            variances = pca.explained_variance_
+            ratios = pca.explained_variance_ratio_
+            if "inverse" in pca.__dict__.keys():
+                if pca.inverse:
+                    components[1], components[2] = components[2].copy(), components[1].copy()
+                    variances[1], variances[2] = variances[2].copy(), variances[1].copy()
+            sphere_coords = com
+            corner = [0, 0, 0]
+            for n, (component, variance, ratio) in enumerate(zip(components, variances, ratios)):
+                #print("sphere-coords:", sphere_coords)
+                #print(com, component, variance)
+                pymol_draw_line(com, tuple([c + (co * variance) for c, co in zip(com, component)]),
+                                name="{}_{}_component_{}".format(name, chain.id, n), quiet=True)
+                sphere_coords = add(sphere_coords, tuple([co * variance for co in component]))
+                corner = add(corner, tuple([co * variance for co in component]))
+            #print("sphere-coords:", sphere_coords)
+            spheres.append(sphere_coords)
+            cluster_data["corners"].append(corner)
+            if spheres:
+                pymol_sphere(sphere_coords, name=name+"_"+chain.id + "_corner")
+        pymol_group(name, name="-"+name)
+

@@ -150,7 +150,7 @@ def get_pca(structure, n_components = 3, com = None, closer_to = None, solver = 
             closer = closer_to - com
             #print(distance(component, closer),distance(component * -1, closer))
             if distance(component, closer) > distance(component * -1, closer):
-                print4("Reverse component", n, pca.components_[n], "-->", end=" ")
+                print4("Reversed component", n, pca.components_[n], "-->", end=" ")
                 pca.components_[n] = component * -1
                 print(pca.components_[n])
 
