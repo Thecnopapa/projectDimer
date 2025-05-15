@@ -178,15 +178,18 @@ def get_pca(structure, n_components = 3, com = None, closer_to = None, solver = 
     return pca
 
 def pca_to_lines(pca, com, just_points = False):
-    components = pca.components_ * pca.explained_variance_ # * pca.singular_values_
+    components = pca.components_
+    variances = pca.explained_variance_
     points = []
     lines = []
     #print("COmponents:", components)
-    for component in components:
-        c = [component[i] + com[i] for i in range(len(component))]
+    for component, variance in zip(components,variances):
+        c = add(com,component)
+        v = scale(vector(com, c), variance)
+        sc = add(com, v)
         #print( "C:", c)
-        points.append((com, c))
-        lines.append(points_to_line(com, c))
+        points.append((com, sc))
+        lines.append(points_to_line(com, sc))
         #print(points)
     if just_points:
         return points

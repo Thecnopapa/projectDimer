@@ -1167,13 +1167,22 @@ def generate_dihedrals_df(dimer_list = None, force = False):
             df.to_csv(df_path)
 
 
-def plot_dihedrals(path, clusters=None, labels=["0","1","2"]):
+def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = None, subset=None, save=True, label_col=None, only_first=None):
     from matplotlib import  pyplot as plt
     df = pd.read_csv(path)
+
+    if subset_col is not None:
+        assert subset_col in df.columns
+        assert subset is not None
+        df = df[df[subset_col] == subset]
+
+    if only_first is not None:
+        df = df.iloc[:only_first]
+
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     for point in df.itertuples():
-        if cluster is None:
+        if clusters is None:
             ax.scatter(point.a0, point.a1, point.a2)
         else:
             cl = point.__getattribute__(clusters)
@@ -1182,13 +1191,19 @@ def plot_dihedrals(path, clusters=None, labels=["0","1","2"]):
             else:
                 col = "C"+str(cl)
             ax.scatter(point.a0, point.a1, point.a2, c=col)
-    ax.set_xlabel(labels[0])
-    ax.set_ylabel(labels[1])
-    ax.set_zlabel(labels[2])
+        if label_col is not None:
+            ax.text(point.a0, point.a1, point.a2, point.__getattribute__(label_col))
+    ax.set_xlabel(ax_labels[0])
+    ax.set_ylabel(ax_labels[1])
+    ax.set_zlabel(ax_labels[2])
+    ax.set_xlim(0,180)
+    ax.set_ylim(0,180)
+    ax.set_zlim(0,180)
 
-    root["dihedral_figs"] = "images/dihedral_figs"
-    savepath = os.path.join(root.dihedral_figs, os.path.basename(path).split(".")[0] + ".png")
-    plt.savefig(savepath)
+    if save:
+        root["dihedral_figs"] = "images/dihedral_figs"
+        savepath = os.path.join(root.dihedral_figs, os.path.basename(path).split(".")[0] + ".png")
+        plt.savefig(savepath)
     if vars.block:
         plt.show(block = vars.block)
 

@@ -311,7 +311,7 @@ class Monomer(BioObject):
         from maths import find_com
         from faces import get_pca
         self.com = find_com(self.replaced.get_atoms())
-        self.pca = dict(pca=get_pca(self.replaced, com=self.com),
+        self.pca = dict(pca=get_pca(self.replaced, com=self.com, closer_to="N"),
                         com=self.com,
                         chain=self.chain)
         return self.pca
@@ -975,7 +975,7 @@ class Reference(Monomer):
         self.com = find_com(self.structure.get_atoms())
         if self.name == "GR":
             self.face_coms = get_face_coms(self)
-        self.pca = dict(pca=get_pca(self.structure, com=self.com),
+        self.pca = dict(pca=get_pca(self.structure, com=self.com, closer_to="N"),
                         com=self.com,
                         chain=self.chain)
 

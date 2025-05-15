@@ -822,14 +822,29 @@ if __name__ == "__main__":
             from pymol import *
             pymol_start(show=True)
             chains_to_align = []
+            chains_to_align_reverse = []
+            i = 0
             for row in df.itertuples():
+                if i ==10:
+                    break
                 dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers)[0]
                 name = pymol_load_path(dimer.replaced_path, row.id + str(row.is1to2))
                 if row.is1to2:
                     chains_to_align.append([name, row.mon1])
+                    if i == 0:
+                        chains_to_align_reverse.append([name, row.mon1])
                 else:
-                    chains_to_align.append([name, row.mon2])
+                    chains_to_align_reverse.append([name, row.mon2])
+                    if i == 0:
+                        chains_to_align.append([name, row.mon1])
+                i+=1
             pymol_align_chains(chains_to_align)
+            pymol_align_chains(chains_to_align_reverse)
+
+        elif "plot" in sys.argv:
+            from clustering import plot_dihedrals
+            plot_dihedrals(dihedrals_path, subset_col="angle_cluster", subset=c, save=False, label_col="id", only_first=10)
+
 
 
 
