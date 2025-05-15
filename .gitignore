@@ -255,6 +255,5 @@ fabric.properties
 /secure/
 /dataframes/
 /diagrams/
-
-
 /data/experimental/
+nohup.out
