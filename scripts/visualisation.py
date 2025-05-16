@@ -808,23 +808,35 @@ if __name__ == "__main__":
 
     elif "clusters2" in sys.argv[1]:
         sprint("Showing clusters v2")
-        for n, file in enumerate(os.listdir(root.dihedral_clusters)):
+
+        cluster_folders = ["angle_clusters1", "angle_clusters2"]
+        cluster_cols = ["angle_cluster1", "angle_cluster2"]
+        if "levels=" in sys.argv:
+            l = int(sys.argv[sys.argv.index("levels=")].split("=")[1])-1
+            cluster_folders = cluster_folders[l:]
+            cluster_cols = cluster_cols[:l]
+
+        for n, file in enumerate(os.listdir(root[cluster_folders[0]])):
             print1(n, ":", file)
 
         i = int_input("Select df to display:\n")
-        file = os.listdir(root.dihedral_clusters)[i]
-        dihedrals_path = os.path.join(root.dihedral_clusters, file)
-        df = pd.read_csv(dihedrals_path, index_col=0)
-        print(df)
-        options = [int(a) for a in set(df["angle_cluster"].values)]
-        sele = int_input("Select cluster to display {}:\n".format(options))
-
-        if sele == "all":
-            sele = options
-        else:
-            sele = [sele]
-        df.query(" | ".join(["{} == {}".format("angle_cluster", n) for n in sele]), inplace=True)
-        print(df.to_string())
+        file = os.listdir(root[cluster_folders[0]])[i]
+        options = []
+        sele = []
+        fname = file.split(".")[0]
+        for n, (cluster_col, cluster_folder) in enumerate(zip(cluster_cols, cluster_folders)):
+            dihedrals_path = os.path.join(root[cluster_folders[n]], fname+".csv")
+            df = pd.read_csv(dihedrals_path, index_col=0)
+            print(df)
+            options.append([int(a) for a in sorted(set(df[cluster_cols[n]].values))])
+            s = int_input("Select {} to display {}:\n".format(cluster_col, options[n]))
+            if s == "all":
+                sele.append(options[n])
+            else:
+                sele.append([s])
+            df.query(" | ".join(["{} == {}".format(cluster_col, n) for n in sele]), inplace=True)
+            print(df.to_string())
+            fname = fname + "-{}".format(s)
 
 
 
@@ -836,9 +848,10 @@ if __name__ == "__main__":
             pymol_load_path(ref.path, ref.name)
             pymol_colour("chainbow", ref.name)
             print("Sele:", sele)
-            for c in sele:
-                print("Cluster:", c)
-                subset = df[df["angle_cluster"] == c]
+
+            for c in sele[-1]:
+                print("Cluster:", sele[:-1], c)
+                subset = df[df[cluster_cols[-1]] == c]
                 print(subset)
                 chains_to_align = [[ref.name, ref.chain]]
                 for row in subset.itertuples():
@@ -848,17 +861,22 @@ if __name__ == "__main__":
                         chains_to_align.append([name, row.mon1])
                     else:
                         chains_to_align.append([name, row.mon2])
+                    if "chainbows" in sys.argv:
+                        pymol_colour("chainbow", name)
                 pymol_align_chains(chains_to_align)
                 pymol_group([a[0] for a in chains_to_align[1:]], name="--"+str(c), quiet=True)
-                pymol_colour(colours[c%ncolours], "--"+str(c))
+                if not "chainbows" in sys.argv:
+                    pymol_colour(colours[c%ncolours], "--"+str(c))
 
             print("All groups:")
             print([obj for obj in pymol_get_all_objects() if obj[:1]=="--"])
 
             #input("Press Enter to continue...")
-            #obj_list = [obj for obj in pymol_get_all_objects() if obj[:1] != "--"]
-            #cluster_path = pymol_save_cluster(obj_list)
-            #pymol_open_saved_cluster(cluster_path, obj_list, only_even=False)
+
+            if "post-process" in sys.argv:
+                obj_list = [obj for obj in pymol_get_all_objects() if obj[:1] != "--"]
+                cluster_path = pymol_save_cluster(obj_list)
+                pymol_open_saved_cluster(cluster_path, obj_list, only_even=False, spheres=False)
             session_path = pymol_save_temp_session()
             pymol_open_session_terminal(session_path)
 
@@ -868,7 +886,7 @@ if __name__ == "__main__":
         elif "plot" in sys.argv:
             from clustering import plot_dihedrals
             for c in options:
-                plot_dihedrals(dihedrals_path, subset_col="angle_cluster", subset=c, save=False, label_col="id", only_first=10)
+                plot_dihedrals(dihedrals_path, subset_col="angle_cluster1", subset=c, save=False, label_col="id", only_first=10)
 
 
 
