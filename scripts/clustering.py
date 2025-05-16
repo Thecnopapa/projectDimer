@@ -1140,7 +1140,7 @@ def generate_dihedrals_df(dimer_list = None, force = False):
     if force or len(os.listdir(root.dihedrals)) == 0:
         from imports import load_single_pdb
         if dimer_list is None:
-            dimer_list = os.listdir(local.dimers)
+            dimer_list = os.listdir(local.dimers)[0:10]
         dimer_list = sorted(dimer_list)
         progress = ProgressBar(len(dimer_list))
         dataframes = {}
@@ -1156,15 +1156,16 @@ def generate_dihedrals_df(dimer_list = None, force = False):
                 dihedrals_2to1 = dimer.get_dihedrals(reverse=True)
 
                 if dimer.best_fit in dataframes.keys():
-                    dataframes[dimer.best_fit].append([dimer.id, True] + chains + dihedrals_1to2 + dihedrals_2to1[:-1])
-                    dataframes[dimer.best_fit].append([dimer.id, False] + chains + dihedrals_2to1 + dihedrals_1to2[:-1])
+                    dataframes[dimer.best_fit].append([dimer.id, True] + chains + dihedrals_1to2 + dihedrals_2to1[3:-1])
+                    dataframes[dimer.best_fit].append([dimer.id, False] + chains + dihedrals_2to1 + dihedrals_1to2[3:-1])
                 else:
-                    dataframes[dimer.best_fit] = [[dimer.id, True] + chains + dihedrals_1to2 + dihedrals_2to1[:-1]]
-                    dataframes[dimer.best_fit] = [[dimer.id, False] + chains + dihedrals_2to1 + dihedrals_1to2[:-1]]
+                    dataframes[dimer.best_fit] = [[dimer.id, True] + chains + dihedrals_1to2 + dihedrals_2to1[3:-1]]
+                    dataframes[dimer.best_fit] = [[dimer.id, False] + chains + dihedrals_2to1 + dihedrals_1to2[3:-1]]
 
                 progress.add(info=dimer.id)
         for key in dataframes.keys():
             print(key)
+            print(dataframes[key])
             df = pd.DataFrame(columns = ["id", "is1to2", "mon1", "mon2", "d0", "d1", "d2", "a0", "a1", "a2", "d", "b0", "b1", "b2",], data = dataframes[key])
             print(df)
             df_path = os.path.join(root.dihedrals, key + ".csv")
@@ -1226,8 +1227,8 @@ def cluster_angles(dihedrals_path,
             subset_df = dihedrals_df[dihedrals_df[split_by] == cluster]
             subset_df[cluster_name] = quick_cluster(subset_df[angles], bandwidth=bandwidth)
             root[folder] = "dataframes/clustering2/{}".format(folder)
-            print(dihedrals_df)
-            dihedrals_df.to_csv(os.path.join(root[folder], os.path.basename(dihedrals_path).split["."][0]+"-"+str(cluster)+".csv"))
+            print(subset_df)
+            subset_df.to_csv(os.path.join(root[folder], os.path.basename(dihedrals_path).split(".")[0]+"-"+str(cluster)+".csv"))
     else:
         dihedrals_df[cluster_name] = quick_cluster(dihedrals_df[angles], bandwidth=bandwidth)
         root[folder] = "dataframes/clustering2/{}".format(folder)
