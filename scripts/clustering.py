@@ -1140,7 +1140,7 @@ def generate_dihedrals_df(dimer_list = None, force = False):
     if force or len(os.listdir(root.dihedrals)) == 0:
         from imports import load_single_pdb
         if dimer_list is None:
-            dimer_list = os.listdir(local.dimers)[0:10]
+            dimer_list = os.listdir(local.dimers)
         dimer_list = sorted(dimer_list)
         progress = ProgressBar(len(dimer_list))
         dataframes = {}
