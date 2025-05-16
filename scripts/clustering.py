@@ -1152,16 +1152,20 @@ def generate_dihedrals_df(dimer_list = None, force = False):
                     progress.add(info=dimer.id)
                     continue
                 chains = [dimer.monomer1.chain, dimer.monomer2.chain]
-                for is1to2 in [True, False]:
-                    if dimer.best_fit in dataframes.keys():
-                        dataframes[dimer.best_fit].append([dimer.id, is1to2] + chains + dimer.get_dihedrals(reverse=not is1to2))
-                    else:
-                        dataframes[dimer.best_fit] = [[dimer.id, is1to2] + chains + dimer.get_dihedrals(reverse=not is1to2)]
+                dihedrals_1to2 = dimer.get_dihedrals(reverse=False)
+                dihedrals_2to1 = dimer.get_dihedrals(reverse=True)
+
+                if dimer.best_fit in dataframes.keys():
+                    dataframes[dimer.best_fit].append([dimer.id, True] + chains + dihedrals_1to2 + dihedrals_2to1[:-1])
+                    dataframes[dimer.best_fit].append([dimer.id, False] + chains + dihedrals_2to1 + dihedrals_1to2[:-1])
+                else:
+                    dataframes[dimer.best_fit] = [[dimer.id, True] + chains + dihedrals_1to2 + dihedrals_2to1[:-1]]
+                    dataframes[dimer.best_fit] = [[dimer.id, False] + chains + dihedrals_2to1 + dihedrals_1to2[:-1]]
 
                 progress.add(info=dimer.id)
         for key in dataframes.keys():
             print(key)
-            df = pd.DataFrame(columns = ["id", "is1to2", "mon1", "mon2", "d0", "d1", "d2", "a0", "a1", "a2", "d"], data = dataframes[key])
+            df = pd.DataFrame(columns = ["id", "is1to2", "mon1", "mon2", "d0", "d1", "d2", "a0", "a1", "a2", "d", "b0", "b1", "b2",], data = dataframes[key])
             print(df)
             df_path = os.path.join(root.dihedrals, key + ".csv")
             df.to_csv(df_path)
@@ -1208,11 +1212,32 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
         plt.show(block = vars.block)
 
 
-def cluster_dihedrals(dihedrals_path, bandwidth = None):
+def cluster_angles(dihedrals_path,
+                   bandwidth = None,
+                   angles=["a0", "a1", "a2"],
+                   cluster_name = "angle_cluster",
+                   folder="angle_clusters1",
+                   split_by=None):
+
     dihedrals_df = pd.read_csv(dihedrals_path)
-    dihedrals_df["angle_cluster"] = quick_cluster(dihedrals_df[["a0", "a1", "a2"]], bandwidth=bandwidth)
-    root["dihedral_clusters"] = "dataframes/clustering2/dihedral_clusters"
-    print(dihedrals_df)
-    dihedrals_df.to_csv(os.path.join(root.dihedral_clusters, os.path.basename(dihedrals_path)))
+    if split_by is not None:
+        clusters = set(dihedrals_df[split_by].values)
+        for cluster in clusters:
+            subset_df = dihedrals_df[dihedrals_df[split_by] == cluster]
+            subset_df[cluster_name] = quick_cluster(subset_df[angles], bandwidth=bandwidth)
+            root[folder] = "dataframes/clustering2/{}".format(folder)
+            print(dihedrals_df)
+            dihedrals_df.to_csv(os.path.join(root[folder], os.path.basename(dihedrals_path).split["."][0]+"-"+str(cluster)+".csv"))
+    else:
+        dihedrals_df[cluster_name] = quick_cluster(dihedrals_df[angles], bandwidth=bandwidth)
+        root[folder] = "dataframes/clustering2/{}".format(folder)
+        print(dihedrals_df)
+        dihedrals_df.to_csv(os.path.join(root[folder], os.path.basename(dihedrals_path)))
+
+    return root[folder]
+
+
+def cluster_dihedrals(dihedrals_path):
+    pass
 
 
