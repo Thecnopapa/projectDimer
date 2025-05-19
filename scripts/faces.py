@@ -485,7 +485,20 @@ class ContactSurface:
 
 
     @staticmethod
-    def get_heat_map(matrix, title="Heat map"):
+    def normalize_matrix(matrix, n = None):
+        if n == "max":
+            n = amax(matrix)
+        max_func = lambda x: x/n
+        vec_max_func = np.vectorize(max_func)
+        return vec_max_func(matrix)
+
+
+    @staticmethod
+    def get_heat_map(matrix, title="Heat map", normalize = None):
+
+        if normalize is not None:
+            matrix = ContactSurface.normalize_matrix(matrix, n=normalize)
+
         fig, ax = plt.subplots()
         im = ax.imshow(matrix)
         plt.colorbar(im)

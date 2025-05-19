@@ -23,7 +23,7 @@ progress = ProgressBar(len(dimer_list))
 face_df = pd.DataFrame(columns=["ID", "face1", "face2", "contact_face1", "contact_face2"])
 #print(dimer_list)
 
-
+n_dimers = 0
 thresholds = range(1,11)
 ref_name = "GR"
 contact_maps = {threshold:None for threshold in thresholds}
@@ -42,11 +42,12 @@ for dimer_name in dimer_list:
                         contact_maps[threshold] = dimer.contact_surface.get_contact_map(threshold=threshold)
                     else:
                         contact_maps[threshold] = np.add(contact_map, dimer.contact_surface.get_contact_map(threshold=threshold))
+                n_dimers += 1
         print(contact_maps)
         progress.add(info=dimer.id)
 
 for threshold, contact_map in contact_maps.items():
-    ContactSurface.get_heat_map(contact_map, title = "{} heat-map, threshold = {}".format(ref_name, threshold))
+    ContactSurface.get_heat_map(contact_map, title = "{} heat-map, threshold = {}, N = {}".format(ref_name, threshold, normalize = n_dimers))
 
 
 
