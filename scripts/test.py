@@ -38,7 +38,8 @@ for dimer_name in dimer_list:
                 if contact_map is None:
                     contact_map = dimer.contact_surface.get_contact_map()
                 else:
-                    contact_map += dimer.contact_surface.get_contact_map()
+                    contact_map = np.add(contact_map, dimer.contact_surface.get_contact_map())
+        print(contact_map)
         progress.add(info=dimer.id)
 ContactSurface.get_heat_map(contact_map, title = "GR heat-map, threshold = 10")
 

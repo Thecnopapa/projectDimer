@@ -496,22 +496,31 @@ class ContactSurface:
 
 
     @staticmethod
-    def is_above_threshold(value, threshold, equal=True, inverse=False):
+    def is_above_threshold(value, threshold, equal=True, inverse=False, as_bool=True):
+        r = None
         if equal:
             if inverse:
-                return value <= threshold
+                r= value <= threshold
             else:
-                return value >= threshold
+                r= value >= threshold
         else:
             if inverse:
-                return value < threshold
+                r= value < threshold
             else:
-                return value > threshold
+                r= value > threshold
+        if as_bool:
+            return r
+        else:
+            if r:
+                return 1
+            else:
+                return 0
 
 
-    def get_contact_map(self, threshold=10):
+
+    def get_contact_map(self, threshold=10, as_bool=False):
         vec_fun = np.vectorize(self.is_above_threshold)
-        contact_matrix = vec_fun(self.d_s_matrix, threshold=threshold)
+        contact_matrix = vec_fun(self.d_s_matrix, threshold=threshold,as_bool=as_bool)
         #self.get_heat_map(contact_matrix)
         return contact_matrix
 
