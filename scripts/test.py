@@ -47,7 +47,7 @@ for dimer_name in dimer_list:
         progress.add(info=dimer.id)
 
 for threshold, contact_map in contact_maps.items():
-    ContactSurface.get_heat_map(contact_map, title = "{} heat-map, threshold = {}, N = {}".format(ref_name, threshold, normalize = n_dimers))
+    ContactSurface.get_heat_map(contact_map, title = "{} heat-map, threshold = {}, N = {}".format(ref_name, threshold, n_dimers), normalize = n_dimers)
 
 
 
