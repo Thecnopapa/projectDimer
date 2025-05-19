@@ -24,7 +24,7 @@ face_df = pd.DataFrame(columns=["ID", "face1", "face2", "contact_face1", "contac
 #print(dimer_list)
 
 
-thresholds = range(1,9)
+thresholds = range(1,11)
 ref_name = "GR"
 contact_maps = {threshold:None for threshold in thresholds}
 for dimer_name in dimer_list:

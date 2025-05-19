@@ -521,7 +521,7 @@ class ContactSurface:
 
     def get_contact_map(self, threshold=10, as_bool=False):
         vec_fun = np.vectorize(self.is_above_threshold)
-        contact_matrix = vec_fun(self.d_s_matrix, threshold=threshold,as_bool=as_bool)
+        contact_matrix = vec_fun(self.d_s_matrix, threshold=threshold,as_bool=as_bool, inverse=True)
         #self.get_heat_map(contact_matrix)
         return contact_matrix
 
