@@ -484,13 +484,13 @@ class ContactSurface:
         return new_pairs, np.array(t_matrix), np.array(d_t_matrix)
 
 
-
-    def get_heat_map(self, matrix):
+    @staticmethod
+    def get_heat_map(matrix, title="Heat map"):
         fig, ax = plt.subplots()
         im = ax.imshow(matrix)
         plt.colorbar(im)
 
-        ax.set_title("Heat map")
+        ax.set_title(title)
         fig.tight_layout()
         plt.show()
 
@@ -512,7 +512,8 @@ class ContactSurface:
     def get_contact_map(self, threshold=10):
         vec_fun = np.vectorize(self.is_above_threshold)
         contact_matrix = vec_fun(self.d_s_matrix, threshold=threshold)
-        self.get_heat_map(contact_matrix)
+        #self.get_heat_map(contact_matrix)
+        return contact_matrix
 
 
 

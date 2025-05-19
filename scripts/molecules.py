@@ -578,6 +578,7 @@ class Dimer(BioObject):
 
         self.name = monomer1.name
 
+
         self.extra_id = monomer2.extra_id
         self.id = "{}_{}{}{}".format(self.name, monomer1.chain, monomer2.chain, self.extra_id, sasa = False)
         self.incomplete = True
@@ -602,6 +603,12 @@ class Dimer(BioObject):
         self.pca2 = None
 
         self.process(sasa = sasa)
+
+        from faces import ContactSurface
+        if self.best_fit is None or self.best_fit == "Missmatch":
+            self.contact_surface = None
+        else:
+            self.contact_surface = ContactSurface(self.monomer1.replaced, self.monomer2.replaced)
 
     def process(self, sasa = False):
         self.validate()
