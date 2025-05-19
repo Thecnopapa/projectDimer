@@ -492,7 +492,8 @@ class ContactSurface:
 
         ax.set_title(title)
         fig.tight_layout()
-        plt.show()
+        plt.savefig(title + ".png")
+
 
 
     @staticmethod
