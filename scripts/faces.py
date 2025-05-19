@@ -501,7 +501,8 @@ class ContactSurface:
 
         fig, ax = plt.subplots()
         im = ax.imshow(matrix)
-        plt.colorbar(im)
+        cbar = plt.colorbar(im)
+        cbar.set_label("% Occurnce")
 
         ax.set_title(title)
         fig.tight_layout()
