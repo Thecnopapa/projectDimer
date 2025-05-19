@@ -30,7 +30,8 @@ for dimer_name in dimer_list:
     for dimer in dimers:
         if dimer.best_fit is not None and dimer.best_fit != "Missmatch":
             dimer.contact_surface = ContactSurface(dimer.monomer1.replaced, dimer.monomer2.replaced)
-            dimer.contact_surface.get_heat_map()
+            dimer.contact_surface.get_contact_map()
+            quit()
             dimer.pickle()
         progress.add(info=dimer.id)
 

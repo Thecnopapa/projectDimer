@@ -460,6 +460,7 @@ class ContactSurface:
         self.structure2 = structure2
         self.residues = [res.id[1] for res in structure1.get_residues()]
         self.res_pairs, self.t_matrix, self.d_t_matrix = self.get_atom_pairs()
+        self.d_s_matrix = np.tril(self.d_t_matrix.T, -1) + self.d_t_matrix
 
 
 
@@ -484,23 +485,36 @@ class ContactSurface:
 
 
 
-    def get_heat_map(self):
-        print(self.d_t_matrix)
-
-        d_s_matrix = np.tril(self.d_t_matrix.T, -1) + self.d_t_matrix
-        print(d_s_matrix.tolist())
-
+    def get_heat_map(self, matrix):
         fig, ax = plt.subplots()
-        im = ax.imshow(d_s_matrix)
+        im = ax.imshow(matrix)
         plt.colorbar(im)
-
 
         ax.set_title("Heat map")
         fig.tight_layout()
         plt.show()
 
-        quit()
-        pass
+
+    @staticmethod
+    def is_above_threshold(value, threshold, equal=True, inverse=False):
+        if equal:
+            if inverse:
+                return value <= threshold
+            else:
+                return value >= threshold
+        else:
+            if inverse:
+                return value < threshold
+            else:
+                return value > threshold
+
+
+    def get_contact_map(self, threshold=10):
+        vec_fun = np.vectorize(self.is_above_threshold)
+        contact_matrix = vec_fun(self.d_s_matrix, threshold=threshold)
+        self.get_heat_map(contact_matrix)
+
+
 
 
 
