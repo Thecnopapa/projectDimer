@@ -492,7 +492,9 @@ class ContactSurface:
 
         ax.set_title(title)
         fig.tight_layout()
-        plt.savefig(title + ".png")
+        root["heatmaps"] = "images/heatmaps"
+        fig_path = os.path.join(root.heatmaps, title + ".png")
+        plt.savefig(fig_path)
 
 
 
