@@ -28,11 +28,16 @@ for dimer_name in dimer_list:
     #print(local.dimers)
     dimers = load_single_pdb(dimer_name, pickle_folder=local.dimers)
     for dimer in dimers:
-        if dimer.best_fit != "GR":
-            progress.add(info=dimer.id)
-            continue
-        dimer.reprocess()
+        if dimer.best_fit is not None and dimer.best_fit != "Missmatch":
+            dimer.contact_surface = ContactSurface(dimer.monomer1.replaced, dimer.monomer2.replaced)
+            dimer.contact_surface.get_heat_map()
+            dimer.pickle()
         progress.add(info=dimer.id)
+
+
+
+
+
 
 
 def plot_face_coms():

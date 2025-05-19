@@ -843,7 +843,7 @@ if __name__ == "__main__":
 
         if "pymol" in sys.argv:
             from pyMol import *
-            pymol_start(show=True)
+            pymol_start(show=False)
             ref = load_references(identifier=file.split(".")[0])[0]
             pymol_load_path(ref.path, ref.name)
             pymol_colour("chainbow", ref.name)

@@ -435,6 +435,83 @@ def get_pca_df(in_path, subfolder, only_pcas = False, force = False, splitted=Tr
 
 
 
+class ResPair:
+    def __init__(self, res1, res2):
+        self.res1 = res1
+        self.res2 = res2
+        self.id1 = res1.id[1]
+        self.id2 = res2.id[1]
+        self.id = "{}:{}".format(self.id1, self.id2)
+        self.coord1 = [atom.coord for atom in self.res1.get_atoms() if atom.id == "CA"][0]
+        self.coord2 = [atom.coord for atom in self.res2.get_atoms() if atom.id == "CA"][0]
+        self.vector12 = vector(self.coord1, self.coord2)
+        self.vector21 = vector(self.coord2, self.coord1)
+        self.dist = length(self.vector12)
+
+
+
+
+
+
+
+class ContactSurface:
+    def __init__(self, structure1, structure2):
+        self.structure1 = structure1
+        self.structure2 = structure2
+        self.residues = [res.id[1] for res in structure1.get_residues()]
+        self.res_pairs, self.t_matrix, self.d_t_matrix = self.get_atom_pairs()
+
+
+
+
+    def get_atom_pairs(self):
+        assert len(list(self.structure1.get_residues())) == len(list(self.structure2.get_residues()))
+        t_matrix = []
+        d_t_matrix = []
+        new_pairs = {}
+        for n, res1 in enumerate(self.structure1.get_residues()):
+            for res2 in list(self.structure2.get_residues())[n:]:
+                p = ResPair(res1, res2)
+                new_pairs[p.id] = p
+                if len(t_matrix) == n:
+                    t_matrix.append([None]*n+[p])
+                    d_t_matrix.append([0]*n+[p.dist])
+                else:
+                    t_matrix[n].append(p)
+                    d_t_matrix[n].append(p.dist)
+        print(len(new_pairs))
+        return new_pairs, np.array(t_matrix), np.array(d_t_matrix)
+
+
+
+    def get_heat_map(self):
+        print(self.d_t_matrix)
+
+        d_s_matrix = np.tril(self.d_t_matrix.T, -1) + self.d_t_matrix
+        print(d_s_matrix.tolist())
+
+        fig, ax = plt.subplots()
+        im = ax.imshow(d_s_matrix)
+        plt.colorbar(im)
+
+
+        ax.set_title("Heat map")
+        fig.tight_layout()
+        plt.show()
+
+        quit()
+        pass
+
+
+
+
+
+
+
+
+
+
+
 
 
 
