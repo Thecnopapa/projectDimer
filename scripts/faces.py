@@ -494,23 +494,38 @@ class ContactSurface:
 
 
     @staticmethod
-    def get_heat_map(matrix, title="Heat map", normalize = None, show=False):
+    def get_heat_map(matrix, title="Heat map", normalize = None, plot = True, show=False):
 
         if normalize is not None:
             matrix = ContactSurface.normalize_matrix(matrix, n=normalize)
 
-        fig, ax = plt.subplots()
-        im = ax.imshow(matrix)
-        cbar = plt.colorbar(im)
-        cbar.set_label("% Occurnce")
+        if plot:
+            fig, ax = plt.subplots()
+            im = ax.imshow(matrix)
+            cbar = plt.colorbar(im)
+            cbar.set_label("% Occurnce")
 
-        ax.set_title(title)
-        fig.tight_layout()
-        root["heatmaps"] = "images/heatmaps"
-        fig_path = os.path.join(root.heatmaps, title + ".png")
-        plt.savefig(fig_path)
-        if show:
-            plt.show(block=vars.block)
+            ax.set_title(title)
+            fig.tight_layout()
+            root["heatmaps"] = "images/heatmaps"
+            fig_path = os.path.join(root.heatmaps, title + ".png")
+            plt.savefig(fig_path)
+            if show:
+                plt.show(block=vars.block)
+        return matrix
+
+    @staticmethod
+    def heat_map_to_pdb(matrix, structure, inplace=False):
+        assert len(matrix) == len(list(structure.get_residues()))
+        i = 0
+        if not inplace:
+            structure = structure.copy()
+        for res in structure.get_residues():
+            ca = [atom for atom in res.get_atoms() if atom.id == "CA"][0]
+            ca.bfactor = mean(matrix[i])
+            i +=1
+        return structure
+
 
 
 
@@ -539,6 +554,8 @@ class ContactSurface:
         contact_matrix = vec_fun(self.d_s_matrix, threshold=threshold,as_bool=as_bool, inverse=True)
         #self.get_heat_map(contact_matrix)
         return contact_matrix
+
+
 
 
 

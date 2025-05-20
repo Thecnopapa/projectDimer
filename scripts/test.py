@@ -9,6 +9,7 @@ from Globals import root, local, vars
 from utilities import *
 from imports import *
 
+
 sprint("Loading References")
 vars["references"] = load_references(force_reload=False)
 print1("References loaded")
@@ -27,7 +28,7 @@ n_dimers = 0
 thresholds = range(1,11)
 ref_name = "GR"
 contact_maps = {threshold:None for threshold in thresholds}
-for dimer_name in dimer_list:
+for dimer_name in dimer_list[:50]:
     sprint(dimer_name)
     #print(local.dimers)
     dimers = load_single_pdb(dimer_name, pickle_folder=local.dimers)
@@ -46,8 +47,19 @@ for dimer_name in dimer_list:
         print(contact_maps)
         progress.add(info=dimer.id)
 
+from pyMol import pymol_start, pymol_colour, pymol_temp_show, pymol_save_temp_session, pymol_open_session_terminal
 for threshold, contact_map in contact_maps.items():
-    ContactSurface.get_heat_map(contact_map, title = "{} heat-map, threshold = {}, N = {}".format(ref_name, threshold, n_dimers), normalize = n_dimers/100)
+    title = "{} heat-map, threshold = {}, N = {}".format(ref_name, threshold, n_dimers)
+    matrix = ContactSurface.get_heat_map(contact_map, title = title, normalize = n_dimers/100)
+    pymol_start(show=False)
+    structure = ContactSurface.heat_map_to_pdb(matrix,[ref.structure for ref in vars.references if ref.name == ref_name][0])
+    name = pymol_temp_show(structure, name = "{}-T{}".format(ref_name, threshold))
+    pymol_colour(colour="rainbow", sele=name, spectrum="b")
+session = pymol_save_temp_session(name=title+".pse")
+pymol_open_session_terminal(session)
+
+
+
 
 
 

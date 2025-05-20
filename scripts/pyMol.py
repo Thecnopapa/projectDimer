@@ -286,26 +286,32 @@ def pymol_paint_contacts(obj, contact_list, colour ="yellow"):
         pymol_colour(colour, obj, sele, silent = True)
 
 
-def pymol_temp_show(structure, disable = False):
+def pymol_temp_show(structure, disable = False, delete=False, name=None):
     from Bio.PDB import PDBIO
     local["temp"] = "temp"
     exporting = PDBIO()
     exporting.set_structure(structure)
     all_obj = [n.upper() for n in pymol_get_all_objects()]
     #print(all_obj)
-    name = "temp_{}.pdb".format(structure.id)
-    if name.upper() in all_obj:
-        n = 1
-        while name.upper() in all_obj:
-            name = "temp_{}_{}.pdb".format(structure.id, n)
-            n += 1
+    if name is None:
+        name = "temp_{}.pdb".format(structure.id)
+        if name.upper() in all_obj:
+            n = 1
+            while name.upper() in all_obj:
+                name = "temp_{}_{}.pdb".format(structure.id, n)
+                n += 1
+    else:
+        if not name.endswith(".pdb"):
+            name += ".pdb"
     path = os.path.join(local.temp, name)
     exporting.save(path)
     pymol_start(show=True)
     if disable:
         pymol_disable("(all)")
     loaded = pymol_load_path(path)
-    os.remove(path)
+    if delete:
+        os.remove(path)
+    return loaded
 
 def pymol_get_all_objects():
     return pymol.cmd.get_names(type='objects')
