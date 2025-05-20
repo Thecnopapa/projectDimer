@@ -557,11 +557,14 @@ class ContactSurface:
         return structure
 
     @staticmethod
-    def display_heatmap(matrix, title, structure, n_samples=None,  show_pymol=True, show_heatmap=True):
+    def display_heatmap(matrix, title, structure, n_samples=None,  show_pymol=True,obj_name =None, show_heatmap=True):
+        if n_samples is not None:
+            norm = n_samples/100
+        else:
+            norm = None
         matrix, oneDmatrix = ContactSurface.get_heat_map(matrix,
                                                          title=title,
-                                                         normalize=
-                                                         n_samples / 100,
+                                                         normalize= n_samples / 100,
                                                          colors=["blue", "yellow", "red", "red"],
                                                          cvals=[0, 0.25, 0.5, 1],
                                                          show=show_heatmap)
@@ -569,7 +572,7 @@ class ContactSurface:
         if show_pymol:
             from pyMol import pymol_colour, pymol_temp_show
             structure = ContactSurface.heat_map_to_pdb(matrix, structure)
-            name = pymol_temp_show(structure, name="{}-T{}-N{}".format(ref_name, threshold, n_samples))
+            name = pymol_temp_show(structure, name=obj_name)
             pymol_colour(colour="blue_yellow_red", sele=name, spectrum="b", minimum=0, maximum=amax(oneDmatrix) / 2)
 
 

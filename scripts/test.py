@@ -28,16 +28,16 @@ n_dimers = 0
 thresholds = range(1,11)
 ref_name = "GR"
 contact_maps = {threshold:None for threshold in thresholds}
-for dimer_name in dimer_list[0:50]:
+for dimer_name in dimer_list:
     sprint(dimer_name)
     #print(local.dimers)
-    dimers = load_single_pdb(dimer_name, pickle_folder=local.dimers)
+    dimers = load_single_pdb(dimer_name, pickle_folder=local.dimers, quiet=True)
     for dimer in dimers:
         if dimer.best_fit == ref_name and dimer.best_fit != "Missmatch":
             if "contact_surface" not in dimer.__dict__ or False:
                 dimer.contact_surface = ContactSurface(dimer.monomer1.replaced, dimer.monomer2.replaced)
-                dimer.pickle()
-            if dimer.contact_surface is not None:
+                #dimer.pickle()
+            if dimer.contact_surface is not None and len(list(dimer.monomer1.replaced.get_residues())) == 229:
                 for threshold, contact_map in contact_maps.items():
                     if contact_map is None:
                         contact_maps[threshold] = dimer.contact_surface.get_contact_map(threshold=threshold)
@@ -50,12 +50,9 @@ for dimer_name in dimer_list[0:50]:
 
 
 
-
-
-
-
-
 for threshold, contact_map in contact_maps.items():
+    if len(contact_map) == 0:
+        continue
     from pyMol import pymol_start, pymol_save_temp_session, pymol_open_session_terminal
 
     pymol_start(show=False)
@@ -63,8 +60,11 @@ for threshold, contact_map in contact_maps.items():
 
     ContactSurface.display_heatmap(matrix=contact_map, title=title,
                                    structure=[ref.structure for ref in vars.references if ref.name == ref_name][0],
-                                   n_samples=n_dimers, show_heatmap=False)
-session = pymol_save_temp_session(name=title + ".pse")
+                                   n_samples=n_dimers,
+                                   show_pymol=True,
+                                   obj_name = "{}-T{}-N{}".format(ref_name, threshold, n_dimers),
+                                   show_heatmap=False)
+session = pymol_save_temp_session(name="heatmap_plot_{}-N{}".format(ref_name,n_dimers) + ".pse")
 pymol_open_session_terminal(session)
 
 
