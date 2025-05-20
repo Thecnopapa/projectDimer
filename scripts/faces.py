@@ -494,16 +494,36 @@ class ContactSurface:
 
 
     @staticmethod
-    def get_heat_map(matrix, title="Heat map", normalize = None, plot = True, show=False):
+    def get_heat_map(matrix, title="Heat map", normalize = None, plot = True, show=False, colors = None):
 
         if normalize is not None:
             matrix = ContactSurface.normalize_matrix(matrix, n=normalize)
 
         if plot:
             fig, ax = plt.subplots()
-            im = ax.imshow(matrix)
-            cbar = plt.colorbar(im)
+            if colors is None:
+                hm = ax.imshow(matrix)
+            else:
+                if len(colors) in [2,3]:
+                    if len(colors) == 3:
+                        cvals = [0, 0.5, 1]
+                    elif len(colors) == 2:
+                        cvals = [0, 1]
+                    norm = plt.Normalize(min(cvals), max(cvals))
+                    print(norm)
+                    tuples = list(zip(map(norm, cvals), colors))
+                    print(tuples)
+                    cmap = matplotlib.colors.LinearSegmentedColormap.from_list("colormap", tuples)
+                    print(cmap)
+                    hm = ax.imshow(matrix, cmap=cmap)
+                else:
+                    print("Please input 2 or 3 colors")
+                    hm = ax.imshow(matrix)
+
+            cbar = plt.colorbar(hm)
             cbar.set_label("% Occurnce")
+
+
 
             ax.set_title(title)
             fig.tight_layout()

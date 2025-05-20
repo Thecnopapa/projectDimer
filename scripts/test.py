@@ -50,10 +50,10 @@ for dimer_name in dimer_list:
 from pyMol import pymol_start, pymol_colour, pymol_temp_show, pymol_save_temp_session, pymol_open_session_terminal
 for threshold, contact_map in contact_maps.items():
     title = "{} heat-map, threshold = {}, N = {}".format(ref_name, threshold, n_dimers)
-    matrix = ContactSurface.get_heat_map(contact_map, title = title, normalize = n_dimers/100)
+    matrix = ContactSurface.get_heat_map(contact_map, title = title, normalize = n_dimers/100, colors=["blue", "yellow", "red"])
     pymol_start(show=False)
     structure = ContactSurface.heat_map_to_pdb(matrix,[ref.structure for ref in vars.references if ref.name == ref_name][0])
-    name = pymol_temp_show(structure, name = "{}-T{}".format(ref_name, threshold))
+    name = pymol_temp_show(structure, name = "{}-T{}-N{}".format(ref_name, threshold, n_dimers))
     pymol_colour(colour="rainbow", sele=name, spectrum="b")
 session = pymol_save_temp_session(name=title+".pse")
 pymol_open_session_terminal(session)

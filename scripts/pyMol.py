@@ -286,7 +286,7 @@ def pymol_paint_contacts(obj, contact_list, colour ="yellow"):
         pymol_colour(colour, obj, sele, silent = True)
 
 
-def pymol_temp_show(structure, disable = False, delete=False, name=None):
+def pymol_temp_show(structure, disable = False, delete=False, name=None, folder = None):
     from Bio.PDB import PDBIO
     local["temp"] = "temp"
     exporting = PDBIO()
@@ -303,7 +303,9 @@ def pymol_temp_show(structure, disable = False, delete=False, name=None):
     else:
         if not name.endswith(".pdb"):
             name += ".pdb"
-    path = os.path.join(local.temp, name)
+    if folder is None:
+        folder = local.temp
+    path = os.path.join(folder, name)
     exporting.save(path)
     pymol_start(show=True)
     if disable:
