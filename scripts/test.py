@@ -61,7 +61,9 @@ for threshold, contact_map in contact_maps.items():
     pymol_start(show=False)
     title = "{} heat-map, threshold = {}, N = {}".format(ref_name, threshold, n_dimers)
 
-    ContactSurface.display_heatmap(matrix=contact_map, title=title, n_samples=n_dimers, show_heatmap=False)
+    ContactSurface.display_heatmap(matrix=contact_map, title=title,
+                                   structure=[ref.structure for ref in vars.references if ref.name == ref_name][0],
+                                   n_samples=n_dimers, show_heatmap=False)
 session = pymol_save_temp_session(name=title + ".pse")
 pymol_open_session_terminal(session)
 

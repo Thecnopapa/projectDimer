@@ -1172,9 +1172,12 @@ def generate_dihedrals_df(dimer_list = None, force = False):
             df.to_csv(df_path)
 
 
-def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = None, subset=None, save=True, label_col=None, only_first=None):
+def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = None, subset=None, save=True,
+                   label_col=None, only_first=None, heatmap=True, hm_threshold = 10):
     from matplotlib import  pyplot as plt
+    from imports import load_single_pdb
     df = pd.read_csv(path)
+    hm = None
 
     if subset_col is not None:
         assert subset_col in df.columns
@@ -1196,6 +1199,12 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
             else:
                 col = "C"+str(cl)
             ax.scatter(point.a0, point.a1, point.a2, c=col)
+            if heatmap:
+                dimer = load_single_pdb(point.id, pickle_folder=local.dimers, first_only=True)
+                if hm is None:
+                    hm = dimer.contact_surface.get_contact_map(threshold=hm_threshold)
+                else:
+                    hm = np.add(hm, dimer.contact_surface.get_contact_map(threshold=hm_threshold))
         if label_col is not None:
             ax.text(point.a0, point.a1, point.a2, point.__getattribute__(label_col))
     ax.set_xlabel(ax_labels[0])
@@ -1209,6 +1218,11 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
         root["dihedral_figs"] = "images/dihedral_figs"
         savepath = os.path.join(root.dihedral_figs, os.path.basename(path).split(".")[0] + ".png")
         plt.savefig(savepath)
+        root["heatmap_figs"] = "images/heatmap_figs"
+        hm_title = os.path.basename(path).split(".")[0] + "_heatmap.png"
+        from faces import ContactSurface
+        ContactSurface.get_heat_map(hm, title=hm_title, normalize=len(df), folder=root.heatmap_figs)
+
     if vars.block:
         plt.show(block = vars.block)
 

@@ -104,6 +104,8 @@ class BioObject:
                     for atom in residue.get_list():
                         if atom.name != "CA" or atom.bfactor > 90:
                             residue.__delitem__(atom.id)
+                    if len(residue.get_list()) == 0:
+                        chain.__delitem__(residue.id)
 
 
         return True

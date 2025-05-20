@@ -494,7 +494,9 @@ class ContactSurface:
 
 
     @staticmethod
-    def get_heat_map(matrix, title="Heat map", normalize = None, plot = True, show=False, colors = None, cvals=None):
+    def get_heat_map(matrix, title="Heat map", normalize = None, plot = True, show=False,
+                     colors = ("blue", "yellow", "red"), cvals=None,
+                     folder = None):
 
         if normalize is not None:
             matrix = ContactSurface.normalize_matrix(matrix, n=normalize)
@@ -508,7 +510,7 @@ class ContactSurface:
             ax2 = axes[1]
             if colors is None:
                 hm = ax.imshow(matrix)
-                oneDhm = ax2.plot(oneDmatrix)
+                oneDhm = ax2.plot(oneDmatrix,  linestyle='--', linewidth=0.5)
             else:
                 if cvals is None:
                     if len(colors) == 3:
@@ -526,20 +528,17 @@ class ContactSurface:
                     if n == 0:
                         continue
                     ax2.plot((n-1,n), (oneDmatrix[n-1], p), c=cmap(p),  linestyle='--', linewidth=0.5)
-                #colors = cmap(oneDmatrix)
-                #oneDhm = ax2.plot( oneDmatrix, color=, linestyle='--', linewidth=0.5)
-
             #fig.tight_layout()
             fig.subplots_adjust(right=0.8)
             cbar = plt.colorbar(hm, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
             cbar.set_label("% Occurnce")
 
-
-
             ax.set_title(title)
 
-            root["heatmaps"] = "images/heatmaps"
-            fig_path = os.path.join(root.heatmaps, title + ".png")
+            if folder is None:
+                root["heatmaps"] = "images/heatmaps"
+                folder = root.heatmaps
+            fig_path = os.path.join(folder, title + ".png")
             plt.savefig(fig_path)
             if show:
                 plt.show(block=vars.block)
@@ -558,7 +557,7 @@ class ContactSurface:
         return structure
 
     @staticmethod
-    def display_heatmap(matrix, title, n_samples, show_pymol=True, show_heatmap=True):
+    def display_heatmap(matrix, title, structure, n_samples=None,  show_pymol=True, show_heatmap=True):
         matrix, oneDmatrix = ContactSurface.get_heat_map(matrix,
                                                          title=title,
                                                          normalize=
@@ -569,8 +568,7 @@ class ContactSurface:
 
         if show_pymol:
             from pyMol import pymol_colour, pymol_temp_show
-            structure = ContactSurface.heat_map_to_pdb(matrix, [ref.structure for ref in vars.references if
-                                                                ref.name == ref_name][0])
+            structure = ContactSurface.heat_map_to_pdb(matrix, structure)
             name = pymol_temp_show(structure, name="{}-T{}-N{}".format(ref_name, threshold, n_samples))
             pymol_colour(colour="blue_yellow_red", sele=name, spectrum="b", minimum=0, maximum=amax(oneDmatrix) / 2)
 

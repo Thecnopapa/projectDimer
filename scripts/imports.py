@@ -97,7 +97,7 @@ def load_list_1by1(id_list=None, quiet=True, **kwargs):
 
     return iter(PickleIterator(id_list, quiet, **kwargs))
 
-def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None, force_reload=False, object_class = PDB, quiet=False):
+def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None, force_reload=False, object_class = PDB, quiet=False, first_only=False):
     if not quiet:
         print1("Loading pdb:", identifier, "-Force reload:", force_reload, "-class:", object_class.__name__)
     objects = []
@@ -124,6 +124,8 @@ def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None,
             print2("No objects loaded")
         else:
             print2("Objects loaded: {}".format(objects))
+    if len(objects) == 0 and first_only:
+        objects = objects[0]
     return objects
 
 def load_references(force_reload = False, identifier = "all"):

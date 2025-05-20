@@ -181,7 +181,6 @@ def main(PROCESS_ALL = False,
     if not SKIP_CLUSTERING or PROCESS_ALL and False:
 
         from clustering import generate_dihedrals_df, plot_dihedrals, cluster_angles
-        from faces import plot_cluster_heatmap
         generate_dihedrals_df(force = False or PROCESS_ALL)
 
         for file in os.listdir(root.dihedrals):
@@ -209,8 +208,11 @@ def main(PROCESS_ALL = False,
 
         for file in os.listdir(cluster2_folder):
             dihedrals_path = os.path.join(cluster2_folder, file)
-            plot_dihedrals(dihedrals_path, clusters="angle_cluster2")
-            plot_cluster_heatmap(dihedrals_path, clusters="angle_cluster2")
+            ref_name = file.split("-")[0]
+            plot_dihedrals(dihedrals_path, clusters="angle_cluster2", heatmap = True)
+
+
+
 
         pass
 
