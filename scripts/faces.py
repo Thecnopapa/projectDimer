@@ -494,7 +494,7 @@ class ContactSurface:
 
 
     @staticmethod
-    def get_heat_map(matrix, title="Heat map", normalize = None):
+    def get_heat_map(matrix, title="Heat map", normalize = None, show=False):
 
         if normalize is not None:
             matrix = ContactSurface.normalize_matrix(matrix, n=normalize)
@@ -509,6 +509,8 @@ class ContactSurface:
         root["heatmaps"] = "images/heatmaps"
         fig_path = os.path.join(root.heatmaps, title + ".png")
         plt.savefig(fig_path)
+        if show:
+            plt.show(block=vars.block)
 
 
 
