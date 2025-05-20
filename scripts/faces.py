@@ -455,10 +455,14 @@ class ResPair:
 
 
 class ContactSurface:
-    def __init__(self, structure1, structure2):
+    def __init__(self, structure1, structure2, outer_ids=None):
         self.structure1 = structure1
         self.structure2 = structure2
+        self.outer_ids = outer_ids
+
         self.residues = [res.id[1] for res in structure1.get_residues()]
+        if outer_ids is not None:
+            self.residues = [resid for resid in self.residues if resid in self.outer_ids]
         self.res_pairs, self.t_matrix, self.d_t_matrix = self.get_atom_pairs()
         self.d_s_matrix = np.tril(self.d_t_matrix.T, -1) + self.d_t_matrix
 
@@ -470,8 +474,11 @@ class ContactSurface:
         t_matrix = []
         d_t_matrix = []
         new_pairs = {}
-        for n, res1 in enumerate(self.structure1.get_residues()):
-            for res2 in list(self.structure2.get_residues())[n:]:
+        res_list1 = [res for res in self.structure1.get_residues() if res.id[1] in self.outer_ids]
+        res_list2 = [res for res in self.structure2.get_residues() if res.id[1] in self.outer_ids]
+        assert len(res_list1) == len(res_list2)
+        for n, res1 in enumerate(res_list1):
+            for res2 in list(res_list2)[n:]:
                 p = ResPair(res1, res2)
                 new_pairs[p.id] = p
                 if len(t_matrix) == n:

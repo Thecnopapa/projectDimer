@@ -1,6 +1,6 @@
 import os
 
-
+from pyMol import pymol_colour
 from surface import get_dimer_sasa, get_monomer_sasa
 from symmetries import entity_to_orth, print_all_coords, convertFromFracToOrth
 from utilities import *
@@ -67,7 +67,7 @@ class BioObject:
     def __repr__(self):
         return "{} ({} at {})".format(self.id, self.__class__.__name__, id(self))
 
-    def parse_structure(self, parse_original = False):
+    def parse_structure(self, parse_original = False, calculate_sasa = False, n_points=100, radius=3):
         if self.path is None or parse_original:
             self.path = self.o_path
         try:
@@ -97,6 +97,11 @@ class BioObject:
                         chain.id = string.ascii_uppercase.index(chain.id)
                     except:
                         chain.id = [letter for letter in string.ascii_uppercase if letter not in [c.id for c in self.structure.get_chains()]][0]
+                if calculate_sasa:
+                    from Bio.PDB.SASA import ShrakeRupley
+                    sr = ShrakeRupley(n_points=n_points, probe_radius=radius)
+                    sr.compute(chain, level="R")
+                    self.sasa_info = dict(n_points=n_points, probe_radius=radius)
                 for residue in chain.get_list():
                     if residue.id[0] != " ":
                         chain.__delitem__(residue.id)
@@ -106,8 +111,6 @@ class BioObject:
                             residue.__delitem__(atom.id)
                     if len(residue.get_list()) == 0:
                         chain.__delitem__(residue.id)
-
-
         return True
 
 
@@ -961,7 +964,8 @@ class Reference(Monomer):
     def __init__(self, path):
 
         self.o_path = path
-        self.parse_structure(parse_original=True)
+        self.parse_structure(parse_original=True, calculate_sasa=True, n_points=200, radius=6)
+        self.outer_ids = self.get_outer_res_list()
         self.name = os.path.basename(path).split(".")[0]
         self.best_fit = self.name
         self.structure = [chain for chain in self.structure.get_chains()][0]
@@ -995,3 +999,28 @@ class Reference(Monomer):
         from faces import GR_dict
         self.face_dict = GR_dict.copy()
 
+    def get_outer_res_list(self, threshold=10, inner=False, id_only=True):
+        res_list = []
+        """[print(res.sasa) for res in self.structure.get_residues()]
+        for res in self.structure.get_residues():
+            res.get_list()[0].bfactor = res.sasa
+        from pyMol import pymol_temp_show, pymol_start, pymol_save_temp_session, pymol_open_session_terminal
+        #pymol_start(show=False)
+        pymol_temp_show(self.structure)
+        pymol_colour("rainbow", spectrum="b")
+        session = pymol_save_temp_session()
+        pymol_open_session_terminal(session)
+        quit()"""
+
+        for residue in self.structure.get_residues():
+            is_outer = False
+            if residue.sasa >= threshold:
+                is_outer = True
+            if inner:
+                is_outer = not is_outer
+            if is_outer:
+                if id_only:
+                    res_list.append(residue.id[1])
+                else:
+                    res_list.append(residue)
+        return res_list

@@ -8,16 +8,18 @@ import sys
 from Globals import root, local, vars
 from utilities import *
 from imports import *
-
+from faces import *
 
 sprint("Loading References")
-vars["references"] = load_references(force_reload=False)
+vars["references"] = load_references(force_reload=True)
 print1("References loaded")
 
+for ref in vars.references:
+    print(ref.outer_ids)
 
 
 
-from faces import *
+
 
 dimer_list = sorted(os.listdir(local.dimers))
 progress = ProgressBar(len(dimer_list))
@@ -27,6 +29,7 @@ face_df = pd.DataFrame(columns=["ID", "face1", "face2", "contact_face1", "contac
 n_dimers = 0
 thresholds = range(1,11)
 ref_name = "GR"
+ref = [r for r in vars.references if r.name == ref_name][0]
 contact_maps = {threshold:None for threshold in thresholds}
 for dimer_name in dimer_list:
     sprint(dimer_name)
@@ -34,8 +37,8 @@ for dimer_name in dimer_list:
     dimers = load_single_pdb(dimer_name, pickle_folder=local.dimers, quiet=True)
     for dimer in dimers:
         if dimer.best_fit == ref_name and dimer.best_fit != "Missmatch":
-            if "contact_surface" not in dimer.__dict__ or False:
-                dimer.contact_surface = ContactSurface(dimer.monomer1.replaced, dimer.monomer2.replaced)
+            if "contact_surface" not in dimer.__dict__ or True:
+                dimer.contact_surface = ContactSurface(dimer.monomer1.replaced, dimer.monomer2.replaced, outer_ids=ref.outer_ids)
                 #dimer.pickle()
             if dimer.contact_surface is not None and len(list(dimer.monomer1.replaced.get_residues())) == 229:
                 for threshold, contact_map in contact_maps.items():
