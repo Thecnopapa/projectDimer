@@ -28,7 +28,7 @@ n_dimers = 0
 thresholds = range(1,11)
 ref_name = "GR"
 contact_maps = {threshold:None for threshold in thresholds}
-for dimer_name in dimer_list[:50]:
+for dimer_name in dimer_list:
     sprint(dimer_name)
     #print(local.dimers)
     dimers = load_single_pdb(dimer_name, pickle_folder=local.dimers)
