@@ -474,19 +474,30 @@ class ContactSurface:
         t_matrix = []
         d_t_matrix = []
         new_pairs = {}
-        res_list1 = [res for res in self.structure1.get_residues() if res.id[1] in self.outer_ids]
-        res_list2 = [res for res in self.structure2.get_residues() if res.id[1] in self.outer_ids]
+        res_list1 = [res for res in self.structure1.get_residues()]# if res.id[1] in self.outer_ids]
+        res_list2 = [res for res in self.structure2.get_residues()]# if res.id[1] in self.outer_ids]
         assert len(res_list1) == len(res_list2)
         for n, res1 in enumerate(res_list1):
+            inner1 = False
+            if res1.id[1] not in self.outer_ids:
+                inner1 = True
             for res2 in list(res_list2)[n:]:
-                p = ResPair(res1, res2)
-                new_pairs[p.id] = p
+                inner2 = False
+                if res2.id[1] not in self.outer_ids:
+                    inner2 = True
+                if inner1 or inner2:
+                    p = None
+                    dist = 666
+                else:
+                    p = ResPair(res1, res2)
+                    dist = p.dist
+                    new_pairs[p.id] = p
                 if len(t_matrix) == n:
                     t_matrix.append([None]*n+[p])
-                    d_t_matrix.append([0]*n+[p.dist])
+                    d_t_matrix.append([0]*n+[dist])
                 else:
                     t_matrix[n].append(p)
-                    d_t_matrix[n].append(p.dist)
+                    d_t_matrix[n].append(dist)
         print(len(new_pairs))
         return new_pairs, np.array(t_matrix), np.array(d_t_matrix)
 
@@ -552,8 +563,10 @@ class ContactSurface:
         return matrix, oneDmatrix
 
     @staticmethod
-    def heat_map_to_pdb(matrix, structure, inplace=False):
+    def heat_map_to_pdb(matrix, structure, inplace=False, outer_list=None):
+
         assert len(matrix) == len(list(structure.get_residues()))
+
         i = 0
         if not inplace:
             structure = structure.copy()

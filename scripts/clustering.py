@@ -1134,7 +1134,7 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
 
 
 def generate_dihedrals_df(dimer_list = None, force = False):
-    print(root)
+    sprint("Generating dihedrals dataframe")
     root["clustering2"] = "dataframes/clustering2"
     root["dihedrals"] = "dataframes/clustering2/dihedrals"
     if force or len(os.listdir(root.dihedrals)) == 0:
@@ -1233,11 +1233,14 @@ def cluster_angles(dihedrals_path,
                    cluster_name = "angle_cluster",
                    folder="angle_clusters1",
                    split_by=None):
-
+    sprint("Clustering angles")
+    print1("Cluster name:", cluster_name)
+    print2("Cluster folder:", folder)
     dihedrals_df = pd.read_csv(dihedrals_path)
     if split_by is not None:
         clusters = set(dihedrals_df[split_by].values)
         for cluster in clusters:
+            print3("Cluster:", cluster)
             subset_df = dihedrals_df[dihedrals_df[split_by] == cluster]
             subset_df[cluster_name] = quick_cluster(subset_df[angles], bandwidth=bandwidth)
             root[folder] = "dataframes/clustering2/{}".format(folder)

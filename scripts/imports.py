@@ -124,7 +124,7 @@ def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None,
             print2("No objects loaded")
         else:
             print2("Objects loaded: {}".format(objects))
-    if len(objects) == 0 and first_only:
+    if len(objects) == 1 and first_only:
         objects = objects[0]
     return objects
 
