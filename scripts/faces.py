@@ -494,7 +494,7 @@ class ContactSurface:
 
 
     @staticmethod
-    def get_heat_map(matrix, title="Heat map", normalize = None, plot = True, show=False, colors = None):
+    def get_heat_map(matrix, title="Heat map", normalize = None, plot = True, show=False, colors = None, cvals=None):
 
         if normalize is not None:
             matrix = ContactSurface.normalize_matrix(matrix, n=normalize)
@@ -502,7 +502,7 @@ class ContactSurface:
         oneDmatrix = [mean(i) for i in matrix]
 
         if plot:
-            fig, axes = plt.subplots(2,1, sharex="col", gridspec_kw={'height_ratios': [4, 2]}, figsize=(4,6))
+            fig, axes = plt.subplots(2,1, sharex="col", gridspec_kw={'height_ratios': [4, 2]}, figsize=(8,12))
 
             ax = axes[0]
             ax2 = axes[1]
@@ -510,28 +510,24 @@ class ContactSurface:
                 hm = ax.imshow(matrix)
                 oneDhm = ax2.plot(oneDmatrix)
             else:
-                if len(colors) in [2,3]:
+                if cvals is None:
                     if len(colors) == 3:
                         cvals = [0, 0.5, 1]
                     elif len(colors) == 2:
                         cvals = [0, 1]
-                    norm = plt.Normalize(min(cvals), max(cvals))
-                    print(norm)
-                    tuples = list(zip(map(norm, cvals), colors))
-                    print(tuples)
-                    cmap = matplotlib.colors.LinearSegmentedColormap.from_list("colormap", tuples)
-                    print(cmap)
-                    hm = ax.imshow(matrix, cmap=cmap)
-                    for n, p in enumerate(oneDmatrix):
-                        if n == 0:
-                            continue
-                        ax2.plot((n-1,n), (oneDmatrix[n-1], p), c=cmap(p),  linestyle='--', linewidth=0.5)
-                    #colors = cmap(oneDmatrix)
-                    #oneDhm = ax2.plot( oneDmatrix, color=, linestyle='--', linewidth=0.5)
-                else:
-                    print("Please input 2 or 3 colors")
-                    hm = ax.imshow(matrix)
-                    oneDhm = ax2.plot(oneDmatrix)
+                norm = plt.Normalize(min(cvals), max(cvals))
+                print(norm)
+                tuples = list(zip(map(norm, cvals), colors))
+                print(tuples)
+                cmap = matplotlib.colors.LinearSegmentedColormap.from_list("colormap", tuples)
+                print(cmap)
+                hm = ax.imshow(matrix, cmap=cmap)
+                for n, p in enumerate(oneDmatrix):
+                    if n == 0:
+                        continue
+                    ax2.plot((n-1,n), (oneDmatrix[n-1], p), c=cmap(p),  linestyle='--', linewidth=0.5)
+                #colors = cmap(oneDmatrix)
+                #oneDhm = ax2.plot( oneDmatrix, color=, linestyle='--', linewidth=0.5)
 
             #fig.tight_layout()
             fig.subplots_adjust(right=0.8)
@@ -547,7 +543,7 @@ class ContactSurface:
             plt.savefig(fig_path)
             if show:
                 plt.show(block=vars.block)
-        return matrix
+        return matrix, oneDmatrix
 
     @staticmethod
     def heat_map_to_pdb(matrix, structure, inplace=False):

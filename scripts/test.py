@@ -28,7 +28,7 @@ n_dimers = 0
 thresholds = range(1,11)
 ref_name = "GR"
 contact_maps = {threshold:None for threshold in thresholds}
-for dimer_name in dimer_list:
+for dimer_name in dimer_list[0:50]:
     sprint(dimer_name)
     #print(local.dimers)
     dimers = load_single_pdb(dimer_name, pickle_folder=local.dimers)
@@ -47,16 +47,39 @@ for dimer_name in dimer_list:
         print(contact_maps)
         progress.add(info=dimer.id)
 
-from pyMol import pymol_start, pymol_colour, pymol_temp_show, pymol_save_temp_session, pymol_open_session_terminal
+
+
+
+
+def display_heatmap(matrix, title, n_samples, show_pymol = True, show_heatmap = True):
+    matrix, oneDmatrix = ContactSurface.get_heat_map(matrix,
+                                         title = title,
+                                         normalize =
+                                         n_samples/100,
+                                         colors=["blue", "yellow", "red", "red"],
+                                         cvals = [0,0.25,0.5, 1],
+                                         show=show_heatmap)
+
+    if show_pymol:
+        from pyMol import pymol_colour, pymol_temp_show
+        structure = ContactSurface.heat_map_to_pdb(matrix,[ref.structure for ref in vars.references if ref.name == ref_name][0])
+        name = pymol_temp_show(structure, name = "{}-T{}-N{}".format(ref_name, threshold, n_samples))
+        pymol_colour(colour="blue_yellow_red", sele=name, spectrum="b", minimum=0, maximum = amax(oneDmatrix)/2)
+
+
+
 for threshold, contact_map in contact_maps.items():
-    title = "{} heat-map, threshold = {}, N = {}".format(ref_name, threshold, n_dimers)
-    matrix = ContactSurface.get_heat_map(contact_map, title = title, normalize = n_dimers/100, colors=["blue", "yellow", "red"])
+    from pyMol import pymol_start, pymol_save_temp_session, pymol_open_session_terminal
+
     pymol_start(show=False)
-    structure = ContactSurface.heat_map_to_pdb(matrix,[ref.structure for ref in vars.references if ref.name == ref_name][0])
-    name = pymol_temp_show(structure, name = "{}-T{}-N{}".format(ref_name, threshold, n_dimers))
-    pymol_colour(colour="blue_yellow_red", sele=name, spectrum="b", minimum=0)
-session = pymol_save_temp_session(name=title+".pse")
+    title = "{} heat-map, threshold = {}, N = {}".format(ref_name, threshold, n_dimers)
+
+    display_heatmap(matrix=contact_map, title=title, n_samples=n_dimers, show_heatmap=False)
+session = pymol_save_temp_session(name=title + ".pse")
 pymol_open_session_terminal(session)
+
+
+
 
 
 
