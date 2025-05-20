@@ -87,7 +87,7 @@ def pymol_format(representation,identifier="", hide="all", colour = None, spectr
                 pymol_colour(colour, obj=obj, spectrum=spectrum)
 
 
-def pymol_colour(colour, obj = "(all)", sele = None, spectrum=None, silent =False):
+def pymol_colour(colour, obj = "(all)", sele = None, spectrum=None, silent =False, minimum = None, maximum=None):
     if sele is not None:
         sele_str = "({} and {})".format(obj,sele)
     else:
@@ -95,7 +95,7 @@ def pymol_colour(colour, obj = "(all)", sele = None, spectrum=None, silent =Fals
     if not silent:
         print("(PyMol) Colouring:", sele_str, colour, spectrum)
     if spectrum is not None:
-        pymol.cmd.spectrum(spectrum, colour, sele_str)
+        pymol.cmd.spectrum(spectrum, colour, sele_str, minimum=minimum, maximum=maximum)
     elif colour == "chainbow":
         palette = "rainbow"
         if spectrum is not None:

@@ -499,10 +499,16 @@ class ContactSurface:
         if normalize is not None:
             matrix = ContactSurface.normalize_matrix(matrix, n=normalize)
 
+        oneDmatrix = [mean(i) for i in matrix]
+
         if plot:
-            fig, ax = plt.subplots()
+            fig, axes = plt.subplots(2,1, sharex="col", gridspec_kw={'height_ratios': [4, 2]}, figsize=(4,6))
+
+            ax = axes[0]
+            ax2 = axes[1]
             if colors is None:
                 hm = ax.imshow(matrix)
+                oneDhm = ax2.plot(oneDmatrix)
             else:
                 if len(colors) in [2,3]:
                     if len(colors) == 3:
@@ -516,17 +522,26 @@ class ContactSurface:
                     cmap = matplotlib.colors.LinearSegmentedColormap.from_list("colormap", tuples)
                     print(cmap)
                     hm = ax.imshow(matrix, cmap=cmap)
+                    for n, p in enumerate(oneDmatrix):
+                        if n == 0:
+                            continue
+                        ax2.plot((n-1,n), (oneDmatrix[n-1], p), c=cmap(p),  linestyle='--', linewidth=0.5)
+                    #colors = cmap(oneDmatrix)
+                    #oneDhm = ax2.plot( oneDmatrix, color=, linestyle='--', linewidth=0.5)
                 else:
                     print("Please input 2 or 3 colors")
                     hm = ax.imshow(matrix)
+                    oneDhm = ax2.plot(oneDmatrix)
 
-            cbar = plt.colorbar(hm)
+            #fig.tight_layout()
+            fig.subplots_adjust(right=0.8)
+            cbar = plt.colorbar(hm, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
             cbar.set_label("% Occurnce")
 
 
 
             ax.set_title(title)
-            fig.tight_layout()
+
             root["heatmaps"] = "images/heatmaps"
             fig_path = os.path.join(root.heatmaps, title + ".png")
             plt.savefig(fig_path)

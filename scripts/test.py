@@ -54,7 +54,7 @@ for threshold, contact_map in contact_maps.items():
     pymol_start(show=False)
     structure = ContactSurface.heat_map_to_pdb(matrix,[ref.structure for ref in vars.references if ref.name == ref_name][0])
     name = pymol_temp_show(structure, name = "{}-T{}-N{}".format(ref_name, threshold, n_dimers))
-    pymol_colour(colour="rainbow", sele=name, spectrum="b")
+    pymol_colour(colour="blue_yellow_red", sele=name, spectrum="b", minimum=0)
 session = pymol_save_temp_session(name=title+".pse")
 pymol_open_session_terminal(session)
 
