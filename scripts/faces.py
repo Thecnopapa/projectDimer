@@ -516,15 +516,12 @@ class ContactSurface:
     def is_above_threshold(value, threshold, equal=True, inverse=False, as_bool=True):
         r = None
         if equal:
-            if inverse:
-                r= value <= threshold
-            else:
-                r= value >= threshold
+            r = value >= threshold
         else:
-            if inverse:
-                r= value < threshold
-            else:
-                r= value > threshold
+            r = value > threshold
+
+        if inverse:
+            r= not r
         if as_bool:
             return r
         else:
