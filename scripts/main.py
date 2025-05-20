@@ -32,6 +32,7 @@ def main(PROCESS_ALL = False,
          BALL_SIZE = 1.6,
          VERBOSE = False,
          QUIET = False,
+         REPROCESS_DIMERS = False,
          SPLIT_FACES = True,
          FORCE_SPLIT = False,
          CLUSTER_BY_PCA = True,
@@ -130,7 +131,7 @@ def main(PROCESS_ALL = False,
     ###### DIMER ANALYSIS ##############################################################################################
     tprint("DIMER ANALYSIS")
 
-    if not SKIP_DIMERS or PROCESS_ALL or (SPLIT_FACES_ANYWAY and FORCE_SPLIT):
+    if not SKIP_DIMERS or REPROCESS_DIMERS or PROCESS_ALL or (SPLIT_FACES_ANYWAY and FORCE_SPLIT):
         #print(list(vars.clustering["contacts"].keys()))
         progress = ProgressBar(len(molecule_list))
         from surface import build_contact_arrays
@@ -147,6 +148,8 @@ def main(PROCESS_ALL = False,
                 dimers = molecule.dimers
                 for dimer in dimers:
                     print1(dimer)
+                    if REPROCESS_DIMERS:
+                        dimer.process()
                     if dimer.incomplete:
                         continue
                     dimer.get_contacts(max_distance=CONTACT_DISTANCE_CLUSTERING, force= FORCE_CONTACTS)
@@ -303,7 +306,8 @@ if __name__ == "__main__":
          MINIMUM_CONTACTS=0,  # Minimum number of contacts to consider a dimer interface
 
          # Dimer processing, includes contact calculation and face identification, generates contact dataframes
-         SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL)
+         SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL and REPROCESS_DIMERS)
+         REPROCESS_DIMERS = True,
          FORCE_CONTACTS = False,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
          CONTACT_DISTANCE_CLUSTERING = 12,
          FACES_BY_COM = True,

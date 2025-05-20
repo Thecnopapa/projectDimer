@@ -609,13 +609,17 @@ class Dimer(BioObject):
         self.pca1 = None
         self.pca2 = None
 
+        self.outer_ids = None
+        self.contact_surface = None
+
+
         self.process(sasa = sasa)
 
+    def get_contact_surface(self):
         from faces import ContactSurface
-        if self.best_fit is None or self.best_fit == "Missmatch":
-            self.contact_surface = None
-        else:
-            self.contact_surface = ContactSurface(self.monomer1.replaced, self.monomer2.replaced)
+        if self.best_fit is not None and self.best_fit != "Missmatch":
+            self.outer_ids = [ref for ref in vars.references if ref.name == self.best_fit][0].outer_ids
+            self.contact_surface = ContactSurface(self.monomer1.replaced, self.monomer2.replaced, outer_ids=self.outer_ids)
 
     def process(self, sasa = False):
         self.validate()
@@ -630,12 +634,15 @@ class Dimer(BioObject):
         self.pca1 = self.monomer1.get_monomer_pca()
         self.pca2 = self.monomer2.get_monomer_pca()
         #print(self.com)
+        self.get_contact_surface()
         self.pickle()
 
-    def reprocess(self, by_com = False):
+    def reprocess(self, by_com = False, contacts=True, faces=True):
         self.process()
-        self.get_contacts(force = True)
-        self.get_faces(by_com=by_com)
+        if contacts:
+            self.get_contacts(force = True)
+        if faces:
+            self.get_faces(by_com=by_com)
         self.pickle()
 
 
