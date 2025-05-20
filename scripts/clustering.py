@@ -1234,11 +1234,7 @@ def cluster_angles(dihedrals_path,
         root[folder] = "dataframes/clustering2/{}".format(folder)
         print(dihedrals_df)
         dihedrals_df.to_csv(os.path.join(root[folder], os.path.basename(dihedrals_path)))
-
     return root[folder]
 
-
-def cluster_dihedrals(dihedrals_path):
-    pass
 
 

@@ -593,8 +593,6 @@ class ContactSurface:
             else:
                 return 0
 
-
-
     def get_contact_map(self, threshold=10, as_bool=False):
         vec_fun = np.vectorize(self.is_above_threshold)
         contact_matrix = vec_fun(self.d_s_matrix, threshold=threshold,as_bool=as_bool, inverse=True)
@@ -603,7 +601,8 @@ class ContactSurface:
 
 
 
-
+def plot_cluster_heatmap(dihedrals_path):
+    df = pd.read_csv(dihedrals_path)
 
 
 
