@@ -563,7 +563,7 @@ class ContactSurface:
             for n, (p1,p2, o) in enumerate(zip(oneDmatrix1, oneDmatrix2, outer_ids_complete)):
                 if n == 0:
                     continue
-                n2 = max_n - n
+                n2 = - n
                 if o is None:
                     axBottom.plot((n-1,n), (oneDmatrix1[n-1], p1), c="black",  linestyle='--', linewidth=0.5)
                     axLeft.plot((oneDmatrix2[n - 1], p2), (n2 + 1, n2),  c="black", linestyle='--', linewidth=0.5)
