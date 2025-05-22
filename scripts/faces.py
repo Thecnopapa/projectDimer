@@ -529,8 +529,8 @@ class ContactSurface:
 
         if outer_ids_complete is None:
             oneDmatrix = [mean(i) for i in matrix]
+            outer_ids_complete = [True] * len(oneDmatrix)
         else:
-
             oneDmatrix = [sum(i)/len(outer_ids_complete) for i in matrix]
         if plot:
             fig, axes = plt.subplots(2,1, sharex="col", gridspec_kw={'height_ratios': [4, 2]}, figsize=(8,12))
@@ -552,10 +552,13 @@ class ContactSurface:
             cmap = matplotlib.colors.LinearSegmentedColormap.from_list("colormap", tuples)
             #print(cmap)
             hm = ax.imshow(matrix, cmap=cmap)
-            for n, p in enumerate(oneDmatrix):
+            for n, (p, o) in enumerate(zip(oneDmatrix, outer_ids_complete)):
                 if n == 0:
                     continue
-                ax2.plot((n-1,n), (oneDmatrix[n-1], p), c=cmap(p),  linestyle='--', linewidth=0.5)
+                if o is None:
+                    ax2.plot((n-1,n), (oneDmatrix[n-1], p), c="black",  linestyle='--', linewidth=0.5)
+                else:
+                    ax2.plot((n - 1, n), (oneDmatrix[n - 1], p), c=cmap(p), linestyle='--', linewidth=0.5)
             #fig.tight_layout()
             fig.subplots_adjust(right=0.8)
             cbar = plt.colorbar(hm, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
