@@ -225,7 +225,7 @@ def main(PROCESS_ALL = False,
         for file in os.listdir(cluster2_folder):
             dihedrals_path = os.path.join(cluster2_folder, file)
             ref_name = file.split("-")[0]
-            plot_dihedrals(dihedrals_path, clusters="angle_cluster2", heatmap = True)
+            plot_dihedrals(dihedrals_path, clusters="angle_cluster2", heatmap = True, hm_threshold=10)
 
 
 
