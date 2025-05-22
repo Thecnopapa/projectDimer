@@ -127,7 +127,7 @@ def get_dimer_faces(dimer):
 
 
 def get_pca(structure, n_components = 3, com = None, closer_to = None, solver = "covariance_eigh", clockwise =True):
-    print3("Getting PCA")
+    print6("Getting PCA")
     from sklearn.decomposition import PCA
     pca = PCA(n_components=n_components, random_state=6, svd_solver=solver)
     coords = [atom.coord for atom in structure.get_atoms()]
@@ -150,9 +150,10 @@ def get_pca(structure, n_components = 3, com = None, closer_to = None, solver = 
             closer = closer_to - com
             #print(distance(component, closer),distance(component * -1, closer))
             if distance(component, closer) > distance(component * -1, closer):
-                print4("Reversed component", n, pca.components_[n], "-->", end=" ")
+                if vars.verbose:
+                    print4("Reversed component", n, pca.components_[n], "-->", end=" ")
                 pca.components_[n] = component * -1
-                print(pca.components_[n])
+                #print(pca.components_[n])
 
 
     else:
@@ -166,7 +167,8 @@ def get_pca(structure, n_components = 3, com = None, closer_to = None, solver = 
 
 
         for n, component in enumerate(pca.components_):
-            print4("Component {}: {} / Value: {} --> Vector: {} / Inverse: {}".format(n,
+            if vars.verbose:
+                print4("Component {}: {} / Value: {} --> Vector: {} / Inverse: {}".format(n,
                                                                          pca.components_[n],
                                                                          pca.explained_variance_[n],
                                                                          pca.components_[n] * pca.explained_variance_[n],
@@ -458,10 +460,11 @@ class ContactSurface:
     def __init__(self, structure1, structure2, outer_ids=None):
         self.structure1 = structure1
         self.structure2 = structure2
-        self.outer_ids = outer_ids
+        self.outer_ids = []
 
         self.residues = [res.id[1] for res in structure1.get_residues()]
         if outer_ids is not None:
+            self.outer_ids = outer_ids
             self.residues = [resid for resid in self.residues if resid in self.outer_ids]
         self.res_pairs, self.t_matrix, self.d_t_matrix = self.get_atom_pairs()
         self.d_s_matrix = np.tril(self.d_t_matrix.T, -1) + self.d_t_matrix
@@ -498,7 +501,7 @@ class ContactSurface:
                 else:
                     t_matrix[n].append(p)
                     d_t_matrix[n].append(dist)
-        print(len(new_pairs))
+        print6(len(new_pairs))
         return new_pairs, np.array(t_matrix), np.array(d_t_matrix)
 
 
@@ -599,13 +602,15 @@ class ContactSurface:
     @staticmethod
     def is_above_threshold(value, threshold, equal=True, inverse=False, as_bool=True):
         r = None
-        if equal:
-            r = value >= threshold
+        if value == 666:
+            r = False
         else:
-            r = value > threshold
-
-        if inverse:
-            r= not r
+            if equal:
+                r = value >= threshold
+            else:
+                r = value > threshold
+            if inverse:
+                r= not r
         if as_bool:
             return r
         else:

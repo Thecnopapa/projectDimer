@@ -65,7 +65,10 @@ class BioObject:
 
 
     def __repr__(self):
-        return "{} ({} at {})".format(self.id, self.__class__.__name__, id(self))
+        if "best_fit" in self.__dict__:
+            return "{} (Best Fit: {})".format(self.id, self.best_fit)
+        else:
+            return "{} ({} at {})".format(self.id, self.__class__.__name__, id(self))
 
     def parse_structure(self, parse_original = False, calculate_sasa = False, n_points=100, radius=3):
         if self.path is None or parse_original:
@@ -582,12 +585,11 @@ class Dimer(BioObject):
         self.position = monomer2.position
         self.op_n = monomer2.op_n
 
-
         self.name = monomer1.name
-
-
         self.extra_id = monomer2.extra_id
         self.id = "{}_{}{}{}".format(self.name, monomer1.chain, monomer2.chain, self.extra_id, sasa = False)
+        print4("Generating dimer:", self.id)
+
         self.incomplete = True
         self.failed_entries = []
         self.contacts_sasa = []
@@ -616,12 +618,14 @@ class Dimer(BioObject):
         self.process(sasa = sasa)
 
     def get_contact_surface(self):
+        print5("Calculating contact surface")
         from faces import ContactSurface
         if self.best_fit is not None and self.best_fit != "Missmatch":
             self.outer_ids = [ref for ref in vars.references if ref.name == self.best_fit][0].outer_ids
             self.contact_surface = ContactSurface(self.monomer1.replaced, self.monomer2.replaced, outer_ids=self.outer_ids)
 
-    def process(self, sasa = False):
+    def process(self, sasa = False, pickle=True):
+        print4("Processing dimer:", self)
         self.validate()
         if self.incomplete:
             return
@@ -635,15 +639,17 @@ class Dimer(BioObject):
         self.pca2 = self.monomer2.get_monomer_pca()
         #print(self.com)
         self.get_contact_surface()
-        self.pickle()
+        if pickle:
+            self.pickle()
 
-    def reprocess(self, by_com = False, contacts=True, faces=True):
-        self.process()
+    def reprocess(self, by_com = False, contacts=True, faces=True, pickle=True):
+        self.process(pickle=pickle)
         if contacts:
             self.get_contacts(force = True)
         if faces:
             self.get_faces(by_com=by_com)
-        self.pickle()
+        if pickle:
+            self.pickle()
 
 
 
@@ -852,6 +858,7 @@ class Dimer(BioObject):
         else:
             self.best_fit = "Missmatch"
         self.best_match = None
+        print5("Best fit:", self.best_fit)
 
         if self.monomer1.super_path is None or self.monomer2.super_path is None:
             if "failed_df" in vars:

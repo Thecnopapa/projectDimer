@@ -15,8 +15,9 @@ vars["references"] = load_references(force_reload=True)
 print1("References loaded")
 
 for ref in vars.references:
-    print(ref.outer_ids)
-
+    sprint(ref.id)
+    print1(len(ref.outer_ids))
+    print1(len(list(ref.structure.get_residues())))
 
 
 
@@ -37,10 +38,10 @@ for dimer_name in dimer_list:
     dimers = load_single_pdb(dimer_name, pickle_folder=local.dimers, quiet=True)
     for dimer in dimers:
         if dimer.best_fit == ref_name and dimer.best_fit != "Missmatch":
-            if "contact_surface" not in dimer.__dict__ or True:
+            if "contact_surface" not in dimer.__dict__ or False:
                 dimer.contact_surface = ContactSurface(dimer.monomer1.replaced, dimer.monomer2.replaced, outer_ids=ref.outer_ids)
                 #dimer.pickle()
-            if dimer.contact_surface is not None and len(list(dimer.monomer1.replaced.get_residues())) == 229:
+            if dimer.contact_surface is not None:# and len(list(dimer.monomer1.replaced.get_residues())) == 229:
                 for threshold, contact_map in contact_maps.items():
                     if contact_map is None:
                         contact_maps[threshold] = dimer.contact_surface.get_contact_map(threshold=threshold)

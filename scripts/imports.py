@@ -92,8 +92,11 @@ class PickleIterator:
 
 def load_list_1by1(id_list=None, quiet=True, **kwargs):
     if id_list is None:
-        assert "pickle_folder" in kwargs, "pickle must be provided"
-        id_list = os.listdir(kwargs["pickle_folder"])
+        assert "pickle_folder" in kwargs, "pickle folder or id list must be provided"
+        id_list = [file.split(".")[0] for file in os.listdir(kwargs["pickle_folder"])]
+
+    if len(vars.do_only) > 0:
+        id_list = [f for f in id_list if any([s in f for s in vars.do_only])]
 
     return iter(PickleIterator(id_list, quiet, **kwargs))
 

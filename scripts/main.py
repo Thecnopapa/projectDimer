@@ -61,7 +61,7 @@ def main(PROCESS_ALL = False,
     enable_garbage_collector() # Idk if it works
 
     from dataframes import save_dfs, create_dfs, create_clustering_dfs
-    from imports import pickle, export, download_pdbs, load_references, load_single_pdb
+    from imports import pickle, export, download_pdbs, load_references, load_single_pdb, load_list_1by1
 
     sprint("Blacklist:", vars.blacklist)
 
@@ -129,7 +129,19 @@ def main(PROCESS_ALL = False,
 
     eprint("SYMMETRY & DIMER GENERATION")
     ###### DIMER ANALYSIS ##############################################################################################
-    tprint("DIMER ANALYSIS")
+    tprint("DIMER ANALYSIS v2")
+
+    if not SKIP_DIMERS and not PROCESS_ALL:
+            for dimer in load_list_1by1(pickle_folder=local.dimers):
+                dimer.reprocess(contacts=False, faces=False)
+
+
+
+    eprint("DIMER ANALYSIS v2")
+
+
+
+    """tprint("DIMER ANALYSIS")
 
     if not SKIP_DIMERS or REPROCESS_DIMERS or PROCESS_ALL or (SPLIT_FACES_ANYWAY and FORCE_SPLIT):
         #print(list(vars.clustering["contacts"].keys()))
@@ -177,7 +189,7 @@ def main(PROCESS_ALL = False,
 
 
 
-    eprint("DIMER ANALYSIS")
+    eprint("DIMER ANALYSIS")"""
     ###### CLUSTERING ##################################################################################################
     tprint("CLUSTERING v2")
 
@@ -197,7 +209,7 @@ def main(PROCESS_ALL = False,
         for file in os.listdir(cluster1_folder):
             dihedrals_path = os.path.join(cluster1_folder, file)
             plot_dihedrals(dihedrals_path, clusters="angle_cluster1")
-        pass
+
 
         for file in os.listdir(cluster1_folder):
             dihedrals_path = os.path.join(cluster1_folder, file)
@@ -207,7 +219,7 @@ def main(PROCESS_ALL = False,
                                              cluster_name="angle_cluster2",
                                              folder="angle_clusters2",
                                              split_by="angle_cluster1")
-        pass
+
 
         for file in os.listdir(cluster2_folder):
             dihedrals_path = os.path.join(cluster2_folder, file)
@@ -215,9 +227,6 @@ def main(PROCESS_ALL = False,
             plot_dihedrals(dihedrals_path, clusters="angle_cluster2", heatmap = True)
 
 
-
-
-        pass
 
 
 
@@ -282,7 +291,7 @@ if __name__ == "__main__":
 
 
     print(sys.argv)
-    if len(sys.argv) > 2 and not "all" in sys.argv:
+    if len(sys.argv) > 1 and not "all" in sys.argv:
         DO_ONLY = [arg.upper() for arg in sys.argv[1:]]
 
 
