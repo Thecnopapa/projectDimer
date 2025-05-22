@@ -1276,7 +1276,7 @@ def cluster_angles(dihedrals_path,
         dihedrals_df[cluster_name] = quick_cluster(dihedrals_df[angles], bandwidth=bandwidth)
         root[folder] = "dataframes/clustering2/{}".format(folder)
         print(dihedrals_df)
-        dihedrals_df.to_csv(os.path.join(root[folder], os.path.basename(dihedrals_path)))
+        dihedrals_df.to_csv(os.path.join(root[folder], os.path.basename(dihedrals_path).split(".")[0]+"-all.csv"))
     return root[folder]
 
 
