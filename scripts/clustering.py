@@ -1172,68 +1172,82 @@ def generate_dihedrals_df(dimer_list = None, force = False):
             df.to_csv(df_path)
 
 
-def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = None, subset=None, save=True,
+def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = None, subset=None, include_all=True, save=True,
                    label_col=None, only_first=None, heatmap=False, hm_threshold = 10):
     print1("plotting dihedrals, heatmap={}".format(heatmap))
     print2(path)
     from matplotlib import  pyplot as plt
     from imports import load_single_pdb
-    df = pd.read_csv(path)
+    complete_df = pd.read_csv(path)
     hm = None
     name = os.path.basename(path).split(".")[0]
 
     if subset_col is not None:
-        assert subset_col in df.columns
-        assert subset is not None
-        df = df[df[subset_col] == subset]
+        assert subset_col in complete_df.columns
+        subsets = subset
+        if subsets is None:
+            subsets = list(set(complete_df[subset_col].values))
+        if type(subsets) is not list:
+            subsets = [subsets]
+        if include_all:
+            subsets = ["all"] + subsets
+    else:
+        subsets = ["all"]
 
-    if only_first is not None:
-        df = df.iloc[:only_first]
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    progress = ProgressBar(len(df))
-    for point in df.itertuples():
-        if clusters is None:
-            ax.scatter(point.a0, point.a1, point.a2)
+    for subset in subsets:
+        if subset == "all":
+            df = complete_df
         else:
-            cl = point.__getattribute__(clusters)
-            if cl == -1:
-                col = "black"
+            df = complete_df[complete_df[subset_col] == subset]
+
+
+        if only_first is not None:
+            df = df.iloc[:only_first]
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        progress = ProgressBar(len(df))
+        for point in df.itertuples():
+            if clusters is None:
+                ax.scatter(point.a0, point.a1, point.a2)
             else:
-                col = "C"+str(cl)
-            ax.scatter(point.a0, point.a1, point.a2, c=col)
-            if heatmap:
-                dimer = load_single_pdb(point.id, pickle_folder=local.dimers, first_only=True, quiet=True)
-                if hm is None:
-                    hm = dimer.contact_surface.get_contact_map(threshold=hm_threshold)
+                cl = point.__getattribute__(clusters)
+                if cl == -1:
+                    col = "black"
                 else:
-                    hm = np.add(hm, dimer.contact_surface.get_contact_map(threshold=hm_threshold))
-        if label_col is not None:
-            ax.text(point.a0, point.a1, point.a2, point.__getattribute__(label_col))
-        progress.add(info=point.id)
-    ax.set_xlabel(ax_labels[0])
-    ax.set_ylabel(ax_labels[1])
-    ax.set_zlabel(ax_labels[2])
-    ax.set_xlim(0,180)
-    ax.set_ylim(0,180)
-    ax.set_zlim(0,180)
-    title = "{}-{}".format(name,subset)
-    ax.set_title(title)
+                    col = "C"+str(cl)
+                ax.scatter(point.a0, point.a1, point.a2, c=col)
+                if heatmap:
+                    dimer = load_single_pdb(point.id, pickle_folder=local.dimers, first_only=True, quiet=True)
+                    if hm is None:
+                        hm = dimer.contact_surface.get_contact_map(threshold=hm_threshold)
+                    else:
+                        hm = np.add(hm, dimer.contact_surface.get_contact_map(threshold=hm_threshold))
+            if label_col is not None:
+                ax.text(point.a0, point.a1, point.a2, point.__getattribute__(label_col))
+            progress.add(info=point.id)
+        ax.set_xlabel(ax_labels[0])
+        ax.set_ylabel(ax_labels[1])
+        ax.set_zlabel(ax_labels[2])
+        ax.set_xlim(0,180)
+        ax.set_ylim(0,180)
+        ax.set_zlim(0,180)
+        title = "{}-{}".format(name,subset)
+        ax.set_title(title)
 
-    if save:
-        root["dihedral_figs"] = "images/dihedral_figs"
-        savepath = os.path.join(root.dihedral_figs, title + ".png")
-        plt.savefig(savepath)
-        if heatmap:
-            root["heatmap_figs"] = "images/heatmap_figs"
-            hm_title = title + "_heatmap.png"
-            from faces import ContactSurface
-            ContactSurface.get_heat_map(hm, title=hm_title, normalize=len(df), folder=root.heatmap_figs, percentage=False)
+        if save:
+            root["dihedral_figs"] = "images/dihedral_figs"
+            savepath = os.path.join(root.dihedral_figs, title + ".png")
+            plt.savefig(savepath)
+            if heatmap:
+                root["heatmap_figs"] = "images/heatmap_figs"
+                hm_title = title + "_heatmap.png"
+                from faces import ContactSurface
+                ContactSurface.get_heat_map(hm, title=hm_title, normalize=len(df), folder=root.heatmap_figs, percentage=False)
 
-    if vars.block:
-        plt.show(block = vars.block)
-    plt.close(fig)
+        if vars.block:
+            plt.show(block = vars.block)
+        plt.close(fig)
 
 
 def cluster_angles(dihedrals_path,
