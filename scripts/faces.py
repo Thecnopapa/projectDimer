@@ -519,7 +519,7 @@ class ContactSurface:
     @staticmethod
     def get_heat_map(matrix, title="Heat map", normalize = None, plot = True, show=False,
                      colors = None, cvals=None,
-                     folder = None):
+                     folder = None, percentage = False):
 
         if normalize is not None:
             matrix = ContactSurface.normalize_matrix(matrix, n=normalize)
@@ -553,7 +553,10 @@ class ContactSurface:
             #fig.tight_layout()
             fig.subplots_adjust(right=0.8)
             cbar = plt.colorbar(hm, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
-            cbar.set_label("% Occurnce")
+            cbar_title = "Occurence"
+            if percentage:
+                cbar_title = "% "+ cbar_title
+            cbar.set_label(cbar_title)
 
             ax.set_title(title)
 
@@ -582,14 +585,16 @@ class ContactSurface:
 
     @staticmethod
     def display_heatmap(matrix, title, structure, n_samples=None,  show_pymol=True,obj_name =None, show_heatmap=True,
-                        colors = None, cvals=None):
+                        colors = None, cvals=None, percentage=False):
         if n_samples is not None:
-            norm = n_samples/100
+            norm = n_samples
+            if percentage:
+                norm /= 100
         else:
             norm = None
         matrix, oneDmatrix = ContactSurface.get_heat_map(matrix,
                                                          title=title,
-                                                         normalize= n_samples / 100,
+                                                         normalize= norm,
                                                          colors=colors,
                                                          cvals=cvals,
                                                          show=show_heatmap)

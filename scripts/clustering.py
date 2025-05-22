@@ -1225,7 +1225,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
             root["heatmap_figs"] = "images/heatmap_figs"
             hm_title = os.path.basename(path).split(".")[0] + "_heatmap.png"
             from faces import ContactSurface
-            ContactSurface.get_heat_map(hm, title=hm_title, normalize=len(df), folder=root.heatmap_figs)
+            ContactSurface.get_heat_map(hm, title=hm_title, normalize=len(df), folder=root.heatmap_figs, percentage=False)
 
     if vars.block:
         plt.show(block = vars.block)
