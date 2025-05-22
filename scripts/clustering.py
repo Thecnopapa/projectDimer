@@ -1183,6 +1183,8 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
     name = os.path.basename(path).split(".")[0]
 
     if subset_col is not None:
+        print(subset_col)
+        print(complete_df.columns)
         assert subset_col in complete_df.columns
         subsets = subset
         if subsets is None:

@@ -228,7 +228,7 @@ def main(PROCESS_ALL = False,
             sprint(ref_name+ "({}/{})".format(n, len(os.listdir(cluster2_folder))))
             dihedrals_path = os.path.join(cluster2_folder, file)
             if "GR" in file:
-                plot_dihedrals(dihedrals_path, clusters="angle_cluster2", subset_col="angle_clusters2", heatmap = True, hm_threshold=10)
+                plot_dihedrals(dihedrals_path, clusters="angle_cluster2", subset_col="angle_cluster2", heatmap = True, hm_threshold=10)
 
 
 
