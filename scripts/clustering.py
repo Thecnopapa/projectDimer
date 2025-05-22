@@ -1182,6 +1182,8 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
     hm = None
     name = os.path.basename(path).split(".")[0]
 
+
+
     if subset_col is not None:
 
         assert subset_col in complete_df.columns
@@ -1244,12 +1246,14 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
                 root["heatmap_figs"] = "images/heatmap_figs"
                 hm_title = title + "_heatmap.png"
                 from faces import ContactSurface
-                ContactSurface.get_heat_map(hm, title=hm_title, normalize=len(df), folder=root.heatmap_figs,
+                matrix, oneDmatrix1, oneDmatrix2 = ContactSurface.get_heat_map(hm, title=hm_title, normalize=len(df), folder=root.heatmap_figs,
                                             percentage=False, outer_ids_complete=outer_ids_complete)
-
+                return matrix, oneDmatrix1, oneDmatrix2
         if vars.block:
             plt.show(block = vars.block)
         plt.close()
+        return None, None, None
+
 
 
 def cluster_angles(dihedrals_path,

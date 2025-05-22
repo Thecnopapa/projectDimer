@@ -529,10 +529,12 @@ class ContactSurface:
             matrix = ContactSurface.normalize_matrix(matrix, n=normalize)
 
         if outer_ids_complete is None:
-            oneDmatrix = [mean(i) for i in matrix]
-            outer_ids_complete = [True] * len(oneDmatrix)
+            oneDmatrix1 = [mean(i) for i in matrix]
+            oneDmatrix2 = [mean(i) for i in matrix.T]
+            outer_ids_complete = [True] * len(oneDmatrix1)
         else:
-            oneDmatrix = [sum(i)/len(outer_ids_complete) for i in matrix]
+            oneDmatrix1 = [sum(i)/len(outer_ids_complete) for i in matrix]
+            oneDmatrix1 = [sum(i) / len(outer_ids_complete) for i in matrix.T]
         if plot:
             fig, axes = plt.subplots(2,2,
                                      #sharex="col",
@@ -557,15 +559,15 @@ class ContactSurface:
             cmap = matplotlib.colors.LinearSegmentedColormap.from_list("colormap", tuples)
             #print(cmap)
             hm = ax.imshow(matrix, cmap=cmap)
-            for n, (p, o) in enumerate(zip(oneDmatrix, outer_ids_complete)):
+            for n, (p1,p2, o) in enumerate(zip(oneDmatrix1, oneDmatrix2, outer_ids_complete)):
                 if n == 0:
                     continue
                 if o is None:
-                    axBottom.plot((n-1,n), (oneDmatrix[n-1], p), c="black",  linestyle='--', linewidth=0.5)
-                    axLeft.plot((oneDmatrix[n - 1], p), (n - 1, n),  c="black", linestyle='--', linewidth=0.5)
+                    axBottom.plot((n-1,n), (oneDmatrix1[n-1], p1), c="black",  linestyle='--', linewidth=0.5)
+                    axLeft.plot((oneDmatrix2[n - 1], p2), (n - 1, n),  c="black", linestyle='--', linewidth=0.5)
                 else:
-                    axBottom.plot((n - 1, n), (oneDmatrix[n - 1], p), c=cmap(p), linestyle='--', linewidth=0.5)
-                    axLeft.plot((oneDmatrix[n - 1], p), (n - 1, n), c=cmap(p), linestyle='--', linewidth=0.5)
+                    axBottom.plot((n - 1, n), (oneDmatrix1[n - 1], p1), c=cmap(p1), linestyle='--', linewidth=0.5)
+                    axLeft.plot((oneDmatrix2[n - 1], p2), (n - 1, n), c=cmap(p2), linestyle='--', linewidth=0.5)
             #fig.tight_layout()
             fig.subplots_adjust(right=0.8)
             cbar = plt.colorbar(hm, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
@@ -583,7 +585,7 @@ class ContactSurface:
             plt.savefig(fig_path)
             if show:
                 plt.show(block=vars.block)
-        return matrix, oneDmatrix
+        return matrix, oneDmatrix1, oneDmatrix2
 
     @staticmethod
     def heat_map_to_pdb(matrix, structure, inplace=False, outer_list=None):
@@ -608,7 +610,7 @@ class ContactSurface:
                 norm /= 100
         else:
             norm = None
-        matrix, oneDmatrix = ContactSurface.get_heat_map(matrix,
+        matrix, oneDmatrix1, oneDmatrix2 = ContactSurface.get_heat_map(matrix,
                                                          title=title,
                                                          normalize= norm,
                                                          colors=colors,
@@ -620,7 +622,7 @@ class ContactSurface:
             from pyMol import pymol_colour, pymol_temp_show
             structure = ContactSurface.heat_map_to_pdb(matrix, structure)
             name = pymol_temp_show(structure, name=obj_name)
-            pymol_colour(colour="blue_yellow_red", sele=name, spectrum="b", minimum=0, maximum=amax(oneDmatrix) / 2)
+            pymol_colour(colour="blue_yellow_red", sele=name, spectrum="b", minimum=0, maximum=amax(oneDmatrix1) / 2)
 
 
     @staticmethod

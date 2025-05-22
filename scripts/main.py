@@ -222,17 +222,29 @@ def main(PROCESS_ALL = False,
                                              split_by="angle_cluster1")
 
 
+
+        matrix_dfs = {}
         for n, file in enumerate(sorted(os.listdir(cluster2_folder))):
+
 
             ref_name = file.split("-")[0]
             ref = [ref for ref in vars.references if ref.name == ref_name][0]
             sprint(ref_name+ "({}/{})".format(n, len(os.listdir(cluster2_folder))))
             dihedrals_path = os.path.join(cluster2_folder, file)
             if "GR" in file:
-                plot_dihedrals(dihedrals_path, clusters="angle_cluster2", subset_col="angle_cluster2",
-                               heatmap = True, hm_threshold=10,
-                               outer_ids_complete=ref.get_outer_res_list(complete_list=True)
-                               )
+                matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path, clusters="angle_cluster2", subset_col="angle_cluster2",
+                                                                   heatmap = True, hm_threshold=10,
+                                                                   outer_ids_complete=ref.get_outer_res_list(complete_list=True)
+                                                                   )
+                if ref_name not in matrix_dfs:
+                    matrix_dfs[ref_name] = pd.DataFrame()
+
+                matrix_dfs[ref_name][file.split(".")[0]] = oneDmatrix1
+                matrix_dfs[ref_name][file.split(".")[0]+".T"] = oneDmatrix1
+
+        for ref_name, df in matrix_dfs.items():
+            local["matrix_dfs_path"] = "dataframes/clustering2/matrixes"
+            df.to_csv(os.path.join(local.matrix_dfs_path, ref_name + ".csv" ))
 
 
 
