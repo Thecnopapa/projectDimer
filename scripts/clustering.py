@@ -1221,9 +1221,9 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
                 if heatmap:
                     dimer = load_single_pdb(point.id, pickle_folder=local.dimers, first_only=True, quiet=True)
                     if hm is None:
-                        hm = dimer.contact_surface.get_contact_map(threshold=hm_threshold)
+                        hm = dimer.contact_surface.get_contact_map(threshold=hm_threshold, transposed=not point.is1to2)
                     else:
-                        hm = np.add(hm, dimer.contact_surface.get_contact_map(threshold=hm_threshold))
+                        hm = np.add(hm, dimer.contact_surface.get_contact_map(threshold=hm_threshold, transposed=not point.is1to2))
             if label_col is not None:
                 ax.text(point.a0, point.a1, point.a2, point.__getattribute__(label_col))
             progress.add(info=point.id)
