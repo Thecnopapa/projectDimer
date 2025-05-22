@@ -844,7 +844,8 @@ if __name__ == "__main__":
         if "pymol" in sys.argv:
             from pyMol import *
             pymol_start(show=False)
-            ref = load_references(identifier=file.split(".")[0])[0]
+            print(file)
+            ref = load_references(identifier=file.split("-")[0])[0]
             pymol_load_path(ref.path, ref.name)
             pymol_colour("chainbow", ref.name)
             print("Sele:", sele)
@@ -863,9 +864,20 @@ if __name__ == "__main__":
                         chains_to_align.append([name, row.mon2])
                     if "chainbows" in sys.argv:
                         pymol_colour("chainbow", name)
+                    else:
+                        resids = [res.id[1] for res in dimer.monomer1.replaced.get_residues()]
+                        sele1 = name + " and c. {}".format(dimer.monomer1.chain)
+                        sele2 = name + " and c. {}".format(dimer.monomer2.chain)
+                        list1 = [min(x) for x in dimer.contact_surface.d_s_matrix]
+                        list2 = [min(x) for x in dimer.contact_surface.d_s_matrix.T]
+                        pymol_list_to_bfactors(val_list = list1, obj_name=sele1,resids=resids)
+                        pymol_list_to_bfactors(val_list = list2, obj_name=sele2, resids=resids)
+
+                    pymol_colour("rainbow", name, spectrum="b")
+
                 pymol_align_chains(chains_to_align)
                 pymol_group([a[0] for a in chains_to_align[1:]], name="--"+str(c), quiet=True)
-                if not "chainbows" in sys.argv:
+                if "color_clusters" in sys.argv:
                     pymol_colour(colours[c%ncolours], "--"+str(c))
 
             print("All groups:")

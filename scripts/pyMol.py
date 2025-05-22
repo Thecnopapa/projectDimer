@@ -436,3 +436,11 @@ def pymol_open_saved_cluster(path, name_list=None, only_even=True, spheres = Fal
                 pymol_sphere(sphere_coords, name=name+"_"+chain.id + "_corner")
         pymol_group(name, name="-"+name)
 
+def pymol_list_to_bfactors(val_list, obj_name, resids):
+    print("(PyMol) Altering B-factors:", obj_name)
+    for n, val in zip(resids,val_list):
+        sele = "{} and i. {}".format(obj_name, n)
+        if val == 666:
+            val = -1
+        print(val, "-->", sele)
+        pymol.cmd.alter(selection=sele, expression="b={}".format(val))

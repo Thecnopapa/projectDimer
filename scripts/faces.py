@@ -653,8 +653,11 @@ class ContactSurface:
 
 
 
-def plot_cluster_heatmap(dihedrals_path):
-    df = pd.read_csv(dihedrals_path)
+
+def plot_cluster_heatmap(df_path):
+    df = pd.read_csv(df_path)
+
+
 
 
 
