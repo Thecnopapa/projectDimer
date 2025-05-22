@@ -559,15 +559,17 @@ class ContactSurface:
             cmap = matplotlib.colors.LinearSegmentedColormap.from_list("colormap", tuples)
             #print(cmap)
             hm = ax.imshow(matrix, cmap=cmap)
+            max_n = len(oneDmatrix1)
             for n, (p1,p2, o) in enumerate(zip(oneDmatrix1, oneDmatrix2, outer_ids_complete)):
                 if n == 0:
                     continue
+                n2 = max_n - n
                 if o is None:
                     axBottom.plot((n-1,n), (oneDmatrix1[n-1], p1), c="black",  linestyle='--', linewidth=0.5)
-                    axLeft.plot((oneDmatrix2[n - 1], p2), (n - 1, n),  c="black", linestyle='--', linewidth=0.5)
+                    axLeft.plot((oneDmatrix2[n - 1], p2), (n2 + 1, n2),  c="black", linestyle='--', linewidth=0.5)
                 else:
                     axBottom.plot((n - 1, n), (oneDmatrix1[n - 1], p1), c=cmap(p1), linestyle='--', linewidth=0.5)
-                    axLeft.plot((oneDmatrix2[n - 1], p2), (n - 1, n), c=cmap(p2), linestyle='--', linewidth=0.5)
+                    axLeft.plot((oneDmatrix2[n - 1], p2), (n2 + 1, n2), c=cmap(p2), linestyle='--', linewidth=0.5)
             #fig.tight_layout()
             fig.subplots_adjust(right=0.8)
             cbar = plt.colorbar(hm, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
