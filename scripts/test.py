@@ -38,9 +38,9 @@ for dimer_name in dimer_list:
     dimers = load_single_pdb(dimer_name, pickle_folder=local.dimers, quiet=True)
     for dimer in dimers:
         if dimer.best_fit == ref_name and dimer.best_fit != "Missmatch":
-            if "contact_surface" not in dimer.__dict__ or False:
+            if "contact_surface" not in dimer.__dict__ or True:
                 dimer.contact_surface = ContactSurface(dimer.monomer1.replaced, dimer.monomer2.replaced, outer_ids=ref.outer_ids)
-                #dimer.pickle()
+                dimer.pickle()
             if dimer.contact_surface is not None:# and len(list(dimer.monomer1.replaced.get_residues())) == 229:
                 for threshold, contact_map in contact_maps.items():
                     if contact_map is None:
@@ -68,10 +68,9 @@ for threshold, contact_map in contact_maps.items():
                                    show_pymol=True,
                                    obj_name = "{}-T{}-N{}".format(ref_name, threshold, n_dimers),
                                    show_heatmap=False,
-                                   colors=["blue", "yellow", "red", "red"],
-                                   cvals=[0, 0.25, 0.5, 1],
-                                   #colors=None,
-                                   #cvals=None,
+                                   #colors=["blue", "yellow", "red", "red"],
+                                   #cvals=[0, 0.25, 0.5, 1],
+                                   percentage=True
                                    )
 session = pymol_save_temp_session(name="heatmap_plot_{}-N{}".format(ref_name,n_dimers) + ".pse")
 pymol_open_session_terminal(session)

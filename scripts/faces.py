@@ -466,8 +466,9 @@ class ContactSurface:
         if outer_ids is not None:
             self.outer_ids = outer_ids
             self.residues = [resid for resid in self.residues if resid in self.outer_ids]
-        self.res_pairs, self.t_matrix, self.d_t_matrix = self.get_atom_pairs()
-        self.d_s_matrix = np.tril(self.d_t_matrix.T, -1) + self.d_t_matrix
+        self.res_pairs, self.s_matrix, self.d_s_matrix = self.get_atom_pairs()
+        #self.d_s_matrix = np.tril(self.d_t_matrix.T, -1) + self.d_t_matrix
+
 
 
 
@@ -484,7 +485,7 @@ class ContactSurface:
             inner1 = False
             if res1.id[1] not in self.outer_ids:
                 inner1 = True
-            for res2 in list(res_list2)[n:]:
+            for res2 in list(res_list2):
                 inner2 = False
                 if res2.id[1] not in self.outer_ids:
                     inner2 = True
@@ -496,8 +497,8 @@ class ContactSurface:
                     dist = p.dist
                     new_pairs[p.id] = p
                 if len(t_matrix) == n:
-                    t_matrix.append([None]*n+[p])
-                    d_t_matrix.append([0]*n+[dist])
+                    t_matrix.append([p])
+                    d_t_matrix.append([dist])
                 else:
                     t_matrix[n].append(p)
                     d_t_matrix[n].append(dist)
@@ -524,7 +525,7 @@ class ContactSurface:
 
         if normalize is not None:
             if percentage:
-                normalize /= 100
+                normalize *= 100
             matrix = ContactSurface.normalize_matrix(matrix, n=normalize)
 
         if outer_ids_complete is None:
@@ -533,10 +534,14 @@ class ContactSurface:
         else:
             oneDmatrix = [sum(i)/len(outer_ids_complete) for i in matrix]
         if plot:
-            fig, axes = plt.subplots(2,1, sharex="col", gridspec_kw={'height_ratios': [4, 2]}, figsize=(8,12))
+            fig, axes = plt.subplots(2,2,
+                                     #sharex="col",
+                                     gridspec_kw={'height_ratios': [4, 2], "width_ratios": [2,4]},
+                                     figsize=(12,12))
 
-            ax = axes[0]
-            ax2 = axes[1]
+            ax = axes[0,1]
+            axLeft = axes[0,0]
+            axBottom = axes[1,1]
             if colors is None:
                 colors = ("blue", "yellow", "red")
 
@@ -556,9 +561,11 @@ class ContactSurface:
                 if n == 0:
                     continue
                 if o is None:
-                    ax2.plot((n-1,n), (oneDmatrix[n-1], p), c="black",  linestyle='--', linewidth=0.5)
+                    axBottom.plot((n-1,n), (oneDmatrix[n-1], p), c="black",  linestyle='--', linewidth=0.5)
+                    axLeft.plot((oneDmatrix[n - 1], p), (n - 1, n),  c="black", linestyle='--', linewidth=0.5)
                 else:
-                    ax2.plot((n - 1, n), (oneDmatrix[n - 1], p), c=cmap(p), linestyle='--', linewidth=0.5)
+                    axBottom.plot((n - 1, n), (oneDmatrix[n - 1], p), c=cmap(p), linestyle='--', linewidth=0.5)
+                    axLeft.plot((oneDmatrix[n - 1], p), (n - 1, n), c=cmap(p), linestyle='--', linewidth=0.5)
             #fig.tight_layout()
             fig.subplots_adjust(right=0.8)
             cbar = plt.colorbar(hm, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
@@ -606,7 +613,8 @@ class ContactSurface:
                                                          normalize= norm,
                                                          colors=colors,
                                                          cvals=cvals,
-                                                         show=show_heatmap)
+                                                         show=show_heatmap,
+                                                         percentage=percentage)
 
         if show_pymol:
             from pyMol import pymol_colour, pymol_temp_show
