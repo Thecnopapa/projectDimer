@@ -1174,7 +1174,8 @@ def generate_dihedrals_df(dimer_list = None, force = False):
 
 def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = None, subset=None, save=True,
                    label_col=None, only_first=None, heatmap=False, hm_threshold = 10):
-    print("plotting dihedrals, heatmap={}".format(heatmap))
+    print1("plotting dihedrals, heatmap={}".format(heatmap))
+    print2(path)
     from matplotlib import  pyplot as plt
     from imports import load_single_pdb
     df = pd.read_csv(path)
