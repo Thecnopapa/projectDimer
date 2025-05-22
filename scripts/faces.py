@@ -540,11 +540,11 @@ class ContactSurface:
                 elif len(colors) == 2:
                     cvals = [0, 1]
             norm = plt.Normalize(min(cvals), max(cvals))
-            print(norm)
+            #print(norm)
             tuples = list(zip(map(norm, cvals), colors))
-            print(tuples)
+            #print(tuples)
             cmap = matplotlib.colors.LinearSegmentedColormap.from_list("colormap", tuples)
-            print(cmap)
+            #print(cmap)
             hm = ax.imshow(matrix, cmap=cmap)
             for n, p in enumerate(oneDmatrix):
                 if n == 0:

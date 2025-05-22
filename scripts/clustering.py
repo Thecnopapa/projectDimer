@@ -1180,6 +1180,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
     from imports import load_single_pdb
     df = pd.read_csv(path)
     hm = None
+    name = os.path.basename(path).split(".")[0]
 
     if subset_col is not None:
         assert subset_col in df.columns
@@ -1217,14 +1218,16 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
     ax.set_xlim(0,180)
     ax.set_ylim(0,180)
     ax.set_zlim(0,180)
+    title = "{}-{}".format(name,subset, len(df))
+    ax.set_title(title)
 
     if save:
         root["dihedral_figs"] = "images/dihedral_figs"
-        savepath = os.path.join(root.dihedral_figs, os.path.basename(path).split(".")[0] + ".png")
+        savepath = os.path.join(root.dihedral_figs, title + ".png")
         plt.savefig(savepath)
         if heatmap:
             root["heatmap_figs"] = "images/heatmap_figs"
-            hm_title = os.path.basename(path).split(".")[0] + "_heatmap.png"
+            hm_title = title + "_heatmap.png"
             from faces import ContactSurface
             ContactSurface.get_heat_map(hm, title=hm_title, normalize=len(df), folder=root.heatmap_figs, percentage=False)
 
