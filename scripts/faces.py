@@ -534,7 +534,7 @@ class ContactSurface:
             outer_ids_complete = [True] * len(oneDmatrix1)
         else:
             oneDmatrix1 = [sum(i)/len(outer_ids_complete) for i in matrix]
-            oneDmatrix1 = [sum(i) / len(outer_ids_complete) for i in matrix.T]
+            oneDmatrix2 = [sum(i) / len(outer_ids_complete) for i in matrix.T]
         if plot:
             fig, axes = plt.subplots(2,2,
                                      #sharex="col",
