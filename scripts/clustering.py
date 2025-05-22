@@ -1173,8 +1173,8 @@ def generate_dihedrals_df(dimer_list = None, force = False):
 
 
 def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = None, subset=None, save=True,
-                   label_col=None, only_first=None, heatmap=True, hm_threshold = 10):
-    print("plotting dihedrals, heatmap={}", heatmap)
+                   label_col=None, only_first=None, heatmap=False, hm_threshold = 10):
+    print("plotting dihedrals, heatmap={}".format(heatmap))
     from matplotlib import  pyplot as plt
     from imports import load_single_pdb
     df = pd.read_csv(path)
@@ -1221,10 +1221,11 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
         root["dihedral_figs"] = "images/dihedral_figs"
         savepath = os.path.join(root.dihedral_figs, os.path.basename(path).split(".")[0] + ".png")
         plt.savefig(savepath)
-        root["heatmap_figs"] = "images/heatmap_figs"
-        hm_title = os.path.basename(path).split(".")[0] + "_heatmap.png"
-        from faces import ContactSurface
-        ContactSurface.get_heat_map(hm, title=hm_title, normalize=len(df), folder=root.heatmap_figs)
+        if heatmap:
+            root["heatmap_figs"] = "images/heatmap_figs"
+            hm_title = os.path.basename(path).split(".")[0] + "_heatmap.png"
+            from faces import ContactSurface
+            ContactSurface.get_heat_map(hm, title=hm_title, normalize=len(df), folder=root.heatmap_figs)
 
     if vars.block:
         plt.show(block = vars.block)
@@ -1237,8 +1238,9 @@ def cluster_angles(dihedrals_path,
                    folder="angle_clusters1",
                    split_by=None):
     sprint("Clustering angles")
-    print1("Cluster name:", cluster_name)
-    print2("Cluster folder:", folder)
+    print1("Name:", cluster_name)
+    print1("Folder:", folder)
+    print1("Angles:", angles)
     dihedrals_df = pd.read_csv(dihedrals_path)
     if split_by is not None:
         clusters = set(dihedrals_df[split_by].values)

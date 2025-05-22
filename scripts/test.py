@@ -67,7 +67,12 @@ for threshold, contact_map in contact_maps.items():
                                    n_samples=n_dimers,
                                    show_pymol=True,
                                    obj_name = "{}-T{}-N{}".format(ref_name, threshold, n_dimers),
-                                   show_heatmap=False)
+                                   show_heatmap=False,
+                                   colors=["blue", "yellow", "red", "red"],
+                                   cvals=[0, 0.25, 0.5, 1],
+                                   #colors=None,
+                                   #cvals=None,
+                                   )
 session = pymol_save_temp_session(name="heatmap_plot_{}-N{}".format(ref_name,n_dimers) + ".pse")
 pymol_open_session_terminal(session)
 
