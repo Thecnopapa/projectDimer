@@ -1207,7 +1207,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
 
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
-        progress = ProgressBar(len(df))
+        progress = ProgressBar(len(df), silent=True)
         for point in df.itertuples():
             if clusters is None:
                 ax.scatter(point.a0, point.a1, point.a2)
@@ -1249,7 +1249,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
 
         if vars.block:
             plt.show(block = vars.block)
-        plt.close(fig)
+        plt.close()
 
 
 def cluster_angles(dihedrals_path,
