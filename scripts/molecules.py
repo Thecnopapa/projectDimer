@@ -1013,7 +1013,7 @@ class Reference(Monomer):
         from faces import GR_dict
         self.face_dict = GR_dict.copy()
 
-    def get_outer_res_list(self, threshold=10, inner=False, id_only=True):
+    def get_outer_res_list(self, threshold=10, inner=False, id_only=True, complete_list = False):
         res_list = []
         """[print(res.sasa) for res in self.structure.get_residues()]
         for res in self.structure.get_residues():
@@ -1037,4 +1037,6 @@ class Reference(Monomer):
                     res_list.append(residue.id[1])
                 else:
                     res_list.append(residue)
+            elif complete_list:
+                res_list.append(None)
         return res_list

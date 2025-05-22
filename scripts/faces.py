@@ -519,16 +519,19 @@ class ContactSurface:
     @staticmethod
     def get_heat_map(matrix, title="Heat map", normalize = None, plot = True, show=False,
                      colors = None, cvals=None,
-                     folder = None, percentage = False):
+                     folder = None, percentage = False,
+                     outer_ids_complete = None):
 
         if normalize is not None:
             if percentage:
                 normalize /= 100
             matrix = ContactSurface.normalize_matrix(matrix, n=normalize)
 
+        if outer_ids_complete is None:
+            oneDmatrix = [mean(i) for i in matrix]
+        else:
 
-        oneDmatrix = [sum(i) for i in matrix]
-
+            oneDmatrix = [sum(i)/len(outer_ids_complete) for i in matrix]
         if plot:
             fig, axes = plt.subplots(2,1, sharex="col", gridspec_kw={'height_ratios': [4, 2]}, figsize=(8,12))
 
@@ -561,7 +564,7 @@ class ContactSurface:
                 cbar_title = "% "+ cbar_title
             cbar.set_label(cbar_title)
 
-            ax.set_title(title)
+            ax.set_title(title + " N={}".format(normalize))
 
             if folder is None:
                 root["heatmaps"] = "images/heatmaps"

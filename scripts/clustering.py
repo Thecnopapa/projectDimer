@@ -1173,7 +1173,7 @@ def generate_dihedrals_df(dimer_list = None, force = False):
 
 
 def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = None, subset=None, include_all=True, save=True,
-                   label_col=None, only_first=None, heatmap=False, hm_threshold = 10):
+                   label_col=None, only_first=None, heatmap=False, hm_threshold = 10, outer_ids_complete = None):
     print1("plotting dihedrals, heatmap={}".format(heatmap))
     print2(path)
     from matplotlib import  pyplot as plt
@@ -1183,8 +1183,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
     name = os.path.basename(path).split(".")[0]
 
     if subset_col is not None:
-        print(subset_col)
-        print(complete_df.columns)
+
         assert subset_col in complete_df.columns
         subsets = subset
         if subsets is None:
@@ -1235,7 +1234,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
         ax.set_ylim(0,180)
         ax.set_zlim(0,180)
         title = "{}-{}".format(name,subset)
-        ax.set_title(title)
+        ax.set_title(title+" N={}".format(len(df)))
 
         if save:
             root["dihedral_figs"] = "images/dihedral_figs"
@@ -1245,7 +1244,8 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
                 root["heatmap_figs"] = "images/heatmap_figs"
                 hm_title = title + "_heatmap.png"
                 from faces import ContactSurface
-                ContactSurface.get_heat_map(hm, title=hm_title, normalize=len(df), folder=root.heatmap_figs, percentage=False)
+                ContactSurface.get_heat_map(hm, title=hm_title, normalize=len(df), folder=root.heatmap_figs,
+                                            percentage=False, outer_ids_complete=outer_ids_complete)
 
         if vars.block:
             plt.show(block = vars.block)
