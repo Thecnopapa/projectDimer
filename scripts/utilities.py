@@ -139,11 +139,11 @@ class ProgressBar:
         print("Completed in {} seconds".format(round(time.perf_counter() - self.start_time, 2)))
 
 
-    def update(self, end="\r", info = ""):
+    def update(self, end="\r", info = "", min_len=0):
         progress = int(self.current * 100 // self.total)
 
-        if len(info) > 0:
-            info+= " "
+        if len(info) < min_len:
+            info+= " "*(min_len-len(info))
         percentage = "|{}|{}%".format(info,add_front_0(progress, digits=3, zero = " "))
         bar_width = self.width - len(percentage)
         progress_scaled = int(progress * bar_width //100)

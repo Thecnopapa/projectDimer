@@ -206,6 +206,7 @@ def main(PROCESS_ALL = False,
                                              cluster_name="angle_cluster1",
                                              folder="angle_clusters1")
 
+
         for file in os.listdir(cluster1_folder):
             dihedrals_path = os.path.join(cluster1_folder, file)
             plot_dihedrals(dihedrals_path, clusters="angle_cluster1")

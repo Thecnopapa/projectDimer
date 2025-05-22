@@ -1174,6 +1174,7 @@ def generate_dihedrals_df(dimer_list = None, force = False):
 
 def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = None, subset=None, save=True,
                    label_col=None, only_first=None, heatmap=True, hm_threshold = 10):
+    print("plotting dihedrals, heatmap={}", heatmap)
     from matplotlib import  pyplot as plt
     from imports import load_single_pdb
     df = pd.read_csv(path)
@@ -1189,6 +1190,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
+    progress = ProgressBar(len(df))
     for point in df.itertuples():
         if clusters is None:
             ax.scatter(point.a0, point.a1, point.a2)
@@ -1200,13 +1202,14 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
                 col = "C"+str(cl)
             ax.scatter(point.a0, point.a1, point.a2, c=col)
             if heatmap:
-                dimer = load_single_pdb(point.id, pickle_folder=local.dimers, first_only=True)
+                dimer = load_single_pdb(point.id, pickle_folder=local.dimers, first_only=True, quiet=True)
                 if hm is None:
                     hm = dimer.contact_surface.get_contact_map(threshold=hm_threshold)
                 else:
                     hm = np.add(hm, dimer.contact_surface.get_contact_map(threshold=hm_threshold))
         if label_col is not None:
             ax.text(point.a0, point.a1, point.a2, point.__getattribute__(label_col))
+        progress.add(info=point.id)
     ax.set_xlabel(ax_labels[0])
     ax.set_ylabel(ax_labels[1])
     ax.set_zlabel(ax_labels[2])
