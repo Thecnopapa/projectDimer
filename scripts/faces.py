@@ -522,9 +522,12 @@ class ContactSurface:
                      folder = None, percentage = False):
 
         if normalize is not None:
+            if percentage:
+                normalize /= 100
             matrix = ContactSurface.normalize_matrix(matrix, n=normalize)
 
-        oneDmatrix = [mean(i) for i in matrix]
+
+        oneDmatrix = [sum(i) for i in matrix]
 
         if plot:
             fig, axes = plt.subplots(2,1, sharex="col", gridspec_kw={'height_ratios': [4, 2]}, figsize=(8,12))

@@ -1218,7 +1218,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
     ax.set_xlim(0,180)
     ax.set_ylim(0,180)
     ax.set_zlim(0,180)
-    title = "{}-{}".format(name,subset, len(df))
+    title = "{}-{}".format(name,subset)
     ax.set_title(title)
 
     if save:
@@ -1233,6 +1233,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
 
     if vars.block:
         plt.show(block = vars.block)
+    plt.close(fig)
 
 
 def cluster_angles(dihedrals_path,

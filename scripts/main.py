@@ -198,7 +198,7 @@ def main(PROCESS_ALL = False,
         from clustering import generate_dihedrals_df, plot_dihedrals, cluster_angles
         generate_dihedrals_df(force = False or PROCESS_ALL)
 
-        for file in os.listdir(root.dihedrals):
+        for file in sorted(os.listdir(root.dihedrals)):
             dihedrals_path = os.path.join(root.dihedrals, file)
             cluster1_folder = cluster_angles(dihedrals_path,
                                              bandwidth=40,
@@ -207,12 +207,12 @@ def main(PROCESS_ALL = False,
                                              folder="angle_clusters1")
 
 
-        for file in os.listdir(cluster1_folder):
+        for file in sorted(os.listdir(cluster1_folder)):
             dihedrals_path = os.path.join(cluster1_folder, file)
             plot_dihedrals(dihedrals_path, clusters="angle_cluster1")
 
 
-        for file in os.listdir(cluster1_folder):
+        for file in sorted(os.listdir(cluster1_folder)):
             dihedrals_path = os.path.join(cluster1_folder, file)
             cluster2_folder = cluster_angles(dihedrals_path,
                                              bandwidth=40,
@@ -222,10 +222,13 @@ def main(PROCESS_ALL = False,
                                              split_by="angle_cluster1")
 
 
-        for file in os.listdir(cluster2_folder):
-            dihedrals_path = os.path.join(cluster2_folder, file)
+        for n, file in enumerate(sorted(os.listdir(cluster2_folder))):
+
             ref_name = file.split("-")[0]
-            plot_dihedrals(dihedrals_path, clusters="angle_cluster2", heatmap = True, hm_threshold=10)
+            sprint(ref_name+ "({}/{})".format(n, len(os.listdir(cluster2_folder))))
+            dihedrals_path = os.path.join(cluster2_folder, file)
+            if "GR" in file:
+                plot_dihedrals(dihedrals_path, clusters="angle_cluster2", heatmap = True, hm_threshold=10)
 
 
 
