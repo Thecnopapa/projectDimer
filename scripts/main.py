@@ -68,7 +68,7 @@ def main(PROCESS_ALL = False,
     # Download large dataset
     sprint("Downloading large dataset")
     if "many_pdbs" not in local.list() and LARGE_DATASET:
-        download_pdbs(os.path.join(root.pdb_lists,"list_1500"), "many_pdbs", terminal = True)
+        download_pdbs(os.path.join(root.pdb_lists,"rcsb_pdb_ids_20250524034011.txt"), "many_pdbs", terminal = True)
     print1("Large dataset downloaded")
 
 
