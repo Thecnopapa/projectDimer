@@ -301,6 +301,48 @@ def int_input(prompt, all="all"):
 
 
 
+def mpl_to_gif(fig, axes, name = "animation.gif", folder=None, dpf=5, total_d = 360, duration = 5):
+    print("Animating: {} Duration: {}s, degrees/frame: {}/{}".format(name, duration, dpf, total_d))
+
+    import io, PIL
+
+
+    if type(axes) is not list:
+        axes = [axes]
+    if folder is None:
+        from Globals import local
+        folder = local.temp
+    path = os.path.join(folder, name + ".gif")
+    n_frames = total_d // dpf
+    f_duration = duration * 1000 / n_frames
+
+
+    progress = ProgressBar(n_frames, silent=True)
+    images = []
+    for frame in range(n_frames):
+        for ax in axes:
+            ax.view_init(azim=frame*dpf)
+        buf = io.BytesIO()
+        fig.savefig(buf)
+        buf.seek(0)
+
+        images.append(PIL.Image.open(buf))
+        progress.add(info="{}/{}".format(frame, n_frames))
+
+    images[0].save(
+        path,
+        append_images=images[1:],
+        duration=duration,  # duration of each frame in milliseconds
+        loop=0,  # loop forever
+    )
+    print1("Saving at:", path)
+
+
+
+
+
+
+
 if __name__ == "__main__":
     progress = ThinkingBar()
     while True:

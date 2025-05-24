@@ -234,7 +234,8 @@ def main(PROCESS_ALL = False,
             if "GR" in file:
                 matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path, clusters="angle_cluster2", subset_col="angle_cluster2",
                                                                    heatmap = True, hm_threshold=10,
-                                                                   outer_ids_complete=ref.get_outer_res_list(complete_list=True)
+                                                                   outer_ids_complete=ref.get_outer_res_list(complete_list=True),
+                                                                   gif=True,
                                                                    )
                 if ref_name not in matrix_dfs:
                     matrix_dfs[ref_name] = pd.DataFrame()

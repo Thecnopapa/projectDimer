@@ -89,7 +89,7 @@ def generate_html():
     pass
 
 
-def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces =True):
+def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces =False):
 
     merged = "merged" in sys.argv
 
@@ -141,7 +141,7 @@ def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces 
                 print1(key, ":", item)
         if "pymol" in args:
             from pyMol import pymol_start, pymol_load_path, pymol_symmetries, pymol_group, pymol_paint_contacts, pymol_format, pymol_draw_line, pymol_set_state
-            pymol_start(show=True)
+            pymol_start(show=False)
             for key, item in obj.__dict__.items():
                 if type(item) == str:
                     #print(item.endswith(".pdb"), not "fractional" in item, not "merged" in item, not merged)
@@ -151,9 +151,9 @@ def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces 
                         if "many_pdbs" in item:
                             og = pymol_load_path(item, os.path.basename(item)+"_original")
                         elif "pdb_" in item:
-                            pymol_load_path(item, os.path.basename(item) + "_processed")
+                            name = pymol_load_path(item, os.path.basename(item) + "_processed")
                         else:
-                            pymol_load_path(item, os.path.basename(item))
+                            name = pymol_load_path(item, os.path.basename(item))
                         pymol_format("surface", os.path.basename(item), colour= "gray")
                         if "is_reference" in obj.__dict__.keys() or paint_all_faces:
                             if "best_fit" in obj.__dict__.keys():
@@ -185,7 +185,7 @@ def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces 
                             #print(obj.com)
                             point_list = pca_to_lines(pca, com=obj.com, just_points=True)
                             for p in point_list:
-                                pymol_draw_line(coord1=p[0], coord2=p[1], name="pca")
+                                pymol_draw_line(coord1=p[0], coord2=p[1], name="pca-"+name.split(".")[0])
 
                         elif "pca1" in obj.__dict__.keys():
                             from faces import pca_to_lines
@@ -243,6 +243,7 @@ def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces 
             pymol_set_state(0)
             pymol_orient()
             pymol_show_cell()
+            pymol_group(identifier="pca", name="pcas")
             pymol_disable("pca")
             pymol_group(identifier="face", name="faces")
             try:
@@ -262,6 +263,8 @@ def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces 
             except:
                 pass
             pymol_set_state(2)
+            session_path = pymol_save_temp_session()
+            pymol_open_session_terminal(session_path)
 
 
 
@@ -897,8 +900,12 @@ if __name__ == "__main__":
 
         elif "plot" in sys.argv:
             from clustering import plot_dihedrals
-            for c in options:
-                plot_dihedrals(dihedrals_path, subset_col="angle_cluster1", subset=c, save=False, label_col="id", only_first=10)
+            for c in sele[-1]:
+                print("Cluster:", sele[:-1], c)
+                subset = df[df[cluster_cols[-1]] == c]
+
+                plot_dihedrals(dihedrals_path, subset_col="angle_cluster2", subset=c, save=True,
+                               gif="gif" in sys.argv, )
 
 
 
