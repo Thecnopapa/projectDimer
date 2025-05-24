@@ -258,5 +258,5 @@ fabric.properties
 /data/experimental/
 /images/heatmap_figs/
 /images/dihedral_figs/
-
+/images/dihedral_gifs/
 nohup.out
