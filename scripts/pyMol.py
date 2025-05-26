@@ -236,9 +236,14 @@ def pymol_set_state(state):
     pymol.cmd.set("state", state)
 
 
-def pymol_orient():
-    print("(PyMol) Orienting all")
-    pymol.cmd.orient("(all)")
+def pymol_orient(enabled = True):
+
+    if enabled:
+        print("(PyMol) Orienting enabled")
+        pymol.cmd.orient("(enabled)")
+    else:
+        print("(PyMol) Orienting all")
+        pymol.cmd.orient("(all)")
 
 def pymol_show_cell():
     print("(PyMol) Displaying cell")
