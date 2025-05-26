@@ -113,10 +113,11 @@ def pymol_save_small(file_name, folder, dpi=300, height=100, width=150, save_ses
 
 def pymol_save_snapshot(file_name, folder, dpi=300, height=200, width=300):
     print("(PyMol) Saving snapshot:", folder, file_name)
-    image_path = os.path.join(folder, file_name+".png")
+    image_path = os.path.join(folder, file_name+"ss.png")
     print(os.listdir(folder))
     print(image_path)
     pymol.cmd.png(image_path, width=width, height=height, dpi=dpi, quiet=0)
+    #pymol.cmd.png("test.png")
     #pymol.cmd.save(image_path, quiet=0)
     return image_path
 
@@ -461,3 +462,10 @@ def pymol_list_to_bfactors(val_list, obj_name, resids):
             val = -1
         #print(val, "-->", sele)
         pymol.cmd.alter(selection=sele, expression="b={}".format(val))
+
+
+
+
+if __name__ == "__main__":
+    import setup
+    pymol_start(show=True)

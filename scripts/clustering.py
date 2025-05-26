@@ -1330,14 +1330,15 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
                 pymol_colour("rainbow", name, spectrum="b")
         print(chains_to_align)
         print(get_all_obj())
-        #session_path = pymol_save_temp_session()
-        #pymol_open_session_terminal(session_path)
+
         pymol_align_chains(chains_to_align)
         pymol_group([a[0] for a in chains_to_align[1:]], name="--" + str(c), quiet=True)
         if color_clusters:
             pymol_colour(colours[c % ncolours], "--" + str(c))
         pymol_orient()
         local["snapshots"] = "snapshots"
+        session_path = pymol_save_temp_session(name="test.png")
+        pymol_open_session_terminal(session_path)
         pymol_save_snapshot(filename + "-{}".format(c), folder=local.snapshots)
         print("hi")
         for obj, _ in chains_to_align:
