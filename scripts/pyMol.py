@@ -385,7 +385,10 @@ def open_session_terminal(path):
     print("Opening:", path)
     subprocess.Popen(["nohup", "xdg-open", path], start_new_session=True)
 
-
+def pymol_command_in_new_process(path, command):
+    import subprocess
+    print("Opening:", path)
+    subprocess.Popen(["nohup", "xdg-open", path, "&", command], start_new_session=True)
 
 def pymol_save_cluster(obj_list, name="CLUSTER_X.pdb", folder=None, state=0):
     if folder is None:
@@ -469,3 +472,7 @@ def pymol_list_to_bfactors(val_list, obj_name, resids):
 if __name__ == "__main__":
     import setup
     pymol_start(show=True)
+
+    #pymol.cmd.load('/home/iain/localdata/projectB/temp/temp_session.pse')
+
+    #pymol.cmd.png("/home/iain/localdata/projectB/temp/hi.png")
