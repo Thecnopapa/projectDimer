@@ -443,5 +443,5 @@ def pymol_list_to_bfactors(val_list, obj_name, resids):
         sele = "{} and i. {}".format(obj_name, n)
         if val == 666:
             val = -1
-        print(val, "-->", sele)
+        #print(val, "-->", sele)
         pymol.cmd.alter(selection=sele, expression="b={}".format(val))
