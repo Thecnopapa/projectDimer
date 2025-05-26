@@ -111,6 +111,15 @@ def pymol_save_small(file_name, folder, dpi=300, height=100, width=150, save_ses
     pymol.cmd.png(image_path, width=width, height=height, dpi=dpi)
     return image_path
 
+def pymol_save_snapshot(file_name, folder, dpi=300, height=200, width=300, save_session=None):
+    print("(PyMol) Saving snapshot:", folder, file_name)
+    image_path = os.path.join(folder, file_name+".png")
+    print(os.listdir(folder))
+    print(image_path)
+    pymol.cmd.png(image_path, width=width, height=height, dpi=dpi, quiet=0)
+    #pymol.cmd.save(image_path, quiet=0)
+    return image_path
+
 def pymol_save_session(file_name, folder, mode="pse"):
     path = os.path.join(folder, file_name + "."+mode)
     pymol.cmd.save(path)
