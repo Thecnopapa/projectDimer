@@ -1310,7 +1310,7 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
         print(subset)
         chains_to_align = [[ref.name, ref.chain]]
         for row in subset.itertuples():
-            dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers)[0]
+            dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)[0]
             name = pymol_load_path(dimer.replaced_path, row.id + str(row.is1to2))
             if row.is1to2:
                 chains_to_align.append([name, row.mon1])
@@ -1327,7 +1327,7 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
                 pymol_list_to_bfactors(val_list=list1, obj_name=sele1, resids=resids)
                 pymol_list_to_bfactors(val_list=list2, obj_name=sele2, resids=resids)
 
-            pymol_colour("rainbow", name, spectrum="b")
+                pymol_colour("rainbow", name, spectrum="b")
         print(chains_to_align)
         print(get_all_obj())
         #session_path = pymol_save_temp_session()

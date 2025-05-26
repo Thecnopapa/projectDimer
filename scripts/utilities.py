@@ -301,7 +301,7 @@ def int_input(prompt, all="all"):
 
 
 
-def mpl_to_gif(fig, axes, name = "animation.gif", folder=None, dpf=5, total_d = 360, duration = 15):
+def mpl_to_gif(fig, axes, name = "animation.gif", folder=None, dpf=1, total_d = 360, duration = 10):
     print("Animating: {} Duration: {}s, degrees/frame: {}/{}".format(name, duration, dpf, total_d))
 
     import io, PIL
@@ -330,7 +330,7 @@ def mpl_to_gif(fig, axes, name = "animation.gif", folder=None, dpf=5, total_d = 
     images[0].save(
         path,
         append_images=images[1:],
-        duration=duration,  # duration of each frame in milliseconds
+        duration=f_duration,  # duration of each frame in milliseconds
         loop=2,  # loop forever
         save_all=True,
     )
