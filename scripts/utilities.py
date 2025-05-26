@@ -331,7 +331,7 @@ def mpl_to_gif(fig, axes, name = "animation.gif", folder=None, dpf=5, total_d = 
         path,
         append_images=images[1:],
         duration=duration,  # duration of each frame in milliseconds
-        loop=0,  # loop forever
+        loop=2,  # loop forever
         save_all=True,
     )
     print1("Saving at:", path)
