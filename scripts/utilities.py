@@ -306,7 +306,6 @@ def mpl_to_gif(fig, axes, name = "animation.gif", folder=None, dpf=5, total_d = 
 
     import io, PIL
 
-
     if type(axes) is not list:
         axes = [axes]
     if folder is None:
@@ -328,12 +327,12 @@ def mpl_to_gif(fig, axes, name = "animation.gif", folder=None, dpf=5, total_d = 
 
         images.append(PIL.Image.open(buf))
         progress.add(info="{}/{}".format(frame, n_frames))
-
     images[0].save(
         path,
         append_images=images[1:],
         duration=duration,  # duration of each frame in milliseconds
         loop=0,  # loop forever
+        save_all=True,
     )
     print1("Saving at:", path)
 

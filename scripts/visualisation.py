@@ -263,8 +263,9 @@ def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces 
             except:
                 pass
             pymol_set_state(2)
-            session_path = pymol_save_temp_session()
-            pymol_open_session_terminal(session_path)
+    if "pymol" in args:
+        session_path = pymol_save_temp_session()
+        pymol_open_session_terminal(session_path)
 
 
 
