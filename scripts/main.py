@@ -8,7 +8,7 @@ from utilities import *
 import platform
 import numpy as np
 
-
+from visualisation import show_cluster2_pymol
 
 
 def main(PROCESS_ALL = False,
@@ -46,7 +46,10 @@ def main(PROCESS_ALL = False,
          CLUSTERING_METHOD = "KMeans",
          N_SAMPLE_MULTIPLIER = 0.5,
          QUANTILE = 0.1,
-         BANDWIDTH = 0.1
+         BANDWIDTH = 0.1,
+         HEATMAPS =True,
+         GIFS = True,
+         SNAPSHOTS = True,
          ):
 
 
@@ -212,14 +215,14 @@ def main(PROCESS_ALL = False,
             plot_dihedrals(dihedrals_path, clusters="angle_cluster1")
             matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path, clusters="angle_cluster1",
                                                               subset_col=None,
-                                                              gif=True,
+                                                              gif=GIFS,
                                                               )
 
 
         for file in sorted(os.listdir(cluster1_folder)):
             dihedrals_path = os.path.join(cluster1_folder, file)
             cluster2_folder = cluster_angles(dihedrals_path,
-                                             bandwidth=40,
+                                             bandwidth=30,
                                              angles=["b0", "b1", "b2"],
                                              cluster_name="angle_cluster2",
                                              folder="angle_clusters2",
@@ -237,15 +240,23 @@ def main(PROCESS_ALL = False,
             dihedrals_path = os.path.join(cluster2_folder, file)
 
             matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path, clusters="angle_cluster2", subset_col="angle_cluster2",
-                                                               heatmap = True, hm_threshold=10,
+                                                               heatmap = HEATMAPS, hm_threshold=10,
                                                                outer_ids_complete=ref.get_outer_res_list(complete_list=True),
-                                                               gif=True,
+                                                               gif=GIFS,
                                                                )
             if ref_name not in matrix_dfs:
                 matrix_dfs[ref_name] = pd.DataFrame()
 
             matrix_dfs[ref_name][file.split(".")[0]] = oneDmatrix1
             matrix_dfs[ref_name][file.split(".")[0]+".T"] = oneDmatrix1
+            if SNAPSHOTS:
+                show_cluster2_pymol(file, pd.read_csv(dihedrals_path), [file.split("-")[-1].split(".")[0], "all",
+                                cluster_cols=["angle_cluster2"], clear = True, save_snapshot=True)
+
+
+
+
+
 
         for ref_name, df in matrix_dfs.items():
             local["matrix_dfs_path"] = "dataframes/clustering2/matrixes"
@@ -376,6 +387,9 @@ if __name__ == "__main__":
          DIMENSIONS_PCA = [0,1,2],
          MINIMUM_SCORE = 0,
 
+         HEATMAPS = False,
+         GIFS = False,
+         SNAPSHOTS = True,
 
 
          )
