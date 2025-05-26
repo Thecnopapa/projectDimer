@@ -106,6 +106,7 @@ def pymol_colour(colour, obj = "(all)", sele = None, spectrum=None, silent =Fals
 
 
 def pymol_save_small(file_name, folder, dpi=300, height=100, width=100, save_session=None):
+    print("(PyMol) Saving small:", folder, file_name)
     image_path = os.path.join(folder, file_name+".png")
     pymol.cmd.png(image_path, width=width, height=height, dpi=dpi)
     return image_path

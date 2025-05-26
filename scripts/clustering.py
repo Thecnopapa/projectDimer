@@ -1,5 +1,4 @@
-import os
-
+import os, sys
 
 from utilities import *
 from Globals import root, local, vars
@@ -1173,7 +1172,7 @@ def generate_dihedrals_df(dimer_list = None, force = False):
 
 
 def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = None, subset=None, include_all=True, save=True,
-                   label_col=None, only_first=None, heatmap=False, hm_threshold = 10, outer_ids_complete = None, gif = False):
+                   label_col=None, only_first=None, heatmap=False, hm_threshold = 10, outer_ids_complete = None, gif = False, snapshot=False):
     print1("plotting dihedrals, heatmap={}".format(heatmap))
     print2(path)
     from matplotlib import  pyplot as plt
@@ -1245,6 +1244,8 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
         if gif:
             root["dihedral_gifs"] = "images/dihedral_gifs"
             mpl_to_gif(fig, ax, name=title, folder= root.dihedral_gifs)
+        if snapshot:
+            cluster_snapshot(file=path,clusters=["all",subset])
         if heatmap:
             root["heatmap_figs"] = "images/heatmap_figs"
             hm_title = title + "_heatmap.png"
@@ -1256,6 +1257,89 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
             plt.show(block = vars.block)
         plt.close()
         return None, None, None
+
+
+def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_process=False, chainbows = True):
+    from imports import load_single_pdb, load_references
+    from pyMol import pymol_start, pymol_load_path, pymol_colour,pymol_list_to_bfactors, pymol_align_chains, pymol_group, \
+        pymol_open_saved_cluster, pymol_get_all_objects, pymol_save_temp_session, pymol_save_cluster, pymol_open_session_terminal, \
+        colours,ncolours, pymol_reset, pymol_orient, pymol_save_small
+    sprint("Showing clusters v2")
+
+    cluster_folders = ["angle_clusters2"]
+    cluster_cols = ["angle_cluster2"]
+    if levels is not None:
+        l = levels -1
+        cluster_folders = cluster_folders[l:]
+        cluster_cols = cluster_cols[:l]
+
+
+    options = []
+    sele = []
+    fname = file.split(".")[0]
+    for n, (cluster_col, cluster_folder) in enumerate(zip(cluster_cols, cluster_folders)):
+        dihedrals_path = os.path.join(root[cluster_folders[n]], fname + ".csv")
+        df = pd.read_csv(file, index_col=0)
+        #print(df)
+        options.append([int(a) for a in sorted(set(df[cluster_cols[n]].values))])
+        s = clusters[n]
+        if s == "all":
+            sele.append(options[n])
+        else:
+            sele.append([s])
+        df.query(" | ".join(["{} == {}".format(cluster_col, n) for n in sele]), inplace=True)
+        #print(df.to_string())
+        fname = fname + "-{}".format(s)
+
+
+
+    pymol_start(show=False)
+    pymol_reset()
+    print(file)
+    filename = os.path.basename(fname)
+    print(filename)
+    ref = load_references(identifier=filename.split("-")[0])[0]
+
+    print("Sele:", sele)
+
+    for c in sele[-1]:
+        pymol_reset()
+        pymol_load_path(ref.path, ref.name)
+        pymol_colour("chainbow", ref.name)
+        print("Cluster:", sele[:-1], c)
+        subset = df[df[cluster_cols[-1]] == c]
+        print(subset)
+        chains_to_align = [[ref.name, ref.chain]]
+        for row in subset.itertuples():
+            dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers)[0]
+            name = pymol_load_path(dimer.replaced_path, row.id + str(row.is1to2))
+            if row.is1to2:
+                chains_to_align.append([name, row.mon1])
+            else:
+                chains_to_align.append([name, row.mon2])
+            if chainbows:
+                pymol_colour("chainbow", name)
+            else:
+                resids = [res.id[1] for res in dimer.monomer1.replaced.get_residues()]
+                sele1 = name + " and c. {}".format(dimer.monomer1.chain)
+                sele2 = name + " and c. {}".format(dimer.monomer2.chain)
+                list1 = [min(x) for x in dimer.contact_surface.d_s_matrix]
+                list2 = [min(x) for x in dimer.contact_surface.d_s_matrix.T]
+                pymol_list_to_bfactors(val_list=list1, obj_name=sele1, resids=resids)
+                pymol_list_to_bfactors(val_list=list2, obj_name=sele2, resids=resids)
+
+            pymol_colour("rainbow", name, spectrum="b")
+
+        pymol_align_chains(chains_to_align)
+        pymol_group([a[0] for a in chains_to_align[1:]], name="--" + str(c), quiet=True)
+        if color_clusters:
+            pymol_colour(colours[c % ncolours], "--" + str(c))
+        pymol_orient()
+        local["snapshots"] = "snapshots"
+        pymol_save_small(filename + "-{}".format(c), folder=local.snapshots)
+
+
+
 
 
 

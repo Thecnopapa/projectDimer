@@ -8,7 +8,7 @@ from utilities import *
 import platform
 import numpy as np
 
-from visualisation import show_cluster2_pymol
+
 
 
 def main(PROCESS_ALL = False,
@@ -243,15 +243,13 @@ def main(PROCESS_ALL = False,
                                                                heatmap = HEATMAPS, hm_threshold=10,
                                                                outer_ids_complete=ref.get_outer_res_list(complete_list=True),
                                                                gif=GIFS,
+                                                               snapshot=SNAPSHOTS
                                                                )
             if ref_name not in matrix_dfs:
                 matrix_dfs[ref_name] = pd.DataFrame()
 
             matrix_dfs[ref_name][file.split(".")[0]] = oneDmatrix1
             matrix_dfs[ref_name][file.split(".")[0]+".T"] = oneDmatrix1
-            if SNAPSHOTS:
-                show_cluster2_pymol(file, pd.read_csv(dihedrals_path), [file.split("-")[-1].split(".")[0], "all",
-                                cluster_cols=["angle_cluster2"], clear = True, save_snapshot=True)
 
 
 
