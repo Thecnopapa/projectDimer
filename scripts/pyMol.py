@@ -105,7 +105,7 @@ def pymol_colour(colour, obj = "(all)", sele = None, spectrum=None, silent =Fals
         pymol.cmd.colour(colour, sele_str)
 
 
-def pymol_save_small(file_name, folder, dpi=300, height=100, width=100, save_session=None):
+def pymol_save_small(file_name, folder, dpi=300, height=100, width=150, save_session=None):
     print("(PyMol) Saving small:", folder, file_name)
     image_path = os.path.join(folder, file_name+".png")
     pymol.cmd.png(image_path, width=width, height=height, dpi=dpi)
@@ -159,6 +159,7 @@ def pymol_align__obj(obj1, obj2, orient = True, quiet=False):
 
 
 def pymol_align_chains(chains_to_align):
+    print("(PyMol) Aligning chains")
     #all_obj = pymol.cmd.get_names(type='objects')
     #print1(all_obj)
     obj1, chain1 = chains_to_align[0]
@@ -166,8 +167,8 @@ def pymol_align_chains(chains_to_align):
     for obj2, chain2 in chains_to_align[1:]:
         if obj2 != obj1:
             sele2 = "{} and c. {}".format(obj2, chain2)
-            #print(sele1)
-            #print(sele2)
+            print(sele1)
+            print(sele2)
             pymol_align__obj(sele1, sele2)
 
 

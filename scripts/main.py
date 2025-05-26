@@ -212,7 +212,6 @@ def main(PROCESS_ALL = False,
 
         for file in sorted(os.listdir(cluster1_folder)):
             dihedrals_path = os.path.join(cluster1_folder, file)
-            plot_dihedrals(dihedrals_path, clusters="angle_cluster1")
             matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path, clusters="angle_cluster1",
                                                               subset_col=None,
                                                               gif=GIFS,
@@ -385,8 +384,8 @@ if __name__ == "__main__":
          DIMENSIONS_PCA = [0,1,2],
          MINIMUM_SCORE = 0,
 
-         HEATMAPS = False,
-         GIFS = False,
+         HEATMAPS = True,
+         GIFS = True,
          SNAPSHOTS = True,
 
 

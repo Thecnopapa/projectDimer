@@ -1263,7 +1263,7 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
     from imports import load_single_pdb, load_references
     from pyMol import pymol_start, pymol_load_path, pymol_colour,pymol_list_to_bfactors, pymol_align_chains, pymol_group, \
         pymol_open_saved_cluster, pymol_get_all_objects, pymol_save_temp_session, pymol_save_cluster, pymol_open_session_terminal, \
-        colours,ncolours, pymol_reset, pymol_orient, pymol_save_small
+        colours,ncolours, pymol_reset, pymol_orient, pymol_save_small, get_all_obj, pymol_disable
     sprint("Showing clusters v2")
 
     cluster_folders = ["angle_clusters2"]
@@ -1294,7 +1294,6 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
 
 
     pymol_start(show=False)
-    pymol_reset()
     print(file)
     filename = os.path.basename(fname)
     print(filename)
@@ -1303,7 +1302,7 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
     print("Sele:", sele)
 
     for c in sele[-1]:
-        pymol_reset()
+        print("##",get_all_obj())
         pymol_load_path(ref.path, ref.name)
         pymol_colour("chainbow", ref.name)
         print("Cluster:", sele[:-1], c)
@@ -1329,7 +1328,10 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
                 pymol_list_to_bfactors(val_list=list2, obj_name=sele2, resids=resids)
 
             pymol_colour("rainbow", name, spectrum="b")
-
+        print(chains_to_align)
+        print(get_all_obj())
+        #session_path = pymol_save_temp_session()
+        #pymol_open_session_terminal(session_path)
         pymol_align_chains(chains_to_align)
         pymol_group([a[0] for a in chains_to_align[1:]], name="--" + str(c), quiet=True)
         if color_clusters:
@@ -1337,6 +1339,8 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
         pymol_orient()
         local["snapshots"] = "snapshots"
         pymol_save_small(filename + "-{}".format(c), folder=local.snapshots)
+        for obj, _ in chains_to_align:
+            pymol_disable(obj)
 
 
 
