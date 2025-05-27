@@ -247,7 +247,8 @@ def main(PROCESS_ALL = False,
                                                                heatmap = HEATMAPS, hm_threshold=10,
                                                                outer_ids_complete=ref.get_outer_res_list(complete_list=True),
                                                                gif=GIFS,
-                                                               snapshot=SNAPSHOTS
+                                                               snapshot=SNAPSHOTS,
+                                                               include_all=True,
                                                                )
             if ref_name not in matrix_dfs:
                 matrix_dfs[ref_name] = pd.DataFrame()
@@ -389,8 +390,8 @@ if __name__ == "__main__":
          DIMENSIONS_PCA = [0,1,2],
          MINIMUM_SCORE = 0,
 
-         HEATMAPS = False,
-         GIFS = False,
+         HEATMAPS = True,
+         GIFS = True,
          SNAPSHOTS = False,
 
 

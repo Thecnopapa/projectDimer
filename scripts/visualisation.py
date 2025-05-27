@@ -863,7 +863,7 @@ if __name__ == "__main__":
             pymol_colour("chainbow", ref.name)
             print("Sele:", sele)
             if "merge" in sys.argv:
-                m = sele[-1]
+                m = sele[-1].copy()
                 sele[-1] = ["all"]
 
             for c in sele[-1]:
@@ -910,7 +910,7 @@ if __name__ == "__main__":
                 if hm is not None and not "chainbows" in sys.argv:
                     list1 = [mean(x) for x in hm]
                     list2 = [mean(x) for x in hm.T]
-                    for obj, chain in chains_to_align:
+                    for obj, chain in chains_to_align[1:]:
                         sele1 = obj + " and (c. {})".format(chain)
                         sele2 = obj + " and !(c. {})".format(chain)
                         pymol_list_to_bfactors(val_list=list1, obj_name=sele1, resids=resids)
