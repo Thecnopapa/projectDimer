@@ -67,7 +67,7 @@ def pymol_disable(sele="all", silent=True):
         print("(PyMol) Disabling:", sele)
     pymol.cmd.disable(sele)
 
-def pymol_delete(sele = "all", quiet=True):
+def pymol_delete(sele = "all", quiet=False):
     if not quiet:
         print("(PyMol) Deleting:", sele)
     pymol.cmd.delete(name = sele)
@@ -122,7 +122,7 @@ def pymol_save_snapshot(file_name, folder, dpi=300, height=200, width=300):
     image_path = os.path.join(folder, file_name+"ss.png")
     print(os.listdir(folder))
     print(image_path)
-    pymol.cmd.png(image_path, width=width, height=height, dpi=dpi, quiet=0)
+    pymol.cmd.png(image_path, width=width, height=height, dpi=dpi, quiet=0, ray=0)
     #pymol.cmd.png("test.png")
     #pymol.cmd.save(image_path, quiet=0)
     return image_path
@@ -163,8 +163,12 @@ def pymol_align_all(all_obj = None):
     pymol.cmd.orient("(all)")
 
 
-def pymol_align__obj(obj1, obj2, orient = True, quiet=False):
-    r = pymol.cmd.align(obj2, obj1)
+def pymol_align__obj(obj1, obj2, orient = True, quiet=False, target_state=0, mobile_state=0):
+    if quiet:
+        quiet = 1
+    else:
+        quiet = 0
+    r = pymol.cmd.align(obj2, obj1, target_state=target_state, mobile_state=mobile_state, quiet=quiet)
     if not quiet:
         print3("aligned:", obj1, obj2)
     if orient:
@@ -174,18 +178,36 @@ def pymol_align__obj(obj1, obj2, orient = True, quiet=False):
 
 
 
-def pymol_align_chains(chains_to_align):
+def pymol_align_chains(chains_to_align, target_state= 0, mobile_state=0):
     print("(PyMol) Aligning chains")
     #all_obj = pymol.cmd.get_names(type='objects')
     #print1(all_obj)
     obj1, chain1 = chains_to_align[0]
-    sele1 = "{} and c. {}".format(obj1, chain1)
+    sele1 = "({} and c. {})".format(obj1, chain1)
     for obj2, chain2 in chains_to_align[1:]:
         if obj2 != obj1:
-            sele2 = "{} and c. {}".format(obj2, chain2)
+            sele2 = "({} and c. {})".format(obj2, chain2)
             #print(sele1)
             #print(sele2)
-            pymol_align__obj(sele1, sele2)
+            i = 0
+            while i <= 5:
+                if i >= 5:
+                    print(pymol.cmd.get_names(type='objects'))
+                    print(sele1, "//", obj1, "//", chain1)
+                    print(sele2, "//", obj2, "//", chain2)
+                    print("Aligning failed with 5 tries")
+                    i += 1
+                    continue
+                try:
+                    pymol_align__obj(sele1, sele2, target_state=target_state, mobile_state=mobile_state)
+                    i += 1
+                    break
+                except:
+                    print("Aligning..., try n={}".format(i))
+                    print(pymol.cmd.get_names(type='objects'))
+                    print(sele1, "//", obj1, "//", chain1)
+                    print(sele2, "//", obj2, "//", chain2)
+                    i += 1
 
 
 

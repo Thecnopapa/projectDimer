@@ -237,6 +237,8 @@ def main(PROCESS_ALL = False,
 
             if "--1" in file:
                 continue
+            if ONLY_GR and "GR" not in file:
+                continue
             ref_name = file.split("-")[0]
             ref = [ref for ref in vars.references if ref.name == ref_name][0]
             sprint(ref_name+ "({}/{})".format(n, len(os.listdir(cluster2_folder))))
@@ -375,7 +377,7 @@ if __name__ == "__main__":
          # Clustering, from SM to plotting
          SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
          FORCE_CLUSTERING=True,  # Force clustering if already calculated (overridden by PROCESS_ALL)
-         ONLY_GR = False, # Whether to only cluster GR
+         ONLY_GR = True, # Whether to only cluster GR
          REMOVE_REDUNDANCY = True,
          CLUSTERING_METHOD = "MeanShift",
          QUANTILE= 0.1,

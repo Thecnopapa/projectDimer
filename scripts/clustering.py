@@ -1323,8 +1323,8 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
                 resids = [res.id[1] for res in dimer.monomer1.replaced.get_residues()]
                 sele1 = name + " and c. {}".format(dimer.monomer1.chain)
                 sele2 = name + " and c. {}".format(dimer.monomer2.chain)
-                list1 = [min(x) for x in dimer.contact_surface.d_s_matrix]
-                list2 = [min(x) for x in dimer.contact_surface.d_s_matrix.T]
+                list1 = [min(x) for x in dimer.contact_surface.d_s_matrix.T]
+                list2 = [min(x) for x in dimer.contact_surface.d_s_matrix]
                 pymol_list_to_bfactors(val_list=list1, obj_name=sele1, resids=resids)
                 pymol_list_to_bfactors(val_list=list2, obj_name=sele2, resids=resids)
 
@@ -1333,9 +1333,6 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
         print(get_all_obj())
 
         pymol_align_chains(chains_to_align)
-        pymol_group([a[0] for a in chains_to_align[1:]], name="--" + str(c), quiet=True)
-        if color_clusters:
-            pymol_colour(colours[c % ncolours], "--" + str(c))
         pymol_orient()
         local["snapshots"] = "snapshots"
         #session_path = pymol_save_temp_session()
