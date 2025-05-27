@@ -62,10 +62,16 @@ def pymol_load_path(path,  name=None, state = -1,):
     #pymol.cmd.set("state", state)
     return name
 
-def pymol_disable(sele, silent=True):
+def pymol_disable(sele="all", silent=True):
     if not silent:
         print("(PyMol) Disabling:", sele)
     pymol.cmd.disable(sele)
+
+def pymol_delete(sele = "all", quiet=True):
+    if not quiet:
+        print("(PyMol) Deleting:", sele)
+    pymol.cmd.delete(name = sele)
+
 
 def pymol_hide(sele, hide = None, silent = True):
     all_reprs = ["lines","spheres","mesh","ribbon","cartoon","sticks","dots","surface","labels","nonbonded","nb_spheres"]
@@ -352,8 +358,8 @@ def pymol_sphere(coords, name = None, colour="white", state = -1, scale = 8):
     pymol_format("sphere", name, quiet= True)
 
 
-def pymol_disable(sele = "all"):
-    pymol.cmd.disable(name = sele )
+
+
 
 
 

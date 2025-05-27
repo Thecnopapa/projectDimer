@@ -1263,7 +1263,7 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
     from imports import load_single_pdb, load_references
     from pyMol import pymol_start, pymol_load_path, pymol_colour,pymol_list_to_bfactors, pymol_align_chains, pymol_group, \
         pymol_open_saved_cluster, pymol_get_all_objects, pymol_save_temp_session, pymol_save_cluster, pymol_open_session_terminal, \
-        colours,ncolours, pymol_reset, pymol_orient, pymol_save_snapshot, get_all_obj, pymol_disable,pymol_command_in_new_process
+        colours,ncolours, pymol_reset, pymol_orient, pymol_save_snapshot, get_all_obj, pymol_disable, pymol_delete, pymol_command_in_new_process
     sprint("Showing clusters v2")
 
     cluster_folders = ["angle_clusters2"]
@@ -1298,13 +1298,14 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
     filename = os.path.basename(fname)
     print(filename)
     ref = load_references(identifier=filename.split("-")[0])[0]
-
+    pymol_load_path(ref.path, ref.name)
+    pymol_colour("chainbow", ref.name)
     print("Sele:", sele)
 
     for c in sele[-1]:
         print("##",get_all_obj())
-        pymol_load_path(ref.path, ref.name)
-        pymol_colour("chainbow", ref.name)
+
+
         print("Cluster:", sele[:-1], c)
         subset = df[df[cluster_cols[-1]] == c]
         print(subset)
@@ -1337,12 +1338,13 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
             pymol_colour(colours[c % ncolours], "--" + str(c))
         pymol_orient()
         local["snapshots"] = "snapshots"
-        session_path = pymol_save_temp_session()
-        pymol_open_session_terminal(session_path)
+        #session_path = pymol_save_temp_session()
+        #pymol_open_session_terminal(session_path)
         pymol_save_snapshot(filename + "-{}".format(c), folder=local.snapshots)
         print("hi")
-        for obj, _ in chains_to_align:
-            pymol_disable(obj)
+        for obj, _ in chains_to_align[1:]:
+            pymol_delete(obj)
+    pymol_delete()
 
 
 
