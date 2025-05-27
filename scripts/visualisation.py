@@ -863,14 +863,15 @@ if __name__ == "__main__":
                 hm = None
                 for row in subset.itertuples():
                     dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)[0]
-                    name = pymol_load_path(dimer.replaced_path, row.id + str(row.is1to2))
-                    if row.is1to2:
-                        chains_to_align.append([name, row.mon1])
-                    else:
-                        chains_to_align.append([name, row.mon2])
-                    if "chainbows" in sys.argv:
-                        pymol_colour("chainbow", name)
-                    else:
+                    if not "first-only" in sys.argv or len(chains_to_align) <= 1:
+                        name = pymol_load_path(dimer.replaced_path, row.id + str(row.is1to2))
+                        if row.is1to2:
+                            chains_to_align.append([name, row.mon1])
+                        else:
+                            chains_to_align.append([name, row.mon2])
+                        if "chainbows" in sys.argv:
+                            pymol_colour("chainbow", name)
+                    if not "chainbows" in sys.argv:
                         if hm is None:
                             if row.is1to2:
                                 hm = dimer.contact_surface.get_contact_map(transposed=False)
@@ -890,17 +891,20 @@ if __name__ == "__main__":
                         pymol_list_to_bfactors(val_list = list2, obj_name=sele2, resids=resids)"""
 
 
-                if hm is not None:
-                    list1 = [mean(x) for x in hm.T]
-                    list2 = [mean(x) for x in hm]
+                if hm is not None and not "chainbows" in sys.argv:
+                    list1 = [mean(x) for x in hm]
+                    list2 = [mean(x) for x in hm.T]
                     for obj, chain in chains_to_align:
                         sele1 = obj + " and (c. {})".format(chain)
                         sele2 = obj + " and !(c. {})".format(chain)
                         pymol_list_to_bfactors(val_list=list1, obj_name=sele1, resids=resids)
                         pymol_list_to_bfactors(val_list=list2, obj_name=sele2, resids=resids)
-                pymol_colour("rainbow", "(all)", spectrum="b")
+                    pymol_colour("blue_yellow_red", "(all)", spectrum="b")
+                    from faces import ContactSurface
+                    ContactSurface.get_heat_map(hm, normalize=len(subset), outer_ids_complete=ref.get_outer_res_list(complete_list=True), folder = local.temp)
                 pymol_align_chains(chains_to_align)
                 pymol_group([a[0] for a in chains_to_align[1:]], name="--"+str(c), quiet=True)
+
                 if "color_clusters" in sys.argv:
                     pymol_colour(colours[c%ncolours], "--"+str(c))
 
