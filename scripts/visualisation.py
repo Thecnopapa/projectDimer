@@ -829,8 +829,15 @@ if __name__ == "__main__":
         sele = []
         fname = file.split(".")[0]
         for n, (cluster_col, cluster_folder) in enumerate(zip(cluster_cols, cluster_folders)):
-            dihedrals_path = os.path.join(root[cluster_folders[n]], fname+".csv")
-            df = pd.read_csv(dihedrals_path, index_col=0)
+            dihedrals_path = os.path.join(root[cluster_folder], fname+".csv")
+            try:
+                df = pd.read_csv(dihedrals_path, index_col=0)
+            except:
+                file_list = os.listdir(root[cluster_folder])
+                file_list = [os.path.join(root[cluster_folder],f) for f in file_list if fname in f]
+                df = pd.concat([pd.read_csv(f) for f in file_list])
+
+
             print(df)
             options.append([int(a) for a in sorted(set(df[cluster_cols[n]].values))])
             s = int_input("Select {} to display {}:\n>> ".format(cluster_col, options[n]))
@@ -838,9 +845,10 @@ if __name__ == "__main__":
                 sele.append(options[n])
             else:
                 sele.append([s])
+                fname = fname + "-{}".format(s)
             df.query(" | ".join(["{} == {}".format(cluster_col, n) for n in sele]), inplace=True)
             print(df.to_string())
-            fname = fname + "-{}".format(s)
+
 
 
 
@@ -854,13 +862,21 @@ if __name__ == "__main__":
             pymol_load_path(ref.path, ref.name)
             pymol_colour("chainbow", ref.name)
             print("Sele:", sele)
+            if "merge" in sys.argv:
+                m = sele[-1]
+                sele[-1] = ["all"]
 
             for c in sele[-1]:
                 print("Cluster:", sele[:-1], c)
-                subset = df[df[cluster_cols[-1]] == c]
+                if c == "all":
+                    subset = df.query(" | ".join(["{} == {}".format(cluster_cols[-1], n) for n in m]), inplace=False)
+                else:
+                    subset = df[df[cluster_cols[-1]] == c]
                 print(subset)
                 chains_to_align = [[ref.name, ref.chain]]
+
                 hm = None
+                progress = ProgressBar(len(subset))
                 for row in subset.itertuples():
                     dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)[0]
                     if not "first-only" in sys.argv or len(chains_to_align) <= 1:
@@ -889,7 +905,7 @@ if __name__ == "__main__":
                         list2 = [min(x) for x in dimer.contact_surface.d_s_matrix.T]
                         pymol_list_to_bfactors(val_list = list1, obj_name=sele1,resids=resids)
                         pymol_list_to_bfactors(val_list = list2, obj_name=sele2, resids=resids)"""
-
+                    progress.add()
 
                 if hm is not None and not "chainbows" in sys.argv:
                     list1 = [mean(x) for x in hm]
@@ -910,6 +926,7 @@ if __name__ == "__main__":
 
             print("All groups:")
             print([obj for obj in pymol_get_all_objects() if obj[:1]=="--"])
+
 
             #input("Press Enter to continue...")
 
