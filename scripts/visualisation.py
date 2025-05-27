@@ -862,7 +862,7 @@ if __name__ == "__main__":
                 chains_to_align = [[ref.name, ref.chain]]
                 hm = None
                 for row in subset.itertuples():
-                    dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers)[0]
+                    dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)[0]
                     name = pymol_load_path(dimer.replaced_path, row.id + str(row.is1to2))
                     if row.is1to2:
                         chains_to_align.append([name, row.mon1])
@@ -889,7 +889,7 @@ if __name__ == "__main__":
                         pymol_list_to_bfactors(val_list = list1, obj_name=sele1,resids=resids)
                         pymol_list_to_bfactors(val_list = list2, obj_name=sele2, resids=resids)"""
 
-                    pymol_colour("rainbow", name, spectrum="b")
+
                 if hm is not None:
                     list1 = [mean(x) for x in hm.T]
                     list2 = [mean(x) for x in hm]
@@ -898,7 +898,7 @@ if __name__ == "__main__":
                         sele2 = obj + " and !(c. {})".format(chain)
                         pymol_list_to_bfactors(val_list=list1, obj_name=sele1, resids=resids)
                         pymol_list_to_bfactors(val_list=list2, obj_name=sele2, resids=resids)
-
+                pymol_colour("rainbow", "(all)", spectrum="b")
                 pymol_align_chains(chains_to_align)
                 pymol_group([a[0] for a in chains_to_align[1:]], name="--"+str(c), quiet=True)
                 if "color_clusters" in sys.argv:
