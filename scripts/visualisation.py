@@ -833,7 +833,7 @@ if __name__ == "__main__":
             df = pd.read_csv(dihedrals_path, index_col=0)
             print(df)
             options.append([int(a) for a in sorted(set(df[cluster_cols[n]].values))])
-            s = int_input("Select {} to display {}:\n".format(cluster_col, options[n]))
+            s = int_input("Select {} to display {}:\n>> ".format(cluster_col, options[n]))
             if s == "all":
                 sele.append(options[n])
             else:
@@ -850,6 +850,7 @@ if __name__ == "__main__":
             pymol_start(show=False)
             print(file)
             ref = load_references(identifier=file.split("-")[0])[0]
+            resids = [res.id[1] for res in ref.structure.get_residues()]
             pymol_load_path(ref.path, ref.name)
             pymol_colour("chainbow", ref.name)
             print("Sele:", sele)
@@ -859,6 +860,7 @@ if __name__ == "__main__":
                 subset = df[df[cluster_cols[-1]] == c]
                 print(subset)
                 chains_to_align = [[ref.name, ref.chain]]
+                hm = None
                 for row in subset.itertuples():
                     dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers)[0]
                     name = pymol_load_path(dimer.replaced_path, row.id + str(row.is1to2))
@@ -869,15 +871,33 @@ if __name__ == "__main__":
                     if "chainbows" in sys.argv:
                         pymol_colour("chainbow", name)
                     else:
-                        resids = [res.id[1] for res in dimer.monomer1.replaced.get_residues()]
+                        if hm is None:
+                            if row.is1to2:
+                                hm = dimer.contact_surface.get_contact_map(transposed=False)
+                            else:
+                                hm = dimer.contact_surface.get_contact_map(transposed=True)
+                        else:
+                            if row.is1to2:
+                                hm = np.add(hm, dimer.contact_surface.get_contact_map(transposed=False))
+                            else:
+                                hm = np.add(hm, dimer.contact_surface.get_contact_map(transposed=True))
+                        """resids = [res.id[1] for res in dimer.monomer1.replaced.get_residues()]
                         sele1 = name + " and c. {}".format(dimer.monomer1.chain)
                         sele2 = name + " and c. {}".format(dimer.monomer2.chain)
                         list1 = [min(x) for x in dimer.contact_surface.d_s_matrix]
                         list2 = [min(x) for x in dimer.contact_surface.d_s_matrix.T]
                         pymol_list_to_bfactors(val_list = list1, obj_name=sele1,resids=resids)
-                        pymol_list_to_bfactors(val_list = list2, obj_name=sele2, resids=resids)
+                        pymol_list_to_bfactors(val_list = list2, obj_name=sele2, resids=resids)"""
 
                     pymol_colour("rainbow", name, spectrum="b")
+                if hm is not None:
+                    list1 = [mean(x) for x in hm.T]
+                    list2 = [mean(x) for x in hm]
+                    for obj, chain in chains_to_align:
+                        sele1 = obj + " and (c. {})".format(chain)
+                        sele2 = obj + " and !(c. {})".format(chain)
+                        pymol_list_to_bfactors(val_list=list1, obj_name=sele1, resids=resids)
+                        pymol_list_to_bfactors(val_list=list2, obj_name=sele2, resids=resids)
 
                 pymol_align_chains(chains_to_align)
                 pymol_group([a[0] for a in chains_to_align[1:]], name="--"+str(c), quiet=True)
