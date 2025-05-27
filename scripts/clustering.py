@@ -1264,7 +1264,7 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
     from pyMol import pymol_start, pymol_load_path, pymol_colour,pymol_list_to_bfactors, pymol_align_chains, pymol_group, \
         pymol_open_saved_cluster, pymol_get_all_objects, pymol_save_temp_session, pymol_save_cluster, pymol_open_session_terminal, \
         colours,ncolours, pymol_reset, pymol_orient, pymol_save_snapshot, get_all_obj, pymol_disable, pymol_delete, pymol_command_in_new_process
-    sprint("Showing clusters v2")
+    sprint("Cluster snampshot")
 
     cluster_folders = ["angle_clusters2"]
     cluster_cols = ["angle_cluster2"]
@@ -1291,9 +1291,7 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
         #print(df.to_string())
         fname = fname + "-{}".format(s)
 
-
-
-    pymol_start(show=False)
+    #pymol_start(show=False)
     print(file)
     filename = os.path.basename(fname)
     print(filename)
@@ -1303,6 +1301,8 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
     print("Sele:", sele)
 
     for c in sele[-1]:
+        if c == -1 or c == "-1":
+            continue
         print("##",get_all_obj())
 
 

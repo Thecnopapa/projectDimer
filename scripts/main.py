@@ -230,14 +230,17 @@ def main(PROCESS_ALL = False,
 
 
         matrix_dfs = {}
+        if SNAPSHOTS:
+            from pyMol import pymol_start
+            pymol_start(show=False)
         for n, file in enumerate(sorted(os.listdir(cluster2_folder))):
 
-
+            if "--1" in file:
+                continue
             ref_name = file.split("-")[0]
             ref = [ref for ref in vars.references if ref.name == ref_name][0]
             sprint(ref_name+ "({}/{})".format(n, len(os.listdir(cluster2_folder))))
             dihedrals_path = os.path.join(cluster2_folder, file)
-
             matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path, clusters="angle_cluster2", subset_col="angle_cluster2",
                                                                heatmap = HEATMAPS, hm_threshold=10,
                                                                outer_ids_complete=ref.get_outer_res_list(complete_list=True),
