@@ -16,10 +16,10 @@ print1("References loaded")
 
 for ref in vars.references:
     sprint(ref.id)
-    print1(len(ref.outer_ids))
-    print1(len(list(ref.structure.get_residues())))
+    print1(ref.header)
 
 
+quit()
 
 
 dimer_list = sorted(os.listdir(local.dimers))

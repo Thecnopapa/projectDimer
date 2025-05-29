@@ -91,6 +91,7 @@ class BioObject:
             except:
                 print2("Could not parse redownloaded {}".format(self.path))
             return False
+        self.header = self.structure.header
         if len(self.structure.get_list()) >0: # TODO: Should add to failed df <<<
             for model in self.structure.get_list()[1:]:
                 self.structure.__delitem__(model.id)
