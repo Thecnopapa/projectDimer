@@ -50,6 +50,10 @@ def pymol_close():
 def pymol_reset():
     pymol.cmd.delete("All")
 
+def pymol_reinitialize():
+    pymol.cmd.reinitialize()
+
+
 def pymol_load_name(file_name, folder):
     pymol.cmd.load(os.path.join(folder,file_name), file_name)
     return file_name
@@ -207,6 +211,10 @@ def pymol_align_chains(chains_to_align, target_state= 0, mobile_state=0):
                     print(pymol.cmd.get_names(type='objects'))
                     print(sele1, "//", obj1, "//", chain1)
                     print(sele2, "//", obj2, "//", chain2)
+                    session_path = pymol_save_temp_session()
+                    pymol_open_session_terminal(session_path)
+                    pymol_align__obj(sele1, sele2, target_state=target_state, mobile_state=mobile_state)
+                    quit()
                     i += 1
 
 

@@ -1245,7 +1245,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
             root["dihedral_gifs"] = "images/dihedral_gifs"
             mpl_to_gif(fig, ax, name=title, folder= root.dihedral_gifs)
         if snapshot:
-            cluster_snapshot(file=path,clusters=["all",subset])
+            cluster_snapshot(file=path,clusters=["all",subset] ,chainbows=False, color_clusters=True)
         if heatmap:
             root["heatmap_figs"] = "images/heatmap_figs"
             hm_title = title + "_heatmap"
@@ -1259,11 +1259,12 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
         return None, None, None
 
 
-def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_process=False, chainbows = True):
+def cluster_snapshot(file, clusters, levels=None, color_clusters=False, chainbows = True):
     from imports import load_single_pdb, load_references
     from pyMol import pymol_start, pymol_load_path, pymol_colour,pymol_list_to_bfactors, pymol_align_chains, pymol_group, \
         pymol_open_saved_cluster, pymol_get_all_objects, pymol_save_temp_session, pymol_save_cluster, pymol_open_session_terminal, \
-        colours,ncolours, pymol_reset, pymol_orient, pymol_save_snapshot, get_all_obj, pymol_disable, pymol_delete, pymol_command_in_new_process
+        colours,ncolours, pymol_reset, pymol_orient, pymol_save_snapshot, get_all_obj, pymol_disable, pymol_delete, \
+        pymol_command_in_new_process, pymol_reinitialize
     sprint("Cluster snampshot")
 
     cluster_folders = ["angle_clusters2"]
@@ -1303,6 +1304,8 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
     for c in sele[-1]:
         if c == -1 or c == "-1":
             continue
+        if c != 1:
+            continue
         print("##",get_all_obj())
 
 
@@ -1319,6 +1322,10 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
                 chains_to_align.append([name, row.mon2])
             if chainbows:
                 pymol_colour("chainbow", name)
+            elif color_clusters:
+                c = int(row.__getattribute__(cluster_cols[-1]))
+                pymol_colour(colours[c % ncolours], name)
+                pymol_colour("chainbow", name)
             else:
                 resids = [res.id[1] for res in dimer.monomer1.replaced.get_residues()]
                 sele1 = name + " and c. {}".format(dimer.monomer1.chain)
@@ -1327,8 +1334,7 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
                 list2 = [min(x) for x in dimer.contact_surface.d_s_matrix]
                 pymol_list_to_bfactors(val_list=list1, obj_name=sele1, resids=resids)
                 pymol_list_to_bfactors(val_list=list2, obj_name=sele2, resids=resids)
-
-                pymol_colour("rainbow", name, spectrum="b")
+                pymol_colour("blue_yellow_red", name, spectrum="b")
         print(chains_to_align)
         print(get_all_obj())
 
@@ -1342,6 +1348,11 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, post_pro
         for obj, _ in chains_to_align[1:]:
             pymol_delete(obj)
     pymol_delete()
+    collect_garbage()
+    pymol_reinitialize()
+    collect_garbage()
+    import time
+    time.sleep(10)
 
 
 
