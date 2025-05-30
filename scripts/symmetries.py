@@ -425,7 +425,8 @@ def get_fractional_distance(coord1, coord2, params):
 
 
 
-def find_relevant_mates(self, orth_struct, params, key, minimum_chain_length = 100, contact_distance = 8, min_contacts = 0):
+def find_relevant_mates(self, orth_struct, params, key, minimum_chain_length = 100, maximum_chain_length = 9999,
+                        contact_distance = 8, min_contacts = 0, type="monomer"):
     print1("Finding relevant mates")
     print2("Space group:", key)
 
@@ -437,22 +438,26 @@ def find_relevant_mates(self, orth_struct, params, key, minimum_chain_length = 1
     min_d2 = 0
     if len(rotation_set["symops"].items()) <= 1:
         return None
-    from molecules import Mate, Monomer
+    from molecules import Mate, Monomer, Ligand
     from maths import find_com
     monomers = []
+    ligands = []
     for chain, orth_chain in zip(fractional.get_chains(), orth_struct.get_chains()):
-        if sum([1 for _ in chain.get_residues()]) >= minimum_chain_length:
-
-            orth_chain.com = find_com(orth_chain.get_atoms())
-            chain.orth_com = find_com(orth_chain.get_atoms())
-            chain.com = convertFromOrthToFrac(chain.orth_com, params)
-            #print2("COM:", [round(x, 2) for x in chain.com], [round(x, 2) for x in chain.orth_com])
+        n_res = sum([1 for _ in chain.get_residues()])
+        orth_chain.com = find_com(orth_chain.get_atoms())
+        chain.orth_com = find_com(orth_chain.get_atoms())
+        chain.com = convertFromOrthToFrac(chain.orth_com, params)
+        # print2("COM:", [round(x, 2) for x in chain.com], [round(x, 2) for x in chain.orth_com])
+        if n_res >= minimum_chain_length:
             monomers.append(Monomer(self.name, chain.id, chain, self))
+        else:
+            ligands.append(Ligand(self.name, chain.id, chain, self))
+
 
     print2(monomers)
 
     mates = []
-    remaining_ids = [monomer.id for monomer in monomers]
+    monomer_ids = [monomer.id for monomer in monomers]
 
 
     for fixed_monomer in monomers:
@@ -466,7 +471,7 @@ def find_relevant_mates(self, orth_struct, params, key, minimum_chain_length = 1
             displaced = generate_displaced_copy(fractional, distance= 99.5, key =key, op_n=op_number)
             #print_all_coords(displaced)
             for moving_monomer in monomers:
-                if moving_monomer.id not in remaining_ids:
+                if moving_monomer.id not in monomer_ids:
                     continue
                 if moving_monomer.id == fixed_monomer.id and op_number == 1:
                     continue

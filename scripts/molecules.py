@@ -1,5 +1,7 @@
 import os
 
+from chempy import Molecule
+
 from pyMol import pymol_colour
 from surface import get_dimer_sasa, get_monomer_sasa
 from symmetries import entity_to_orth, print_all_coords, convertFromFracToOrth
@@ -250,6 +252,7 @@ class Monomer(BioObject):
     pickle_folder = "monomers"
 
     def __init__(self, name, chain, frac_structure, parent, is_mate = False, op_n = None, position = None, parent_monomer = None, sasa=False):
+        self.is_ligand = False
         self.name = name
         self.is_mate = is_mate
         self.fractional_structure = frac_structure
@@ -466,6 +469,44 @@ class Monomer(BioObject):
             if "failed_df" in vars:
                 vars.failed_df.loc[len(vars.failed_df)] = [self.id, "monomer", "No coverage", "No reference meets coverage (80%)" + str(coverages)]
             self.failed_entries.append([self.id, "monomer", "No coverage", "No reference meets coverage (80%)" + str(coverages)])
+
+
+class Ligand(Monomer):
+    pickle_extension = '.ligand'
+    pickle_folder = "ligands"
+
+
+    def __init__(self, name, chain, frac_structure, parent, is_mate=False, op_n=None, position=None, parent_monomer=None,
+             sasa=False):
+        self.is_ligand = True
+        self.name = name
+        self.is_mate = is_mate
+        self.fractional_structure = frac_structure
+        self.params = parent.params
+        self.key = parent.key
+        self.op_n = op_n
+        self.position = position
+        self.structure = entity_to_orth(self.fractional_structure.copy(), self.params)
+        self.parent_monomer = parent_monomer
+        self.face = None
+        self.faces = None
+        # self.parent = parent
+
+        if self.is_mate:
+            self.chain = chain.lower()
+            # print(self.position["position"], self.op_n, self.name)
+            self.extra_id = "_{}_{}".format(self.op_n, clean_string(self.position["position"], allow=["-"]))
+            self.contacts = parent.contacts
+
+        else:
+            self.chain = chain.upper()
+            self.extra_id = ""
+
+        self.structure.id = self.chain
+        self.id = "{}_{}{}".format(name, chain, self.extra_id)
+        self.export()
+        self.pickle()
+
 
 
 
