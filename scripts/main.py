@@ -211,6 +211,8 @@ def main(PROCESS_ALL = False,
 
 
         for file in sorted(os.listdir(cluster1_folder)):
+            if ONLY_GR and "GR" not in file:
+                continue
             dihedrals_path = os.path.join(cluster1_folder, file)
             matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path, clusters="angle_cluster1",
                                                               subset_col=None,
@@ -219,6 +221,8 @@ def main(PROCESS_ALL = False,
 
 
         for file in sorted(os.listdir(cluster1_folder)):
+            if ONLY_GR and "GR" not in file:
+                continue
             dihedrals_path = os.path.join(cluster1_folder, file)
             cluster2_folder = cluster_angles(dihedrals_path,
                                              bandwidth=30,
@@ -243,7 +247,10 @@ def main(PROCESS_ALL = False,
             ref = [ref for ref in vars.references if ref.name == ref_name][0]
             sprint(ref_name+ "({}/{})".format(n, len(os.listdir(cluster2_folder))))
             dihedrals_path = os.path.join(cluster2_folder, file)
-            matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path, clusters="angle_cluster2", subset_col="angle_cluster2",
+            matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path,
+                                                               clusters="angle_cluster2",
+                                                               subset_col="angle_cluster2",
+                                                               subset = None,
                                                                heatmap = HEATMAPS, hm_threshold=10,
                                                                outer_ids_complete=ref.get_outer_res_list(complete_list=True),
                                                                gif=GIFS,

@@ -1172,7 +1172,8 @@ def generate_dihedrals_df(dimer_list = None, force = False):
 
 
 def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = None, subset=None, include_all=True, save=True,
-                   label_col=None, only_first=None, heatmap=False, hm_threshold = 10, outer_ids_complete = None, gif = False, snapshot=False):
+                   label_col=None, only_first=None, heatmap=False, hm_threshold = 10, outer_ids_complete = None,
+                   gif = False, snapshot=False, first_matrix_only = True):
     print1("plotting dihedrals, heatmap={}, GIF={}, snapshot={}".format(heatmap, gif, snapshot))
     print2(path)
     from matplotlib import  pyplot as plt
@@ -1181,10 +1182,9 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
     hm = None
     name = os.path.basename(path).split(".")[0]
 
-
+    r = []
 
     if subset_col is not None:
-
         assert subset_col in complete_df.columns
         subsets = subset
         if subsets is None:
@@ -1196,7 +1196,9 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
     else:
         subsets = ["all"]
 
+    print2("Subsets:", subsets)
     for subset in subsets:
+        print3(subset)
         if subset == "all":
             df = complete_df
         else:
@@ -1205,7 +1207,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
 
         if only_first is not None:
             df = df.iloc[:only_first]
-
+        print(df)
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         progress = ProgressBar(len(df), silent=True)
@@ -1251,12 +1253,16 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
             hm_title = title + "_heatmap"
             from faces import ContactSurface
             matrix, oneDmatrix1, oneDmatrix2 = ContactSurface.get_heat_map(hm, title=hm_title, normalize=len(df), folder=root.heatmap_figs,
-                                        percentage=False, outer_ids_complete=outer_ids_complete)
-            return matrix, oneDmatrix1, oneDmatrix2
+                                        percentage=True, outer_ids_complete=outer_ids_complete)
+            r.append([matrix, oneDmatrix1, oneDmatrix2])
         if vars.block:
             plt.show(block = vars.block)
         plt.close()
-        return None, None, None
+        r.append([None, None, None])
+    if first_matrix_only:
+        return r[0]
+    else:
+        return r
 
 
 

@@ -525,15 +525,16 @@ class ContactSurface:
 
         if normalize is not None:
             if percentage:
-                normalize /= 100
+                #normalize /= 100
+                pass
             matrix = ContactSurface.normalize_matrix(matrix, n=normalize)
 
         if outer_ids_complete is None:
-            oneDmatrix1 = [mean(i) for i in matrix]
-            oneDmatrix2 = [mean(i) for i in matrix.T]
+            oneDmatrix1 = [sum(i) for i in matrix]
+            oneDmatrix2 = [sum(i) for i in matrix.T]
             outer_ids_complete = [True] * len(oneDmatrix1)
         else:
-            oneDmatrix1 = [sum(i)/len(outer_ids_complete) for i in matrix]
+            oneDmatrix1 = [sum(i)/ len(outer_ids_complete) for i in matrix]
             oneDmatrix2 = [sum(i) / len(outer_ids_complete) for i in matrix.T]
         if plot:
             fig, axes = plt.subplots(2,2,
