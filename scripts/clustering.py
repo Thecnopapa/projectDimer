@@ -1259,7 +1259,81 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
         return None, None, None
 
 
-def cluster_snapshot(file, clusters, levels=None, color_clusters=False, chainbows = True):
+
+
+
+def cluster_snapshot(file, clusters, color_clusters=False, chainbows = True, snapshot = True):
+    from imports import load_single_pdb, load_references
+    from superpose import superpose_many_chains
+    from pyMol import pymol_start, pymol_load_path, pymol_colour, pymol_list_to_bfactors, pymol_save_snapshot, \
+        colours, ncolours,pymol_save_temp_session, pymol_open_session_terminal, pymol_split_states, pymol_orient
+
+    sprint("Cluster snapshot")
+
+    cluster_folders = ["angle_clusters2"]
+    cluster_cols = ["angle_cluster2"]
+
+    options = []
+    sele = []
+    fname = file.split(".")[0]
+    cname = fname.split("-")[-1]
+    for n, (cluster_col, cluster_folder) in enumerate(zip(cluster_cols, cluster_folders)):
+        dihedrals_path = os.path.join(root[cluster_folders[n]], fname + ".csv")
+        df = pd.read_csv(file, index_col=0)
+        # print(df)
+        options.append([int(a) for a in sorted(set(df[cluster_cols[n]].values))])
+        s = clusters[n]
+        if s == "all":
+            sele.append(options[n])
+        else:
+            sele.append([s])
+        df.query(" | ".join(["{} == {}".format(cluster_col, n) for n in sele]), inplace=True)
+        # print(df.to_string())
+        fname = fname + "-{}".format(s)
+
+    # pymol_start(show=False)
+    print(file)
+    filename = os.path.basename(fname)
+    print(filename)
+    ref = load_references(identifier=filename.split("-")[0])[0]
+    print("Sele:", sele)
+
+    for c in sele[-1]:
+        if c == -1 or c == "-1":
+            continue
+        print("Cluster:", sele[:-1], c)
+        subset = df[df[cluster_cols[-1]] == c]
+        print(subset)
+        chains_to_align = {ref.name: (ref.path, ref.chain, True)}
+        for row in subset.itertuples():
+            dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)[0]
+            name = row.id + str(row.is1to2)
+            if row.is1to2:
+                chains_to_align[name] = (dimer.replaced_path, row.mon1, True)
+            else:
+                chains_to_align[name] = (dimer.replaced_path, row.mon2, False)
+        print(chains_to_align)
+        local["clusters"] = "clusters"
+        subcname = "{}-CLUSTER-{}-{}".format(ref.name,cname,c)
+        super_data = superpose_many_chains(chains_to_align, file_name=subcname+".pdb", save_folder=local.clusters)
+        print(super_data)
+        if snapshot:
+            monster = pymol_load_path(super_data["out_path"], subcname)
+            pymol_split_states(monster)
+            pymol_colour(colours[c % ncolours], "(all)")
+            pymol_orient()
+            local["snapshots"] = "snapshots"
+            pymol_save_snapshot(subcname, folder=local.snapshots)
+            #session_path = pymol_save_temp_session()
+            #pymol_open_session_terminal(session_path)
+
+
+
+
+
+
+
+def cluster_snapshot_old(file, clusters, levels=None, color_clusters=False, chainbows = True):
     from imports import load_single_pdb, load_references
     from pyMol import pymol_start, pymol_load_path, pymol_colour,pymol_list_to_bfactors, pymol_align_chains, pymol_group, \
         pymol_open_saved_cluster, pymol_get_all_objects, pymol_save_temp_session, pymol_save_cluster, pymol_open_session_terminal, \
@@ -1304,7 +1378,7 @@ def cluster_snapshot(file, clusters, levels=None, color_clusters=False, chainbow
     for c in sele[-1]:
         if c == -1 or c == "-1":
             continue
-        if c != 1:
+        if c != 1: #DeBUG
             continue
         print("##",get_all_obj())
 

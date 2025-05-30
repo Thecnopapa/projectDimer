@@ -390,8 +390,8 @@ if __name__ == "__main__":
          DIMENSIONS_PCA = [0,1,2],
          MINIMUM_SCORE = 0,
 
-         HEATMAPS = True,
-         GIFS = True,
+         HEATMAPS = False,
+         GIFS = False,
          SNAPSHOTS = True,
 
 
