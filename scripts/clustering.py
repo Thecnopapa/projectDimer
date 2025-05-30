@@ -1173,7 +1173,7 @@ def generate_dihedrals_df(dimer_list = None, force = False):
 
 def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = None, subset=None, include_all=True, save=True,
                    label_col=None, only_first=None, heatmap=False, hm_threshold = 10, outer_ids_complete = None,
-                   gif = False, snapshot=False, first_matrix_only = True):
+                   gif = False, snapshot=False, first_matrix_only = True, chainbows = False):
     print1("plotting dihedrals, heatmap={}, GIF={}, snapshot={}".format(heatmap, gif, snapshot))
     print2(path)
     from matplotlib import  pyplot as plt
@@ -1258,7 +1258,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
             if heatmap and False:
                 cluster_snapshot(file=path,clusters=["all",subset], matrix1=oneDmatrix1, matrix2 = oneDmatrix2)
             else:
-                cluster_snapshot(file=path,clusters=["all",subset], chainbows =False )
+                cluster_snapshot(file=path,clusters=["all",subset], chainbows =chainbows )
         if vars.block:
             plt.show(block = vars.block)
         plt.close()

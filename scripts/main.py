@@ -50,6 +50,7 @@ def main(PROCESS_ALL = False,
          HEATMAPS =True,
          GIFS = True,
          SNAPSHOTS = True,
+         CHAINBOWS = False,
          ):
 
 
@@ -255,6 +256,7 @@ def main(PROCESS_ALL = False,
                                                                outer_ids_complete=ref.get_outer_res_list(complete_list=True),
                                                                gif=GIFS,
                                                                snapshot=SNAPSHOTS,
+                                                               chainbows = CHAINBOWS,
                                                                include_all=True,
                                                                )
             if ref_name not in matrix_dfs:
@@ -399,9 +401,10 @@ if __name__ == "__main__":
          DIMENSIONS_PCA = [0,1,2],
          MINIMUM_SCORE = 0,
 
-         HEATMAPS = True,
+         HEATMAPS = False,
          GIFS = False,
          SNAPSHOTS = True,
+         CHAINBOWS = False,
 
 
          )
