@@ -1179,7 +1179,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
     from matplotlib import  pyplot as plt
     from imports import load_single_pdb
     complete_df = pd.read_csv(path)
-    hm = None
+
     name = os.path.basename(path).split(".")[0]
 
     r = []
@@ -1203,7 +1203,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
             df = complete_df
         else:
             df = complete_df[complete_df[subset_col] == subset]
-
+        hm = None
 
         if only_first is not None:
             df = df.iloc[:only_first]

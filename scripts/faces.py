@@ -507,11 +507,13 @@ class ContactSurface:
 
 
     @staticmethod
-    def normalize_matrix(matrix, n = None):
+    def normalize_matrix(matrix, n = None, percentage=False):
         if n == "max":
             n = amax(matrix)
         elif n is None:
             return matrix
+        if percentage:
+            n /= 100
         max_func = lambda x: x/n
         vec_max_func = np.vectorize(max_func)
         return vec_max_func(matrix)
@@ -524,10 +526,7 @@ class ContactSurface:
                      outer_ids_complete = None):
 
         if normalize is not None:
-            if percentage:
-                #normalize /= 100
-                pass
-            matrix = ContactSurface.normalize_matrix(matrix, n=normalize)
+            matrix = ContactSurface.normalize_matrix(matrix, n=normalize, percentage = percentage)
 
         if outer_ids_complete is None:
             oneDmatrix1 = [sum(i) for i in matrix]
@@ -560,6 +559,20 @@ class ContactSurface:
             cmap = matplotlib.colors.LinearSegmentedColormap.from_list("colormap", tuples)
             #print(cmap)
             hm = ax.imshow(matrix.T, cmap=cmap)
+            cbar = plt.colorbar(hm, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
+
+            outer_ids_bin = []
+            for i in outer_ids_complete:
+                if i:
+                    outer_ids_bin.append(1)
+                else:
+                    outer_ids_bin.append(0)
+            outer_ids_matrix = np.array([outer_ids_bin]*len(outer_ids_bin))
+            colors2 = ((0, 0, 0, 1), (0.0, 0.0, 0.0, 0.0))
+            tuples2 = list(zip([0, 1], colors2))
+            hm = ax.imshow(outer_ids_matrix, cmap = matplotlib.colors.LinearSegmentedColormap.from_list("black0s", tuples2))
+            hm = ax.imshow(outer_ids_matrix.T, cmap = matplotlib.colors.LinearSegmentedColormap.from_list("black0s", tuples2))
+
             max_n = len(oneDmatrix1)
             for n, (p1,p2, o) in enumerate(zip(oneDmatrix1, oneDmatrix2, outer_ids_complete)):
                 if n == 0:
@@ -573,7 +586,7 @@ class ContactSurface:
                     axLeft.plot((oneDmatrix2[n - 1], p2), (n2 + 1, n2), c=cmap(p2), linestyle='--', linewidth=0.5)
             #fig.tight_layout()
             fig.subplots_adjust(right=0.8)
-            cbar = plt.colorbar(hm, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
+
             cbar_title = "Occurence"
             if percentage:
                 cbar_title = "% "+ cbar_title
