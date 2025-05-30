@@ -1210,6 +1210,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
         print(df)
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
+        print4("Dihedral plotting, heatmap = {}".format(heatmap))
         progress = ProgressBar(len(df), silent=True)
         for point in df.itertuples():
             if clusters is None:
@@ -1246,8 +1247,6 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
         if gif:
             root["dihedral_gifs"] = "images/dihedral_gifs"
             mpl_to_gif(fig, ax, name=title, folder= root.dihedral_gifs)
-        if snapshot:
-            cluster_snapshot(file=path,clusters=["all",subset] ,chainbows=False, color_clusters=True)
         if heatmap:
             root["heatmap_figs"] = "images/heatmap_figs"
             hm_title = title + "_heatmap"
@@ -1255,6 +1254,11 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
             matrix, oneDmatrix1, oneDmatrix2 = ContactSurface.get_heat_map(hm, title=hm_title, normalize=len(df), folder=root.heatmap_figs,
                                         percentage=True, outer_ids_complete=outer_ids_complete)
             r.append([matrix, oneDmatrix1, oneDmatrix2])
+        if snapshot:
+            if heatmap and False:
+                cluster_snapshot(file=path,clusters=["all",subset], matrix1=oneDmatrix1, matrix2 = oneDmatrix2)
+            else:
+                cluster_snapshot(file=path,clusters=["all",subset], chainbows =False )
         if vars.block:
             plt.show(block = vars.block)
         plt.close()
@@ -1268,12 +1272,10 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
 
 
 
-def cluster_snapshot(file, clusters, color_clusters=False, chainbows = True, snapshot = True):
+def cluster_snapshot(file, clusters, color_clusters=False, chainbows = False, snapshot = True, matrix1=None, matrix2=None):
     from imports import load_single_pdb, load_references
     from superpose import superpose_many_chains
-    from pyMol import pymol_start, pymol_load_path, pymol_colour, pymol_list_to_bfactors, pymol_save_snapshot, \
-        mpl_colours, mpl_ncolours,pymol_save_temp_session, pymol_open_session_terminal, pymol_split_states, pymol_orient, \
-        pymol_reinitialize
+
 
     sprint("Cluster snapshot")
 
@@ -1304,6 +1306,7 @@ def cluster_snapshot(file, clusters, color_clusters=False, chainbows = True, sna
     print(filename)
     ref = load_references(identifier=filename.split("-")[0])[0]
     print("Sele:", sele)
+    resids = [res.id[1] for res in ref.structure.get_residues()]
 
     for c in sele[-1]:
         if c == -1 or c == "-1":
@@ -1324,14 +1327,34 @@ def cluster_snapshot(file, clusters, color_clusters=False, chainbows = True, sna
         subcname = "{}-CLUSTER-{}-{}".format(ref.name,cname,c)
         super_data = superpose_many_chains(chains_to_align, file_name=subcname+".pdb", save_folder=local.clusters)
         print(super_data)
+
         if snapshot:
+            local["snapshots"] = "snapshots"
+            from pyMol import pymol_start, pymol_load_path, pymol_colour, pymol_list_to_bfactors, pymol_save_snapshot, \
+                mpl_colours, mpl_ncolours, pymol_save_temp_session, pymol_open_session_terminal, pymol_split_states, \
+                pymol_orient, pymol_reinitialize, pymol_get_all_objects
             pymol_reinitialize()
             monster = pymol_load_path(super_data["out_path"], subcname)
             pymol_split_states(monster)
-            pymol_colour(mpl_colours[c % mpl_ncolours], "(all)")
             pymol_orient()
-            local["snapshots"] = "snapshots"
-            pymol_save_snapshot(subcname, folder=local.snapshots)
+            if chainbows:
+                pymol_colour("chainbow", "(all)")
+                pymol_save_snapshot(subcname + "chainbows", folder=local.snapshots)
+            elif matrix1 is not None and matrix2 is not None:
+                for obj, value in zip(pymol_get_all_objects(), chains_to_align.values()):
+                    chain = value[1]
+                    sele1 = obj + " and (c. {})".format(chain)
+                    sele2 = obj + " and !(c. {})".format(chain)
+                    pymol_list_to_bfactors(val_list=matrix1, obj_name=sele1, resids=resids)
+                    pymol_list_to_bfactors(val_list=matrix2, obj_name=sele2, resids=resids)
+                pymol_colour("blue_yellow_red", "(all)", spectrum="b")
+                pymol_save_snapshot(subcname + "heat_map", folder=local.snapshots)
+            else:
+                pymol_colour(mpl_colours[c % mpl_ncolours], "(all)")
+                pymol_save_snapshot(subcname+"cluster_cols", folder=local.snapshots)
+
+
+
             #session_path = pymol_save_temp_session()
             #pymol_open_session_terminal(session_path)
 

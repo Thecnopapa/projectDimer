@@ -401,7 +401,7 @@ if __name__ == "__main__":
 
          HEATMAPS = True,
          GIFS = False,
-         SNAPSHOTS = False,
+         SNAPSHOTS = True,
 
 
          )
