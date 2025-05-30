@@ -525,7 +525,7 @@ class ContactSurface:
 
         if normalize is not None:
             if percentage:
-                normalize *= 100
+                normalize /= 100
             matrix = ContactSurface.normalize_matrix(matrix, n=normalize)
 
         if outer_ids_complete is None:
@@ -558,7 +558,7 @@ class ContactSurface:
             #print(tuples)
             cmap = matplotlib.colors.LinearSegmentedColormap.from_list("colormap", tuples)
             #print(cmap)
-            hm = ax.imshow(matrix, cmap=cmap)
+            hm = ax.imshow(matrix.T, cmap=cmap)
             max_n = len(oneDmatrix1)
             for n, (p1,p2, o) in enumerate(zip(oneDmatrix1, oneDmatrix2, outer_ids_complete)):
                 if n == 0:

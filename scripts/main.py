@@ -254,7 +254,7 @@ def main(PROCESS_ALL = False,
                 matrix_dfs[ref_name] = pd.DataFrame()
 
             matrix_dfs[ref_name][file.split(".")[0]] = oneDmatrix1
-            matrix_dfs[ref_name][file.split(".")[0]+".T"] = oneDmatrix1
+            matrix_dfs[ref_name][file.split(".")[0]+".T"] = oneDmatrix2
 
 
 
@@ -262,6 +262,8 @@ def main(PROCESS_ALL = False,
 
 
         for ref_name, df in matrix_dfs.items():
+            print(ref_name)
+            print(df)
             local["matrix_dfs_path"] = "dataframes/clustering2/matrixes"
             df.to_csv(os.path.join(local.matrix_dfs_path, ref_name + ".csv" ))
 
@@ -390,9 +392,9 @@ if __name__ == "__main__":
          DIMENSIONS_PCA = [0,1,2],
          MINIMUM_SCORE = 0,
 
-         HEATMAPS = False,
+         HEATMAPS = True,
          GIFS = False,
-         SNAPSHOTS = True,
+         SNAPSHOTS = False,
 
 
          )
