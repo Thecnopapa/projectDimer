@@ -15,6 +15,10 @@ colours = ['green', 'cyan', 'red', 'yellow', 'violet','blue',
                'wheat', 'white', 'grey']
 ncolours = len(colours)
 
+
+mpl_colours = 'blue', 'orange', 'green', 'red', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan'
+mpl_ncolours = len(mpl_colours)
+
 def pymol_colour_everything(start_at=0):
     # List of available colours
 

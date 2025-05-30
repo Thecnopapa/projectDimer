@@ -1266,7 +1266,8 @@ def cluster_snapshot(file, clusters, color_clusters=False, chainbows = True, sna
     from imports import load_single_pdb, load_references
     from superpose import superpose_many_chains
     from pyMol import pymol_start, pymol_load_path, pymol_colour, pymol_list_to_bfactors, pymol_save_snapshot, \
-        colours, ncolours,pymol_save_temp_session, pymol_open_session_terminal, pymol_split_states, pymol_orient
+        mpl_colours, mpl_ncolours,pymol_save_temp_session, pymol_open_session_terminal, pymol_split_states, pymol_orient, \
+        pymol_reinitialize
 
     sprint("Cluster snapshot")
 
@@ -1318,9 +1319,10 @@ def cluster_snapshot(file, clusters, color_clusters=False, chainbows = True, sna
         super_data = superpose_many_chains(chains_to_align, file_name=subcname+".pdb", save_folder=local.clusters)
         print(super_data)
         if snapshot:
+            pymol_reinitialize()
             monster = pymol_load_path(super_data["out_path"], subcname)
             pymol_split_states(monster)
-            pymol_colour(colours[c % ncolours], "(all)")
+            pymol_colour(mpl_colours[c % mpl_ncolours], "(all)")
             pymol_orient()
             local["snapshots"] = "snapshots"
             pymol_save_snapshot(subcname, folder=local.snapshots)

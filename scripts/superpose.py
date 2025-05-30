@@ -44,12 +44,12 @@ def superpose_many_chains(align_dict, file_name="GESAMT_multiple_superposition.p
         sele.append(value[1])
 
     #sele = [s + [d[0], "-d", d[1]] for d in align_dict.values()]
-    print("SELE")
-    print(sele)
+    #print("SELE")
+    #print(sele)
     super_line = [Globals.vars.gesamt, *sele, "-o", out_path,"-o-*s", "-view", "-nthreads=auto"]
 
-    print("LINE")
-    print(super_line)
+    #print("LINE")
+    #print(super_line)
     gesamt_out = subprocess.run(super_line, capture_output=True, text=True)
     if "show_gesamt" in vars:
         if not (len(vars.do_only) == 0 or vars.do_only is None):
