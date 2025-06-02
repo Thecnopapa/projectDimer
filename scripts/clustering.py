@@ -1472,13 +1472,15 @@ def cluster_angles(dihedrals_path,
                    angles=["a0", "a1", "a2"],
                    cluster_name = "angle_cluster",
                    folder="angle_clusters1",
-                   split_by=None):
+                   split_by=None,
+                   save_together = True):
     sprint("Clustering angles")
     print1("Name:", cluster_name)
     print1("Folder:", folder)
     print1("Angles:", angles)
     dihedrals_df = pd.read_csv(dihedrals_path)
     if split_by is not None:
+        subsets=[]
         clusters = set(dihedrals_df[split_by].values)
         for cluster in clusters:
             print3("Cluster:", cluster)
@@ -1486,28 +1488,41 @@ def cluster_angles(dihedrals_path,
             subset_df[cluster_name] = quick_cluster(subset_df[angles], bandwidth=bandwidth)
             root[folder] = "dataframes/clustering2/{}".format(folder)
             print(subset_df)
-            subset_df.to_csv(os.path.join(root[folder], os.path.basename(dihedrals_path).split(".")[0]+"-"+str(cluster)+".csv"))
+            if save_together:
+                subsets.append(subset_df)
+            else:
+                subset_df.to_csv(os.path.join(root[folder], os.path.basename(dihedrals_path).split(".")[0]+"-"+str(cluster)+".csv"))
+        if save_together:
+            new_df = pd.concat(subsets, axis=0)
+            new_df.to_csv(os.path.join(root[folder], os.path.basename(dihedrals_path).split(".")[0]+".csv"))
     else:
         dihedrals_df[cluster_name] = quick_cluster(dihedrals_df[angles], bandwidth=bandwidth)
         root[folder] = "dataframes/clustering2/{}".format(folder)
         print(dihedrals_df)
-        dihedrals_df.to_csv(os.path.join(root[folder], os.path.basename(dihedrals_path).split(".")[0]+"-all.csv"))
+        dihedrals_df.to_csv(os.path.join(root[folder], os.path.basename(dihedrals_path).split(".")[0]+".csv"))
     return root[folder]
 
 
-def create_clusters(df_path, ref, **kwargs):
+def create_clusters(df_path, ref, include_all=True, **kwargs):
 
     df = pd.read_csv(df_path, index_col=0)
     cluster_cols = ["angle_cluster1", "angle_cluster2"]
     cluster1list = list(set(df[cluster_cols[0]]))
-    cluster2list = list(set(df[cluster_cols[1]]))
-    new_clusters = [Cluster2(ref,df,cluster_cols, all=True, **kwargs)]
+
+    print(df)
+    print(cluster1list)
+    new_clusters = []
+    if include_all:
+        new_clusters.append(Cluster2(ref,df,cluster_cols, is_all=True, **kwargs))
     for c1 in cluster1list:
+        subset = df[df[cluster_cols[0]] == c1]
+        cluster2list = list(set(subset[cluster_cols[1]]))
         for c2 in cluster2list:
-            c = Cluster2(ref,df,cluster_cols, c1, c2, **kwargs)
+            c = Cluster2(ref,df,cluster_cols, c1=c1, c2=c2, **kwargs)
             if not c.outlier:
                 new_clusters.append(c)
     print(new_clusters)
+
 
 class Cluster2:
     pickle_extension = '.cluster'
@@ -1515,27 +1530,35 @@ class Cluster2:
     name = "ClusterObject"
     path = None
 
-    def __init__(self,ref, df,cluster_cols, c1=None, c2=None, all=False, **kwargs):
+    def __init__(self,ref, df,cluster_cols, c1=None, c2=None, is_all=False, **kwargs):
 
         self.ref_name = ref.name
         self.outer_ids_complete = ref.get_outer_res_list(complete_list=True)
         self.cluster_cols = cluster_cols
         self.outlier = False
-        if not all:
+        if not is_all:
             assert c1 is not None and c2 is not None
-            self.all = False
+            self.is_all = False
             self.c1, self.c2 = c1, c2
             self.cnums = [self.c1, self.c2]
             if self.c1 == -1 or self.c2 == -1:
                 self.outlier = True
+            print(self.c1, self.c2, self.cnums)
+            print(df)
+            print(cluster_cols)
+            print(" & ".join(["{} == {}".format(self.cluster_cols[n], self.cnums[n]) for n in range(len(self.cnums))]))
             self.subset = df.query(" & ".join(["{} == {}".format(self.cluster_cols[n], self.cnums[n]) for n in range(len(self.cnums))]), inplace=False)
         else:
             self.c1, self.c2 = "all", "all"
-            self.all = True
-            self.subset = df
+            self.is_all = True
+            self.subset = df.copy()
         self.id = "{}-{}-{}".format(self.ref_name, self.c1, self.c2)
         self.ndimers = len(self.subset)
+        print(self.id)
         print(self.subset)
+        if len(self.subset) == 0:
+            quit()
+
 
         self.matrix = None
         self.oneDmatrix1 = None

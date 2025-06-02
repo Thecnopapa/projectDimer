@@ -227,7 +227,8 @@ def main(PROCESS_ALL = False,
                                              angles=["b0", "b1", "b2"],
                                              cluster_name="angle_cluster2",
                                              folder="angle_clusters2",
-                                             #split_by="angle_cluster1",
+                                             split_by="angle_cluster1",
+                                             save_together=True,
                                              )
 
 
@@ -242,7 +243,7 @@ def main(PROCESS_ALL = False,
                 continue
             if ONLY_GR and "GR" not in file:
                 continue
-            ref_name = file.split("-")[0]
+            ref_name = file.split(".")[0]
             ref = [ref for ref in vars.references if ref.name == ref_name][0]
             sprint(ref_name+ "({}/{})".format(n, len(os.listdir(cluster2_folder))))
             dihedrals_path = os.path.join(cluster2_folder, file)
