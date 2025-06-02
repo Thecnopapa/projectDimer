@@ -1502,6 +1502,32 @@ def create_clusters(df_path, ref):
             new_clusters.append([c1, c2])
 
 class Cluster2:
+    pickle_extension = '.cluster'
+    pickle_folder = "clusters"
+    name = "ClusterObject"
+    path = None
+
     def __init__(self, df):
         self.df = df
+
+
+
+
+
+
+
+    def pickle(self):
+        import pickle
+        local["pickles"] = "pickles"
+        # print(local.pickles, self.pickle_folder)
+        pickle_folder = os.path.join(local.pickles, self.pickle_folder)
+        # print(pickle_folder)
+
+        os.makedirs(pickle_folder, exist_ok=True)
+        local[self.pickle_folder] = "pickles/{}".format(self.pickle_folder)
+        file_name = "{}{}".format(self.id, self.pickle_extension)
+        self.pickle_path = os.path.join(pickle_folder, file_name)
+        # print(self.pickle_path)
+        with open(self.pickle_path, 'wb') as f:
+            pickle.dump(self, f)
 
