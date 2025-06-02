@@ -199,7 +199,7 @@ def main(PROCESS_ALL = False,
 
     if not SKIP_CLUSTERING or PROCESS_ALL and False:
 
-        from clustering import generate_dihedrals_df, plot_dihedrals, cluster_angles, create_clusters
+        from clustering import generate_dihedrals_df, plot_dihedrals, cluster_angles, create_clusters, Cluster2
         generate_dihedrals_df(force = False or PROCESS_ALL)
 
         for file in sorted(os.listdir(root.dihedrals)):
@@ -215,10 +215,7 @@ def main(PROCESS_ALL = False,
             if ONLY_GR and "GR" not in file:
                 continue
             dihedrals_path = os.path.join(cluster1_folder, file)
-            matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path, clusters="angle_cluster1",
-                                                              subset_col=None,
-                                                              gif=GIFS,
-                                                              )
+
 
 
         for file in sorted(os.listdir(cluster1_folder)):
@@ -230,7 +227,8 @@ def main(PROCESS_ALL = False,
                                              angles=["b0", "b1", "b2"],
                                              cluster_name="angle_cluster2",
                                              folder="angle_clusters2",
-                                             split_by="angle_cluster1")
+                                             #split_by="angle_cluster1",
+                                             )
 
 
 
@@ -241,25 +239,15 @@ def main(PROCESS_ALL = False,
         for n, file in enumerate(sorted(os.listdir(cluster2_folder))):
 
             if "--1" in file:
-                pass
+                continue
             if ONLY_GR and "GR" not in file:
                 continue
             ref_name = file.split("-")[0]
             ref = [ref for ref in vars.references if ref.name == ref_name][0]
             sprint(ref_name+ "({}/{})".format(n, len(os.listdir(cluster2_folder))))
             dihedrals_path = os.path.join(cluster2_folder, file)
+
             create_clusters(dihedrals_path, ref, gif =GIFS, matrix = HEATMAPS)
-            if False:
-                matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path,
-                                                                    clusters="angle_cluster2",
-                                                                    subset_col="angle_cluster2",
-                                                                    subset = None,
-                                                                    heatmap = HEATMAPS, hm_threshold=10,
-                                                                    outer_ids_complete=ref.get_outer_res_list(complete_list=True),
-                                                                    gif=GIFS,
-                                                                    snapshot=SNAPSHOTS,
-                                                                    chainbows = CHAINBOWS,
-                                                                    include_all=True,)
 
 
 
@@ -268,11 +256,16 @@ def main(PROCESS_ALL = False,
 
 
 
-
-
-
-
-
+            """matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path,
+                                                                clusters="angle_cluster2",
+                                                                subset_col="angle_cluster2",
+                                                                subset = None,
+                                                                heatmap = HEATMAPS, hm_threshold=10,
+                                                                outer_ids_complete=ref.get_outer_res_list(complete_list=True),
+                                                                gif=GIFS,
+                                                                snapshot=SNAPSHOTS,
+                                                                chainbows = CHAINBOWS,
+                                                                include_all=True,)"""
 
 
 
@@ -387,8 +380,8 @@ if __name__ == "__main__":
          DIMENSIONS_PCA = [0,1,2],
          MINIMUM_SCORE = 0,
 
-         HEATMAPS = True,
-         GIFS = True,
+         HEATMAPS = False,
+         GIFS = False,
          SNAPSHOTS = True,
          CHAINBOWS = False,
 

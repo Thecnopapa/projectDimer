@@ -1496,11 +1496,12 @@ def cluster_angles(dihedrals_path,
 
 
 def create_clusters(df_path, ref, **kwargs):
-    new_clusters = []
+
     df = pd.read_csv(df_path, index_col=0)
     cluster_cols = ["angle_cluster1", "angle_cluster2"]
     cluster1list = list(set(df[cluster_cols[0]]))
     cluster2list = list(set(df[cluster_cols[1]]))
+    new_clusters = [Cluster2(ref,df,cluster_cols, all=True, **kwargs)]
     for c1 in cluster1list:
         for c2 in cluster2list:
             c = Cluster2(ref,df,cluster_cols, c1, c2, **kwargs)
@@ -1514,18 +1515,25 @@ class Cluster2:
     name = "ClusterObject"
     path = None
 
-    def __init__(self,ref, df,cluster_cols, c1, c2, **kwargs):
+    def __init__(self,ref, df,cluster_cols, c1=None, c2=None, all=False, **kwargs):
 
         self.ref_name = ref.name
         self.outer_ids_complete = ref.get_outer_res_list(complete_list=True)
-        self.c1, self.c2 = c1, c2
-        self.cnums = [self.c1, self.c2]
         self.cluster_cols = cluster_cols
         self.outlier = False
-        if self.c1 == -1 or self.c2 == -1:
-            self.outlier = True
+        if not all:
+            assert c1 is not None and c2 is not None
+            self.all = False
+            self.c1, self.c2 = c1, c2
+            self.cnums = [self.c1, self.c2]
+            if self.c1 == -1 or self.c2 == -1:
+                self.outlier = True
+            self.subset = df.query(" & ".join(["{} == {}".format(self.cluster_cols[n], self.cnums[n]) for n in range(len(self.cnums))]), inplace=False)
+        else:
+            self.c1, self.c2 = "all", "all"
+            self.all = True
+            self.subset = df
         self.id = "{}-{}-{}".format(self.ref_name, self.c1, self.c2)
-        self.subset = df.query(" & ".join(["{} == {}".format(self.cluster_cols[n], self.cnums[n]) for n in range(len(self.cnums))]), inplace=False)
         self.ndimers = len(self.subset)
         print(self.subset)
 
@@ -1549,7 +1557,7 @@ class Cluster2:
         if matrix:
             self.matrix, self.oneDmatrix1, self.oneDmatrix2 = self.get_matrix(threshold=10)
         if plot:
-            self.plot_path, self.gif_path = self.get_plot(show=show, gif=gif)
+            self.plot_path, self.gif_path = self.get_plot(self.subset, self.cluster_cols, self.id, show=show, gif=gif)
 
     def get_matrix(self, threshold):
         from imports import load_single_pdb
@@ -1568,35 +1576,41 @@ class Cluster2:
         oneDmatrix2 = [sum(i) / len(self.outer_ids_complete) for i in matrix.T]
         return matrix, oneDmatrix1, oneDmatrix2
 
-    def get_plot(self, gif=True, id_labels=False, save=True, show=False):
+    @staticmethod
+    def get_plot(subset, cluster_cols, id, gif=True, id_labels=False, save=True, show=False):
         import matplotlib.pyplot as plt
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
+        fig = plt.figure(figsize=(20,10))
+        ax1 = fig.add_subplot(121, projection='3d')
+        ax2 = fig.add_subplot(122, projection='3d')
+        axes = ax1, ax2
         print2("Plotting cluster angles")
-        progress = ProgressBar(len(self.subset), silent=True)
-        for point in self.subset.itertuples():
+        progress = ProgressBar(len(subset), silent=True)
+        for point in subset.itertuples():
 
-            cl1 = point.__getattribute__(self.cluster_cols[0])
-            cl2 = point.__getattribute__(self.cluster_cols[1])
+            cl1 = point.__getattribute__(cluster_cols[0])
+            cl2 = point.__getattribute__(cluster_cols[1])
             cols = []
             for cl in (cl1, cl2):
                 if cl == -1:
                     cols.append("black")
                 else:
                     cols.append("C" + str(cl))
-            ax.scatter(point.a0, point.a1, point.a2, c=cols[1], edgecolors=cols[0])
+            ax1.scatter(point.a0, point.a1, point.a2, c=cols[1], edgecolors=cols[0])
+            ax2.scatter(point.b0, point.b1, point.b2, c=cols[1], edgecolors=cols[0])
             if id_labels:
-                ax.text(point.a0, point.a1, point.a2, point.id)
+                ax1.text(point.a0, point.a1, point.a2, point.id)
+                ax2.text(point.a0, point.a1, point.a2, point.id)
             progress.add(info=point.id)
         ax_labels = ["0", "1", "2"]
-        ax.set_xlabel(ax_labels[0])
-        ax.set_ylabel(ax_labels[1])
-        ax.set_zlabel(ax_labels[2])
-        ax.set_xlim(0, 180)
-        ax.set_ylim(0, 180)
-        ax.set_zlim(0, 180)
-        title = "CLUSTER_{}".format(self.id)
-        ax.set_title(title + " N={}".format(self.ndimers))
+        title = "CLUSTER_{}".format(id)
+        for ax, l in zip(axes, ("a", "b")):
+            ax.set_xlabel(l+ax_labels[0])
+            ax.set_ylabel(l+ax_labels[1])
+            ax.set_zlabel(l+ax_labels[2])
+            ax.set_xlim(0, 180)
+            ax.set_ylim(0, 180)
+            ax.set_zlim(0, 180)
+            ax.set_title(l+" "+title + " N={}".format(len(subset)))
 
         fig_savepath = None
         gif_savepath = None
@@ -1609,16 +1623,6 @@ class Cluster2:
             gif_savepath = mpl_to_gif(fig, ax, name=title, folder=local.dihedral_gifs)
         if show:
             plt.show(block = vars.block)
-        if fig_savepath is None:
-            try:
-                fig_savepath = self.plot_path
-            except:
-                pass
-        if gif_savepath is None:
-            try:
-                gif_savepath = self.gif_path
-            except:
-                pass
         return fig_savepath, gif_savepath
 
 
