@@ -1509,7 +1509,7 @@ def create_clusters(df_path, ref):
 
 class Cluster2:
     pickle_extension = '.cluster'
-    pickle_folder = "clusters"
+    pickle_folder = "cluster_pickles"
     name = "ClusterObject"
     path = None
 
@@ -1522,7 +1522,7 @@ class Cluster2:
         self.pickle()
 
     def __repr__(self):
-        return "<Cluster: {}-{}>". format(self.c1, self.c2)
+        return "<Cluster: {}-{} /N={}>". format(self.c1, self.c2, len(self.subset))
 
 
 

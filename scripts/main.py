@@ -249,38 +249,18 @@ def main(PROCESS_ALL = False,
             sprint(ref_name+ "({}/{})".format(n, len(os.listdir(cluster2_folder))))
             dihedrals_path = os.path.join(cluster2_folder, file)
             create_clusters(dihedrals_path, ref)
-            quit()
-            matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path,
-                                                                clusters="angle_cluster2",
-                                                                subset_col="angle_cluster2",
-                                                                subset = None,
-                                                                heatmap = HEATMAPS, hm_threshold=10,
-                                                                outer_ids_complete=ref.get_outer_res_list(complete_list=True),
-                                                                gif=GIFS,
-                                                                snapshot=SNAPSHOTS,
-                                                                chainbows = CHAINBOWS,
-                                                                include_all=True,)
+            if False:
+                matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path,
+                                                                    clusters="angle_cluster2",
+                                                                    subset_col="angle_cluster2",
+                                                                    subset = None,
+                                                                    heatmap = HEATMAPS, hm_threshold=10,
+                                                                    outer_ids_complete=ref.get_outer_res_list(complete_list=True),
+                                                                    gif=GIFS,
+                                                                    snapshot=SNAPSHOTS,
+                                                                    chainbows = CHAINBOWS,
+                                                                    include_all=True,)
 
-
-            if matrix is not None:
-                if ref_name not in matrix_dfs:
-                    matrix_dfs[ref_name] = pd.DataFrame()
-
-                matrix_dfs[ref_name].loc[file.split(".")[0]] = oneDmatrix1
-                matrix_dfs[ref_name].loc[file.split(".")[0]+".T"] = oneDmatrix2
-
-
-
-
-
-
-
-
-        for ref_name, df in matrix_dfs.items():
-            print(ref_name)
-            print(df)
-            local["matrix_dfs_path"] = "dataframes/clustering2/matrixes"
-            df.to_csv(os.path.join(local.matrix_dfs_path, ref_name + ".csv" ))
 
 
 
