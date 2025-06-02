@@ -2,24 +2,27 @@
 #source '/opt/xtal/ccp4-9/bin/ccp4.setup-sh' # Find in installation log in ccp4/
 
 # add this to .bashrc
-#if [ -f ~/projectB/bashrc.project ]; then
-#    source ~/projectB/bashrc.project
+# FOLDER_PATH = "/..."
+#if [ -f $FOLDER_PATH/bashrc.project ]; then
+#    source $FOLDER_PATH/bashrc.project
+	
 #fi
 
 
-
-cd ~/projectB
+echo "projectDimer path is: $FOLDER_PATH"
+cd $FOLDER_PATH
 conda activate py312np2 || conda activate biop
-alias show="python ~/projectB/scripts/visualisation.py"
+alias show="python $FOLDER_PATH/scripts/visualisation.py"
 
 run(){
-        python ~/projectB/scripts/$1.py $2 $3 $4 $5
+        python $FOLDER_PATH/scripts/$1.py $@
 }
+
 diagram(){
     if [ $2 == ""]; then
-        python ~/projectB/scripts/diagram.py $1 $2 && xdg-open /cri4/iain/projectB/diagrams/$1/all.html
+        python $FOLDER_PATH/scripts/diagram.py $1 $2 && xdg-open /cri4/iain/projectB/diagrams/$1/all.html
     else
-        python ~/projectB/scripts/diagram.py $1 $2 && xdg-open /cri4/iain/projectB/diagrams/$1/$2.html
+        python $FOLDER_PATH/scripts/diagram.py $1 $2 && xdg-open /cri4/iain/projectB/diagrams/$1/$2.html
     fi
 }
 
