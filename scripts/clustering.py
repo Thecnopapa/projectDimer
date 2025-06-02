@@ -1514,9 +1514,10 @@ class Cluster2:
     name = "ClusterObject"
     path = None
 
-    def __init__(self,ref_name, df,cluster_cols, c1, c2):
+    def __init__(self,ref, df,cluster_cols, c1, c2):
 
-        self.ref_name = ref_name
+        self.ref_name = ref.name
+        self.outer_ids_complete = ref.get_outer_res_list(complete_list=True)
         self.c1, self.c2 = c1, c2
         self.cnums = [self.c1, self.c2]
         self.cluster_cols = cluster_cols
@@ -1527,6 +1528,14 @@ class Cluster2:
         self.subset = df.query(" & ".join(["{} == {}".format(self.cluster_cols[n], self.cnums[n]) for n in range(len(self.cnums))]), inplace=False)
         self.ndimers = len(self.subset)
         #print(self.subset)
+
+        self.matrix = None
+        self.oneDmatrix1 = None
+        self.oneDmatrix2 = None
+        self.plot_path = None
+        self.gif_path = None
+
+
         if not self.outlier:
             self.process_cluster()
             self.pickle()
@@ -1536,7 +1545,7 @@ class Cluster2:
 
     def process_cluster(self, matrix=True, plot=True, gif=True, show=False):
         if matrix:
-            self.matrix = self.get_matrix(threshold=10)
+            self.matrix, self.oneDmatrix1, self.oneDmatrix2 = self.get_matrix(threshold=10)
         if plot:
             self.plot_path, self.gif_path = self.get_plot(show=show)
 
@@ -1551,9 +1560,11 @@ class Cluster2:
                 matrix = dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not point.is1to2)
             else:
                 matrix = np.add(matrix, dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not point.is1to2))
-
             progress.add(info=point.id)
-        return matrix
+
+        oneDmatrix1 = [sum(i)/ len(self.outer_ids_complete) for i in matrix]
+        oneDmatrix2 = [sum(i) / len(self.outer_ids_complete) for i in matrix.T]
+        return matrix, oneDmatrix1, oneDmatrix2
 
     def get_plot(self, gif=True, id_labels=False, save=True, show=False):
         import matplotlib.pyplot as plt
