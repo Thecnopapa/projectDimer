@@ -1495,11 +1495,12 @@ def cluster_angles(dihedrals_path,
 def create_clusters(df_path, ref):
     new_clusters = []
     df = pd.read_csv(df_path, index_col=0)
-    cluster1list = list(set(df["angle_cluster1"]))
-    cluster2list = list(set(df["angle_cluster2"]))
+    cluster_cols = ["angle_cluster1", "angle_cluster2"]
+    cluster1list = list(set(df[cluster_cols[0]]))
+    cluster2list = list(set(df[cluster_cols[1]]))
     for c1 in cluster1list:
         for c2 in cluster2list:
-            new_clusters.append([c1, c2])
+            new_clusters.append(Cluster2(df,cluster_cols, c1, c2))
 
 class Cluster2:
     pickle_extension = '.cluster'
@@ -1507,8 +1508,10 @@ class Cluster2:
     name = "ClusterObject"
     path = None
 
-    def __init__(self, df):
-        self.df = df
+    def __init__(self, df,cluster_cols, c1, c2):
+        cnums = [c1, c2]
+        self.subset = df.query(" | ".join(["{} == {}".format(cluster_cols[n], cnums[n]) for n in range(len(cnums))]), inplace=False)
+        print(subset)
 
 
 
