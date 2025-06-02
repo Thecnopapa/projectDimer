@@ -1584,7 +1584,7 @@ class Cluster2:
                     cols.append("black")
                 else:
                     cols.append("C" + str(cl))
-            ax.scatter(point.a0, point.a1, point.a2, c=cols[0], edgecolors=cols[1])
+            ax.scatter(point.a0, point.a1, point.a2, c=cols[1], edgecolors=cols[0])
             if id_labels:
                 ax.text(point.a0, point.a1, point.a2, point.id)
             progress.add(info=point.id)
@@ -1601,12 +1601,12 @@ class Cluster2:
         fig_savepath = None
         gif_savepath = None
         if save:
-            root["dihedral_figs"] = "images/dihedral_figs"
-            fig_savepath = os.path.join(root.dihedral_figs, title + ".png")
+            local["dihedral_figs"] = "images/dihedral_figs"
+            fig_savepath = os.path.join(local.dihedral_figs, title + ".png")
             plt.savefig(fig_savepath)
         if gif:
-            root["dihedral_gifs"] = "images/dihedral_gifs"
-            gif_savepath = mpl_to_gif(fig, ax, name=title, folder=root.dihedral_gifs)
+            local["dihedral_gifs"] = "images/dihedral_gifs"
+            gif_savepath = mpl_to_gif(fig, ax, name=title, folder=local.dihedral_gifs)
         if show:
             plt.show(block = vars.block)
         if fig_savepath is None:
