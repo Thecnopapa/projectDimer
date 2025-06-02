@@ -259,8 +259,7 @@ def main(PROCESS_ALL = False,
                                                                 gif=GIFS,
                                                                 snapshot=SNAPSHOTS,
                                                                 chainbows = CHAINBOWS,
-                                                                include_all=True,
-                                                                get_matrix=True)
+                                                                include_all=True,)
 
 
             if matrix is not None:

@@ -1173,7 +1173,7 @@ def generate_dihedrals_df(dimer_list = None, force = False):
 
 def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = None, subset=None, include_all=True, save=True,
                    label_col=None, only_first=None, heatmap=False, hm_threshold = 10, outer_ids_complete = None,
-                   gif = False, snapshot=False, first_matrix_only = True, chainbows = False, get_matrix = True):
+                   gif = False, snapshot=False, first_matrix_only = True, chainbows = False, get_matrix = False):
     print1("plotting dihedrals, heatmap={}, GIF={}, snapshot={}".format(heatmap, gif, snapshot))
     print2(path)
     from matplotlib import  pyplot as plt
@@ -1500,4 +1500,8 @@ def create_clusters(df_path, ref):
     for c1 in cluster1list:
         for c2 in cluster2list:
             new_clusters.append([c1, c2])
+
+class Cluster2:
+    def __init__(self, df):
+        self.df = df
 
