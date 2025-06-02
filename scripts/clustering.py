@@ -1,5 +1,7 @@
 import os, sys
 
+from h5py.h5pl import append
+
 from utilities import *
 from Globals import root, local, vars
 import numpy as np
@@ -1254,6 +1256,8 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
             matrix, oneDmatrix1, oneDmatrix2 = ContactSurface.get_heat_map(hm, title=hm_title, normalize=len(df), folder=root.heatmap_figs,
                                         percentage=True, outer_ids_complete=outer_ids_complete)
             r.append([matrix, oneDmatrix1, oneDmatrix2])
+        else:
+            r.append([None,None,None])
         if snapshot:
             if heatmap and False:
                 cluster_snapshot(file=path,clusters=["all",subset], matrix1=oneDmatrix1, matrix2 = oneDmatrix2)
@@ -1501,6 +1505,7 @@ def create_clusters(df_path, ref):
     for c1 in cluster1list:
         for c2 in cluster2list:
             new_clusters.append(Cluster2(df,cluster_cols, c1, c2))
+    print(new_clusters)
 
 class Cluster2:
     pickle_extension = '.cluster'
@@ -1510,8 +1515,14 @@ class Cluster2:
 
     def __init__(self, df,cluster_cols, c1, c2):
         cnums = [c1, c2]
-        self.subset = df.query(" | ".join(["{} == {}".format(cluster_cols[n], cnums[n]) for n in range(len(cnums))]), inplace=False)
-        print(subset)
+        self.c1, self.c2 = c1, c2
+        self.id = "{}-{}".format(self.c1, self.c2)
+        self.subset = df.query(" & ".join(["{} == {}".format(cluster_cols[n], cnums[n]) for n in range(len(cnums))]), inplace=False)
+        print(self.subset)
+        self.pickle()
+
+    def __repr__(self):
+        return "<Cluster: {}-{}>". format(self.c1, self.c2)
 
 
 

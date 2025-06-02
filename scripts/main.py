@@ -248,7 +248,7 @@ def main(PROCESS_ALL = False,
             ref = [ref for ref in vars.references if ref.name == ref_name][0]
             sprint(ref_name+ "({}/{})".format(n, len(os.listdir(cluster2_folder))))
             dihedrals_path = os.path.join(cluster2_folder, file)
-            create_clusters()
+            create_clusters(dihedrals_path, ref)
             quit()
             matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path,
                                                                 clusters="angle_cluster2",
