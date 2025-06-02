@@ -328,12 +328,12 @@ if __name__ == "__main__":
         show_objects(molecules, sys.argv[2:])
 
     elif "ref" in sys.argv[1] and len(sys.argv[2:]) != 0:
-        refs = load_references(identifier = sys.argv[2:])
+        refs = load_references(identifier = sys.argv[2])
         tprint("Showing references")
         show_objects(refs, sys.argv[2:])
 
     elif "cluster" in sys.argv[1] and len(sys.argv[2:]) != 0:
-        clusters = load_clusters(identifier = sys.argv[2:])
+        clusters = load_clusters(id_list = sys.argv[2], onebyone=True)
         tprint("Showing clusters")
         show_objects(clusters, sys.argv[2:])
 

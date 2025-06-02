@@ -23,12 +23,12 @@ class Cluster:
         return f"Cluster({self.n}, {self.name})"
 
 
-def get_clusters(df, column, ref_name):
+def get_clusters(df, column, ref_name, **kwargs):
     #df = pd.read_csv(df_path)
     clusters = []
     for c in set(df[column]):
         subset = df[df[column] == c]
-        clusters.append(Cluster(ref_name, subset, c, column))
+        clusters.append(Cluster(ref_name, subset, c, column, **kwargs))
     return clusters
 
 
@@ -1495,7 +1495,7 @@ def cluster_angles(dihedrals_path,
     return root[folder]
 
 
-def create_clusters(df_path, ref):
+def create_clusters(df_path, ref, **kwargs):
     new_clusters = []
     df = pd.read_csv(df_path, index_col=0)
     cluster_cols = ["angle_cluster1", "angle_cluster2"]
@@ -1503,7 +1503,7 @@ def create_clusters(df_path, ref):
     cluster2list = list(set(df[cluster_cols[1]]))
     for c1 in cluster1list:
         for c2 in cluster2list:
-            c = Cluster2(ref,df,cluster_cols, c1, c2)
+            c = Cluster2(ref,df,cluster_cols, c1, c2, **kwargs)
             if not c.outlier:
                 new_clusters.append(c)
     print(new_clusters)
@@ -1514,7 +1514,7 @@ class Cluster2:
     name = "ClusterObject"
     path = None
 
-    def __init__(self,ref, df,cluster_cols, c1, c2):
+    def __init__(self,ref, df,cluster_cols, c1, c2, **kwargs):
 
         self.ref_name = ref.name
         self.outer_ids_complete = ref.get_outer_res_list(complete_list=True)
@@ -1537,21 +1537,23 @@ class Cluster2:
 
 
         if not self.outlier:
-            self.process_cluster()
+            self.process_cluster(**kwargs)
             self.pickle()
 
     def __repr__(self):
         return "<Cluster:{} {}-{} /N={}>". format(self.ref_name, self.c1, self.c2, self.ndimers)
 
-    def process_cluster(self, matrix=True, plot=True, gif=True, show=False):
+    def process_cluster(self, matrix=True, plot=True, gif=True, show=False, **kwargs):
+        print1("Processing matrix={}, plot={}, gif={}, show={}".format(matrix, plot, gif, show))
+
         if matrix:
             self.matrix, self.oneDmatrix1, self.oneDmatrix2 = self.get_matrix(threshold=10)
         if plot:
-            self.plot_path, self.gif_path = self.get_plot(show=show)
+            self.plot_path, self.gif_path = self.get_plot(show=show, gif=gif)
 
     def get_matrix(self, threshold):
         from imports import load_single_pdb
-        print("Generating cluster matrix")
+        print2("Generating cluster matrix")
         matrix = None
         progress = ProgressBar(len(self.subset), silent=True)
         for point in self.subset.itertuples():
@@ -1570,7 +1572,7 @@ class Cluster2:
         import matplotlib.pyplot as plt
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
-        print("Plotting cluster angles")
+        print2("Plotting cluster angles")
         progress = ProgressBar(len(self.subset), silent=True)
         for point in self.subset.itertuples():
 

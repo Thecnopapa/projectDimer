@@ -98,18 +98,18 @@ class PickleIterator:
 
 def load_clusters(identifier = "all", onebyone=False, **kwargs):
     if onebyone:
-        return load_list_1by1(pickle_folder="clusters", **kwargs)
+        return load_list_1by1(pickle_folder=local.cluster_pickles, **kwargs)
     else:
-        return load_single_pdb(identifier, pickle_folder="clusters", **kwargs)
+        return load_single_pdb(identifier, pickle_folder=local.cluster_pickles, **kwargs)
 
 
 def load_list_1by1(id_list=None, quiet=True, **kwargs):
     if id_list is None:
         assert "pickle_folder" in kwargs, "pickle folder or id list must be provided"
         id_list = [file.split(".")[0] for file in os.listdir(kwargs["pickle_folder"])]
-
-    if len(vars.do_only) > 0:
-        id_list = [f for f in id_list if any([s in f for s in vars.do_only])]
+    if "do_only" in vars:
+        if len(vars.do_only) > 0:
+            id_list = [f for f in id_list if any([s in f for s in vars.do_only])]
 
     return iter(PickleIterator(id_list, quiet, **kwargs))
 
@@ -124,7 +124,10 @@ def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None,
         for file in os.listdir(pickle_folder):
             if (identifier == "ALL" or identifier in file.upper()) and "lock" not in file and not any([bl in file for bl in vars.blacklist]):
                 p = unpickle(os.path.join(pickle_folder, file))
-                p.restore_dfs()
+                try:
+                    p.restore_dfs()
+                except:
+                    pass
                 if object_class == Reference:
                     #p.restore_reference_dfs(reset=force_reload)
                     pass
