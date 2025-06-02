@@ -1503,7 +1503,7 @@ def create_clusters(df_path, ref):
     cluster2list = list(set(df[cluster_cols[1]]))
     for c1 in cluster1list:
         for c2 in cluster2list:
-            c = Cluster2(ref.name,df,cluster_cols, c1, c2)
+            c = Cluster2(ref,df,cluster_cols, c1, c2)
             if not c.outlier:
                 new_clusters.append(c)
     print(new_clusters)
