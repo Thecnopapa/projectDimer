@@ -1527,7 +1527,7 @@ class Cluster2:
         self.id = "{}-{}-{}".format(self.ref_name, self.c1, self.c2)
         self.subset = df.query(" & ".join(["{} == {}".format(self.cluster_cols[n], self.cnums[n]) for n in range(len(self.cnums))]), inplace=False)
         self.ndimers = len(self.subset)
-        #print(self.subset)
+        print(self.subset)
 
         self.matrix = None
         self.oneDmatrix1 = None
