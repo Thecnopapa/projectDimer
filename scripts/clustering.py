@@ -1565,6 +1565,10 @@ class Cluster2:
         self.oneDmatrix2 = None
         self.plot_path = None
         self.gif_path = None
+        self.comA = None
+        self.comB = None
+        self.stdA = None
+        self.stdB = None
 
 
         if not self.outlier:
@@ -1576,11 +1580,32 @@ class Cluster2:
 
     def process_cluster(self, matrix=True, plot=True, gif=True, show=False, **kwargs):
         print1("Processing matrix={}, plot={}, gif={}, show={}".format(matrix, plot, gif, show))
-
+        if not self.is_all:
+            self.get_com()
         if matrix:
             self.matrix, self.oneDmatrix1, self.oneDmatrix2 = self.get_matrix(threshold=10)
         if plot:
-            self.plot_path, self.gif_path = self.get_plot(self.subset, self.cluster_cols, self.id, show=show, gif=gif)
+            self.plot_path, self.gif_path = self.get_plot(self.subset, self.cluster_cols, self.id,
+                                                          coms=(self.comA, self.comB),
+                                                          stds=(self.stdA, self.stdB),
+                                                          show=show, gif=gif)
+
+
+
+    def get_com(self):
+        from maths import find_com, distance
+        anglesA = np.array(self.subset[["a0", "a1", "a2"]].values)
+        anglesB = np.array(self.subset[["b0", "b1", "b2"]].values)
+        self.comA = find_com(anglesA)
+        self.comB = find_com(anglesB)
+        distancesA = [distance(point, self.comA) for point in anglesA]
+        distancesB = [distance(point, self.comB) for point in anglesB]
+        self.stdA = np.std(distancesA)
+        self.stdB = np.std(distancesB)
+        print(self.stdA, self.comA)
+        print(self.stdB, self.comB)
+
+
 
     def get_matrix(self, threshold):
         from imports import load_single_pdb
@@ -1600,7 +1625,7 @@ class Cluster2:
         return matrix, oneDmatrix1, oneDmatrix2
 
     @staticmethod
-    def get_plot(subset, cluster_cols, id, gif=True, id_labels=False, save=True, show=False):
+    def get_plot(subset, cluster_cols, id, coms=(None,None),stds=(None,None), gif=True, id_labels=False, save=True, show=False, show_outliers=False):
         import matplotlib.pyplot as plt
         fig = plt.figure(figsize=(20,10))
         ax1 = fig.add_subplot(121, projection='3d')
@@ -1618,12 +1643,17 @@ class Cluster2:
                     cols.append("black")
                 else:
                     cols.append("C" + str(cl))
-            ax1.scatter(point.a0, point.a1, point.a2, c=cols[1], edgecolors=cols[0])
-            ax2.scatter(point.b0, point.b1, point.b2, c=cols[1], edgecolors=cols[0])
+            if not show_outliers and "black" in cols:
+                continue
+            ax1.scatter(point.a0, point.a1, point.a2, c=cols[1], edgecolors=cols[0], s=50, linewidths=2)
+            ax2.scatter(point.b0, point.b1, point.b2, c=cols[1], edgecolors=cols[0], s=50, linewidths=2)
             if id_labels:
                 ax1.text(point.a0, point.a1, point.a2, point.id)
                 ax2.text(point.a0, point.a1, point.a2, point.id)
             progress.add(info=point.id)
+        if None not in coms:
+            ax1.scatter(coms[0][0], coms[0][1], coms[0][2], c=cols[0], s=stds[0]*180, linewidths=2, alpha=0.3)
+            ax2.scatter(coms[1][0],coms[1][1], coms[1][2], c=cols[1], s=stds[1]*180, linewidths=2, alpha=0.3)
         ax_labels = ["0", "1", "2"]
         title = "CLUSTER_{}".format(id)
         for ax, l in zip(axes, ("a", "b")):
@@ -1661,3 +1691,8 @@ class Cluster2:
         with open(self.pickle_path, 'wb') as f:
             pickle.dump(self, f)
 
+
+
+
+def cluster_redundancy():
+    pass
