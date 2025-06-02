@@ -335,6 +335,7 @@ def mpl_to_gif(fig, axes, name = "animation.gif", folder=None, dpf=1, total_d = 
         save_all=True,
     )
     print1("Saving at:", path)
+    return path
 
 
 

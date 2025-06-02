@@ -1,6 +1,5 @@
 import os, sys
 
-from h5py.h5pl import append
 
 from utilities import *
 from Globals import root, local, vars
@@ -1504,7 +1503,9 @@ def create_clusters(df_path, ref):
     cluster2list = list(set(df[cluster_cols[1]]))
     for c1 in cluster1list:
         for c2 in cluster2list:
-            new_clusters.append(Cluster2(ref_name,df,cluster_cols, c1, c2))
+            c = Cluster2(ref.name,df,cluster_cols, c1, c2)
+            if not c.outlier:
+                new_clusters.append(c)
     print(new_clusters)
 
 class Cluster2:
@@ -1514,31 +1515,109 @@ class Cluster2:
     path = None
 
     def __init__(self,ref_name, df,cluster_cols, c1, c2):
-        cnums = [c1, c2]
+
         self.ref_name = ref_name
         self.c1, self.c2 = c1, c2
+        self.cnums = [self.c1, self.c2]
+        self.cluster_cols = cluster_cols
+        self.outlier = False
+        if self.c1 == -1 or self.c2 == -1:
+            self.outlier = True
         self.id = "{}-{}-{}".format(self.ref_name, self.c1, self.c2)
-        self.subset = df.query(" & ".join(["{} == {}".format(cluster_cols[n], cnums[n]) for n in range(len(cnums))]), inplace=False)
-        print(self.subset)
-        self.pickle()
+        self.subset = df.query(" & ".join(["{} == {}".format(self.cluster_cols[n], self.cnums[n]) for n in range(len(self.cnums))]), inplace=False)
+        self.ndimers = len(self.subset)
+        #print(self.subset)
+        if not self.outlier:
+            self.process_cluster()
+            self.pickle()
 
     def __repr__(self):
-        return "<Cluster:{} {}-{} /N={}>". format(self.ref_name, self.c1, self.c2, len(self.subset))
+        return "<Cluster:{} {}-{} /N={}>". format(self.ref_name, self.c1, self.c2, self.ndimers)
+
+    def process_cluster(self, matrix=True, plot=True, gif=True, show=False):
+        if matrix:
+            self.matrix = self.get_matrix(threshold=10)
+        if plot:
+            self.plot_path, self.gif_path = self.get_plot(show=show)
+
+    def get_matrix(self, threshold):
+        from imports import load_single_pdb
+        print("Generating cluster matrix")
+        matrix = None
+        progress = ProgressBar(len(self.subset), silent=True)
+        for point in self.subset.itertuples():
+            dimer = load_single_pdb(point.id, pickle_folder=local.dimers, first_only=True, quiet=True)
+            if matrix is None:
+                matrix = dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not point.is1to2)
+            else:
+                matrix = np.add(matrix, dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not point.is1to2))
+
+            progress.add(info=point.id)
+        return matrix
+
+    def get_plot(self, gif=True, id_labels=False, save=True, show=False):
+        import matplotlib.pyplot as plt
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        print("Plotting cluster angles")
+        progress = ProgressBar(len(self.subset), silent=True)
+        for point in self.subset.itertuples():
+
+            cl1 = point.__getattribute__(self.cluster_cols[0])
+            cl2 = point.__getattribute__(self.cluster_cols[1])
+            cols = []
+            for cl in (cl1, cl2):
+                if cl == -1:
+                    cols.append("black")
+                else:
+                    cols.append("C" + str(cl))
+            ax.scatter(point.a0, point.a1, point.a2, c=cols[0], edgecolors=cols[1])
+            if id_labels:
+                ax.text(point.a0, point.a1, point.a2, point.id)
+            progress.add(info=point.id)
+        ax_labels = ["0", "1", "2"]
+        ax.set_xlabel(ax_labels[0])
+        ax.set_ylabel(ax_labels[1])
+        ax.set_zlabel(ax_labels[2])
+        ax.set_xlim(0, 180)
+        ax.set_ylim(0, 180)
+        ax.set_zlim(0, 180)
+        title = "CLUSTER_{}".format(self.id)
+        ax.set_title(title + " N={}".format(self.ndimers))
+
+        fig_savepath = None
+        gif_savepath = None
+        if save:
+            root["dihedral_figs"] = "images/dihedral_figs"
+            fig_savepath = os.path.join(root.dihedral_figs, title + ".png")
+            plt.savefig(fig_savepath)
+        if gif:
+            root["dihedral_gifs"] = "images/dihedral_gifs"
+            gif_savepath = mpl_to_gif(fig, ax, name=title, folder=root.dihedral_gifs)
+        if show:
+            plt.show(block = vars.block)
+        if fig_savepath is None:
+            try:
+                fig_savepath = self.plot_path
+            except:
+                pass
+        if gif_savepath is None:
+            try:
+                gif_savepath = self.gif_path
+            except:
+                pass
+        return fig_savepath, gif_savepath
 
 
 
     def pickle(self):
         import pickle
         local["pickles"] = "pickles"
-        # print(local.pickles, self.pickle_folder)
         pickle_folder = os.path.join(local.pickles, self.pickle_folder)
-        # print(pickle_folder)
-
         os.makedirs(pickle_folder, exist_ok=True)
         local[self.pickle_folder] = "pickles/{}".format(self.pickle_folder)
         file_name = "{}{}".format(self.id, self.pickle_extension)
         self.pickle_path = os.path.join(pickle_folder, file_name)
-        # print(self.pickle_path)
         with open(self.pickle_path, 'wb') as f:
             pickle.dump(self, f)
 

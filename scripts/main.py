@@ -241,7 +241,7 @@ def main(PROCESS_ALL = False,
         for n, file in enumerate(sorted(os.listdir(cluster2_folder))):
 
             if "--1" in file:
-                continue
+                pass
             if ONLY_GR and "GR" not in file:
                 continue
             ref_name = file.split("-")[0]
