@@ -1,6 +1,5 @@
-import os
+import os, sys
 
-from fontTools.unicodedata import block
 
 from utilities import *
 from Globals import root, local, vars
@@ -24,12 +23,12 @@ class Cluster:
         return f"Cluster({self.n}, {self.name})"
 
 
-def get_clusters(df, column, ref_name):
+def get_clusters(df, column, ref_name, **kwargs):
     #df = pd.read_csv(df_path)
     clusters = []
     for c in set(df[column]):
         subset = df[df[column] == c]
-        clusters.append(Cluster(ref_name, subset, c, column))
+        clusters.append(Cluster(ref_name, subset, c, column, **kwargs))
     return clusters
 
 
@@ -1004,7 +1003,7 @@ def quick_cluster(coords, n_clusters=3, method ="MeanShift",bandwidth = None):
 
 
     model.fit(coords)
-    print(model.labels_)
+    print2("Clusters:", [int(l) for l in set(model.labels_)])
     return model.labels_
 
 
@@ -1134,76 +1133,566 @@ def cluster_by_face(reference, FORCE_ALL=False, DIMENSIONS=3, n_clusters = 4, mi
     return
 
 
+def generate_dihedrals_df(dimer_list = None, force = False):
+    sprint("Generating dihedrals dataframe")
+    root["clustering2"] = "dataframes/clustering2"
+    root["dihedrals"] = "dataframes/clustering2/dihedrals"
+    if force or len(os.listdir(root.dihedrals)) == 0:
+        from imports import load_single_pdb
+        if dimer_list is None:
+            dimer_list = os.listdir(local.dimers)
+        dimer_list = sorted(dimer_list)
+        progress = ProgressBar(len(dimer_list))
+        dataframes = {}
+        for d in dimer_list:
+            dimers = load_single_pdb(d, pickle_folder=local.dimers, quiet=True)
+            for dimer in dimers:
+
+                if dimer.best_fit is None or dimer.best_fit =="Missmatch":
+                    progress.add(info=dimer.id)
+                    continue
+                chains = [dimer.monomer1.chain, dimer.monomer2.chain]
+                dihedrals_1to2 = dimer.get_dihedrals(reverse=False)
+                dihedrals_2to1 = dimer.get_dihedrals(reverse=True)
+
+                if dimer.best_fit in dataframes.keys():
+                    dataframes[dimer.best_fit].append([dimer.id, True] + chains + dihedrals_1to2 + dihedrals_2to1[3:-1])
+                    dataframes[dimer.best_fit].append([dimer.id, False] + chains + dihedrals_2to1 + dihedrals_1to2[3:-1])
+                else:
+                    dataframes[dimer.best_fit] = [[dimer.id, True] + chains + dihedrals_1to2 + dihedrals_2to1[3:-1]]
+                    dataframes[dimer.best_fit] = [[dimer.id, False] + chains + dihedrals_2to1 + dihedrals_1to2[3:-1]]
+
+                progress.add(info=dimer.id)
+        for key in dataframes.keys():
+            print(key)
+            print(dataframes[key])
+            df = pd.DataFrame(columns = ["id", "is1to2", "mon1", "mon2", "d0", "d1", "d2", "a0", "a1", "a2", "d", "b0", "b1", "b2",], data = dataframes[key])
+            print(df)
+            df_path = os.path.join(root.dihedrals, key + ".csv")
+            df.to_csv(df_path)
 
 
-if __name__ == "__main__":
+def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = None, subset=None, include_all=True, save=True,
+                   label_col=None, only_first=None, heatmap=False, hm_threshold = 10, outer_ids_complete = None,
+                   gif = False, snapshot=False, first_matrix_only = True, chainbows = False, get_matrix = False):
+    print1("plotting dihedrals, heatmap={}, GIF={}, snapshot={}".format(heatmap, gif, snapshot))
+    print2(path)
+    from matplotlib import  pyplot as plt
+    from imports import load_single_pdb
+    complete_df = pd.read_csv(path)
+
+    name = os.path.basename(path).split(".")[0]
+
+    r = []
+
+    if subset_col is not None:
+        assert subset_col in complete_df.columns
+        subsets = subset
+        if subsets is None:
+            subsets = list(set(complete_df[subset_col].values))
+        if type(subsets) is not list:
+            subsets = [subsets]
+        if include_all:
+            subsets = ["all"] + subsets
+    else:
+        subsets = ["all"]
+
+    print2("Subsets:", subsets)
+    for subset in subsets:
+        print3(subset)
+        if subset == "all":
+            df = complete_df
+        else:
+            df = complete_df[complete_df[subset_col] == subset]
+        hm = None
+
+        if only_first is not None:
+            df = df.iloc[:only_first]
+        print(df)
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        print4("Dihedral plotting, heatmap = {}".format(heatmap))
+        progress = ProgressBar(len(df), silent=True)
+        for point in df.itertuples():
+            if clusters is None:
+                ax.scatter(point.a0, point.a1, point.a2)
+            else:
+                cl = point.__getattribute__(clusters)
+                if cl == -1:
+                    col = "black"
+                else:
+                    col = "C"+str(cl)
+                ax.scatter(point.a0, point.a1, point.a2, c=col)
+                if heatmap or get_matrix:
+                    dimer = load_single_pdb(point.id, pickle_folder=local.dimers, first_only=True, quiet=True)
+                    if hm is None:
+                        hm = dimer.contact_surface.get_contact_map(threshold=hm_threshold, transposed=not point.is1to2)
+                    else:
+                        hm = np.add(hm, dimer.contact_surface.get_contact_map(threshold=hm_threshold, transposed=not point.is1to2))
+            if label_col is not None:
+                ax.text(point.a0, point.a1, point.a2, point.__getattribute__(label_col))
+            progress.add(info=point.id)
+        ax.set_xlabel(ax_labels[0])
+        ax.set_ylabel(ax_labels[1])
+        ax.set_zlabel(ax_labels[2])
+        ax.set_xlim(0,180)
+        ax.set_ylim(0,180)
+        ax.set_zlim(0,180)
+        title = "{}-{}".format(name,subset)
+        ax.set_title(title+" N={}".format(len(df)))
+
+        if save:
+            root["dihedral_figs"] = "images/dihedral_figs"
+            savepath = os.path.join(root.dihedral_figs, title + ".png")
+            plt.savefig(savepath)
+        if gif:
+            root["dihedral_gifs"] = "images/dihedral_gifs"
+            mpl_to_gif(fig, ax, name=title, folder= root.dihedral_gifs)
+        if heatmap:
+            root["heatmap_figs"] = "images/heatmap_figs"
+            hm_title = title + "_heatmap"
+            from faces import ContactSurface
+            matrix, oneDmatrix1, oneDmatrix2 = ContactSurface.get_heat_map(hm, title=hm_title, normalize=len(df), folder=root.heatmap_figs,
+                                        percentage=True, outer_ids_complete=outer_ids_complete)
+            r.append([matrix, oneDmatrix1, oneDmatrix2])
+        else:
+            r.append([None,None,None])
+        if snapshot:
+            if heatmap and False:
+                cluster_snapshot(file=path,clusters=["all",subset], matrix1=oneDmatrix1, matrix2 = oneDmatrix2)
+            else:
+                cluster_snapshot(file=path,clusters=["all",subset], chainbows =chainbows )
+        if vars.block:
+            plt.show(block = vars.block)
+        plt.close()
+
+    if first_matrix_only:
+        return r[0]
+    else:
+        return r
 
 
 
 
-    import setup
-    from Globals import root, local, vars
-    from imports import load_references, load_single_pdb
-    from dataframes import save_dfs
+
+def cluster_snapshot(file, clusters, color_clusters=False, chainbows = False, snapshot = True, matrix1=None, matrix2=None):
+    from imports import load_single_pdb, load_references
+    from superpose import superpose_many_chains
 
 
-'''    #### CONTACT LENGTH TESTING ########################################################################################
-    vars["references"] = load_references()
+    sprint("Cluster snapshot")
 
-    molecule_folder = local.many_pdbs
-    molecule_list = sorted(os.listdir(molecule_folder))
-    # print(len(vars.do_only), vars.do_only)
-    if len(vars.do_only) > 0:
-        molecule_list = [f for f in molecule_list if any([s in f for s in vars.do_only])]
-    # [print(m) for m in sorted(molecule_list)]
-    print1("Molecule list obtained:", len(molecule_list), "molecules")
+    cluster_folders = ["angle_clusters2"]
+    cluster_cols = ["angle_cluster2"]
+
+    options = []
+    sele = []
+    fname = file.split(".")[0]
+    cname = fname.split("-")[-1]
+    for n, (cluster_col, cluster_folder) in enumerate(zip(cluster_cols, cluster_folders)):
+        dihedrals_path = os.path.join(root[cluster_folders[n]], fname + ".csv")
+        df = pd.read_csv(file, index_col=0)
+        # print(df)
+        options.append([int(a) for a in sorted(set(df[cluster_cols[n]].values))])
+        s = clusters[n]
+        if s == "all":
+            sele.append(options[n])
+        else:
+            sele.append([s])
+        df.query(" | ".join(["{} == {}".format(cluster_col, n) for n in sele]), inplace=True)
+        # print(df.to_string())
+        fname = fname + "-{}".format(s)
+
+    # pymol_start(show=False)
+    print(file)
+    filename = os.path.basename(fname)
+    print(filename)
+    ref = load_references(identifier=filename.split("-")[0])[0]
+    print("Sele:", sele)
+    resids = [res.id[1] for res in ref.structure.get_residues()]
+
+    for c in sele[-1]:
+        if c == -1 or c == "-1":
+            continue
+        print("Cluster:", sele[:-1], c)
+        subset = df[df[cluster_cols[-1]] == c]
+        print(subset)
+        chains_to_align = {ref.name: (ref.path, ref.chain, True)}
+        for row in subset.itertuples():
+            dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)[0]
+            name = row.id + str(row.is1to2)
+            if row.is1to2:
+                chains_to_align[name] = (dimer.replaced_path, row.mon1, True)
+            else:
+                chains_to_align[name] = (dimer.replaced_path, row.mon2, False)
+        print(chains_to_align)
+        local["clusters"] = "clusters"
+        subcname = "{}-CLUSTER-{}-{}".format(ref.name,cname,c)
+        super_data = superpose_many_chains(chains_to_align, file_name=subcname+".pdb", save_folder=local.clusters)
+        print(super_data)
+
+        if snapshot:
+            local["snapshots"] = "snapshots"
+            from pyMol import pymol_start, pymol_load_path, pymol_colour, pymol_list_to_bfactors, pymol_save_snapshot, \
+                mpl_colours, mpl_ncolours, pymol_save_temp_session, pymol_open_session_terminal, pymol_split_states, \
+                pymol_orient, pymol_reinitialize, pymol_get_all_objects
+            pymol_reinitialize()
+            monster = pymol_load_path(super_data["out_path"], subcname)
+            pymol_split_states(monster)
+            pymol_orient()
+            if chainbows:
+                pymol_colour("chainbow", "(all)")
+                pymol_save_snapshot(subcname + "chainbows", folder=local.snapshots)
+            elif matrix1 is not None and matrix2 is not None:
+                for obj, value in zip(pymol_get_all_objects(), chains_to_align.values()):
+                    chain = value[1]
+                    sele1 = obj + " and (c. {})".format(chain)
+                    sele2 = obj + " and !(c. {})".format(chain)
+                    pymol_list_to_bfactors(val_list=matrix1, obj_name=sele1, resids=resids)
+                    pymol_list_to_bfactors(val_list=matrix2, obj_name=sele2, resids=resids)
+                pymol_colour("blue_yellow_red", "(all)", spectrum="b")
+                pymol_save_snapshot(subcname + "heat_map", folder=local.snapshots)
+            else:
+                pymol_colour(mpl_colours[c % mpl_ncolours], "(all)")
+                pymol_save_snapshot(subcname+"cluster_cols", folder=local.snapshots)
 
 
-    print(list(vars.clustering["contacts"].keys()))
-    progress = ProgressBar(len(molecule_list))
-    from surface import build_contact_arrays
-    for dist in [3,4,5,6,7,8]:
-        for m in molecule_list:
-            if "lock" in m:
-                sprint(".lock file detected:", m)
+
+            #session_path = pymol_save_temp_session()
+            #pymol_open_session_terminal(session_path)
+
+
+
+
+
+
+
+def cluster_snapshot_old(file, clusters, levels=None, color_clusters=False, chainbows = True):
+    from imports import load_single_pdb, load_references
+    from pyMol import pymol_start, pymol_load_path, pymol_colour,pymol_list_to_bfactors, pymol_align_chains, pymol_group, \
+        pymol_open_saved_cluster, pymol_get_all_objects, pymol_save_temp_session, pymol_save_cluster, pymol_open_session_terminal, \
+        colours,ncolours, pymol_reset, pymol_orient, pymol_save_snapshot, get_all_obj, pymol_disable, pymol_delete, \
+        pymol_command_in_new_process, pymol_reinitialize
+    sprint("Cluster snampshot")
+
+    cluster_folders = ["angle_clusters2"]
+    cluster_cols = ["angle_cluster2"]
+    if levels is not None:
+        l = levels -1
+        cluster_folders = cluster_folders[l:]
+        cluster_cols = cluster_cols[:l]
+
+
+    options = []
+    sele = []
+    fname = file.split(".")[0]
+    for n, (cluster_col, cluster_folder) in enumerate(zip(cluster_cols, cluster_folders)):
+        dihedrals_path = os.path.join(root[cluster_folders[n]], fname + ".csv")
+        df = pd.read_csv(file, index_col=0)
+        #print(df)
+        options.append([int(a) for a in sorted(set(df[cluster_cols[n]].values))])
+        s = clusters[n]
+        if s == "all":
+            sele.append(options[n])
+        else:
+            sele.append([s])
+        df.query(" | ".join(["{} == {}".format(cluster_col, n) for n in sele]), inplace=True)
+        #print(df.to_string())
+        fname = fname + "-{}".format(s)
+
+    #pymol_start(show=False)
+    print(file)
+    filename = os.path.basename(fname)
+    print(filename)
+    ref = load_references(identifier=filename.split("-")[0])[0]
+    pymol_load_path(ref.path, ref.name)
+    pymol_colour("chainbow", ref.name)
+    print("Sele:", sele)
+
+    for c in sele[-1]:
+        if c == -1 or c == "-1":
+            continue
+        if c != 1: #DeBUG
+            continue
+        print("##",get_all_obj())
+
+
+        print("Cluster:", sele[:-1], c)
+        subset = df[df[cluster_cols[-1]] == c]
+        print(subset)
+        chains_to_align = [[ref.name, ref.chain]]
+        for row in subset.itertuples():
+            dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)[0]
+            name = pymol_load_path(dimer.replaced_path, row.id + str(row.is1to2))
+            if row.is1to2:
+                chains_to_align.append([name, row.mon1])
+            else:
+                chains_to_align.append([name, row.mon2])
+            if chainbows:
+                pymol_colour("chainbow", name)
+            elif color_clusters:
+                c = int(row.__getattribute__(cluster_cols[-1]))
+                pymol_colour(colours[c % ncolours], name)
+                pymol_colour("chainbow", name)
+            else:
+                resids = [res.id[1] for res in dimer.monomer1.replaced.get_residues()]
+                sele1 = name + " and c. {}".format(dimer.monomer1.chain)
+                sele2 = name + " and c. {}".format(dimer.monomer2.chain)
+                list1 = [min(x) for x in dimer.contact_surface.d_s_matrix.T]
+                list2 = [min(x) for x in dimer.contact_surface.d_s_matrix]
+                pymol_list_to_bfactors(val_list=list1, obj_name=sele1, resids=resids)
+                pymol_list_to_bfactors(val_list=list2, obj_name=sele2, resids=resids)
+                pymol_colour("blue_yellow_red", name, spectrum="b")
+        print(chains_to_align)
+        print(get_all_obj())
+
+        pymol_align_chains(chains_to_align)
+        pymol_orient()
+        local["snapshots"] = "snapshots"
+        #session_path = pymol_save_temp_session()
+        #pymol_open_session_terminal(session_path)
+        pymol_save_snapshot(filename + "-{}".format(c), folder=local.snapshots)
+        print("hi")
+        for obj, _ in chains_to_align[1:]:
+            pymol_delete(obj)
+    pymol_delete()
+    collect_garbage()
+    pymol_reinitialize()
+    collect_garbage()
+    import time
+    time.sleep(10)
+
+
+
+
+
+
+def cluster_angles(dihedrals_path,
+                   bandwidth = None,
+                   angles=["a0", "a1", "a2"],
+                   cluster_name = "angle_cluster",
+                   folder="angle_clusters1",
+                   split_by=None,
+                   save_together = True):
+    sprint("Clustering angles")
+    print1("Name:", cluster_name)
+    print1("Folder:", folder)
+    print1("Angles:", angles)
+    dihedrals_df = pd.read_csv(dihedrals_path)
+    if split_by is not None:
+        subsets=[]
+        clusters = set(dihedrals_df[split_by].values)
+        for cluster in clusters:
+            print3("Cluster:", cluster)
+            subset_df = dihedrals_df[dihedrals_df[split_by] == cluster]
+            subset_df[cluster_name] = quick_cluster(subset_df[angles], bandwidth=bandwidth)
+            root[folder] = "dataframes/clustering2/{}".format(folder)
+            print(subset_df)
+            if save_together:
+                subsets.append(subset_df)
+            else:
+                subset_df.to_csv(os.path.join(root[folder], os.path.basename(dihedrals_path).split(".")[0]+"-"+str(cluster)+".csv"))
+        if save_together:
+            new_df = pd.concat(subsets, axis=0)
+            new_df.to_csv(os.path.join(root[folder], os.path.basename(dihedrals_path).split(".")[0]+".csv"))
+    else:
+        dihedrals_df[cluster_name] = quick_cluster(dihedrals_df[angles], bandwidth=bandwidth)
+        root[folder] = "dataframes/clustering2/{}".format(folder)
+        print(dihedrals_df)
+        dihedrals_df.to_csv(os.path.join(root[folder], os.path.basename(dihedrals_path).split(".")[0]+".csv"))
+    return root[folder]
+
+
+def create_clusters(df_path, ref, include_all=True, **kwargs):
+
+    df = pd.read_csv(df_path, index_col=0)
+    cluster_cols = ["angle_cluster1", "angle_cluster2"]
+    cluster1list = list(set(df[cluster_cols[0]]))
+
+    print(df)
+    print(cluster1list)
+    new_clusters = []
+    if include_all:
+        new_clusters.append(Cluster2(ref,df,cluster_cols, is_all=True, **kwargs))
+    for c1 in cluster1list:
+        subset = df[df[cluster_cols[0]] == c1]
+        cluster2list = list(set(subset[cluster_cols[1]]))
+        for c2 in cluster2list:
+            c = Cluster2(ref,df,cluster_cols, c1=c1, c2=c2, **kwargs)
+            if not c.outlier:
+                new_clusters.append(c)
+    print(new_clusters)
+
+
+class Cluster2:
+    pickle_extension = '.cluster'
+    pickle_folder = "cluster_pickles"
+    name = "ClusterObject"
+    path = None
+
+    def __init__(self,ref, df,cluster_cols, c1=None, c2=None, is_all=False, **kwargs):
+
+        self.ref_name = ref.name
+        self.outer_ids_complete = ref.get_outer_res_list(complete_list=True)
+        self.cluster_cols = cluster_cols
+        self.outlier = False
+        if not is_all:
+            assert c1 is not None and c2 is not None
+            self.is_all = False
+            self.c1, self.c2 = c1, c2
+            self.cnums = [self.c1, self.c2]
+            if self.c1 == -1 or self.c2 == -1:
+                self.outlier = True
+            print(self.c1, self.c2, self.cnums)
+            print(df)
+            print(cluster_cols)
+            print(" & ".join(["{} == {}".format(self.cluster_cols[n], self.cnums[n]) for n in range(len(self.cnums))]))
+            self.subset = df.query(" & ".join(["{} == {}".format(self.cluster_cols[n], self.cnums[n]) for n in range(len(self.cnums))]), inplace=False)
+        else:
+            self.c1, self.c2 = "all", "all"
+            self.is_all = True
+            self.subset = df.copy()
+        self.id = "{}-{}-{}".format(self.ref_name, self.c1, self.c2)
+        self.ndimers = len(self.subset)
+        print(self.id)
+        print(self.subset)
+        if len(self.subset) == 0:
+            quit()
+
+
+        self.matrix = None
+        self.oneDmatrix1 = None
+        self.oneDmatrix2 = None
+        self.plot_path = None
+        self.gif_path = None
+        self.comA = None
+        self.comB = None
+        self.stdA = None
+        self.stdB = None
+
+
+        if not self.outlier:
+            self.process_cluster(**kwargs)
+            self.pickle()
+
+    def __repr__(self):
+        return "<Cluster:{} {}-{} /N={}>". format(self.ref_name, self.c1, self.c2, self.ndimers)
+
+    def process_cluster(self, matrix=True, plot=True, gif=True, show=False, **kwargs):
+        print1("Processing matrix={}, plot={}, gif={}, show={}".format(matrix, plot, gif, show))
+        if not self.is_all:
+            self.get_com()
+        if matrix:
+            self.matrix, self.oneDmatrix1, self.oneDmatrix2 = self.get_matrix(threshold=10)
+        if plot:
+            self.plot_path, self.gif_path = self.get_plot(self.subset, self.cluster_cols, self.id,
+                                                          coms=(self.comA, self.comB),
+                                                          stds=(self.stdA, self.stdB),
+                                                          show=show, gif=gif)
+
+
+
+    def get_com(self):
+        from maths import find_com, distance
+        anglesA = np.array(self.subset[["a0", "a1", "a2"]].values)
+        anglesB = np.array(self.subset[["b0", "b1", "b2"]].values)
+        self.comA = find_com(anglesA)
+        self.comB = find_com(anglesB)
+        distancesA = [distance(point, self.comA) for point in anglesA]
+        distancesB = [distance(point, self.comB) for point in anglesB]
+        self.stdA = np.std(distancesA)
+        self.stdB = np.std(distancesB)
+        print(self.stdA, self.comA)
+        print(self.stdB, self.comB)
+
+
+
+    def get_matrix(self, threshold):
+        from imports import load_single_pdb
+        print2("Generating cluster matrix")
+        matrix = None
+        progress = ProgressBar(len(self.subset), silent=True)
+        for point in self.subset.itertuples():
+            dimer = load_single_pdb(point.id, pickle_folder=local.dimers, first_only=True, quiet=True)
+            if matrix is None:
+                matrix = dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not point.is1to2)
+            else:
+                matrix = np.add(matrix, dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not point.is1to2))
+            progress.add(info=point.id)
+
+        oneDmatrix1 = [sum(i)/ len(self.outer_ids_complete) for i in matrix]
+        oneDmatrix2 = [sum(i) / len(self.outer_ids_complete) for i in matrix.T]
+        return matrix, oneDmatrix1, oneDmatrix2
+
+    @staticmethod
+    def get_plot(subset, cluster_cols, id, coms=(None,None),stds=(None,None), gif=True, id_labels=False, save=True, show=False, show_outliers=False):
+        import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(20,10))
+        ax1 = fig.add_subplot(121, projection='3d')
+        ax2 = fig.add_subplot(122, projection='3d')
+        axes = ax1, ax2
+        print2("Plotting cluster angles")
+        progress = ProgressBar(len(subset), silent=True)
+        for point in subset.itertuples():
+
+            cl1 = point.__getattribute__(cluster_cols[0])
+            cl2 = point.__getattribute__(cluster_cols[1])
+            cols = []
+            for cl in (cl1, cl2):
+                if cl == -1:
+                    cols.append("black")
+                else:
+                    cols.append("C" + str(cl))
+            if not show_outliers and "black" in cols:
                 continue
-            filename = m.split(".")[0]
-            sprint(filename)
-            molecules = load_single_pdb(filename, local.molecules)
-            for molecule in molecules:
-                dimers = molecule.dimers
-                for dimer in dimers:
-                    print1(dimer)
-                    if dimer.incomplete:
-                        continue
-                    build_contact_arrays(dimer, sasa=False, force=True, max_contact_length=dist)
-                    #dimer.pickle()
-                progress.add(info=molecule.id)
-        save_dfs()
+            ax1.scatter(point.a0, point.a1, point.a2, c=cols[1], edgecolors=cols[0], s=50, linewidths=2)
+            ax2.scatter(point.b0, point.b1, point.b2, c=cols[1], edgecolors=cols[0], s=50, linewidths=2)
+            if id_labels:
+                ax1.text(point.a0, point.a1, point.a2, point.id)
+                ax2.text(point.a0, point.a1, point.a2, point.id)
+            progress.add(info=point.id)
+        if None not in coms:
+            ax1.scatter(coms[0][0], coms[0][1], coms[0][2], c=cols[0], s=stds[0]*180, linewidths=2, alpha=0.3)
+            ax2.scatter(coms[1][0],coms[1][1], coms[1][2], c=cols[1], s=stds[1]*180, linewidths=2, alpha=0.3)
+        ax_labels = ["0", "1", "2"]
+        title = "CLUSTER_{}".format(id)
+        for ax, l in zip(axes, ("a", "b")):
+            ax.set_xlabel(l+ax_labels[0])
+            ax.set_ylabel(l+ax_labels[1])
+            ax.set_zlabel(l+ax_labels[2])
+            ax.set_xlim(0, 180)
+            ax.set_ylim(0, 180)
+            ax.set_zlim(0, 180)
+            ax.set_title(l+" "+title + " N={}".format(len(subset)))
 
-        for reference in vars.references:
-            cluster(reference, score_id="under_{}_A_".format(dist))
-    ####################################################################################################################'''
+        fig_savepath = None
+        gif_savepath = None
+        if save:
+            local["dihedral_figs"] = "images/dihedral_figs"
+            fig_savepath = os.path.join(local.dihedral_figs, title + ".png")
+            plt.savefig(fig_savepath)
+        if gif:
+            local["dihedral_gifs"] = "images/dihedral_gifs"
+            gif_savepath = mpl_to_gif(fig, ax, name=title, folder=local.dihedral_gifs)
+        if show:
+            plt.show(block = vars.block)
+        return fig_savepath, gif_savepath
 
-'''#### DIMENSION TESTING ###
-    dimensions = [3,4,5,6,7,8,9,10]
-    for n in dimensions:
-        clustering(FORCE_SM = False,
-                   FORCE_CC = True,
-                   FORCE_CLUSTER = True,
-                   FORCE_PLOT=False,
-                   DIMENSIONS=n,
-                   ONLY_GR = True
-                   )
-    #### DIMENSION TESTING ###'''
 
-# OLD
-'''clustering(FORCE_ALL=False,
-           FORCE_SM=False,
-           FORCE_CC=True,
-           FORCE_CLUSTER=True,
-           FORCE_PLOT=True,
-           DIMENSIONS=5,
-           )'''
-#from github import automatic_push_to_branch
-#automatic_push_to_branch(target="auto")
+
+    def pickle(self):
+        import pickle
+        local["pickles"] = "pickles"
+        pickle_folder = os.path.join(local.pickles, self.pickle_folder)
+        os.makedirs(pickle_folder, exist_ok=True)
+        local[self.pickle_folder] = "pickles/{}".format(self.pickle_folder)
+        file_name = "{}{}".format(self.id, self.pickle_extension)
+        self.pickle_path = os.path.join(pickle_folder, file_name)
+        with open(self.pickle_path, 'wb') as f:
+            pickle.dump(self, f)
+
+
+
+
+def cluster_redundancy():
+    pass

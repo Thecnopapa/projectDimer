@@ -1,6 +1,6 @@
 import os
 
-
+from pyMol import pymol_colour
 from surface import get_dimer_sasa, get_monomer_sasa
 from symmetries import entity_to_orth, print_all_coords, convertFromFracToOrth
 from utilities import *
@@ -9,6 +9,7 @@ from Bio.PDB import PDBParser, MMCIFParser, PDBIO, StructureBuilder, Structure, 
 import numpy as np
 import pandas as pd
 import string
+from maths import *
 
 
 
@@ -64,9 +65,12 @@ class BioObject:
 
 
     def __repr__(self):
-        return "{} ({} at {})".format(self.id, self.__class__.__name__, id(self))
+        if "best_fit" in self.__dict__:
+            return "{} (Best Fit: {})".format(self.id, self.best_fit)
+        else:
+            return "{} ({} at {})".format(self.id, self.__class__.__name__, id(self))
 
-    def parse_structure(self, parse_original = False):
+    def parse_structure(self, parse_original = False, calculate_sasa = False, n_points=100, radius=3):
         if self.path is None or parse_original:
             self.path = self.o_path
         try:
@@ -87,6 +91,7 @@ class BioObject:
             except:
                 print2("Could not parse redownloaded {}".format(self.path))
             return False
+        self.header = self.structure.header
         if len(self.structure.get_list()) >0: # TODO: Should add to failed df <<<
             for model in self.structure.get_list()[1:]:
                 self.structure.__delitem__(model.id)
@@ -96,13 +101,20 @@ class BioObject:
                         chain.id = string.ascii_uppercase.index(chain.id)
                     except:
                         chain.id = [letter for letter in string.ascii_uppercase if letter not in [c.id for c in self.structure.get_chains()]][0]
+                if calculate_sasa:
+                    from Bio.PDB.SASA import ShrakeRupley
+                    sr = ShrakeRupley(n_points=n_points, probe_radius=radius)
+                    sr.compute(chain, level="R")
+                    self.sasa_info = dict(n_points=n_points, probe_radius=radius)
                 for residue in chain.get_list():
                     if residue.id[0] != " ":
                         chain.__delitem__(residue.id)
                         continue
                     for atom in residue.get_list():
-                        if atom.name != "CA":
+                        if atom.name != "CA" or atom.bfactor > 90:
                             residue.__delitem__(atom.id)
+                    if len(residue.get_list()) == 0:
+                        chain.__delitem__(residue.id)
         return True
 
 
@@ -310,7 +322,7 @@ class Monomer(BioObject):
         from maths import find_com
         from faces import get_pca
         self.com = find_com(self.replaced.get_atoms())
-        self.pca = dict(pca=get_pca(self.replaced, com=self.com),
+        self.pca = dict(pca=get_pca(self.replaced, com=self.com, closer_to="N"),
                         com=self.com,
                         chain=self.chain)
         return self.pca
@@ -574,11 +586,11 @@ class Dimer(BioObject):
         self.position = monomer2.position
         self.op_n = monomer2.op_n
 
-
         self.name = monomer1.name
-
         self.extra_id = monomer2.extra_id
         self.id = "{}_{}{}{}".format(self.name, monomer1.chain, monomer2.chain, self.extra_id, sasa = False)
+        print4("Generating dimer:", self.id)
+
         self.incomplete = True
         self.failed_entries = []
         self.contacts_sasa = []
@@ -600,9 +612,21 @@ class Dimer(BioObject):
         self.pca1 = None
         self.pca2 = None
 
+        self.outer_ids = None
+        self.contact_surface = None
+
+
         self.process(sasa = sasa)
 
-    def process(self, sasa = False):
+    def get_contact_surface(self):
+        print5("Calculating contact surface")
+        from faces import ContactSurface
+        if self.best_fit is not None and self.best_fit != "Missmatch":
+            self.outer_ids = [ref for ref in vars.references if ref.name == self.best_fit][0].outer_ids
+            self.contact_surface = ContactSurface(self.monomer1.replaced, self.monomer2.replaced, outer_ids=self.outer_ids)
+
+    def process(self, sasa = False, pickle=True):
+        print4("Processing dimer:", self)
         self.validate()
         if self.incomplete:
             return
@@ -615,13 +639,18 @@ class Dimer(BioObject):
         self.pca1 = self.monomer1.get_monomer_pca()
         self.pca2 = self.monomer2.get_monomer_pca()
         #print(self.com)
-        self.pickle()
+        self.get_contact_surface()
+        if pickle:
+            self.pickle()
 
-    def reprocess(self, by_com = False):
-        self.process()
-        self.get_contacts(force = True)
-        self.get_faces(by_com=by_com)
-        self.pickle()
+    def reprocess(self, by_com = False, contacts=True, faces=True, pickle=True):
+        self.process(pickle=pickle)
+        if contacts:
+            self.get_contacts(force = True)
+        if faces:
+            self.get_faces(by_com=by_com)
+        if pickle:
+            self.pickle()
 
 
 
@@ -644,6 +673,57 @@ class Dimer(BioObject):
             if contact.is_contact:
                 self.contacts.append(contact)
                 #print(contact)
+
+    def get_dihedrals(self, reverse = False):
+        #from matplotlib import pyplot as plt
+        #fig = plt.figure()
+        #ax = fig.add_subplot(111, projection='3d')
+
+        if not reverse:
+            pca_data1 = self.pca1
+            pca_data2 = self.pca2
+        else:
+            pca_data1 = self.pca2
+            pca_data2 = self.pca1
+
+        pca1 = pca_data1["pca"]
+        pca2 = pca_data2["pca"]
+
+        com1 = pca_data1["com"]
+        com2 = pca_data2["com"]
+
+        c0 = add(com1, pca1.components_[0]), add(com2, pca2.components_[0])
+        c1 = add(com1, pca1.components_[1]), add(com2, pca2.components_[1])
+        c2 = add(com1, pca1.components_[2]), add(com2, pca2.components_[2])
+
+        d = vector(com1, com2)
+        dist = length(d)
+        #ax.scatter(0,0,0, color = 'yellow')
+        #ax.scatter(*com1, color = 'purple')
+        d0 = dihedral_angle2(c0[0], com1, com2, c0[1])
+        d1 = dihedral_angle2(c1[0], com1, com2, c1[1])
+        d2 = dihedral_angle2(c2[0], com1, com2, c2[1])
+
+
+        #ax.plot(*points_to_line(com1, com2), color="black")
+        #ax.plot(*points_to_line(com1, c0[0]), color = "red")
+        #ax.plot(*points_to_line(com1, c1[0]), color='green')
+        #ax.plot(*points_to_line(com1, c2[0]), color='blue')
+
+        a0 = angle_3_points(c0[0], com1, com2)
+        a1 = angle_3_points(c1[0], com1, com2)
+        a2 = angle_3_points(c2[0], com1, com2)
+
+        #print(d, c0[0], c1[0], c2[0])
+        #print(a0)
+        #print(a1)
+        #print(a2)
+
+        #ax.set_aspect('equal')
+        #plt.show()
+        #quit()
+        return [d0, d1, d2, a0, a1, a2, dist]
+
 
     def _count_contacts(self, backup1=False, backup2=False, use_backups = False):
         print3("Counting Contacts, backup:", backup1, backup2)
@@ -779,6 +859,7 @@ class Dimer(BioObject):
         else:
             self.best_fit = "Missmatch"
         self.best_match = None
+        print5("Best fit:", self.best_fit)
 
         if self.monomer1.super_path is None or self.monomer2.super_path is None:
             if "failed_df" in vars:
@@ -898,7 +979,8 @@ class Reference(Monomer):
     def __init__(self, path):
 
         self.o_path = path
-        self.parse_structure(parse_original=True)
+        self.parse_structure(parse_original=True, calculate_sasa=True, n_points=200, radius=6)
+        self.outer_ids = self.get_outer_res_list()
         self.name = os.path.basename(path).split(".")[0]
         self.best_fit = self.name
         self.structure = [chain for chain in self.structure.get_chains()][0]
@@ -923,7 +1005,7 @@ class Reference(Monomer):
         self.com = find_com(self.structure.get_atoms())
         if self.name == "GR":
             self.face_coms = get_face_coms(self)
-        self.pca = dict(pca=get_pca(self.structure, com=self.com),
+        self.pca = dict(pca=get_pca(self.structure, com=self.com, closer_to="N"),
                         com=self.com,
                         chain=self.chain)
 
@@ -932,3 +1014,30 @@ class Reference(Monomer):
         from faces import GR_dict
         self.face_dict = GR_dict.copy()
 
+    def get_outer_res_list(self, threshold=10, inner=False, id_only=True, complete_list = False):
+        res_list = []
+        """[print(res.sasa) for res in self.structure.get_residues()]
+        for res in self.structure.get_residues():
+            res.get_list()[0].bfactor = res.sasa
+        from pyMol import pymol_temp_show, pymol_start, pymol_save_temp_session, pymol_open_session_terminal
+        #pymol_start(show=False)
+        pymol_temp_show(self.structure)
+        pymol_colour("rainbow", spectrum="b")
+        session = pymol_save_temp_session()
+        pymol_open_session_terminal(session)
+        quit()"""
+
+        for residue in self.structure.get_residues():
+            is_outer = False
+            if residue.sasa >= threshold:
+                is_outer = True
+            if inner:
+                is_outer = not is_outer
+            if is_outer:
+                if id_only:
+                    res_list.append(residue.id[1])
+                else:
+                    res_list.append(residue)
+            elif complete_list:
+                res_list.append(None)
+        return res_list

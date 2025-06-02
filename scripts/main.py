@@ -32,6 +32,7 @@ def main(PROCESS_ALL = False,
          BALL_SIZE = 1.6,
          VERBOSE = False,
          QUIET = False,
+         REPROCESS_DIMERS = False,
          SPLIT_FACES = True,
          FORCE_SPLIT = False,
          CLUSTER_BY_PCA = True,
@@ -45,7 +46,11 @@ def main(PROCESS_ALL = False,
          CLUSTERING_METHOD = "KMeans",
          N_SAMPLE_MULTIPLIER = 0.5,
          QUANTILE = 0.1,
-         BANDWIDTH = 0.1
+         BANDWIDTH = 0.1,
+         HEATMAPS =True,
+         GIFS = True,
+         SNAPSHOTS = True,
+         CHAINBOWS = False,
          ):
 
 
@@ -60,14 +65,14 @@ def main(PROCESS_ALL = False,
     enable_garbage_collector() # Idk if it works
 
     from dataframes import save_dfs, create_dfs, create_clustering_dfs
-    from imports import pickle, export, download_pdbs, load_references, load_single_pdb
+    from imports import pickle, export, download_pdbs, load_references, load_single_pdb, load_list_1by1
 
     sprint("Blacklist:", vars.blacklist)
 
     # Download large dataset
     sprint("Downloading large dataset")
     if "many_pdbs" not in local.list() and LARGE_DATASET:
-        download_pdbs(os.path.join(root.pdb_lists,"list_1500"), "many_pdbs", terminal = True)
+        download_pdbs(os.path.join(root.pdb_lists,"rcsb_pdb_ids_20250524034011.txt"), "many_pdbs", terminal = True)
     print1("Large dataset downloaded")
 
 
@@ -128,9 +133,21 @@ def main(PROCESS_ALL = False,
 
     eprint("SYMMETRY & DIMER GENERATION")
     ###### DIMER ANALYSIS ##############################################################################################
-    tprint("DIMER ANALYSIS")
+    tprint("DIMER ANALYSIS v2")
 
-    if not SKIP_DIMERS or PROCESS_ALL or (SPLIT_FACES_ANYWAY and FORCE_SPLIT):
+    if not SKIP_DIMERS and not PROCESS_ALL:
+            for dimer in load_list_1by1(pickle_folder=local.dimers):
+                dimer.reprocess(contacts=False, faces=False)
+
+
+
+    eprint("DIMER ANALYSIS v2")
+
+
+
+    """tprint("DIMER ANALYSIS")
+
+    if not SKIP_DIMERS or REPROCESS_DIMERS or PROCESS_ALL or (SPLIT_FACES_ANYWAY and FORCE_SPLIT):
         #print(list(vars.clustering["contacts"].keys()))
         progress = ProgressBar(len(molecule_list))
         from surface import build_contact_arrays
@@ -147,6 +164,8 @@ def main(PROCESS_ALL = False,
                 dimers = molecule.dimers
                 for dimer in dimers:
                     print1(dimer)
+                    if REPROCESS_DIMERS:
+                        dimer.process()
                     if dimer.incomplete:
                         continue
                     dimer.get_contacts(max_distance=CONTACT_DISTANCE_CLUSTERING, force= FORCE_CONTACTS)
@@ -174,12 +193,85 @@ def main(PROCESS_ALL = False,
 
 
 
-    eprint("DIMER ANALYSIS")
+    eprint("DIMER ANALYSIS")"""
     ###### CLUSTERING ##################################################################################################
-    tprint("CLUSTERING")
+    tprint("CLUSTERING v2")
 
     if not SKIP_CLUSTERING or PROCESS_ALL and False:
-        from clustering import compare_contacts, get_clusters, cluster, split_by_faces, cluster_by_face
+
+        from clustering import generate_dihedrals_df, plot_dihedrals, cluster_angles, create_clusters, Cluster2
+        generate_dihedrals_df(force = False or PROCESS_ALL)
+
+        for file in sorted(os.listdir(root.dihedrals)):
+            dihedrals_path = os.path.join(root.dihedrals, file)
+            cluster1_folder = cluster_angles(dihedrals_path,
+                                             bandwidth=40,
+                                             angles=["a0", "a1", "a2"],
+                                             cluster_name="angle_cluster1",
+                                             folder="angle_clusters1")
+
+
+        for file in sorted(os.listdir(cluster1_folder)):
+            if ONLY_GR and "GR" not in file:
+                continue
+            dihedrals_path = os.path.join(cluster1_folder, file)
+
+
+
+        for file in sorted(os.listdir(cluster1_folder)):
+            if ONLY_GR and "GR" not in file:
+                continue
+            dihedrals_path = os.path.join(cluster1_folder, file)
+            cluster2_folder = cluster_angles(dihedrals_path,
+                                             bandwidth=30,
+                                             angles=["b0", "b1", "b2"],
+                                             cluster_name="angle_cluster2",
+                                             folder="angle_clusters2",
+                                             split_by="angle_cluster1",
+                                             save_together=True,
+                                             )
+
+
+
+        matrix_dfs = {}
+        if SNAPSHOTS:
+            from pyMol import pymol_start
+            pymol_start(show=False)
+        for n, file in enumerate(sorted(os.listdir(cluster2_folder))):
+
+            if "--1" in file:
+                continue
+            if ONLY_GR and "GR" not in file:
+                continue
+            ref_name = file.split(".")[0]
+            ref = [ref for ref in vars.references if ref.name == ref_name][0]
+            sprint(ref_name+ "({}/{})".format(n, len(os.listdir(cluster2_folder))))
+            dihedrals_path = os.path.join(cluster2_folder, file)
+
+            create_clusters(dihedrals_path, ref, gif =GIFS, matrix = HEATMAPS)
+
+
+
+
+
+
+
+
+            """matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path,
+                                                                clusters="angle_cluster2",
+                                                                subset_col="angle_cluster2",
+                                                                subset = None,
+                                                                heatmap = HEATMAPS, hm_threshold=10,
+                                                                outer_ids_complete=ref.get_outer_res_list(complete_list=True),
+                                                                gif=GIFS,
+                                                                snapshot=SNAPSHOTS,
+                                                                chainbows = CHAINBOWS,
+                                                                include_all=True,)"""
+
+
+
+
+        '''from clustering import compare_contacts, get_clusters, cluster, split_by_faces, cluster_by_face
         for reference in vars.references:
             sprint(reference.name)
             if reference.name != "GR" and ONLY_GR:
@@ -203,11 +295,11 @@ def main(PROCESS_ALL = False,
                             splitted=SPLIT_FACES, rem_red=REMOVE_REDUNDANCY, method = CLUSTERING_METHOD,
                             quantile=QUANTILE, n_sample_multiplier=N_SAMPLE_MULTIPLIER, bandwidth = BANDWIDTH)
             reference.pickle()
-        #save_dfs(general=False, clustering=True)
+        #save_dfs(general=False, clustering=True)'''
 
 
 
-    eprint("CLUSTERING")
+    eprint("CLUSTERING v2")
     ###### SAVE & EXIT #################################################################################################
     tprint("SAVE & EXIT")
 
@@ -229,7 +321,7 @@ if __name__ == "__main__":
 
 
     print(sys.argv)
-    if len(sys.argv) > 2 and not "all" in sys.argv:
+    if len(sys.argv) > 1 and not "all" in sys.argv:
         DO_ONLY = [arg.upper() for arg in sys.argv[1:]]
 
 
@@ -253,7 +345,8 @@ if __name__ == "__main__":
          MINIMUM_CONTACTS=0,  # Minimum number of contacts to consider a dimer interface
 
          # Dimer processing, includes contact calculation and face identification, generates contact dataframes
-         SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL)
+         SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL and REPROCESS_DIMERS)
+         REPROCESS_DIMERS = True,
          FORCE_CONTACTS = False,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
          CONTACT_DISTANCE_CLUSTERING = 12,
          FACES_BY_COM = True,
@@ -288,6 +381,10 @@ if __name__ == "__main__":
          DIMENSIONS_PCA = [0,1,2],
          MINIMUM_SCORE = 0,
 
+         HEATMAPS = True,
+         GIFS = True,
+         SNAPSHOTS = True,
+         CHAINBOWS = False,
 
 
          )

@@ -30,8 +30,36 @@ def superpose_multiple(path_list, file_name="GESAMT_multiple_superposition.pdb",
     data = {"out_path": out_path}
     return data
 
+def superpose_many_chains(align_dict, file_name="GESAMT_multiple_superposition.pdb", save_folder=None):
+    import subprocess
+    if save_folder is None:
+        save_folder = local.temp
 
+    out_path = os.path.join(save_folder, file_name)
+    #sele_str = " ".join(["{} -d {}".format(pdb, chain) for pdb, chain in align_dict.values()])
+    sele = []
+    for key, value in align_dict.items():
+        sele.append(value[0])
+        sele.append("-s")
+        sele.append(value[1])
 
+    #sele = [s + [d[0], "-d", d[1]] for d in align_dict.values()]
+    #print("SELE")
+    #print(sele)
+    super_line = [Globals.vars.gesamt, *sele, "-o", out_path,"-o-*s", "-view", "-nthreads=auto"]
+
+    #print("LINE")
+    #print(super_line)
+    gesamt_out = subprocess.run(super_line, capture_output=True, text=True)
+    if "show_gesamt" in vars:
+        if not (len(vars.do_only) == 0 or vars.do_only is None):
+            print(gesamt_out.stdout)
+            print(gesamt_out.stderr)
+    if vars.verbose:
+        print(gesamt_out.stdout)
+
+    data = {"out_path": out_path}
+    return data
 
 
 

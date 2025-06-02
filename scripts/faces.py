@@ -127,7 +127,7 @@ def get_dimer_faces(dimer):
 
 
 def get_pca(structure, n_components = 3, com = None, closer_to = None, solver = "covariance_eigh", clockwise =True):
-    print3("Getting PCA")
+    print6("Getting PCA")
     from sklearn.decomposition import PCA
     pca = PCA(n_components=n_components, random_state=6, svd_solver=solver)
     coords = [atom.coord for atom in structure.get_atoms()]
@@ -150,9 +150,10 @@ def get_pca(structure, n_components = 3, com = None, closer_to = None, solver = 
             closer = closer_to - com
             #print(distance(component, closer),distance(component * -1, closer))
             if distance(component, closer) > distance(component * -1, closer):
-                print4("Reverse component", n, pca.components_[n], "-->", end=" ")
+                if vars.verbose:
+                    print4("Reversed component", n, pca.components_[n], "-->", end=" ")
                 pca.components_[n] = component * -1
-                print(pca.components_[n])
+                #print(pca.components_[n])
 
 
     else:
@@ -166,7 +167,8 @@ def get_pca(structure, n_components = 3, com = None, closer_to = None, solver = 
 
 
         for n, component in enumerate(pca.components_):
-            print4("Component {}: {} / Value: {} --> Vector: {} / Inverse: {}".format(n,
+            if vars.verbose:
+                print4("Component {}: {} / Value: {} --> Vector: {} / Inverse: {}".format(n,
                                                                          pca.components_[n],
                                                                          pca.explained_variance_[n],
                                                                          pca.components_[n] * pca.explained_variance_[n],
@@ -178,15 +180,18 @@ def get_pca(structure, n_components = 3, com = None, closer_to = None, solver = 
     return pca
 
 def pca_to_lines(pca, com, just_points = False):
-    components = pca.components_ * pca.explained_variance_ # * pca.singular_values_
+    components = pca.components_
+    variances = pca.explained_variance_
     points = []
     lines = []
     #print("COmponents:", components)
-    for component in components:
-        c = [component[i] + com[i] for i in range(len(component))]
+    for component, variance in zip(components,variances):
+        c = add(com,component)
+        v = scale(vector(com, c), variance)
+        sc = add(com, v)
         #print( "C:", c)
-        points.append((com, c))
-        lines.append(points_to_line(com, c))
+        points.append((com, sc))
+        lines.append(points_to_line(com, sc))
         #print(points)
     if just_points:
         return points
@@ -428,6 +433,256 @@ def get_pca_df(in_path, subfolder, only_pcas = False, force = False, splitted=Tr
         print(pca_path)
         pca_df.to_csv(pca_path)
         return pca_path
+
+
+
+
+class ResPair:
+    def __init__(self, res1, res2):
+        self.res1 = res1
+        self.res2 = res2
+        self.id1 = res1.id[1]
+        self.id2 = res2.id[1]
+        self.id = "{}:{}".format(self.id1, self.id2)
+        self.coord1 = [atom.coord for atom in self.res1.get_atoms() if atom.id == "CA"][0]
+        self.coord2 = [atom.coord for atom in self.res2.get_atoms() if atom.id == "CA"][0]
+        self.vector12 = vector(self.coord1, self.coord2)
+        self.vector21 = vector(self.coord2, self.coord1)
+        self.dist = length(self.vector12)
+
+
+
+
+
+
+
+class ContactSurface:
+    def __init__(self, structure1, structure2, outer_ids=None):
+        self.structure1 = structure1
+        self.structure2 = structure2
+        self.outer_ids = []
+
+        self.residues = [res.id[1] for res in structure1.get_residues()]
+        if outer_ids is not None:
+            self.outer_ids = outer_ids
+            self.residues = [resid for resid in self.residues if resid in self.outer_ids]
+        self.res_pairs, self.s_matrix, self.d_s_matrix = self.get_atom_pairs()
+        #self.d_s_matrix = np.tril(self.d_t_matrix.T, -1) + self.d_t_matrix
+
+
+
+
+
+    def get_atom_pairs(self):
+        assert len(list(self.structure1.get_residues())) == len(list(self.structure2.get_residues()))
+        t_matrix = []
+        d_t_matrix = []
+        new_pairs = {}
+        res_list1 = [res for res in self.structure1.get_residues()]# if res.id[1] in self.outer_ids]
+        res_list2 = [res for res in self.structure2.get_residues()]# if res.id[1] in self.outer_ids]
+        assert len(res_list1) == len(res_list2)
+        for n, res1 in enumerate(res_list1):
+            inner1 = False
+            if res1.id[1] not in self.outer_ids:
+                inner1 = True
+            for res2 in list(res_list2):
+                inner2 = False
+                if res2.id[1] not in self.outer_ids:
+                    inner2 = True
+                if inner1 or inner2:
+                    p = None
+                    dist = 666
+                else:
+                    p = ResPair(res1, res2)
+                    dist = p.dist
+                    new_pairs[p.id] = p
+                if len(t_matrix) == n:
+                    t_matrix.append([p])
+                    d_t_matrix.append([dist])
+                else:
+                    t_matrix[n].append(p)
+                    d_t_matrix[n].append(dist)
+        print6(len(new_pairs))
+        return new_pairs, np.array(t_matrix), np.array(d_t_matrix)
+
+
+    @staticmethod
+    def normalize_matrix(matrix, n = None, percentage=False):
+        if n == "max":
+            n = amax(matrix)
+        elif n is None:
+            return matrix
+        if percentage:
+            n /= 100
+        max_func = lambda x: x/n
+        vec_max_func = np.vectorize(max_func)
+        return vec_max_func(matrix)
+
+
+    @staticmethod
+    def get_heat_map(matrix, title="Heat map", normalize = None, plot = True, show=False,
+                     colors = None, cvals=None,
+                     folder = None, percentage = False,
+                     outer_ids_complete = None):
+
+        if normalize is not None:
+            matrix = ContactSurface.normalize_matrix(matrix, n=normalize, percentage = percentage)
+
+        if outer_ids_complete is None:
+            oneDmatrix1 = [sum(i) for i in matrix]
+            oneDmatrix2 = [sum(i) for i in matrix.T]
+            outer_ids_complete = [True] * len(oneDmatrix1)
+        else:
+            oneDmatrix1 = [sum(i)/ len(outer_ids_complete) for i in matrix]
+            oneDmatrix2 = [sum(i) / len(outer_ids_complete) for i in matrix.T]
+        if plot:
+            fig, axes = plt.subplots(2,2,
+                                     #sharex="col",
+                                     gridspec_kw={'height_ratios': [4, 2], "width_ratios": [2,4]},
+                                     figsize=(12,12))
+
+            ax = axes[0,1]
+            axLeft = axes[0,0]
+            axBottom = axes[1,1]
+            if colors is None:
+                colors = ("blue", "yellow", "red")
+
+            if cvals is None:
+                if len(colors) == 3:
+                    cvals = [0, 0.5, 1]
+                elif len(colors) == 2:
+                    cvals = [0, 1]
+            norm = plt.Normalize(min(cvals), max(cvals))
+            #print(norm)
+            tuples = list(zip(map(norm, cvals), colors))
+            #print(tuples)
+            cmap = matplotlib.colors.LinearSegmentedColormap.from_list("colormap", tuples)
+            #print(cmap)
+            hm = ax.imshow(matrix.T, cmap=cmap)
+            cbar = plt.colorbar(hm, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
+
+            outer_ids_bin = []
+            for i in outer_ids_complete:
+                if i:
+                    outer_ids_bin.append(1)
+                else:
+                    outer_ids_bin.append(0)
+            outer_ids_matrix = np.array([outer_ids_bin]*len(outer_ids_bin))
+            colors2 = ((0, 0, 0, 1), (0.0, 0.0, 0.0, 0.0))
+            tuples2 = list(zip([0, 1], colors2))
+            hm = ax.imshow(outer_ids_matrix, cmap = matplotlib.colors.LinearSegmentedColormap.from_list("black0s", tuples2))
+            hm = ax.imshow(outer_ids_matrix.T, cmap = matplotlib.colors.LinearSegmentedColormap.from_list("black0s", tuples2))
+
+            max_n = len(oneDmatrix1)
+            for n, (p1,p2, o) in enumerate(zip(oneDmatrix1, oneDmatrix2, outer_ids_complete)):
+                if n == 0:
+                    continue
+                n2 = - n
+                if o is None:
+                    axBottom.plot((n-1,n), (oneDmatrix1[n-1], p1), c="black",  linestyle='--', linewidth=0.5)
+                    axLeft.plot((oneDmatrix2[n - 1], p2), (n2 + 1, n2),  c="black", linestyle='--', linewidth=0.5)
+                else:
+                    axBottom.plot((n - 1, n), (oneDmatrix1[n - 1], p1), c=cmap(p1), linestyle='--', linewidth=0.5)
+                    axLeft.plot((oneDmatrix2[n - 1], p2), (n2 + 1, n2), c=cmap(p2), linestyle='--', linewidth=0.5)
+            #fig.tight_layout()
+            fig.subplots_adjust(right=0.8)
+
+            cbar_title = "Occurence"
+            if percentage:
+                cbar_title = "% "+ cbar_title
+            cbar.set_label(cbar_title)
+
+            ax.set_title(title + " N={}".format(normalize))
+
+            if folder is None:
+                root["heatmaps"] = "images/heatmaps"
+                folder = root.heatmaps
+            fig_path = os.path.join(folder, title + ".png")
+            plt.savefig(fig_path)
+            if show:
+                plt.show(block=vars.block)
+        return matrix, oneDmatrix1, oneDmatrix2
+
+    @staticmethod
+    def heat_map_to_pdb(matrix, structure, inplace=False, outer_list=None):
+
+        assert len(matrix) == len(list(structure.get_residues()))
+
+        i = 0
+        if not inplace:
+            structure = structure.copy()
+        for res in structure.get_residues():
+            ca = [atom for atom in res.get_atoms() if atom.id == "CA"][0]
+            ca.bfactor = mean(matrix[i])
+            i +=1
+        return structure
+
+    @staticmethod
+    def display_heatmap(matrix, title, structure, n_samples=None,  show_pymol=True,obj_name =None, show_heatmap=True,
+                        colors = None, cvals=None, percentage=False):
+        if n_samples is not None:
+            norm = n_samples
+            if percentage:
+                norm /= 100
+        else:
+            norm = None
+        matrix, oneDmatrix1, oneDmatrix2 = ContactSurface.get_heat_map(matrix,
+                                                         title=title,
+                                                         normalize= norm,
+                                                         colors=colors,
+                                                         cvals=cvals,
+                                                         show=show_heatmap,
+                                                         percentage=percentage)
+
+        if show_pymol:
+            from pyMol import pymol_colour, pymol_temp_show
+            structure = ContactSurface.heat_map_to_pdb(matrix, structure)
+            name = pymol_temp_show(structure, name=obj_name)
+            pymol_colour(colour="blue_yellow_red", sele=name, spectrum="b", minimum=0, maximum=amax(oneDmatrix1) / 2)
+
+
+    @staticmethod
+    def is_above_threshold(value, threshold, equal=True, inverse=False, as_bool=True):
+        r = None
+        if value == 666:
+            r = False
+        else:
+            if equal:
+                r = value >= threshold
+            else:
+                r = value > threshold
+            if inverse:
+                r= not r
+        if as_bool:
+            return r
+        else:
+            if r:
+                return 1
+            else:
+                return 0
+
+    def get_contact_map(self, threshold=10, as_bool=False, transposed=False):
+        vec_fun = np.vectorize(self.is_above_threshold)
+        contact_matrix = vec_fun(self.d_s_matrix, threshold=threshold,as_bool=as_bool, inverse=True)
+        #self.get_heat_map(contact_matrix)
+        if transposed:
+            contact_matrix = contact_matrix.T
+        return contact_matrix
+
+
+
+
+def plot_cluster_heatmap(df_path):
+    df = pd.read_csv(df_path)
+
+
+
+
+
+
+
+
+
 
 
 

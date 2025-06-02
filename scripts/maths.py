@@ -37,6 +37,17 @@ def dihedral_angle(p0, p1, p2, p3):
     y = np.dot(np.cross(b1, v), w)
     return np.degrees(np.arctan2(y, x))
 
+def dihedral_angle2(p0, p1, p2, p3):
+    b0 = scale(vector(p0, p1), -1.0)
+    b1 = vector(p1, p2)
+    b2 = vector(p2, p3)
+    b1 /= np.linalg.norm(b1)
+    v = b0 - np.dot(b0, b1) * b1
+    w = b2 - np.dot(b2, b1) * b1
+    x = np.dot(v, w)
+    y = np.dot(np.cross(b1, v), w)
+    return np.degrees(np.arctan2(y, x))
+
 
 
 def pnt2line(pnt, start, end):
@@ -85,6 +96,19 @@ def test():
     point = np.array([rnd.random(), rnd.random(), rnd.random()])
     get_closest(start, end, point)
 
+
+def angle_3_points(a, b, c):
+    a = np.array(a)
+    b = np.array(b)
+    c = np.array(c)
+
+    ba = a - b
+    bc = c - b
+
+    cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+    angle = np.arccos(cosine_angle)
+
+    return np.degrees(angle)
 
 def angle_between_vectors(u, v):
     dot_product = sum(i * j for i, j in zip(u, v))

@@ -139,11 +139,11 @@ class ProgressBar:
         print("Completed in {} seconds".format(round(time.perf_counter() - self.start_time, 2)))
 
 
-    def update(self, end="\r", info = ""):
+    def update(self, end="\r", info = "", min_len=0):
         progress = int(self.current * 100 // self.total)
 
-        if len(info) > 0:
-            info+= " "
+        if len(info) < min_len:
+            info+= " "*(min_len-len(info))
         percentage = "|{}|{}%".format(info,add_front_0(progress, digits=3, zero = " "))
         bar_width = self.width - len(percentage)
         progress_scaled = int(progress * bar_width //100)
@@ -283,6 +283,64 @@ def KeepInterpreter():
     except HaltException as h:
         print(h)
         # now what?
+
+
+def int_input(prompt, all="all"):
+    i = None
+    while i is None:
+        try:
+            i = input(prompt)
+            if i == all:
+                return i
+            i = int(i)
+        except KeyboardInterrupt:
+            quit()
+        except ValueError:
+            i = None
+    return i
+
+
+
+def mpl_to_gif(fig, axes, name = "animation.gif", folder=None, dpf=1, total_d = 360, duration = 15):
+    print("Animating: {} Duration: {}s, degrees/frame: {}/{}".format(name, duration, dpf, total_d))
+
+    import io, PIL
+
+    if type(axes) is not list:
+        axes = [axes]
+    if folder is None:
+        from Globals import local
+        folder = local.temp
+    path = os.path.join(folder, name + ".gif")
+    n_frames = total_d // dpf
+    f_duration = duration * 1000 / n_frames
+
+
+    progress = ProgressBar(n_frames, silent=True)
+    images = []
+    for frame in range(n_frames):
+        for ax in axes:
+            ax.view_init(azim=frame*dpf)
+        buf = io.BytesIO()
+        fig.savefig(buf)
+        buf.seek(0)
+
+        images.append(PIL.Image.open(buf))
+        progress.add(info="{}/{}".format(frame, n_frames))
+    images[0].save(
+        path,
+        append_images=images[1:],
+        duration=f_duration,  # duration of each frame in milliseconds
+        loop=1,  # loop forever
+        save_all=True,
+    )
+    print1("Saving at:", path)
+    return path
+
+
+
+
+
 
 
 if __name__ == "__main__":

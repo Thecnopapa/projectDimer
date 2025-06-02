@@ -255,6 +255,8 @@ fabric.properties
 /secure/
 /dataframes/
 /diagrams/
-
-
 /data/experimental/
+/images/heatmap_figs/
+/images/dihedral_figs/
+/images/dihedral_gifs/
+nohup.out

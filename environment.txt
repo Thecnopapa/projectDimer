@@ -17,10 +17,3 @@ pip install PyQt5
 # Graphics
 pip install pyflowchart
 
-
-# Firebase:
-pip install firebase-admin
-
-curl -sL https://firebase.tools | bash
-firebase login
-

@@ -30,11 +30,16 @@ def load_pickles(folder, extension = (".pickle"), ignore_selection = False):
         for file in sorted(os.listdir(local[folder])):
             if file.endswith(extension) and (selection is None or any([s in file.split(".")[0] for s in selection])):
                 p = unpickle(os.path.join(local[folder],file))
-                p.restore_dfs()
+                try:
+                    p.restore_dfs()
+                except:
+                    pass
                 pickles.append(p)
             progress.add(info=file)
     pickles.sort(key = lambda p: p.id)
     return pickles
+
+
 
 
 def load_from_files(pdb_folder, load_class = PDB, ignore_selection = False, pickle_folder = "molecules",is_reference = False, pickle_extension = ".molecule", pdb_extension = (".pdb", ".pdb1", ".cif"), force_reload=False):
@@ -67,7 +72,48 @@ def load_from_files(pdb_folder, load_class = PDB, ignore_selection = False, pick
         print2(obj)
     return loaded
 
-def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None, force_reload=False, object_class = PDB, quiet=False):
+class PickleIterator:
+    def __init__(self, id_list, quiet=True, **kwargs):
+        self.id_list = sorted(id_list)
+        self.kwargs = kwargs
+        self.kwargs["quiet"] = quiet
+
+    def __iter__(self):
+        self.n = 0
+        self.progress = ProgressBar(len(self.id_list))
+        return self
+
+    def __next__(self):
+        if self.n >= len(self.id_list):
+            raise StopIteration
+        else:
+            if not vars.quiet:
+                sprint(self.id_list[self.n])
+            loaded = load_single_pdb(self.id_list[self.n], **self.kwargs)
+            assert len(loaded) == 1, "More than one object with the same id! \n{}".format(self.id_list[self.n])
+            self.progress.add(info=self.id_list[self.n])
+            self.n += 1
+            return loaded[0]
+
+
+def load_clusters(identifier = "all", onebyone=False, **kwargs):
+    if onebyone:
+        return load_list_1by1(pickle_folder=local.cluster_pickles, **kwargs)
+    else:
+        return load_single_pdb(identifier, pickle_folder=local.cluster_pickles, **kwargs)
+
+
+def load_list_1by1(id_list=None, quiet=True, **kwargs):
+    if id_list is None:
+        assert "pickle_folder" in kwargs, "pickle folder or id list must be provided"
+        id_list = [file.split(".")[0] for file in os.listdir(kwargs["pickle_folder"])]
+    if "do_only" in vars:
+        if len(vars.do_only) > 0:
+            id_list = [f for f in id_list if any([s in f for s in vars.do_only])]
+
+    return iter(PickleIterator(id_list, quiet, **kwargs))
+
+def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None, force_reload=False, object_class = PDB, quiet=False, first_only=False):
     if not quiet:
         print1("Loading pdb:", identifier, "-Force reload:", force_reload, "-class:", object_class.__name__)
     objects = []
@@ -78,7 +124,10 @@ def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None,
         for file in os.listdir(pickle_folder):
             if (identifier == "ALL" or identifier in file.upper()) and "lock" not in file and not any([bl in file for bl in vars.blacklist]):
                 p = unpickle(os.path.join(pickle_folder, file))
-                p.restore_dfs()
+                try:
+                    p.restore_dfs()
+                except:
+                    pass
                 if object_class == Reference:
                     #p.restore_reference_dfs(reset=force_reload)
                     pass
@@ -94,6 +143,8 @@ def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None,
             print2("No objects loaded")
         else:
             print2("Objects loaded: {}".format(objects))
+    if len(objects) == 1 and first_only:
+        objects = objects[0]
     return objects
 
 def load_references(force_reload = False, identifier = "all"):

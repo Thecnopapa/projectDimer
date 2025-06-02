@@ -12,7 +12,7 @@ def setup(local_path=None, deepness_of_script =2):
     os.chdir(root)
     Globals.set_root(os.getcwd())
     if local_path is None:
-        local_path = os.path.abspath("../localdata/projectB")
+        local_path = os.path.abspath("../localdata/projectDimer")
     Globals.set_local(local_path)
 
 
@@ -30,13 +30,13 @@ except:
 
 
 if os.name == "nt":
-    setup("C:/Users/iainv/localdata/projectB")
+    setup("C:/Users/iainv/localdata/projectDimer")
 elif "cri4" in __file__:
-    setup("/localdata/iain/_local/projectB")
+    setup("/localdata/iain/localdata/projectDimer")
 elif "EMERALD" in platform.node():
     setup()
 elif "GARNET" in platform.node():
-    setup("/mnt/d/localdata/projectB")
+    setup("/mnt/d/localdata/projectDimer")
 else:
     setup()
 
@@ -46,6 +46,7 @@ from utilities import *
 local["molecules"] = "pickles/molecules"
 local["monomers"] = "pickles/monomers"
 local["dimers"] = "pickles/dimers"
+local["cluster_pickles"] = "pickles/cluster_pickles"
 local["temp"] = "temp"
 vars["pymol_started"] = False
 try:

@@ -4,6 +4,7 @@ import sys
 from Globals import root, local, vars
 from maths import angle_between_vectors
 
+
 from utilities import *
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -88,7 +89,7 @@ def generate_html():
     pass
 
 
-def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces =True):
+def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces =False):
 
     merged = "merged" in sys.argv
 
@@ -98,7 +99,7 @@ def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces 
         #print(obj.__dict__)
         for key, item in obj.__dict__.items():
             if key in ["lines", "c_lines", "sasas1D", "sasas2D", "full_array","contacts_faces1", "contacts_faces2",
-                       "contacts", "contacts_symm", "contacts_sasa" ]:
+                       "contacts", "contacts_symm", "contacts_sasa", "outer_ids_complete" ]:
                 try:
                     print1(key, ": OMITTED (len: {})".format(len(item)))
                 except:
@@ -133,14 +134,14 @@ def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces 
             elif "Bio" in str(type(item)):
                 print1(key, ":", item, id(item))
             elif "pandas" in str(type(item)):
-                print1(key, ":\n", item.iloc[:, 0:2])#list(item.columns.to_series()))
+                print1(key, ":\n", item.iloc[:, :])#list(item.columns.to_series()))
             elif item is None:
                 print1(key, ":", "None")
             else:
                 print1(key, ":", item)
         if "pymol" in args:
             from pyMol import pymol_start, pymol_load_path, pymol_symmetries, pymol_group, pymol_paint_contacts, pymol_format, pymol_draw_line, pymol_set_state
-            pymol_start(show=True)
+            pymol_start(show=False)
             for key, item in obj.__dict__.items():
                 if type(item) == str:
                     #print(item.endswith(".pdb"), not "fractional" in item, not "merged" in item, not merged)
@@ -150,9 +151,9 @@ def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces 
                         if "many_pdbs" in item:
                             og = pymol_load_path(item, os.path.basename(item)+"_original")
                         elif "pdb_" in item:
-                            pymol_load_path(item, os.path.basename(item) + "_processed")
+                            name = pymol_load_path(item, os.path.basename(item) + "_processed")
                         else:
-                            pymol_load_path(item, os.path.basename(item))
+                            name = pymol_load_path(item, os.path.basename(item))
                         pymol_format("surface", os.path.basename(item), colour= "gray")
                         if "is_reference" in obj.__dict__.keys() or paint_all_faces:
                             if "best_fit" in obj.__dict__.keys():
@@ -184,7 +185,7 @@ def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces 
                             #print(obj.com)
                             point_list = pca_to_lines(pca, com=obj.com, just_points=True)
                             for p in point_list:
-                                pymol_draw_line(coord1=p[0], coord2=p[1], name="pca")
+                                pymol_draw_line(coord1=p[0], coord2=p[1], name="pca-"+name.split(".")[0])
 
                         elif "pca1" in obj.__dict__.keys():
                             from faces import pca_to_lines
@@ -242,6 +243,7 @@ def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces 
             pymol_set_state(0)
             pymol_orient()
             pymol_show_cell()
+            pymol_group(identifier="pca", name="pcas")
             pymol_disable("pca")
             pymol_group(identifier="face", name="faces")
             try:
@@ -261,6 +263,9 @@ def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces 
             except:
                 pass
             pymol_set_state(2)
+    if "pymol" in args:
+        session_path = pymol_save_temp_session()
+        pymol_open_session_terminal(session_path)
 
 
 
@@ -295,6 +300,7 @@ if __name__ == "__main__":
     import setup
     from Globals import root, local, vars
     from imports import *
+    from pyMol import *
 
     import sys
 
@@ -326,9 +332,15 @@ if __name__ == "__main__":
         tprint("Showing references")
         show_objects(refs, sys.argv[2:])
 
+    elif "cluster" in sys.argv[1] and len(sys.argv[2:]) != 0:
+        clusters = load_clusters(identifier = sys.argv[2])
+        tprint("Showing clusters")
+        show_objects(clusters, sys.argv[2:])
 
 
-    elif any(arg in sys.argv[1] for arg in ["clusters-face", "clusters-pca", "clusters-pca-global"]):
+
+    elif any([arg == sys.argv[1] for arg in ["clusters-face", "clusters-pca", "clusters-pca-global"]]):
+        print([arg == sys.argv[1] for arg in ["clusters-face", "clusters-pca", "clusters-pca-global"]])
         global_pca = False
         cluster_colname = "cluster"
         if "pca" in sys.argv[1]:
@@ -798,11 +810,164 @@ if __name__ == "__main__":
         calculate_scores_GR(pd.read_csv(os.path.join(root.dataframes, "GR_cc_clustered.csv"), index_col=0).sort_values("cluster"), save=False)
 
 
+
+
+
+
+
+    elif "clusters2" in sys.argv[1]:
+        sprint("Showing clusters v2")
+
+        cluster_folders = ["angle_clusters1", "angle_clusters2"]
+        cluster_cols = ["angle_cluster1", "angle_cluster2"]
+        if "levels=" in sys.argv:
+            l = int(sys.argv[sys.argv.index("levels=")].split("=")[1])-1
+            cluster_folders = cluster_folders[l:]
+            cluster_cols = cluster_cols[:l]
+
+        for n, file in enumerate(os.listdir(root[cluster_folders[0]])):
+            print1(n, ":", file)
+
+        i = int_input("Select df to display:\n")
+        file = os.listdir(root[cluster_folders[0]])[i]
+        options = []
+        sele = []
+        fname = file.split(".")[0]
+        for n, (cluster_col, cluster_folder) in enumerate(zip(cluster_cols, cluster_folders)):
+            dihedrals_path = os.path.join(root[cluster_folder], fname+".csv")
+            try:
+                df = pd.read_csv(dihedrals_path, index_col=0)
+            except:
+                file_list = os.listdir(root[cluster_folder])
+                file_list = [os.path.join(root[cluster_folder],f) for f in file_list if fname in f]
+                df = pd.concat([pd.read_csv(f) for f in file_list])
+
+
+            print(df)
+            options.append([int(a) for a in sorted(set(df[cluster_cols[n]].values))])
+            s = int_input("Select {} to display {}:\n>> ".format(cluster_col, options[n]))
+            if s == "all":
+                sele.append(options[n])
+            else:
+                sele.append([s])
+                fname = fname + "-{}".format(s)
+            df.query(" | ".join(["{} == {}".format(cluster_col, n) for n in sele]), inplace=True)
+            print(df.to_string())
+
+
+
+
+
+        if "pymol" in sys.argv:
+            from pyMol import *
+            pymol_start(show=False)
+            print(file)
+            ref = load_references(identifier=file.split("-")[0])[0]
+            resids = [res.id[1] for res in ref.structure.get_residues()]
+            pymol_load_path(ref.path, ref.name)
+            pymol_colour("chainbow", ref.name)
+            print("Sele:", sele)
+            if "merge" in sys.argv:
+                m = sele[-1].copy()
+                sele[-1] = ["all"]
+
+            for c in sele[-1]:
+                print("Cluster:", sele[:-1], c)
+                if c == "all":
+                    subset = df.query(" | ".join(["{} == {}".format(cluster_cols[-1], n) for n in m]), inplace=False)
+                else:
+                    subset = df[df[cluster_cols[-1]] == c]
+                print(subset)
+                chains_to_align = [[ref.name, ref.chain]]
+
+                hm = None
+                progress = ProgressBar(len(subset))
+                for row in subset.itertuples():
+                    dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)[0]
+                    if not "first-only" in sys.argv or len(chains_to_align) <= 1:
+                        name = pymol_load_path(dimer.replaced_path, row.id + str(row.is1to2))
+                        if row.is1to2:
+                            chains_to_align.append([name, row.mon1])
+                        else:
+                            chains_to_align.append([name, row.mon2])
+                        if "chainbows" in sys.argv:
+                            pymol_colour("chainbow", name)
+                    if not "chainbows" in sys.argv:
+                        if hm is None:
+                            if row.is1to2:
+                                hm = dimer.contact_surface.get_contact_map(transposed=False)
+                            else:
+                                hm = dimer.contact_surface.get_contact_map(transposed=True)
+                        else:
+                            if row.is1to2:
+                                hm = np.add(hm, dimer.contact_surface.get_contact_map(transposed=False))
+                            else:
+                                hm = np.add(hm, dimer.contact_surface.get_contact_map(transposed=True))
+                        """resids = [res.id[1] for res in dimer.monomer1.replaced.get_residues()]
+                        sele1 = name + " and c. {}".format(dimer.monomer1.chain)
+                        sele2 = name + " and c. {}".format(dimer.monomer2.chain)
+                        list1 = [min(x) for x in dimer.contact_surface.d_s_matrix]
+                        list2 = [min(x) for x in dimer.contact_surface.d_s_matrix.T]
+                        pymol_list_to_bfactors(val_list = list1, obj_name=sele1,resids=resids)
+                        pymol_list_to_bfactors(val_list = list2, obj_name=sele2, resids=resids)"""
+                    progress.add()
+
+                if hm is not None and not "chainbows" in sys.argv:
+                    list1 = [mean(x) for x in hm]
+                    list2 = [mean(x) for x in hm.T]
+                    for obj, chain in chains_to_align[1:]:
+                        sele1 = obj + " and (c. {})".format(chain)
+                        sele2 = obj + " and !(c. {})".format(chain)
+                        pymol_list_to_bfactors(val_list=list1, obj_name=sele1, resids=resids)
+                        pymol_list_to_bfactors(val_list=list2, obj_name=sele2, resids=resids)
+                    pymol_colour("blue_yellow_red", "(all)", spectrum="b")
+                    from faces import ContactSurface
+                    ContactSurface.get_heat_map(hm, normalize=len(subset), outer_ids_complete=ref.get_outer_res_list(complete_list=True), folder = local.temp)
+                pymol_align_chains(chains_to_align)
+                pymol_group([a[0] for a in chains_to_align[1:]], name="--"+str(c), quiet=True)
+
+                if "color_clusters" in sys.argv:
+                    pymol_colour(colours[c%ncolours], "--"+str(c))
+
+            print("All groups:")
+            print([obj for obj in pymol_get_all_objects() if obj[:1]=="--"])
+
+
+            #input("Press Enter to continue...")
+
+            if "post-process" in sys.argv:
+                obj_list = [obj for obj in pymol_get_all_objects() if obj[:1] != "--"]
+                cluster_path = pymol_save_cluster(obj_list)
+                pymol_open_saved_cluster(cluster_path, obj_list, only_even=False, spheres=False)
+            session_path = pymol_save_temp_session()
+            pymol_open_session_terminal(session_path)
+
+
+
+
+        elif "plot" in sys.argv:
+            from clustering import plot_dihedrals
+            for c in sele[-1]:
+                print("Cluster:", sele[:-1], c)
+                subset = df[df[cluster_cols[-1]] == c]
+
+                plot_dihedrals(dihedrals_path, subset_col="angle_cluster2", subset=c, save=True,
+                               gif="gif" in sys.argv, )
+
+
+
+
+
+
+
+
     else:
         print_available_commands()
 
 
     eprint("Done visualising")
+
+
 
 
 
