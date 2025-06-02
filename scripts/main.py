@@ -199,7 +199,7 @@ def main(PROCESS_ALL = False,
 
     if not SKIP_CLUSTERING or PROCESS_ALL and False:
 
-        from clustering import generate_dihedrals_df, plot_dihedrals, cluster_angles
+        from clustering import generate_dihedrals_df, plot_dihedrals, cluster_angles, create_clusters
         generate_dihedrals_df(force = False or PROCESS_ALL)
 
         for file in sorted(os.listdir(root.dihedrals)):
@@ -248,22 +248,29 @@ def main(PROCESS_ALL = False,
             ref = [ref for ref in vars.references if ref.name == ref_name][0]
             sprint(ref_name+ "({}/{})".format(n, len(os.listdir(cluster2_folder))))
             dihedrals_path = os.path.join(cluster2_folder, file)
+            create_clusters()
+            quit()
             matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path,
-                                                               clusters="angle_cluster2",
-                                                               subset_col="angle_cluster2",
-                                                               subset = None,
-                                                               heatmap = HEATMAPS, hm_threshold=10,
-                                                               outer_ids_complete=ref.get_outer_res_list(complete_list=True),
-                                                               gif=GIFS,
-                                                               snapshot=SNAPSHOTS,
-                                                               chainbows = CHAINBOWS,
-                                                               include_all=True,
-                                                               )
-            if ref_name not in matrix_dfs:
-                matrix_dfs[ref_name] = pd.DataFrame()
+                                                                clusters="angle_cluster2",
+                                                                subset_col="angle_cluster2",
+                                                                subset = None,
+                                                                heatmap = HEATMAPS, hm_threshold=10,
+                                                                outer_ids_complete=ref.get_outer_res_list(complete_list=True),
+                                                                gif=GIFS,
+                                                                snapshot=SNAPSHOTS,
+                                                                chainbows = CHAINBOWS,
+                                                                include_all=True,
+                                                                get_matrix=True)
 
-            matrix_dfs[ref_name][file.split(".")[0]] = oneDmatrix1
-            matrix_dfs[ref_name][file.split(".")[0]+".T"] = oneDmatrix2
+
+            if matrix is not None:
+                if ref_name not in matrix_dfs:
+                    matrix_dfs[ref_name] = pd.DataFrame()
+
+                matrix_dfs[ref_name].loc[file.split(".")[0]] = oneDmatrix1
+                matrix_dfs[ref_name].loc[file.split(".")[0]+".T"] = oneDmatrix2
+
+
 
 
 
@@ -403,7 +410,7 @@ if __name__ == "__main__":
 
          HEATMAPS = False,
          GIFS = False,
-         SNAPSHOTS = True,
+         SNAPSHOTS = False,
          CHAINBOWS = False,
 
 

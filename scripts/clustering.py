@@ -1173,7 +1173,7 @@ def generate_dihedrals_df(dimer_list = None, force = False):
 
 def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = None, subset=None, include_all=True, save=True,
                    label_col=None, only_first=None, heatmap=False, hm_threshold = 10, outer_ids_complete = None,
-                   gif = False, snapshot=False, first_matrix_only = True, chainbows = False):
+                   gif = False, snapshot=False, first_matrix_only = True, chainbows = False, get_matrix = True):
     print1("plotting dihedrals, heatmap={}, GIF={}, snapshot={}".format(heatmap, gif, snapshot))
     print2(path)
     from matplotlib import  pyplot as plt
@@ -1222,7 +1222,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
                 else:
                     col = "C"+str(cl)
                 ax.scatter(point.a0, point.a1, point.a2, c=col)
-                if heatmap:
+                if heatmap or get_matrix:
                     dimer = load_single_pdb(point.id, pickle_folder=local.dimers, first_only=True, quiet=True)
                     if hm is None:
                         hm = dimer.contact_surface.get_contact_map(threshold=hm_threshold, transposed=not point.is1to2)
@@ -1262,7 +1262,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
         if vars.block:
             plt.show(block = vars.block)
         plt.close()
-        r.append([None, None, None])
+
     if first_matrix_only:
         return r[0]
     else:
@@ -1492,4 +1492,12 @@ def cluster_angles(dihedrals_path,
     return root[folder]
 
 
+def create_clusters(df_path, ref):
+    new_clusters = []
+    df = pd.read_csv(df_path, index_col=0)
+    cluster1list = list(set(df["angle_cluster1"]))
+    cluster2list = list(set(df["angle_cluster2"]))
+    for c1 in cluster1list:
+        for c2 in cluster2list:
+            new_clusters.append([c1, c2])
 
