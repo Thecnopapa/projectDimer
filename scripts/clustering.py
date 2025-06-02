@@ -1526,10 +1526,6 @@ class Cluster2:
 
 
 
-
-
-
-
     def pickle(self):
         import pickle
         local["pickles"] = "pickles"

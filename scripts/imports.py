@@ -30,11 +30,16 @@ def load_pickles(folder, extension = (".pickle"), ignore_selection = False):
         for file in sorted(os.listdir(local[folder])):
             if file.endswith(extension) and (selection is None or any([s in file.split(".")[0] for s in selection])):
                 p = unpickle(os.path.join(local[folder],file))
-                p.restore_dfs()
+                try:
+                    p.restore_dfs()
+                except:
+                    pass
                 pickles.append(p)
             progress.add(info=file)
     pickles.sort(key = lambda p: p.id)
     return pickles
+
+
 
 
 def load_from_files(pdb_folder, load_class = PDB, ignore_selection = False, pickle_folder = "molecules",is_reference = False, pickle_extension = ".molecule", pdb_extension = (".pdb", ".pdb1", ".cif"), force_reload=False):
@@ -89,6 +94,14 @@ class PickleIterator:
             self.progress.add(info=self.id_list[self.n])
             self.n += 1
             return loaded[0]
+
+
+def load_clusters(identifier = "all", onebyone=False, **kwargs):
+    if onebyone:
+        return load_list_1by1(pickle_folder="clusters", **kwargs)
+    else:
+        return load_single_pdb(identifier, pickle_folder="clusters", **kwargs)
+
 
 def load_list_1by1(id_list=None, quiet=True, **kwargs):
     if id_list is None:
