@@ -1504,7 +1504,7 @@ def create_clusters(df_path, ref):
     cluster2list = list(set(df[cluster_cols[1]]))
     for c1 in cluster1list:
         for c2 in cluster2list:
-            new_clusters.append(Cluster2(df,cluster_cols, c1, c2))
+            new_clusters.append(Cluster2(ref_name,df,cluster_cols, c1, c2))
     print(new_clusters)
 
 class Cluster2:
@@ -1513,16 +1513,17 @@ class Cluster2:
     name = "ClusterObject"
     path = None
 
-    def __init__(self, df,cluster_cols, c1, c2):
+    def __init__(self,ref_name, df,cluster_cols, c1, c2):
         cnums = [c1, c2]
+        self.ref_name = ref_name
         self.c1, self.c2 = c1, c2
-        self.id = "{}-{}".format(self.c1, self.c2)
+        self.id = "{}-{}-{}".format(self.ref_name, self.c1, self.c2)
         self.subset = df.query(" & ".join(["{} == {}".format(cluster_cols[n], cnums[n]) for n in range(len(cnums))]), inplace=False)
         print(self.subset)
         self.pickle()
 
     def __repr__(self):
-        return "<Cluster: {}-{} /N={}>". format(self.c1, self.c2, len(self.subset))
+        return "<Cluster:{} {}-{} /N={}>". format(self.ref_name, self.c1, self.c2, len(self.subset))
 
 
 
