@@ -1764,7 +1764,7 @@ class Cluster2:
             pymol_orient()
             if chainbows:
                 pymol_colour("chainbow", "(all)")
-                pymol_save_snapshot(subcname + "chainbows", folder=local.snapshots)
+                pymol_save_snapshot(self.id + "_chainbows", folder=local.snapshots)
             elif self.oneDmatrix1 is not None and self.oneDmatrix2 is not None:
                 for obj, value in zip(pymol_get_all_objects(), chains_to_align.values()):
                     chain = value[1]
@@ -1775,8 +1775,8 @@ class Cluster2:
                 pymol_colour("blue_yellow_red", "(all)", spectrum="b")
                 pymol_save_snapshot(self.id + "heat_map", folder=local.snapshots)
             else:
-                pymol_colour(mpl_colours[c % mpl_ncolours], "(all)")
-                pymol_save_snapshot(self.id + "cluster_cols", folder=local.snapshots)
+                pymol_colour(mpl_colours[self.c2 % mpl_ncolours], "(all)")
+                pymol_save_snapshot(self.id + "_cluster_cols", folder=local.snapshots)
 
             if show_session:
                 session_path = pymol_save_temp_session()
