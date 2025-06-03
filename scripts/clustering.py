@@ -1586,17 +1586,23 @@ class Cluster2:
     def __repr__(self):
         return "<Cluster:{} {}-{} /N={}>". format(self.ref_name, self.c1, self.c2, self.ndimers)
 
-    def process_cluster(self, matrix=False, plot=False, gif=False, show=False, **kwargs):
+    def process_cluster(self, force = False, matrix=False, plot=False, gif=False, show=False, snapshot=False, **kwargs):
         print1("Processing matrix={}, plot={}, gif={}, show={}".format(matrix, plot, gif, show))
         if not self.is_all:
-            self.get_com()
+            if self.comA is None or force:
+                self.get_com()
         if matrix:
-            self.matrix, self.oneDmatrix1, self.oneDmatrix2 = self.get_matrix(threshold=10)
+            if self.matrix is None or force:
+                self.matrix, self.oneDmatrix1, self.oneDmatrix2 = self.get_matrix(threshold=10, force=force)
         if plot:
-            self.plot_path, self.gif_path = self.get_plot(self.subset, self.cluster_cols, self.id,
-                                                          coms=(self.comA, self.comB),
-                                                          stds=(self.stdA, self.stdB),
-                                                          show=show, gif=gif)
+            if self.plot_path is None or force:
+                self.plot_path, self.gif_path = self.get_plot(self.subset, self.cluster_cols, self.id,
+                                                              coms=(self.comA, self.comB),
+                                                              stds=(self.stdA, self.stdB),
+                                                              show=show, gif=gif)
+        if snapshot:
+            self.snapshot_path = self.show(snapshot=True, show_session=False)
+
 
 
 
@@ -1620,7 +1626,7 @@ class Cluster2:
 
     def get_matrix(self, threshold):
         from imports import load_single_pdb
-        print2("Generating cluster matrix")
+        print2("Generating cluster matrix, force={}".format(force))
         matrix = None
         progress = ProgressBar(len(self.subset), silent=True)
         for point in self.subset.itertuples():
@@ -1721,6 +1727,7 @@ class Cluster2:
 
     def reprocess_cluster(self, **kwargs):
         self.process_cluster(**kwargs)
+        self.pickle()
 
 
     def delete(self):
@@ -1751,7 +1758,7 @@ class Cluster2:
 
         super_data = superpose_many_chains(chains_to_align, file_name=self.id + ".pdb", save_folder=local.clusters)
         print(super_data)
-
+        snapshot_path = None
         if snapshot:
             local["snapshots"] = "snapshots"
             from pyMol import pymol_start, pymol_load_path, pymol_colour, pymol_list_to_bfactors, pymol_save_snapshot, \
@@ -1773,14 +1780,16 @@ class Cluster2:
                     pymol_list_to_bfactors(val_list=self.oneDmatrix1, obj_name=sele1, resids=resids)
                     pymol_list_to_bfactors(val_list=self.oneDmatrix2, obj_name=sele2, resids=resids)
                 pymol_colour("blue_yellow_red", "(all)", spectrum="b")
-                pymol_save_snapshot(self.id + "heat_map", folder=local.snapshots)
+                snapshot_path = pymol_save_snapshot(self.id + "heat_map", folder=local.snapshots)
             else:
                 pymol_colour(mpl_colours[self.c2 % mpl_ncolours], "(all)")
-                pymol_save_snapshot(self.id + "_cluster_cols", folder=local.snapshots)
+                snapshot_path = pymol_save_snapshot(self.id + "_cluster_cols", folder=local.snapshots)
 
             if show_session or "pymol" in sys.argv:
                 session_path = pymol_save_temp_session()
                 pymol_open_session_terminal(session_path)
+        return snapshot_path
+
 
 
 
@@ -1803,7 +1812,7 @@ def cluster_redundancy(**kwargs):
                 continue
             if cluster2.id in done_clusters or cluster2.is_all or cluster2.redundant or cluster2.outlier:
                 continue
-            print3(cluster2.id)
+            #print3(cluster2.id)
             d1 = distance(cluster1.comA, cluster2.comB)
             d2 = distance(cluster1.comB, cluster2.comA)
             v1 = 10+ cluster1.stdA + cluster2.stdB
@@ -1811,7 +1820,7 @@ def cluster_redundancy(**kwargs):
 
             if d1 <= v1:
                 if d2 <= v2:
-                    print("Redundant clusters")
+                    print3("Redundant cluster:", cluster2.id)
                     print4(d1, v1)
                     print4(d2, v2)
                     cluster1.merge(cluster2)
@@ -1821,8 +1830,8 @@ def cluster_redundancy(**kwargs):
         if cluster.redundant:
             print(cluster.id, "is redundant to", cluster.redundant_to)
             cluster.delete()
-        else:
-            cluster.reprocess_cluster(plot=True)
+        elif len(cluster.merged) != 0:
+            cluster.reprocess_cluster(force=True, **kwargs)
 
 
 

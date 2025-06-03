@@ -201,8 +201,7 @@ def main(PROCESS_ALL = False,
 
     if not SKIP_CLUSTERING or PROCESS_ALL and False:
         from clustering import generate_dihedrals_df, cluster_angles, create_clusters, cluster_redundancy
-
-        print(len(os.listdir(local.cluster_pickles)))
+        from imports import load_clusters
         if GENERATE_CLUSTERS or len(os.listdir(local.cluster_pickles))<=3:
             if DELETE_PREVIOUS:
                 if os.path.exists(local.cluster_pickles):
@@ -259,11 +258,17 @@ def main(PROCESS_ALL = False,
                 ref = [ref for ref in vars.references if ref.name == ref_name][0]
                 sprint(ref_name+ "({}/{})".format(n, len(os.listdir(cluster2_folder))))
                 dihedrals_path = os.path.join(cluster2_folder, file)
-                create_clusters(dihedrals_path, ref, gif =GIFS, matrix = HEATMAPS)
+                create_clusters(dihedrals_path, ref )
 
-        cluster_redundancy()
+            cluster_redundancy()
 
-
+        if ONLY_GR:
+            identifier = "GR"
+        else:
+            identifier = "ALL"
+        for cluster in load_clusters(identifier=identifier, onebyone=True):
+            sprint(cluster.id)
+            cluster.reprocess_cluster(gif =GIFS, matrix = HEATMAPS, snapshot = SNAPSHOTS)
 
 
 
@@ -395,7 +400,7 @@ if __name__ == "__main__":
         DIMENSIONS_PCA = [0,1,2],
         MINIMUM_SCORE = 0,
 
-        HEATMAPS = False,
+        HEATMAPS = True,
         GIFS = False,
         SNAPSHOTS = True,
         CHAINBOWS = False,
