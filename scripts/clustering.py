@@ -1628,7 +1628,7 @@ class Cluster2:
 
     def get_matrix(self, threshold):
         from imports import load_single_pdb
-        print2("Generating cluster matrix, force={}".format(force))
+        print2("Generating cluster matrix")
         matrix = None
         progress = ProgressBar(len(self.subset), silent=True)
         for point in self.subset.itertuples():
