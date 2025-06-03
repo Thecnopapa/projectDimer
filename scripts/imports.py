@@ -105,7 +105,7 @@ def load_clusters(identifier = "all", onebyone=False, **kwargs):
         return load_single_pdb(identifier, pickle_folder=local.cluster_pickles, quiet=True, **kwargs)
 
 
-def load_list_1by1(id_list=None, quiet=True, ignore_do_only=False, keep_extension=True, **kwargs):
+def load_list_1by1(identifier = None, id_list=None, quiet=True, ignore_do_only=False, keep_extension=False, **kwargs):
     if id_list is None:
         assert "pickle_folder" in kwargs, "pickle folder or id list must be provided"
         id_list = os.listdir(kwargs["pickle_folder"])
@@ -114,6 +114,9 @@ def load_list_1by1(id_list=None, quiet=True, ignore_do_only=False, keep_extensio
     if "do_only" in vars and not ignore_do_only:
         if len(vars.do_only) > 0:
             id_list = [f for f in id_list if any([s in f for s in vars.do_only])]
+    if identifier is not None:
+        identifier = identifier.upper()
+        id_list = [f for f in id_list if (identifier == "ALL" or identifier in f.upper()) and "lock" not in f and not any([bl in f for bl in vars.blacklist])]
 
     return iter(PickleIterator(id_list, quiet, **kwargs))
 

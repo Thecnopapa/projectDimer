@@ -1558,6 +1558,8 @@ class Cluster2:
             self.subset = df.copy()
             self.id = "{}-{}-{}".format(self.ref_name, self.c1, self.c2)
 
+
+        self.subset["reversed"] = [False] * len(self.subset)
         self.ndimers = len(self.subset)
         print(self.id)
         print(self.subset)
@@ -1584,7 +1586,7 @@ class Cluster2:
     def __repr__(self):
         return "<Cluster:{} {}-{} /N={}>". format(self.ref_name, self.c1, self.c2, self.ndimers)
 
-    def process_cluster(self, matrix=False, plot=True, gif=False, show=False, **kwargs):
+    def process_cluster(self, matrix=False, plot=False, gif=False, show=False, **kwargs):
         print1("Processing matrix={}, plot={}, gif={}, show={}".format(matrix, plot, gif, show))
         if not self.is_all:
             self.get_com()
@@ -1704,15 +1706,21 @@ class Cluster2:
     def merge(self, cluster2):
         self.merged.append(cluster2.id)
         self.merged.extend(cluster2.merged)
-        self.subset = pd.concat([self.subset, cluster2.subset], axis= 0)
+        sub2 = cluster2.subset
+        sub2.rename(columns={'a0': 'b0', 'a1': 'b1', 'a2': 'b2',
+                             'b0': 'a0', 'b1': 'a1', 'b2': 'a2' }, inplace=True)
+        for row in sub2.itertuples():
+            print(row)
+            sub2.loc[row.Index, "reversed"] = not row.reversed
+        self.subset = pd.concat([self.subset, sub2], axis= 0)
         cluster2.redundant = True
         cluster2.redundant_to = self.id
         cluster2.pickle()
         self.pickle()
 
 
-    def reprocess_cluster(self):
-        self.process_cluster(**self.kwargs)
+    def reprocess_cluster(self, **kwargs):
+        self.process_cluster(**kwargs)
 
 
     def delete(self):
@@ -1734,7 +1742,7 @@ def cluster_redundancy(**kwargs):
             done_clusters.append(cluster1.id)
             continue
         print2(cluster1.id)
-        for cluster2 in load_clusters(onebyone=False):
+        for cluster2 in load_clusters(onebyone=False, identifier=cluster1.ref_name):
 
             if cluster1.id == cluster2.id:
                 continue
@@ -1745,11 +1753,12 @@ def cluster_redundancy(**kwargs):
             d2 = distance(cluster1.comB, cluster2.comA)
             v1 = 10+ cluster1.stdA + cluster2.stdB
             v2 = 10+ cluster1.stdB + cluster2.stdA
-            print4(d1, v1)
-            print4(d2, v2)
+
             if d1 <= v1:
                 if d2 <= v2:
                     print("Redundant clusters")
+                    print4(d1, v1)
+                    print4(d2, v2)
                     cluster1.merge(cluster2)
         done_clusters.append(cluster1.id)
 
@@ -1758,7 +1767,7 @@ def cluster_redundancy(**kwargs):
             print(cluster.id, "is redundant to", cluster.redundant_to)
             cluster.delete()
         else:
-            cluster.reprocess_cluster()
+            cluster.reprocess_cluster(plot=True)
 
 
 
