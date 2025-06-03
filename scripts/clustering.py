@@ -1531,7 +1531,6 @@ class Cluster2:
     path = None
 
     def __init__(self,ref, df,cluster_cols, c1=None, c2=None, is_all=False, **kwargs):
-
         self.kwargs = kwargs
         self.ref_name = ref.name
         self.outer_ids_complete = ref.get_outer_res_list(complete_list=True)
@@ -1551,11 +1550,13 @@ class Cluster2:
             print(cluster_cols)
             print(" & ".join(["{} == {}".format(self.cluster_cols[n], self.cnums[n]) for n in range(len(self.cnums))]))
             self.subset = df.query(" & ".join(["{} == {}".format(self.cluster_cols[n], self.cnums[n]) for n in range(len(self.cnums))]), inplace=False)
+            self.id = "{}-{}-{}".format(self.ref_name, add_front_0(self.c1, digits=2), add_front_0(self.c2, digits=2))
         else:
             self.c1, self.c2 = "all", "all"
             self.is_all = True
             self.subset = df.copy()
-        self.id = "{}-{}-{}".format(self.ref_name, self.c1, self.c2)
+            self.id = "{}-{}-{}".format(self.ref_name, self.c1, self.c2)
+
         self.ndimers = len(self.subset)
         print(self.id)
         print(self.subset)
@@ -1725,13 +1726,15 @@ def cluster_redundancy():
     from imports import load_clusters
     from maths import distance
     done_clusters = []
-    for cluster1 in load_clusters(onebyone=True, quiet=True):
+    for cluster1 in load_clusters(onebyone=True):
         print2(cluster1.id)
         if cluster1.is_all or cluster1.redundant or cluster1.outlier:
             done_clusters.append(cluster1.id)
             continue
-        for cluster2 in load_clusters(onebyone=False, quiet=True):
+        for cluster2 in load_clusters(onebyone=False):
             print3(cluster2.id)
+            if cluster1.id == cluster1.id:
+                continue
             if cluster2.id in done_clusters or cluster2.is_all or cluster2.redundant or cluster2.outlier:
                 continue
             d1 = distance(cluster1.comA, cluster2.comB)
@@ -1747,7 +1750,7 @@ def cluster_redundancy():
         done_clusters.append(cluster1.id)
 
     for cluster in load_clusters(onebyone=True):
-        if cluster.redundant:
+        if cluster.redundant and False:
             cluster.delete()
 
 

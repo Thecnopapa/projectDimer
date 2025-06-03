@@ -101,7 +101,7 @@ def load_clusters(identifier = "all", onebyone=False, **kwargs):
     if onebyone:
         return load_list_1by1(pickle_folder=local.cluster_pickles, ignore_do_only=True, quiet = True, **kwargs)
     else:
-        return load_single_pdb(identifier, pickle_folder=local.cluster_pickles, **kwargs)
+        return load_single_pdb(identifier, pickle_folder=local.cluster_pickles, quiet=True, **kwargs)
 
 
 def load_list_1by1(id_list=None, quiet=True, ignore_do_only=False, keep_extension=True, **kwargs):
@@ -116,9 +116,9 @@ def load_list_1by1(id_list=None, quiet=True, ignore_do_only=False, keep_extensio
 
     return iter(PickleIterator(id_list, quiet, **kwargs))
 
-def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None, force_reload=False, object_class = PDB, quiet=False, first_only=False):
+def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None, force_reload=False, object_class = PDB, quiet=False, first_only=False, **kwargs):
     if not quiet:
-        print1("Loading pdb:", identifier, "-Force reload:", force_reload, "-class:", object_class.__name__)
+        print1("Loading single:", identifier, "-Force reload:", force_reload, "-Pickle folder:", pickle_folder)
     objects = []
     identifier = identifier.upper()
     if not force_reload and pickle_folder is not None:
