@@ -333,7 +333,9 @@ if __name__ == "__main__":
         show_objects(refs, sys.argv[2:])
 
     elif "cluster" in sys.argv[1] and len(sys.argv[2:]) != 0:
-        for cluster in  load_clusters(identifier = sys.argv[2], onebyone=True):
+        print(sys.argv[2])
+
+        for cluster in load_clusters(identifier = sys.argv[2], onebyone=True):
             cluster.show()
         tprint("Showing clusters")
 

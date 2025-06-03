@@ -100,7 +100,7 @@ class PickleIterator:
 
 def load_clusters(identifier = "all", onebyone=False, **kwargs):
     if onebyone:
-        return load_list_1by1(pickle_folder=local.cluster_pickles, ignore_do_only=True, quiet = True, **kwargs)
+        return load_list_1by1(identifier=identifier, pickle_folder=local.cluster_pickles, ignore_do_only=True, quiet = True, **kwargs)
     else:
         return load_single_pdb(identifier, pickle_folder=local.cluster_pickles, quiet=True, **kwargs)
 

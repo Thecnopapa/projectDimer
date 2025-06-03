@@ -1731,7 +1731,7 @@ class Cluster2:
             print(self.pickle_path)
             os.remove(self.pickle_path)
 
-    def show(self, snapshot =True, show_session=True, chainbows=False):
+    def show(self, snapshot =True, show_session=False, chainbows=False):
         from imports import load_references, load_single_pdb
         from superpose import superpose_many_chains
         ref = load_references(identifier=self.ref_name)[0]
@@ -1778,7 +1778,7 @@ class Cluster2:
                 pymol_colour(mpl_colours[self.c2 % mpl_ncolours], "(all)")
                 pymol_save_snapshot(self.id + "_cluster_cols", folder=local.snapshots)
 
-            if show_session:
+            if show_session or "pymol" in sys.argv:
                 session_path = pymol_save_temp_session()
                 pymol_open_session_terminal(session_path)
 
