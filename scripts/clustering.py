@@ -1731,6 +1731,61 @@ class Cluster2:
             print(self.pickle_path)
             os.remove(self.pickle_path)
 
+    def show(self, snapshot =True, show_session=True, chainbows=False):
+        from imports import load_references, load_single_pdb
+        from superpose import superpose_many_chains
+        ref = load_references(identifier=self.ref_name)[0]
+        resids = [res.id[1] for res in ref.structure.get_residues()]
+
+        print(self.subset)
+        chains_to_align = {ref.name: (ref.path, ref.chain, True)}
+        for row in self.subset.itertuples():
+            dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)[0]
+            name = row.id + str(row.is1to2)
+            if row.is1to2 or (not row.is1to2 and row.reversed):
+                chains_to_align[name] = (dimer.replaced_path, row.mon1, True)
+            else:
+                chains_to_align[name] = (dimer.replaced_path, row.mon2, False)
+        print(chains_to_align)
+        local["clusters"] = "clusters"
+
+        super_data = superpose_many_chains(chains_to_align, file_name=self.id + ".pdb", save_folder=local.clusters)
+        print(super_data)
+
+        if snapshot:
+            local["snapshots"] = "snapshots"
+            from pyMol import pymol_start, pymol_load_path, pymol_colour, pymol_list_to_bfactors, pymol_save_snapshot, \
+                mpl_colours, mpl_ncolours, pymol_save_temp_session, pymol_open_session_terminal, pymol_split_states, \
+                pymol_orient, pymol_reinitialize, pymol_get_all_objects
+            pymol_start(show=False)
+            pymol_reinitialize()
+            monster = pymol_load_path(super_data["out_path"], self.id)
+            pymol_split_states(monster)
+            pymol_orient()
+            if chainbows:
+                pymol_colour("chainbow", "(all)")
+                pymol_save_snapshot(subcname + "chainbows", folder=local.snapshots)
+            elif self.oneDmatrix1 is not None and self.oneDmatrix2 is not None:
+                for obj, value in zip(pymol_get_all_objects(), chains_to_align.values()):
+                    chain = value[1]
+                    sele1 = obj + " and (c. {})".format(chain)
+                    sele2 = obj + " and !(c. {})".format(chain)
+                    pymol_list_to_bfactors(val_list=self.oneDmatrix1, obj_name=sele1, resids=resids)
+                    pymol_list_to_bfactors(val_list=self.oneDmatrix2, obj_name=sele2, resids=resids)
+                pymol_colour("blue_yellow_red", "(all)", spectrum="b")
+                pymol_save_snapshot(self.id + "heat_map", folder=local.snapshots)
+            else:
+                pymol_colour(mpl_colours[c % mpl_ncolours], "(all)")
+                pymol_save_snapshot(self.id + "cluster_cols", folder=local.snapshots)
+
+            if show_session:
+                session_path = pymol_save_temp_session()
+                pymol_open_session_terminal(session_path)
+
+
+
+
+
 
 
 def cluster_redundancy(**kwargs):
