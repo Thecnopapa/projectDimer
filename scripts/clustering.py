@@ -1572,6 +1572,7 @@ class Cluster2:
         self.oneDmatrix2 = None
         self.plot_path = None
         self.gif_path = None
+        self.snapshot_path = None
         self.comA = None
         self.comB = None
         self.stdA = None
@@ -1593,7 +1594,7 @@ class Cluster2:
                 self.get_com()
         if matrix:
             if self.matrix is None or force:
-                self.matrix, self.oneDmatrix1, self.oneDmatrix2 = self.get_matrix(threshold=10, force=force)
+                self.matrix, self.oneDmatrix1, self.oneDmatrix2 = self.get_matrix(threshold=10,)
         if plot:
             if self.plot_path is None or force:
                 self.plot_path, self.gif_path = self.get_plot(self.subset, self.cluster_cols, self.id,
@@ -1601,7 +1602,8 @@ class Cluster2:
                                                               stds=(self.stdA, self.stdB),
                                                               show=show, gif=gif)
         if snapshot:
-            self.snapshot_path = self.show(snapshot=True, show_session=False)
+            if self.snapshot_path is None or force:
+                self.snapshot_path = self.show(snapshot=True, show_session=False)
 
 
 
