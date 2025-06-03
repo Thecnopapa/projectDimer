@@ -1538,6 +1538,7 @@ class Cluster2:
         self.outlier = False
         self.merged = []
         self.redundant = False
+        self.redundant_to = None
         if not is_all:
             assert c1 is not None and c2 is not None
             self.is_all = False
@@ -1583,7 +1584,7 @@ class Cluster2:
     def __repr__(self):
         return "<Cluster:{} {}-{} /N={}>". format(self.ref_name, self.c1, self.c2, self.ndimers)
 
-    def process_cluster(self, matrix=True, plot=True, gif=True, show=False, **kwargs):
+    def process_cluster(self, matrix=False, plot=True, gif=False, show=False, **kwargs):
         print1("Processing matrix={}, plot={}, gif={}, show={}".format(matrix, plot, gif, show))
         if not self.is_all:
             self.get_com()
@@ -1597,27 +1598,7 @@ class Cluster2:
 
 
 
-    def merge(self, cluster2):
-        self.merged.append(cluster2.id)
-        self.merged.extend(cluster2.merged)
-        self.subset = pd.concat([self.subset, cluster2.subset], axis= 0)
-        cluster2.redundant = True
-        self.pickle()
-        cluster2.pickle()
 
-
-
-
-
-
-
-    def delete(self):
-        try:
-            os.remove(self.pickle_path)
-        except:
-            print("Failed to delete {}:".format(self.id))
-            print(self.pickle_path)
-            os.remove(self.pickle_path)
 
 
     def get_com(self):
@@ -1720,29 +1701,52 @@ class Cluster2:
             pickle.dump(self, f)
 
 
+    def merge(self, cluster2):
+        self.merged.append(cluster2.id)
+        self.merged.extend(cluster2.merged)
+        self.subset = pd.concat([self.subset, cluster2.subset], axis= 0)
+        cluster2.redundant = True
+        cluster2.redundant_to = self.id
+        cluster2.pickle()
+        self.pickle()
 
 
-def cluster_redundancy():
+    def reprocess_cluster(self):
+        self.process_cluster(**self.kwargs)
+
+
+    def delete(self):
+        try:
+            os.remove(self.pickle_path)
+        except:
+            print("Failed to delete {}:".format(self.id))
+            print(self.pickle_path)
+            os.remove(self.pickle_path)
+
+
+
+def cluster_redundancy(**kwargs):
     from imports import load_clusters
     from maths import distance
     done_clusters = []
     for cluster1 in load_clusters(onebyone=True):
-        print2(cluster1.id)
         if cluster1.is_all or cluster1.redundant or cluster1.outlier:
             done_clusters.append(cluster1.id)
             continue
+        print2(cluster1.id)
         for cluster2 in load_clusters(onebyone=False):
-            print3(cluster2.id)
-            if cluster1.id == cluster1.id:
+
+            if cluster1.id == cluster2.id:
                 continue
             if cluster2.id in done_clusters or cluster2.is_all or cluster2.redundant or cluster2.outlier:
                 continue
+            print3(cluster2.id)
             d1 = distance(cluster1.comA, cluster2.comB)
             d2 = distance(cluster1.comB, cluster2.comA)
             v1 = 10+ cluster1.stdA + cluster2.stdB
             v2 = 10+ cluster1.stdB + cluster2.stdA
-            print(d1, v1)
-            print(d2, v2)
+            print4(d1, v1)
+            print4(d2, v2)
             if d1 <= v1:
                 if d2 <= v2:
                     print("Redundant clusters")
@@ -1750,7 +1754,11 @@ def cluster_redundancy():
         done_clusters.append(cluster1.id)
 
     for cluster in load_clusters(onebyone=True):
-        if cluster.redundant and False:
+        if cluster.redundant:
+            print(cluster.id, "is redundant to", cluster.redundant_to)
             cluster.delete()
+        else:
+            cluster.reprocess_cluster()
+
 
 

@@ -88,11 +88,12 @@ class PickleIterator:
         if self.n >= len(self.id_list):
             raise StopIteration
         else:
-            if not vars.quiet:
+            if not vars.quiet and not self.kwargs["quiet"]:
                 sprint(self.id_list[self.n])
+                self.progress.add(info=self.id_list[self.n])
             loaded = load_single_pdb(self.id_list[self.n], **self.kwargs)
             assert len(loaded) == 1, "More than one object with the same id! \n{}:\n{}".format(self.id_list[self.n], loaded)
-            self.progress.add(info=self.id_list[self.n])
+
             self.n += 1
             return loaded[0]
 
