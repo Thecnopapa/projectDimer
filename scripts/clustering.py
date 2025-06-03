@@ -1532,10 +1532,13 @@ class Cluster2:
 
     def __init__(self,ref, df,cluster_cols, c1=None, c2=None, is_all=False, **kwargs):
 
+        self.kwargs = kwargs
         self.ref_name = ref.name
         self.outer_ids_complete = ref.get_outer_res_list(complete_list=True)
         self.cluster_cols = cluster_cols
         self.outlier = False
+        self.merged = []
+        self.redundant = False
         if not is_all:
             assert c1 is not None and c2 is not None
             self.is_all = False
@@ -1571,8 +1574,9 @@ class Cluster2:
         self.stdB = None
 
 
+
         if not self.outlier:
-            self.process_cluster(**kwargs)
+            self.process_cluster(**self.kwargs)
             self.pickle()
 
     def __repr__(self):
@@ -1590,6 +1594,29 @@ class Cluster2:
                                                           stds=(self.stdA, self.stdB),
                                                           show=show, gif=gif)
 
+
+
+    def merge(self, cluster2):
+        self.merged.append(cluster2.id)
+        self.merged.extend(cluster2.merged)
+        self.subset = pd.concat([self.subset, cluster2.subset], axis= 0)
+        cluster2.redundant = True
+        self.pickle()
+        cluster2.pickle()
+
+
+
+
+
+
+
+    def delete(self):
+        try:
+            os.remove(self.pickle_path)
+        except:
+            print("Failed to delete {}:".format(self.id))
+            print(self.pickle_path)
+            os.remove(self.pickle_path)
 
 
     def get_com(self):
@@ -1695,4 +1722,32 @@ class Cluster2:
 
 
 def cluster_redundancy():
-    pass
+    from imports import load_clusters
+    from maths import distance
+    done_clusters = []
+    for cluster1 in load_clusters(onebyone=True, quiet=True):
+        print2(cluster1.id)
+        if cluster1.is_all or cluster1.redundant or cluster1.outlier:
+            done_clusters.append(cluster1.id)
+            continue
+        for cluster2 in load_clusters(onebyone=False, quiet=True):
+            print3(cluster2.id)
+            if cluster2.id in done_clusters or cluster2.is_all or cluster2.redundant or cluster2.outlier:
+                continue
+            d1 = distance(cluster1.comA, cluster2.comB)
+            d2 = distance(cluster1.comB, cluster2.comA)
+            v1 = 10+ cluster1.stdA + cluster2.stdB
+            v2 = 10+ cluster1.stdB + cluster2.stdA
+            print(d1, v1)
+            print(d2, v2)
+            if d1 <= v1:
+                if d2 <= v2:
+                    print("Redundant clusters")
+                    cluster1.merge(cluster2)
+        done_clusters.append(cluster1.id)
+
+    for cluster in load_clusters(onebyone=True):
+        if cluster.redundant:
+            cluster.delete()
+
+

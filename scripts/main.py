@@ -51,6 +51,8 @@ def main(PROCESS_ALL = False,
          GIFS = True,
          SNAPSHOTS = True,
          CHAINBOWS = False,
+         GENERATE_CLUSTERS = True,
+         DELETE_PREVIOUS = True,
          ):
 
 
@@ -198,75 +200,86 @@ def main(PROCESS_ALL = False,
     tprint("CLUSTERING v2")
 
     if not SKIP_CLUSTERING or PROCESS_ALL and False:
+        from clustering import generate_dihedrals_df, cluster_angles, create_clusters, cluster_redundancy
 
-        from clustering import generate_dihedrals_df, plot_dihedrals, cluster_angles, create_clusters, Cluster2
-        generate_dihedrals_df(force = False or PROCESS_ALL)
+        print(len(os.listdir(local.cluster_pickles)))
+        if GENERATE_CLUSTERS or len(os.listdir(local.cluster_pickles))<=3:
+            if DELETE_PREVIOUS:
+                if os.path.exists(local.cluster_pickles):
+                    print("Deleting files in: {}".format(local.cluster_pickles))
+                    for file in sorted(os.listdir(local.cluster_pickles)):
+                        print(file, end="\r")
+                        os.remove(os.path.join(local.cluster_pickles, file))
+            generate_dihedrals_df(force=False or PROCESS_ALL)
 
-        for file in sorted(os.listdir(root.dihedrals)):
-            dihedrals_path = os.path.join(root.dihedrals, file)
-            cluster1_folder = cluster_angles(dihedrals_path,
-                                             bandwidth=40,
-                                             angles=["a0", "a1", "a2"],
-                                             cluster_name="angle_cluster1",
-                                             folder="angle_clusters1")
+            for file in sorted(os.listdir(root.dihedrals)):
+                dihedrals_path = os.path.join(root.dihedrals, file)
+                cluster1_folder = cluster_angles(dihedrals_path,
+                                                 bandwidth=40,
+                                                 angles=["a0", "a1", "a2"],
+                                                 cluster_name="angle_cluster1",
+                                                 folder="angle_clusters1")
 
 
-        for file in sorted(os.listdir(cluster1_folder)):
-            if ONLY_GR and "GR" not in file:
-                continue
-            dihedrals_path = os.path.join(cluster1_folder, file)
-
-
-
-        for file in sorted(os.listdir(cluster1_folder)):
-            if ONLY_GR and "GR" not in file:
-                continue
-            dihedrals_path = os.path.join(cluster1_folder, file)
-            cluster2_folder = cluster_angles(dihedrals_path,
-                                             bandwidth=30,
-                                             angles=["b0", "b1", "b2"],
-                                             cluster_name="angle_cluster2",
-                                             folder="angle_clusters2",
-                                             split_by="angle_cluster1",
-                                             save_together=True,
-                                             )
+            for file in sorted(os.listdir(cluster1_folder)):
+                if ONLY_GR and "GR" not in file:
+                    continue
+                dihedrals_path = os.path.join(cluster1_folder, file)
 
 
 
-        matrix_dfs = {}
-        if SNAPSHOTS:
-            from pyMol import pymol_start
-            pymol_start(show=False)
-        for n, file in enumerate(sorted(os.listdir(cluster2_folder))):
-
-            if "--1" in file:
-                continue
-            if ONLY_GR and "GR" not in file:
-                continue
-            ref_name = file.split(".")[0]
-            ref = [ref for ref in vars.references if ref.name == ref_name][0]
-            sprint(ref_name+ "({}/{})".format(n, len(os.listdir(cluster2_folder))))
-            dihedrals_path = os.path.join(cluster2_folder, file)
-
-            create_clusters(dihedrals_path, ref, gif =GIFS, matrix = HEATMAPS)
+            for file in sorted(os.listdir(cluster1_folder)):
+                if ONLY_GR and "GR" not in file:
+                    continue
+                dihedrals_path = os.path.join(cluster1_folder, file)
+                cluster2_folder = cluster_angles(dihedrals_path,
+                                                 bandwidth=30,
+                                                 angles=["b0", "b1", "b2"],
+                                                 cluster_name="angle_cluster2",
+                                                 folder="angle_clusters2",
+                                                 split_by="angle_cluster1",
+                                                 save_together=True,
+                                                 )
 
 
 
 
+            if SNAPSHOTS:
+                from pyMol import pymol_start
+                pymol_start(show=False)
+
+
+            for n, file in enumerate(sorted(os.listdir(cluster2_folder))):
+
+                if "--1" in file:
+                    continue
+                if ONLY_GR and "GR" not in file:
+                    continue
+                ref_name = file.split(".")[0]
+                ref = [ref for ref in vars.references if ref.name == ref_name][0]
+                sprint(ref_name+ "({}/{})".format(n, len(os.listdir(cluster2_folder))))
+                dihedrals_path = os.path.join(cluster2_folder, file)
+                create_clusters(dihedrals_path, ref, gif =GIFS, matrix = HEATMAPS)
+
+        cluster_redundancy()
 
 
 
 
-            """matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path,
-                                                                clusters="angle_cluster2",
-                                                                subset_col="angle_cluster2",
-                                                                subset = None,
-                                                                heatmap = HEATMAPS, hm_threshold=10,
-                                                                outer_ids_complete=ref.get_outer_res_list(complete_list=True),
-                                                                gif=GIFS,
-                                                                snapshot=SNAPSHOTS,
-                                                                chainbows = CHAINBOWS,
-                                                                include_all=True,)"""
+
+
+
+
+        """matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path,
+                                                            clusters="angle_cluster2",
+                                                            subset_col="angle_cluster2",
+                                                            subset = None,
+                                                            heatmap = HEATMAPS, hm_threshold=10,
+                                                            outer_ids_complete=ref.get_outer_res_list(complete_list=True),
+                                                            gif=GIFS,
+                                                            snapshot=SNAPSHOTS,
+                                                            chainbows = CHAINBOWS,
+                                                            include_all=True,)"""
 
 
 
@@ -329,65 +342,68 @@ if __name__ == "__main__":
     from Globals import root, local, vars
     from utilities import *
 
-    main(PROCESS_ALL=vars.force, # Master switch
+    main(
+        PROCESS_ALL=vars.force, # Master switch
 
-         # Setup and data import
-         VERBOSE=vars.verbose,
-         QUIET=vars.quiet,
-         DO_ONLY=DO_ONLY, # ( list of strings / string) Names of PDBs to be processed (CAPS sensitive?, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"
-         LARGE_DATASET=True,  # Use a large dataset (delete all local data previously to avoid errors)
-         MAX_THREADS=1,  # Number of threads, might not be implemented yet, (0 or 1 deactivate threading)
+        # Setup and data import
+        VERBOSE=vars.verbose,
+        QUIET=vars.quiet,
+        DO_ONLY=DO_ONLY, # ( list of strings / string) Names of PDBs to be processed (CAPS sensitive?, separated by space) e.g ["5N10", "1M2Z"] or "5N10 1M2Z"
+        LARGE_DATASET=True,  # Use a large dataset (delete all local data previously to avoid errors)
+        MAX_THREADS=1,  # Number of threads, might not be implemented yet, (0 or 1 deactivate threading)
 
-         # Symmetry calculations, and generation of Monomers + Dimers
-         SKIP_SYMMETRY = True, # Skip the entire block (overridden by PROCESS_ALL)
-         MINIMUM_CHAIN_LENGTH=100,# Minimum number of residues to consider a chain for dimerization (to ignore ligands and small molecules)
-         CONTACT_DISTANCE_SYMMETRY=8,  # Minimum (less or equal than) distance in Angstroms to consider a contact between atoms
-         MINIMUM_CONTACTS=0,  # Minimum number of contacts to consider a dimer interface
+        # Symmetry calculations, and generation of Monomers + Dimers
+        SKIP_SYMMETRY = True, # Skip the entire block (overridden by PROCESS_ALL)
+        MINIMUM_CHAIN_LENGTH=100,# Minimum number of residues to consider a chain for dimerization (to ignore ligands and small molecules)
+        CONTACT_DISTANCE_SYMMETRY=8,  # Minimum (less or equal than) distance in Angstroms to consider a contact between atoms
+        MINIMUM_CONTACTS=0,  # Minimum number of contacts to consider a dimer interface
 
-         # Dimer processing, includes contact calculation and face identification, generates contact dataframes
-         SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL and REPROCESS_DIMERS)
-         REPROCESS_DIMERS = True,
-         FORCE_CONTACTS = False,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
-         CONTACT_DISTANCE_CLUSTERING = 12,
-         FACES_BY_COM = True,
+        # Dimer processing, includes contact calculation and face identification, generates contact dataframes
+        SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL and REPROCESS_DIMERS)
+        REPROCESS_DIMERS = True,
+        FORCE_CONTACTS = False,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
+        CONTACT_DISTANCE_CLUSTERING = 12,
+        FACES_BY_COM = True,
 
-         # SASA related (BROKEN)
-         SASA = False, # Whether to run SASA calculations, currently broken
-         FORCE_SASA=True, # DEPRECATED
-         BALL_SIZE=1.6, # DEPRECATED
-
-
-         # Compare GR clustering to EVA clustering
-         COMPARE = True, # requiered
-         FORCE_COMPARE= True,
-
-         # Split by faces based on Eva
-         SPLIT_FACES=False,
-         SPLIT_FACES_ANYWAY = False,
-         FORCE_SPLIT=True,
-
-         # Clustering, from SM to plotting
-         SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
-         FORCE_CLUSTERING=True,  # Force clustering if already calculated (overridden by PROCESS_ALL)
-         ONLY_GR = True, # Whether to only cluster GR
-         REMOVE_REDUNDANCY = True,
-         CLUSTERING_METHOD = "MeanShift",
-         QUANTILE= 0.1,
-         N_SAMPLE_MULTIPLIER = None,
-         BANDWIDTH = 0.03,
-
-         N_CLUSTERS = 4,
-         CLUSTER_BY_PCA = True,
-         DIMENSIONS_PCA = [0,1,2],
-         MINIMUM_SCORE = 0,
-
-         HEATMAPS = True,
-         GIFS = True,
-         SNAPSHOTS = True,
-         CHAINBOWS = False,
+        # SASA related (BROKEN)
+        SASA = False, # Whether to run SASA calculations, currently broken
+        FORCE_SASA=True, # DEPRECATED
+        BALL_SIZE=1.6, # DEPRECATED
 
 
-         )
+        # Compare GR clustering to EVA clustering
+        COMPARE = True, # requiered
+        FORCE_COMPARE= True,
+
+        # Split by faces based on Eva
+        SPLIT_FACES=False,
+        SPLIT_FACES_ANYWAY = False,
+        FORCE_SPLIT=True,
+
+        # Clustering, from SM to plotting
+        SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
+        FORCE_CLUSTERING=True,  # Force clustering if already calculated (overridden by PROCESS_ALL)
+        ONLY_GR = True, # Whether to only cluster GR
+        REMOVE_REDUNDANCY = True,
+        CLUSTERING_METHOD = "MeanShift",
+        QUANTILE= 0.1,
+        N_SAMPLE_MULTIPLIER = None,
+        BANDWIDTH = 0.03,
+
+        N_CLUSTERS = 4,
+        CLUSTER_BY_PCA = True,
+        DIMENSIONS_PCA = [0,1,2],
+        MINIMUM_SCORE = 0,
+
+        HEATMAPS = False,
+        GIFS = False,
+        SNAPSHOTS = True,
+        CHAINBOWS = False,
+        GENERATE_CLUSTERS = False,
+        DELETE_PREVIOUS = True,
+
+
+        )
 
     #quit()
 
