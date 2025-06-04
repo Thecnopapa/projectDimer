@@ -332,12 +332,16 @@ if __name__ == "__main__":
         tprint("Showing references")
         show_objects(refs, sys.argv[2:])
 
-    elif "cluster" in sys.argv[1] and len(sys.argv[2:]) != 0:
-        print(sys.argv[2])
-
-        for cluster in load_clusters(identifier = sys.argv[2], onebyone=True):
-            cluster.show()
-        tprint("Showing clusters")
+    elif "cluster" in sys.argv[1]:
+        if len(sys.argv[2:]) != 0:
+            print(sys.argv[2])
+            for cluster in load_clusters(identifier = sys.argv[2], onebyone=True):
+                cluster.show(show_snapshot = True, show_session = "pymol" in sys.argv)
+            tprint("Showing clusters")
+        else:
+            sprint("Available clusters")
+            for file in os.listdir(local.cluster_pickles):
+                print1(file.split(".")[0])
 
 
 
