@@ -1565,6 +1565,7 @@ class Cluster2:
         print(self.subset)
         if len(self.subset) == 0:
             quit()
+        self.subset.sort_values(by="id", inplace=True)
 
 
         self.matrix = None
@@ -1630,13 +1631,18 @@ class Cluster2:
         from imports import load_single_pdb
         print2("Generating cluster matrix")
         matrix = None
+        self.subset.sort_values(by="id", inplace=True)
         progress = ProgressBar(len(self.subset), silent=True)
         for point in self.subset.itertuples():
             dimer = load_single_pdb(point.id, pickle_folder=local.dimers, first_only=True, quiet=True)
+            is1to2 = point.is1to2
+            if point.reversed:
+                is1to2 = not is1to2
+
             if matrix is None:
-                matrix = dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not (point.is1to2 or (not point.is1to2 and point.reversed)))
+                matrix = dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not is1to2)
             else:
-                matrix = np.add(matrix, dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not (point.is1to2 or (not point.is1to2 and point.reversed))))
+                matrix = np.add(matrix, dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not is1to2))
             progress.add(info=point.id)
 
         oneDmatrix1 = [sum(i)/ len(self.outer_ids_complete) for i in matrix]
@@ -1645,6 +1651,7 @@ class Cluster2:
 
     @staticmethod
     def get_plot(subset, cluster_cols, id, coms=(None,None),stds=(None,None), gif=True, id_labels=False, save=True, show=False, show_outliers=False):
+        self.subset.sort_values(by="id", inplace=True)
         import matplotlib.pyplot as plt
         fig = plt.figure(figsize=(20,10))
         ax1 = fig.add_subplot(121, projection='3d')
@@ -1721,6 +1728,7 @@ class Cluster2:
             print(row)
             sub2.loc[row.Index, "reversed"] = not row.reversed
         self.subset = pd.concat([self.subset, sub2], axis= 0)
+        self.subset.sort_values(by="id", inplace=True)
         cluster2.redundant = True
         cluster2.redundant_to = self.id
         cluster2.pickle()
@@ -1746,7 +1754,7 @@ class Cluster2:
         from Bio.PDB import PDBParser, PDBIO
         ref = load_references(identifier=self.ref_name)[0]
         resids = [res.id[1] for res in ref.structure.get_residues()]
-
+        self.subset.sort_values(by="id", inplace=True)
         print(self.subset)
         chains_to_align = {ref.name: (ref.path, ref.chain, True)}
         for n, row in enumerate(self.subset.itertuples()):

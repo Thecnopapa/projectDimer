@@ -127,7 +127,11 @@ def pymol_save_small(file_name, folder, dpi=300, height=100, width=150, save_ses
 
 def pymol_save_snapshot(file_name, folder, dpi=300, height=400, width=600, orient=True):
     print("(PyMol) Saving snapshot:", folder, file_name)
-    image_path = os.path.join(folder, file_name+"ss.png")
+    image_path = os.path.join(folder, file_name)
+    if image_path[-1].isdigit():
+        image_path += "ss.png"
+    else:
+        image_path += ".png"
     #print(os.listdir(folder))
     if orient:
         pymol_orient()
