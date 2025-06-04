@@ -136,7 +136,11 @@ def pymol_save_snapshot(file_name, folder, dpi=300, height=400, width=600, orien
     if orient:
         pymol_orient()
     print(image_path)
-    pymol.cmd.png(image_path, width=width, height=height, dpi=dpi, quiet=0, ray=0)
+    try:
+        pymol.cmd.png(image_path, width=width, height=height, dpi=dpi, quiet=0, ray=0)
+    except:
+        print("(PyMol) Failed to save image:", image_path)
+        image_path = None
     #pymol.cmd.png("test.png")
     #pymol.cmd.save(image_path, quiet=0)
     return image_path

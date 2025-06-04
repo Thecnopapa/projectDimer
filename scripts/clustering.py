@@ -1596,7 +1596,7 @@ class Cluster2:
                 self.get_com()
         if matrix:
             if self.matrix is None or force:
-                self.matrix, self.oneDmatrix1, self.oneDmatrix2 = self.get_matrix(threshold=10,)
+                self.get_matrix(threshold=10,)
         if plot:
             if self.plot_path is None or force:
                 self.plot_path, self.gif_path = self.get_plot(self.subset, self.cluster_cols, self.id,
@@ -1627,7 +1627,7 @@ class Cluster2:
         #print(self.stdB, self.comB)
 
 
-    def plot_matrix(self, matrix, title, show=False, **kwargs):
+    def plot_matrix(self, show=False, **kwargs):
         import matplotlib as mpl
         import matplotlib.pyplot as plt
 
@@ -1637,21 +1637,69 @@ class Cluster2:
         tuples = list(zip(map(norm, cvals), colors))
         cmap = mpl.colors.LinearSegmentedColormap.from_list("colormap", tuples)
 
+        outer_ids_matrix = np.array([self.outer_ids_binary] * len(self.outer_ids_binary))
+        colors2 = ((0.5, 0.5, 0.5, 1), (0.0, 0.0, 0.0, 0.0))
+        tuples2 = list(zip([0, 1], colors2))
+        cmap2 = mpl.colors.LinearSegmentedColormap.from_list("black0s", tuples2)
+
         fig, axes = plt.subplots(2, 2,
                                  # sharex="col",
                                  gridspec_kw={'height_ratios': [4, 2], "width_ratios": [2, 4]},
-                                 figsize=(12, 12))
+                                 figsize=(9.6, 12))
 
         ax = axes[0, 1]
         axLeft = axes[0, 0]
         axBottom = axes[1, 1]
+        fig.subplots_adjust(right=0.8)
+        main_fig1 = ax.imshow(self.matrix.T, cmap=cmap)
+        cbar = plt.colorbar(main_fig1, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
+        ax.imshow(outer_ids_matrix, cmap=cmap2)
+        ax.imshow(outer_ids_matrix.T, cmap=cmap2)
+        print(self.oneDmatrix1)
+        print(self.oneDmatrix2)
+        print(self.outer_ids_complete)
+        for n, (p1b, p2b, ob) in enumerate(zip(self.oneDmatrix1, self.oneDmatrix2, self.outer_ids_complete)):
+            if n == 0:
+                continue
+            n2 = - n
+            p1a, p2a, oa = self.oneDmatrix1[n-1], self.oneDmatrix2[n-1], self.outer_ids_complete[n-1]
+            if oa is None:
+                c1a = "black"
+                c2a = "black"
+            else:
+                c1a = cmap(p1a)
+                c2a = cmap(p2a)
 
-        main_fig = ax.imshow(matrix.T, cmap=cmap)
+            if ob is None:
+                c1b = "black"
+                c2b = "black"
+            else:
+                c1b =  cmap(p1b)
+                c2b =  cmap(p2b)
+
+            middle1 = (p1a + p1b) / 2
+            middle2 = (p2a + p2b) / 2
 
 
+            axBottom.plot((n - 1, n-0.5), (p1a, middle1), c=c1a, linestyle='--', linewidth=0.5)
+            axBottom.plot((n, n - 0.5), (p1b, middle1), c=c1b, linestyle='--', linewidth=0.5)
+            axLeft.plot( (p2a, middle2), (n2 + 1, n2 + 0.5), c=c2a, linestyle='--', linewidth=0.5)
+            axLeft.plot( (p2b, middle2), (n2, n2 + 0.5), c=c2b, linestyle='--', linewidth=0.5)
 
 
+        cbar_title = "Occurence"
+        cbar.set_label(cbar_title)
+        #ax.set_title(self.id + " N={}".format(self.ndimers))
+        fig.suptitle(self.id + " N={}".format(self.ndimers))
 
+
+        #fig.tight_layout()
+        local["heatmaps"] = "images/heatmaps"
+        fig_path = os.path.join(local.heatmaps, self.id + ".png")
+        plt.savefig(fig_path)
+        if show:
+            plt.show(block=vars.block)
+        return fig_path
 
 
 
@@ -1677,16 +1725,11 @@ class Cluster2:
         oneDmatrix1 = [sum(i)/ len(self.outer_ids_complete) for i in matrix]
         oneDmatrix2 = [sum(i) / len(self.outer_ids_complete) for i in matrix.T]
 
+        self.matrix, self.oneDmatrix1, self.oneDmatrix2 = matrix, oneDmatrix1, oneDmatrix2
         if plot:
-            self.plot_matrix(matrix, self.id, **kwargs)
+            self.plot_matrix(**kwargs)
 
-
-
-
-
-
-
-        return matrix, oneDmatrix1, oneDmatrix2
+        return self.matrix, self.oneDmatrix1, self.oneDmatrix2
 
     @staticmethod
     def get_plot(subset, cluster_cols, id, coms=(None,None),stds=(None,None), gif=True, id_labels=False, save=True, show=False, show_outliers=False):
