@@ -1622,8 +1622,8 @@ class Cluster2:
         distancesB = [distance(point, self.comB) for point in anglesB]
         self.stdA = np.std(distancesA)
         self.stdB = np.std(distancesB)
-        print(self.stdA, self.comA)
-        print(self.stdB, self.comB)
+        #print(self.stdA, self.comA)
+        #print(self.stdB, self.comB)
 
 
 
@@ -1725,7 +1725,7 @@ class Cluster2:
         sub2.rename(columns={'a0': 'b0', 'a1': 'b1', 'a2': 'b2',
                              'b0': 'a0', 'b1': 'a1', 'b2': 'a2' }, inplace=True)
         for row in sub2.itertuples():
-            print(row)
+            #print(row)
             sub2.loc[row.Index, "reversed"] = not row.reversed
         self.subset = pd.concat([self.subset, sub2], axis= 0)
         self.subset.sort_values(by="id", inplace=True)
@@ -1780,36 +1780,36 @@ class Cluster2:
                 #print(atom.bfactor)
 
         super_data = superpose_many_chains(chains_to_align, file_name=self.id + ".pdb", save_folder=local.cluster_pdbs)
-        print(super_data)
+        #print(super_data)
         monster_path = super_data["out_path"]
 
         if regenerate_matrix:
             self.reprocess_cluster(matrix=True,force=True)
         if self.oneDmatrix1 is not None and self.oneDmatrix2 is not None:
-            [print(v1, v2) for v1,v2 in zip(self.oneDmatrix1, self.oneDmatrix2)]
+            #[print(v1, v2) for v1,v2 in zip(self.oneDmatrix1, self.oneDmatrix2)]
             structure = PDBParser(QUIET=True).get_structure(self.id, monster_path)
             assert len(list(structure.get_models())) == len(chains_to_align)
             n = 1
             for model, (key,value) in zip(structure.get_models(), chains_to_align.items()):
                 model.id = key
-                print1(n, model)
-                print2(value)
+                #print1(n, model)
+                #print2(value)
 
-                [print(chain) for chain in model.get_chains()]
+                #[print(chain) for chain in model.get_chains()]
 
                 for chain in model.get_chains():
                     print2(chain)
                     is_chain1 = chain.id == value[1]
-                    print3("Chain is chain 1? ", is_chain1, chain.id, value[1])
+                    #print3("Chain is chain 1? ", is_chain1, chain.id, value[1])
 
 
-                    print3("Should chain have matrix1? ", is_chain1)
+                    #print3("Should chain have matrix1? ", is_chain1)
 
                     if is_chain1:
-                        print4("Setting matrix1")
+                        #print4("Setting matrix1")
                         alter_bfactors(chain, self.oneDmatrix1)
                     else:
-                        print4("Setting matrix2")
+                        #print4("Setting matrix2")
                         alter_bfactors(chain, self.oneDmatrix2)
 
 
