@@ -1655,9 +1655,9 @@ class Cluster2:
         cbar = plt.colorbar(main_fig1, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
         ax.imshow(outer_ids_matrix, cmap=cmap2)
         ax.imshow(outer_ids_matrix.T, cmap=cmap2)
-        print(self.oneDmatrix1)
-        print(self.oneDmatrix2)
-        print(self.outer_ids_complete)
+        #print(self.oneDmatrix1)
+        #print(self.oneDmatrix2)
+        #print(self.outer_ids_complete)
         for n, (p1b, p2b, ob) in enumerate(zip(self.oneDmatrix1, self.oneDmatrix2, self.outer_ids_complete)):
             if n == 0:
                 continue
