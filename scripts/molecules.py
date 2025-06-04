@@ -1014,7 +1014,7 @@ class Reference(Monomer):
         from faces import GR_dict
         self.face_dict = GR_dict.copy()
 
-    def get_outer_res_list(self, threshold=10, inner=False, id_only=True, complete_list = False):
+    def get_outer_res_list(self, threshold=10, inner=False, id_only=True, complete_list = False, binary = False):
         res_list = []
         """[print(res.sasa) for res in self.structure.get_residues()]
         for res in self.structure.get_residues():
@@ -1034,10 +1034,15 @@ class Reference(Monomer):
             if inner:
                 is_outer = not is_outer
             if is_outer:
-                if id_only:
+                if binary:
+                    res_list.append(1)
+                elif id_only:
                     res_list.append(residue.id[1])
                 else:
                     res_list.append(residue)
             elif complete_list:
-                res_list.append(None)
+                if binary:
+                    res_list.append(0)
+                else:
+                    res_list.append(None)
         return res_list

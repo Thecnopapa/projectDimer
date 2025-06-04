@@ -1534,6 +1534,7 @@ class Cluster2:
         self.kwargs = kwargs
         self.ref_name = ref.name
         self.outer_ids_complete = ref.get_outer_res_list(complete_list=True)
+        self.outer_ids_binary = ref.get_outer_res_list(complete_list=True, binary=True)
         self.cluster_cols = cluster_cols
         self.outlier = False
         self.merged = []
@@ -1626,8 +1627,36 @@ class Cluster2:
         #print(self.stdB, self.comB)
 
 
+    def plot_matrix(self, matrix, title, show=False, **kwargs):
+        import matplotlib as mpl
+        import matplotlib.pyplot as plt
 
-    def get_matrix(self, threshold, plot = True):
+        cvals = (0,0.5,1)
+        colors = ("blue", "yellow", "red")
+        norm = plt.Normalize(min(cvals), max(cvals))
+        tuples = list(zip(map(norm, cvals), colors))
+        cmap = mpl.colors.LinearSegmentedColormap.from_list("colormap", tuples)
+
+        fig, axes = plt.subplots(2, 2,
+                                 # sharex="col",
+                                 gridspec_kw={'height_ratios': [4, 2], "width_ratios": [2, 4]},
+                                 figsize=(12, 12))
+
+        ax = axes[0, 1]
+        axLeft = axes[0, 0]
+        axBottom = axes[1, 1]
+
+        main_fig = ax.imshow(matrix.T, cmap=cmap)
+
+
+
+
+
+
+
+
+
+    def get_matrix(self, threshold, plot = True, **kwargs):
         from imports import load_single_pdb
         print2("Generating cluster matrix")
         matrix = None
@@ -1649,12 +1678,8 @@ class Cluster2:
         oneDmatrix2 = [sum(i) / len(self.outer_ids_complete) for i in matrix.T]
 
         if plot:
-            from faces import ContactSurface
-            ContactSurface.get_heat_map(
-                matrix,
-                title= self.id,
-                normalize = self.ndimers
-            )
+            self.plot_matrix(matrix, self.id, **kwargs)
+
 
 
 
@@ -1739,7 +1764,6 @@ class Cluster2:
         sub2.rename(columns={'a0': 'b0', 'a1': 'b1', 'a2': 'b2',
                              'b0': 'a0', 'b1': 'a1', 'b2': 'a2' }, inplace=True)
         for row in sub2.itertuples():
-            #print(row)
             sub2.loc[row.Index, "reversed"] = not row.reversed
         self.subset = pd.concat([self.subset, sub2], axis= 0)
         self.subset.sort_values(by="id", inplace=True)
