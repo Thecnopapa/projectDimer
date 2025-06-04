@@ -1627,7 +1627,7 @@ class Cluster2:
 
 
 
-    def get_matrix(self, threshold):
+    def get_matrix(self, threshold, plot = True):
         from imports import load_single_pdb
         print2("Generating cluster matrix")
         matrix = None
@@ -1647,6 +1647,20 @@ class Cluster2:
 
         oneDmatrix1 = [sum(i)/ len(self.outer_ids_complete) for i in matrix]
         oneDmatrix2 = [sum(i) / len(self.outer_ids_complete) for i in matrix.T]
+
+        if plot:
+            from faces import ContactSurface
+            ContactSurface.get_heat_map(
+                matrix,
+                title= self.id,
+                normalize = self.ndimers
+            )
+
+
+
+
+
+
         return matrix, oneDmatrix1, oneDmatrix2
 
     @staticmethod
@@ -1729,6 +1743,7 @@ class Cluster2:
             sub2.loc[row.Index, "reversed"] = not row.reversed
         self.subset = pd.concat([self.subset, sub2], axis= 0)
         self.subset.sort_values(by="id", inplace=True)
+        self.ndimers = len(self.subset)
         cluster2.redundant = True
         cluster2.redundant_to = self.id
         cluster2.pickle()
@@ -1753,7 +1768,6 @@ class Cluster2:
         from superpose import superpose_many_chains
         from Bio.PDB import PDBParser, PDBIO, Structure
         ref = load_references(identifier=self.ref_name)[0]
-        resids = [res.id[1] for res in ref.structure.get_residues()]
         self.subset.sort_values(by="id", inplace=True)
         print(self.subset)
         chains_to_align = {ref.name: (ref.path, ref.chain, True, False, 0)}
@@ -1767,49 +1781,29 @@ class Cluster2:
                 chains_to_align[name] = (dimer.replaced_path, row.mon1, row.is1to2, row.reversed, n+1)
             else:
                 chains_to_align[name] = (dimer.replaced_path, row.mon2, row.is1to2, row.reversed, n+1)
-        #print(chains_to_align)
         self.chains_to_align = chains_to_align
         local["cluster_pdbs"] = "exports/cluster_pdbs"
 
         def alter_bfactors(chain, value_list):
             assert  len(chain) == len(value_list)
-            #print(chain.id)
             for atom, value in zip(chain.get_atoms(), value_list):
-                #print3(atom.bfactor, "-->", end=" ")
                 atom.bfactor = value
-                #print(atom.bfactor)
 
         super_data = superpose_many_chains(chains_to_align, file_name=self.id + ".pdb", save_folder=local.cluster_pdbs)
-        #print(super_data)
         monster_path = super_data["out_path"]
 
         if regenerate_matrix:
             self.reprocess_cluster(matrix=True,force=True)
         if self.oneDmatrix1 is not None and self.oneDmatrix2 is not None:
-            #[print(v1, v2) for v1,v2 in zip(self.oneDmatrix1, self.oneDmatrix2)]
             structure = PDBParser(QUIET=True).get_structure(self.id, monster_path)
             assert len(list(structure.get_models())) == len(chains_to_align)
-            n = 1
             for model, (key,value) in zip(structure.get_models(), chains_to_align.items()):
                 model.id = key
-                #print1(n, model)
-                #print2(value)
-
-                #[print(chain) for chain in model.get_chains()]
-
                 for chain in model.get_chains():
-                    print2(chain)
                     is_chain1 = chain.id == value[1]
-                    #print3("Chain is chain 1? ", is_chain1, chain.id, value[1])
-
-
-                    #print3("Should chain have matrix1? ", is_chain1)
-
                     if is_chain1:
-                        #print4("Setting matrix1")
                         alter_bfactors(chain, self.oneDmatrix1)
                     else:
-                        #print4("Setting matrix2")
                         alter_bfactors(chain, self.oneDmatrix2)
 
 
@@ -1821,7 +1815,6 @@ class Cluster2:
                 exporter.set_structure(new_structure)
                 new_folder = os.path.join(local.cluster_pdbs, monster_path.split(".")[0])
                 os.makedirs(new_folder, exist_ok=True)
-                #new_path = os.path.basename(monster_path).split(".")[0] + "_{}.pdb".format(add_front_0(n, digits=4))
                 new_path = model.id + "_{}.pdb".format(add_front_0(n, digits=4))
                 new_path = os.path.join(new_folder, new_path)
                 exporter.save(new_path)
@@ -1836,9 +1829,6 @@ class Cluster2:
                 pymol_orient, pymol_reinitialize, pymol_get_all_objects
             pymol_start(show=False)
             pymol_reinitialize()
-            #monster = pymol_load_path(super_data["out_path"], self.id)
-            #pymol_split_states(monster)
-            #pymol_delete(pymol_get_all_objects()[0])
             for file in new_paths:
                 pymol_load_path(file, os.path.basename(file))
             pymol_orient()
@@ -1849,9 +1839,7 @@ class Cluster2:
                 pymol_colour(mpl_colours[self.c2 % mpl_ncolours], "(all)")
                 snapshot_path = pymol_save_snapshot(self.id + "_cluster_cols", folder=local.snapshots)
             else:
-                for obj in pymol_get_all_objects():
-
-                    pymol_colour("blue_yellow_red", obj, spectrum="b")
+                pymol_colour("blue_yellow_red", "(all)", spectrum="b")
                 snapshot_path = pymol_save_snapshot(self.id + "heat_map", folder=local.snapshots)
 
             if show_session:
