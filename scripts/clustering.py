@@ -1740,9 +1740,10 @@ class Cluster2:
             print(self.pickle_path)
             os.remove(self.pickle_path)
 
-    def show(self, snapshot =True, show_session=False, chainbows=False, show_snapshot=False):
+    def show(self, snapshot =True, show_session=False, chainbows=False, cluster_colours=False, show_snapshot=False):
         from imports import load_references, load_single_pdb
         from superpose import superpose_many_chains
+        from Bio.PDB import PDBParser, PDBIO
         ref = load_references(identifier=self.ref_name)[0]
         resids = [res.id[1] for res in ref.structure.get_residues()]
 
@@ -1751,16 +1752,50 @@ class Cluster2:
         for n, row in enumerate(self.subset.itertuples()):
             dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)[0]
             name = row.id + str(row.is1to2)
-            if row.is1to2 or (not row.is1to2 and row.reversed):
+            is1to2 = row.is1to2
+            if row.reversed:
+                is1to2 = not is1to2
+            if is1to2:
                 chains_to_align[name] = (dimer.replaced_path, row.mon1, True, n)
             else:
                 chains_to_align[name] = (dimer.replaced_path, row.mon2, False, n)
         #print(chains_to_align)
         self.chains_to_align = chains_to_align
-        local["clusters"] = "clusters"
+        local["cluster_pdbs"] = "exports/cluster_pdbs"
 
-        super_data = superpose_many_chains(chains_to_align, file_name=self.id + ".pdb", save_folder=local.clusters)
+        def alter_bfactors(chain, value_list):
+            assert  len(chain) == len(value_list)
+            for atom, value in zip(chain.get_atoms(), value_list):
+                #print3(atom.bfactor, "-->", end=" ")
+                atom.bfactor = value
+                #print(atom.bfactor)
+
+        super_data = superpose_many_chains(chains_to_align, file_name=self.id + ".pdb", save_folder=local.cluster_pdbs)
         print(super_data)
+        monster_path = super_data["out_path"]
+        if self.oneDmatrix1 is not None and self.oneDmatrix2 is not None:
+            structure = PDBParser(QUIET=True).get_structure(self.id, monster_path)
+            assert len(list(structure.get_models())) == len(chains_to_align)
+            for model, (key,value) in zip(structure.get_models(), chains_to_align.items()):
+                model.id = key
+                print(model, key, value)
+                chains = model.get_chains()
+
+                for chain in chains:
+                    print1(chain.id, "align=", end="")
+                    if (chain.id == value[1]) == value[2]:
+                        print("True")
+                        alter_bfactors(chain, self.oneDmatrix1)
+                    else:
+                        print("False")
+                        alter_bfactors(chain, self.oneDmatrix2)
+
+
+            exporter = PDBIO()
+            exporter.set_structure(structure)
+            exporter.save(monster_path)
+
+
         snapshot_path = None
         if snapshot:
             local["snapshots"] = "snapshots"
@@ -1776,18 +1811,12 @@ class Cluster2:
             if chainbows:
                 pymol_colour("chainbow", "(all)")
                 pymol_save_snapshot(self.id + "_chainbows", folder=local.snapshots)
-            elif self.oneDmatrix1 is not None and self.oneDmatrix2 is not None:
-                for obj, value in zip(pymol_get_all_objects(), chains_to_align.values()):
-                    chain = value[1]
-                    sele1 = obj + " and (c. {})".format(chain)
-                    sele2 = obj + " and !(c. {})".format(chain)
-                    pymol_list_to_bfactors(val_list=self.oneDmatrix1, obj_name=sele1, resids=resids)
-                    pymol_list_to_bfactors(val_list=self.oneDmatrix2, obj_name=sele2, resids=resids)
-                pymol_colour("blue_yellow_red", "(all)", spectrum="b")
-                snapshot_path = pymol_save_snapshot(self.id + "heat_map", folder=local.snapshots)
-            else:
+            elif cluster_colours:
                 pymol_colour(mpl_colours[self.c2 % mpl_ncolours], "(all)")
                 snapshot_path = pymol_save_snapshot(self.id + "_cluster_cols", folder=local.snapshots)
+            else:
+                pymol_colour("blue_yellow_red", "(all)", spectrum="b")
+                snapshot_path = pymol_save_snapshot(self.id + "heat_map", folder=local.snapshots)
 
             if show_session:
                 session_path = pymol_save_temp_session()
