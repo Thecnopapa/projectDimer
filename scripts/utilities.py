@@ -8,13 +8,13 @@ try:
 except:
     globals_loaded = False
 
+
+
 def tprint(*strings, head=10, style="#", end="\n", sep=" "):  # Print section title
     width = shutil.get_terminal_size()[0] -2
     string = " ".join(strings)
     tail = width - head - len(string)
     print("\n{}{}{}{}{}".format(style*head, sep, string, sep, style*tail), end=end)
-
-
 
 def eprint(*strings, head=10, style = "^", sep=" "):  # Print end of section
     tprint(*strings, head=head, style=style, end="\n\n", sep=sep)
