@@ -1634,9 +1634,9 @@ class Cluster2:
         for point in self.subset.itertuples():
             dimer = load_single_pdb(point.id, pickle_folder=local.dimers, first_only=True, quiet=True)
             if matrix is None:
-                matrix = dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not point.is1to2)
+                matrix = dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not (point.is1to2 or (not point.is1to2 and point.reversed)))
             else:
-                matrix = np.add(matrix, dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not point.is1to2))
+                matrix = np.add(matrix, dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not (point.is1to2 or (not point.is1to2 and point.reversed))))
             progress.add(info=point.id)
 
         oneDmatrix1 = [sum(i)/ len(self.outer_ids_complete) for i in matrix]
@@ -1755,7 +1755,7 @@ class Cluster2:
                 chains_to_align[name] = (dimer.replaced_path, row.mon1, True, n)
             else:
                 chains_to_align[name] = (dimer.replaced_path, row.mon2, False, n)
-        print(chains_to_align)
+        #print(chains_to_align)
         self.chains_to_align = chains_to_align
         local["clusters"] = "clusters"
 

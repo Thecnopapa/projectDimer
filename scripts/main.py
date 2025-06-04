@@ -405,7 +405,7 @@ if __name__ == "__main__":
         GIFS = False,
         SNAPSHOTS = True,
         CHAINBOWS = False,
-        GENERATE_CLUSTERS = True,
+        GENERATE_CLUSTERS = False,
         DELETE_PREVIOUS = True,
         REFRESH_PLOTS = True,
 
