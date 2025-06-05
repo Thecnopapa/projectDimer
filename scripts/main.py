@@ -411,7 +411,7 @@ if __name__ == "__main__":
         GIFS = False,
         SNAPSHOTS = True,
         CHAINBOWS = False,
-        GENERATE_CLUSTERS = False,
+        GENERATE_CLUSTERS = False or "clusters" in sys.argv,
         DELETE_PREVIOUS = True,
         REFRESH_PLOTS = True,
 

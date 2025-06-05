@@ -19,6 +19,16 @@ for ref in vars.references:
     print1(ref.header)
 
 
+
+
+for cluster in load_clusters(onebyone=True):
+    sprint(cluster.id)
+    cluster.show_mpl(show=True)
+    input()
+
+
+
+
 quit()
 
 

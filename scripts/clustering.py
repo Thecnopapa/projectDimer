@@ -1533,6 +1533,7 @@ class Cluster2:
     def __init__(self,ref, df,cluster_cols, c1=None, c2=None, is_all=False, **kwargs):
         self.kwargs = kwargs
         self.ref_name = ref.name
+        self.structure = ref.structure
         self.outer_ids_complete = ref.get_outer_res_list(complete_list=True)
         self.outer_ids_binary = ref.get_outer_res_list(complete_list=True, binary=True)
         self.cluster_cols = cluster_cols
@@ -1592,8 +1593,10 @@ class Cluster2:
     def process_cluster(self, force = False, matrix=False, plot=False, gif=False, show=False, snapshot=False, **kwargs):
         print1("Processing matrix={}, plot={}, gif={}, show={}".format(matrix, plot, gif, show))
         if not self.is_all:
+            self.remove_identical()
             if self.comA is None or force:
                 self.get_com()
+
         if matrix:
             if self.matrix is None or force:
                 self.get_matrix(threshold=10,)
@@ -1732,7 +1735,7 @@ class Cluster2:
         return self.matrix, self.oneDmatrix1, self.oneDmatrix2
 
     @staticmethod
-    def get_plot(subset, cluster_cols, id, coms=(None,None),stds=(None,None), gif=True, id_labels=False, save=True, show=False, show_outliers=False):
+    def get_plot(subset, cluster_cols, cluster_id, coms=(None,None),stds=(None,None), gif=True, id_labels=False, save=True, show=False, show_outliers=False):
         subset.sort_values(by="id", inplace=True)
         import matplotlib.pyplot as plt
         fig = plt.figure(figsize=(20,10))
@@ -1763,7 +1766,7 @@ class Cluster2:
             ax1.scatter(coms[0][0], coms[0][1], coms[0][2], c=cols[0], s=stds[0]*180, linewidths=2, alpha=0.3)
             ax2.scatter(coms[1][0],coms[1][1], coms[1][2], c=cols[1], s=stds[1]*180, linewidths=2, alpha=0.3)
         ax_labels = ["0", "1", "2"]
-        title = "CLUSTER_{}".format(id)
+        title = "CLUSTER_{}".format(cluster_id)
         for ax, l in zip(axes, ("a", "b")):
             ax.set_xlabel(l+ax_labels[0])
             ax.set_ylabel(l+ax_labels[1])
@@ -1944,6 +1947,43 @@ class Cluster2:
                     self.subset.drop(row.Index, inplace=True)
         self.ndimers = len(self.subset)
 
+    def show_mpl(self, save=True, gif = False, show=False):
+        if self.matrix is None:
+            self.process_cluster(matrix=True)
+        import matplotlib as mpl
+        import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(10, 10))
+        ax = fig.add_subplot(111, projection='3d')
+        mergedMatrix = [m1+m2 for m1, m2 in zip(self.oneDmatrix1, self.oneDmatrix2)]
+
+        cvals = (min(mergedMatrix), (max(mergedMatrix)-min(mergedMatrix))/2, max(mergedMatrix))
+        colors = ("blue", "yellow", "red")
+        norm = plt.Normalize(min(cvals), max(cvals))
+        tuples = list(zip(map(norm, cvals), colors))
+        cmap = mpl.colors.LinearSegmentedColormap.from_list("colormap", tuples)
+        for res, value in zip(self.structure.get_atoms(), mergedMatrix):
+            atom  = res.get_list()[0]
+            ax.scatter(atom.coord[0], atom.coord[1], atom.coord[2], c=cmap(value))
+        ax_labels = ["X", "Y", "Z"]
+        cbar = plt.colorbar(ax, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
+        cbar_title = "Occurence"
+        cbar.set_label(cbar_title)
+        title = "CLUSTER_{}".format(self.id)
+        fig.suptitle(self.id + " N={}".format(self.ndimers))
+        fig_savepath = None
+        gif_savepath = None
+        if save:
+            local["dihedral_figs"] = "images/res_coords"
+            fig_savepath = os.path.join(local.res_coords, title + ".png")
+            plt.savefig(fig_savepath)
+        if gif:
+            local["dihedral_gifs"] = "images/res_coords_gifs"
+            gif_savepath = mpl_to_gif(fig, ax, name=title, folder=local.res_coords_gifs)
+        if show:
+            plt.show(block=vars.block)
+        return fig_savepath, gif_savepath
+
+
 
 
 
@@ -1989,3 +2029,13 @@ def cluster_redundancy(**kwargs):
 
 def cluster_dihedrals():
     pass
+
+
+
+def get_faces():
+    from imports import load_clusters
+    for cluster in load_clusters(identifier="all", onebyone=True):
+        if not cluster.is_all:
+            continue
+
+
