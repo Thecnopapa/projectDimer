@@ -2096,6 +2096,8 @@ def get_faces():
         #median = np.median(model.affinity_matrix_)
         #print("#####", median)
         #maximum = np.amin(model.affinity_matrix_)
+        # TODO: double check metric and weights
+        # TODO: check Eva's clustering algorithm
         def custom_metric(coord1, coord2):
             weight1 = coord1[3]
             weight2 = coord2[3]
