@@ -1786,7 +1786,7 @@ class Cluster2:
             plt.savefig(fig_savepath)
         if gif:
             local["dihedral_gifs"] = "images/dihedral_gifs"
-            gif_savepath = mpl_to_gif(fig, ax, name=title, folder=local.dihedral_gifs)
+            gif_savepath = mpl_to_gif(fig, axes, name=title, folder=local.dihedral_gifs)
         if show:
             plt.show(block = vars.block)
         return fig_savepath, gif_savepath
