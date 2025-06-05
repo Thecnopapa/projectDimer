@@ -429,11 +429,8 @@ def pymol_save_temp_session(path=None, name="temp_session.pse"):
     return path
 
 def pymol_open_session_terminal(path):
-    open_session_terminal(path)
-def open_session_terminal(path):
-    import subprocess
-    print("Opening:", path)
-    subprocess.Popen(["nohup", "xdg-open", path], start_new_session=True)
+    open_file_from_system(path)
+
 
 def pymol_command_in_new_process(path, command):
     import subprocess

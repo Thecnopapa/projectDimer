@@ -1831,6 +1831,9 @@ class Cluster2:
             os.remove(self.pickle_path)
 
     def show(self, snapshot =True, show_session=False, chainbows=False, cluster_colours=False, show_snapshot=False, regenerate_matrix=False):
+        if self.is_all and not show_session:
+            return None
+
         from imports import load_references, load_single_pdb
         from superpose import superpose_many_chains
         from Bio.PDB import PDBParser, PDBIO, Structure
@@ -1901,19 +1904,21 @@ class Cluster2:
             pymol_orient()
             if chainbows:
                 pymol_colour("chainbow", "(all)")
-                pymol_save_snapshot(self.id + "_chainbows", folder=local.snapshots)
+                extra_id = "_chainbows"
             elif cluster_colours:
                 pymol_colour(mpl_colours[self.c2 % mpl_ncolours], "(all)")
-                snapshot_path = pymol_save_snapshot(self.id + "_cluster_cols", folder=local.snapshots)
+                extra_id = "_cluster_cols"
             else:
                 pymol_colour("blue_yellow_red", "(all)", spectrum="b")
-                snapshot_path = pymol_save_snapshot(self.id + "heat_map", folder=local.snapshots)
-
+                extra_id = "_heatmap"
+            if not self.is_all:
+                snapshot_path = pymol_save_snapshot(self.id + extra_id, folder=local.snapshots)
+                if show_snapshot:
+                    open_file_from_system(snapshot_path)
             if show_session:
                 session_path = pymol_save_temp_session()
                 pymol_open_session_terminal(session_path)
-            if show_snapshot:
-                pymol_open_session_terminal(snapshot_path)
+
         return snapshot_path
 
 

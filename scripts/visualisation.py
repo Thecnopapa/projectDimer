@@ -99,7 +99,8 @@ def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces 
         #print(obj.__dict__)
         for key, item in obj.__dict__.items():
             if key in ["lines", "c_lines", "sasas1D", "sasas2D", "full_array","contacts_faces1", "contacts_faces2",
-                       "contacts", "contacts_symm", "contacts_sasa", "outer_ids_complete" ]:
+                       "contacts", "contacts_symm", "contacts_sasa", "outer_ids_complete","outer_ids_binary",
+                       "oneDmatrix1", "oneDmatrix2" ]:
                 try:
                     print1(key, ": OMITTED (len: {})".format(len(item)))
                 except:
@@ -335,6 +336,8 @@ if __name__ == "__main__":
     elif "cluster" in sys.argv[1]:
         if len(sys.argv[2:]) != 0:
             print(sys.argv[2])
+            if not "pymol" in sys.argv:
+                show_objects(load_clusters(identifier=sys.argv[2]), sys.argv[2:])
             for cluster in load_clusters(identifier = sys.argv[2], onebyone=True):
                 cluster.show(show_snapshot = not "pymol" in sys.argv, show_session = "pymol" in sys.argv)
             tprint("Showing clusters")

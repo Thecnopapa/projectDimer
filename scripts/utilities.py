@@ -102,6 +102,10 @@ def print_dict(dict):
     for k, v in dict.items():
         print("{}: {}".format(k, v))
 
+def open_file_from_system(path):
+    import subprocess
+    print("Opening:", path)
+    subprocess.Popen(["nohup", "xdg-open", path], start_new_session=True)
 
 class ProgressBar:
     def __init__(self, total=100, style="=", start=0, silent = False, title=True):
