@@ -1949,7 +1949,7 @@ class Cluster2:
                     self.subset.drop(row.Index, inplace=True)
         self.ndimers = len(self.subset)
 
-    def show_mpl(self, save=True, gif = False, show=False, mergedMatrix = None):
+    def show_mpl(self, save=True, gif = False, show=False, mergedMatrix = None, title=None):
         if self.matrix is None:
             self.process_cluster(matrix=True)
         import matplotlib as mpl
@@ -1959,12 +1959,14 @@ class Cluster2:
         if mergedMatrix is None:
             mergedMatrix = [m1+m2 for m1, m2 in zip(self.oneDmatrix1, self.oneDmatrix2)]
 
-        #cvals = (min(mergedMatrix), (max(mergedMatrix)-min(mergedMatrix))/2, max(mergedMatrix))
-        cvals = (0,0.5,1)
-        colors = ("blue", "yellow", "red")
-        norm = plt.Normalize(min(cvals), max(cvals))
-        tuples = list(zip(map(norm, cvals), colors))
-        cmap = mpl.colors.LinearSegmentedColormap.from_list("colormap", tuples)
+            #cvals = (min(mergedMatrix), (max(mergedMatrix)-min(mergedMatrix))/2, max(mergedMatrix))
+            cvals = (0,0.5,1)
+            colors = ("blue", "yellow", "red")
+            norm = plt.Normalize(min(cvals), max(cvals))
+            tuples = list(zip(map(norm, cvals), colors))
+            cmap = mpl.colors.LinearSegmentedColormap.from_list("colormap", tuples)
+        else:
+            cmap = mpl.colors
         for res, value in zip(self.structure.get_residues(), mergedMatrix):
             atom  = res.get_list()[0]
             ax.scatter(atom.coord[0], atom.coord[1], atom.coord[2], s=150, c=cmap(value))
@@ -1975,7 +1977,8 @@ class Cluster2:
         #cbar.set_label(cbar_title)
         ax.set_aspect("equal")
         ax.view_init(elev=-55., azim=-80, roll= 80)
-        title = "CLUSTER_{}".format(self.id)
+        if title is None:
+            title = "CLUSTER_{}".format(self.id)
         fig.suptitle(self.id + " N={}".format(self.ndimers))
         fig_savepath = None
         gif_savepath = None
@@ -2054,14 +2057,20 @@ def get_faces():
 
         print("###")
         preference_array = normalize1D(preference_array)
-        preference_array = [p*-1200 for p in preference_array]
         for n, p in enumerate(preference_array):
-            print(add_front_0(n,digits=3, zero=" ")+ "|"+"#"*round(p)+" "*(100-round(p))+"|")
+            print(add_front_0(n,digits=3, zero=" ")+ "|"+"#"*round(p*100)+" "*(100-round(p*100))+"|")
         print("###")
 
-        model = AffinityPropagation(random_state=6, preference=preference_array).fit(coord_array)
+
+        model = AffinityPropagation(random_state=6, preference=None).fit(coord_array)
+        m = np.amin(model.affinity_matrix_)
+        print("#####", m)
+        median = np.median(model.affinity_matrix_)
+        print("#####", median)
+        preference_array = [v*median for v in preference_array]
+        #model = AffinityPropagation(random_state=6, preference=preference_array, convergence_iter=100, verbose=True).fit(coord_array)
         print(model.labels_)
-        print(np.array(model.affinity_matrix_))
+        print(np.array(model.affinity_matrix_).shape)
         #[print(n, z) for n, z in enumerate(model.labels_)]
         #print(model.cluster_centers_)
         cluster.show_mpl(show=True, save=False, mergedMatrix = model.labels_)
