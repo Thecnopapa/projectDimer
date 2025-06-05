@@ -1954,6 +1954,8 @@ class Cluster2:
             self.process_cluster(matrix=True)
         import matplotlib as mpl
         import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d.art3d import Line3D
+        from maths import points_to_line, get_middlepoint
         fig = plt.figure(figsize=(10, 10))
         ax = fig.add_subplot(111, projection='3d')
         if mergedMatrix is None:
@@ -1967,16 +1969,28 @@ class Cluster2:
             cmap = mpl.colors.LinearSegmentedColormap.from_list("colormap", tuples)
         else:
             cmap = None
-        for res, value in zip(self.structure.get_residues(), mergedMatrix):
-            atom  = res.get_list()[0]
+        atom_list = list(self.structure.get_atoms())
+        def get_colour(value, cmap=None):
             if cmap is not None:
-                ax.scatter(atom.coord[0], atom.coord[1], atom.coord[2], s=150, c=cmap(value))
+                colour = cmap(value)
             else:
                 if value == -1:
                     colour = "black"
                 else:
-                    colour = "C"+str(value)
-                ax.scatter(atom.coord[0], atom.coord[1], atom.coord[2], s=150, c=colour)
+                    colour = "C" + str(value)
+            return colour
+        for n, (atom, value) in enumerate(zip(atom_list, mergedMatrix)):
+            colour0 = get_colour(mergedMatrix[n-1], cmap=cmap)
+            colour1 = get_colour(value, cmap=cmap)
+
+            ax.scatter(atom.coord[0], atom.coord[1], atom.coord[2], s=100, c=colour1)
+            if n != 0:
+                middle = get_middlepoint(atom_list[n-1].coord, atom.coord)
+                line1 = Line3D(*points_to_line(atom_list[n-1].coord, middle), linewidth=5, color=colour0)
+                line2 = Line3D(*points_to_line(middle, atom.coord), linewidth=5, color=colour1 )
+
+                ax.add_line(line1)
+                ax.add_line(line2)
         ax_labels = ["X", "Y", "Z"]
 
         #cbar = plt.colorbar(ax, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
