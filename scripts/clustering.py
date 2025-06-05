@@ -1638,14 +1638,14 @@ class Cluster2:
         cmap = mpl.colors.LinearSegmentedColormap.from_list("colormap", tuples)
 
         outer_ids_matrix = np.array([self.outer_ids_binary] * len(self.outer_ids_binary))
-        colors2 = ((0.5, 0.5, 0.5, 1), (0.0, 0.0, 0.0, 0.0))
+        colors2 = ((0, 0, 0, 1), (0.0, 0.0, 0.0, 0.0))
         tuples2 = list(zip([0, 1], colors2))
         cmap2 = mpl.colors.LinearSegmentedColormap.from_list("black0s", tuples2)
 
         fig, axes = plt.subplots(2, 2,
                                  # sharex="col",
                                  gridspec_kw={'height_ratios': [4, 2], "width_ratios": [2, 4]},
-                                 figsize=(9.6, 12))
+                                 figsize=(12, 9.6))
 
         ax = axes[0, 1]
         axLeft = axes[0, 0]

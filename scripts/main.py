@@ -402,12 +402,12 @@ if __name__ == "__main__":
         MINIMUM_SCORE = 0,
 
         HEATMAPS = True,
-        GIFS = False,
+        GIFS = True,
         SNAPSHOTS = True,
         CHAINBOWS = False,
         GENERATE_CLUSTERS = True,
         DELETE_PREVIOUS = True,
-        REFRESH_PLOTS = True,
+        REFRESH_PLOTS = False,
 
 
         )
