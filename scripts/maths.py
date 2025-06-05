@@ -7,13 +7,17 @@ import math
 
 
 
-def normalize1D(values):
+def normalize1D(values, add_to=None):
     maximum = max(values)
     minimum = min(values)
     r = abs(maximum-minimum)
     new_values = []
     for v in values:
         new_values.append((v-minimum)/r)
+    if add_to is not None:
+        total = sum([v for v in new_values])
+        ratio = total/add_to
+        new_values = [v/ratio for v in new_values]
     return new_values
 
 

@@ -1949,18 +1949,18 @@ class Cluster2:
                     self.subset.drop(row.Index, inplace=True)
         self.ndimers = len(self.subset)
 
-    def show_mpl(self, save=True, gif = False, show=False, mergedMatrix = None, title=None):
+    def show_mpl(self, save=True, gif = False, show=False, mergedMatrix = None, secondary=None, title=None):
         if self.matrix is None:
             self.process_cluster(matrix=True)
         import matplotlib as mpl
         import matplotlib.pyplot as plt
         from mpl_toolkits.mplot3d.art3d import Line3D
-        from maths import points_to_line, get_middlepoint
+        from maths import points_to_line, get_middlepoint, normalize1D
         fig = plt.figure(figsize=(10, 10))
         ax = fig.add_subplot(111, projection='3d')
         if mergedMatrix is None:
             mergedMatrix = [m1+m2 for m1, m2 in zip(self.oneDmatrix1, self.oneDmatrix2)]
-
+            mergedMatrix = normalize1D(mergedMatrix)
             #cvals = (min(mergedMatrix), (max(mergedMatrix)-min(mergedMatrix))/2, max(mergedMatrix))
             cvals = (0,0.5,1)
             colors = ("blue", "yellow", "red")
@@ -1969,21 +1969,27 @@ class Cluster2:
             cmap = mpl.colors.LinearSegmentedColormap.from_list("colormap", tuples)
         else:
             cmap = None
+
         atom_list = list(self.structure.get_atoms())
         def get_colour(value, cmap=None):
             if cmap is not None:
                 colour = cmap(value)
             else:
-                if value == -1:
-                    colour = "black"
+                if type(value) in [int, float, np.int64]:
+                    if value == -1:
+                        colour = "black"
+                    else:
+                        colour = "C" + str(value)
                 else:
-                    colour = "C" + str(value)
+                    colour = value
             return colour
         for n, (atom, value) in enumerate(zip(atom_list, mergedMatrix)):
             colour0 = get_colour(mergedMatrix[n-1], cmap=cmap)
             colour1 = get_colour(value, cmap=cmap)
-
-            ax.scatter(atom.coord[0], atom.coord[1], atom.coord[2], s=100, c=colour1)
+            size = 100
+            if secondary is not None:
+                size=secondary[n]*200*len(secondary)
+            ax.scatter(atom.coord[0], atom.coord[1], atom.coord[2], s=size, c=colour1)
             if n != 0:
                 middle = get_middlepoint(atom_list[n-1].coord, atom.coord)
                 line1 = Line3D(*points_to_line(atom_list[n-1].coord, middle), linewidth=5, color=colour0)
@@ -1999,8 +2005,8 @@ class Cluster2:
         ax.set_aspect("equal")
         ax.view_init(elev=-55., azim=-80, roll= 80)
         if title is None:
-            title = "CLUSTER_{}".format(self.id)
-        fig.suptitle(self.id + " N={}".format(self.ndimers))
+            title = self.id + " N={}".format(self.ndimers)
+        fig.suptitle(title)
         fig_savepath = None
         gif_savepath = None
         if save:
@@ -2073,44 +2079,69 @@ def get_faces():
 
         coord_array = np.array([atom.coord for atom in cluster.structure.get_atoms()])
         preference_array = [m1 + m2 for m1, m2 in zip(cluster.oneDmatrix1, cluster.oneDmatrix2)]
-        from sklearn.cluster import AffinityPropagation
+        from sklearn.cluster import AffinityPropagation, KMeans, BisectingKMeans, SpectralClustering, FeatureAgglomeration
         print(coord_array)
 
         print("###")
-        preference_array = normalize1D(preference_array)
+        preference_array = normalize1D(preference_array, add_to=1)
         for n, p in enumerate(preference_array):
             print(add_front_0(n,digits=3, zero=" ")+ "|"+"#"*round(p*100)+" "*(100-round(p*100))+"|")
         print("###")
+        #print(preference_array)
 
 
-        model = AffinityPropagation(random_state=6, preference=None).fit(coord_array)
-        m = np.amin(model.affinity_matrix_)
-        print("#####", m)
-        median = np.median(model.affinity_matrix_)
-        print("#####", median)
-        #preference_array = [v*median for v in preference_array]
-        #model = AffinityPropagation(random_state=6, preference=preference_array, convergence_iter=100, verbose=True).fit(coord_array)
+        #model = AffinityPropagation(random_state=6, damping=0.95).fit(coord_array)
+        #m = np.amin(model.affinity_matrix_)
+        #print("#####", m)
+        #median = np.median(model.affinity_matrix_)
+        #print("#####", median)
+        #maximum = np.amin(model.affinity_matrix_)
+        def custom_metric(coord1, coord2):
+            weight1 = coord1[3]
+            weight2 = coord2[3]
+            coord1 = coord1[:3]
+            coord2 = coord2[:3]
+            from maths import distance
+            print((1-(weight1+weight2)/2))
+            return abs(distance(coord1, coord2)) * (1-(weight1+weight2)/2)
+        #affinity = [v*maximum*len(preference_array)/5 for v in preference_array]
+        #print(affinity)
+        weighted_array = []
+        for a, p in zip(coord_array, preference_array):
+            print([*a]+[p])
+            weighted_array.append([*a]+[p])
+        print(weighted_array)
+        model = AffinityPropagation(random_state=6, convergence_iter=100, verbose=True).fit(weighted_array)
         print(model.labels_)
-        print(np.array(model.affinity_matrix_).shape)
-        #[print(n, z) for n, z in enumerate(model.labels_)]
-        #print(model.cluster_centers_)
+        #model2 = FeatureAgglomeration(n_clusters=4).fit(model.cluster_centers_)
+        #print(model2.labels_)
+        from scipy.cluster.hierarchy import linkage, cut_tree
+        Z = linkage(weighted_array, method='average', metric=custom_metric)
+        #print(Z)
+        #y = cut_tree(Z, 3)
+        #print(y)
+        from scipy.cluster.hierarchy import dendrogram
+
+        D = dendrogram(Z, p=3)
+        cluster.show_mpl(show=True, save=False, title = cluster.id+" n_clusters = {}".format(len(set(D["leaves_color_list"]))), mergedMatrix = D["leaves_color_list"], secondary=preference_array)
 
         faces = []
         for c in set(model.labels_):
             face=dict(
+            com = model.cluster_centers_[c],
             C = c,
             N = sum([1 for i in model.labels_ if i ==c]),
-            M = np.mean([preference_array[n] for n, _ in enumerate(model.labels_) if model.labels_[n] == c])
+            M = sum([preference_array[n] for n, _ in enumerate(model.labels_) if model.labels_[n] == c])
             )
             print("C:{}, N:{}, M:{}".format(face["C"], face["N"], face["M"] ))
             faces.append(face)
-        faces = sorted(faces, key=lambda face: face["M"], reverse=True)
+        faces = sorted(faces, key=lambda face: face["N"], reverse=True)
         [print(face) for face in faces]
         labels = []
         for l in model.labels_:
-            if l in [d["C"] for d in faces[:4]]:
+            if l in [d["C"] for d in faces]:
                 labels.append(l)
             else:
                 labels.append(-1)
-        cluster.show_mpl(show=True, save=False, mergedMatrix = labels)
+        cluster.show_mpl(show=True, save=False, title = cluster.id+" n_clusters = {}".format(len(faces)), mergedMatrix = labels, secondary=preference_array)
 
