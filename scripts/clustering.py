@@ -1958,7 +1958,8 @@ class Cluster2:
         ax = fig.add_subplot(111, projection='3d')
         mergedMatrix = [m1+m2 for m1, m2 in zip(self.oneDmatrix1, self.oneDmatrix2)]
 
-        cvals = (min(mergedMatrix), (max(mergedMatrix)-min(mergedMatrix))/2, max(mergedMatrix))
+        #cvals = (min(mergedMatrix), (max(mergedMatrix)-min(mergedMatrix))/2, max(mergedMatrix))
+        cvals = (0,0.5,1)
         colors = ("blue", "yellow", "red")
         norm = plt.Normalize(min(cvals), max(cvals))
         tuples = list(zip(map(norm, cvals), colors))
@@ -1972,6 +1973,7 @@ class Cluster2:
         #cbar_title = "Occurence"
         #cbar.set_label(cbar_title)
         ax.set_aspect("equal")
+        ax.view_init(elev=-55., azim=-80, roll= 80)
         title = "CLUSTER_{}".format(self.id)
         fig.suptitle(self.id + " N={}".format(self.ndimers))
         fig_savepath = None
@@ -2038,9 +2040,28 @@ def cluster_dihedrals():
 
 def get_faces():
     from imports import load_clusters
+    from maths import normalize1D
     for cluster in load_clusters(identifier="all", onebyone=True):
         if not cluster.is_all:
-            cluster.show_mpl()
             continue
+
+        cluster.show_mpl()
+        coord_array = np.array([atom.coord for atom in cluster.structure.get_atoms()])
+        preference_array = [m1 + m2 for m1, m2 in zip(cluster.oneDmatrix1, cluster.oneDmatrix2)]
+        from sklearn.cluster import AffinityPropagation
+        print(coord_array)
+
+        print("###")
+        preference_array = normalize1D(preference_array)
+        preference_array = [p*-1200 for p in preference_array]
+        for n, p in enumerate(preference_array):
+            print(add_front_0(n,digits=3, zero=" ")+ "|"+"#"*round(p)+" "*(100-round(p))+"|")
+        print("###")
+
+        model = AffinityPropagation(random_state=6, preference=preference_array).fit(coord_array)
+        print(model.labels_)
+        print(np.array(model.affinity_matrix_))
+        #[print(n, z) for n, z in enumerate(model.labels_)]
+        #print(model.cluster_centers_)
 
 

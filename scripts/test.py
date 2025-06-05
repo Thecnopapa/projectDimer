@@ -15,12 +15,14 @@ vars["references"] = load_references(force_reload=True)
 print1("References loaded")
 
 
-
-
+from clustering import get_faces
+get_faces()
+quit()
 for cluster in load_clusters(onebyone=True):
     sprint(cluster.id)
-    cluster.show_mpl(show=True)
-    input()
+    fig_path = cluster.show_mpl(show=True)
+    open_file_from_system(fig_path)
+    break
 
 
 

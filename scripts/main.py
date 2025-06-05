@@ -276,7 +276,7 @@ def main(PROCESS_ALL = False,
         for cluster in load_clusters(identifier=identifier, onebyone=True):
             sprint(cluster.id)
             cluster.reprocess_cluster(force = REFRESH_PLOTS and not GENERATE_CLUSTERS, plot=True, gif =GIFS, matrix = HEATMAPS, snapshot = SNAPSHOTS)
-
+            cluster.pickle()
 
 
 
