@@ -2122,7 +2122,7 @@ def get_faces():
         #print(y)
         from scipy.cluster.hierarchy import dendrogram
 
-        D = dendrogram(Z, p=3)
+        D = dendrogram(Z, p=2)
         cluster.show_mpl(show=True, save=False, title = cluster.id+" n_clusters = {}".format(len(set(D["leaves_color_list"]))), mergedMatrix = D["leaves_color_list"], secondary=preference_array)
 
         faces = []
