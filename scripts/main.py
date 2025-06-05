@@ -201,30 +201,32 @@ def main(PROCESS_ALL = False,
     tprint("CLUSTERING v2")
 
     if not SKIP_CLUSTERING or PROCESS_ALL and False:
-        from clustering import generate_dihedrals_df, cluster_angles, create_clusters, cluster_redundancy
+        from clustering import generate_dihedrals_df, cluster_angles, create_clusters, cluster_redundancy, cluster_dihedrals
         from imports import load_clusters
+
+
         if GENERATE_CLUSTERS or len(os.listdir(local.cluster_pickles))<=3:
             if DELETE_PREVIOUS:
                 if os.path.exists(local.cluster_pickles):
                     print("Deleting files in: {}".format(local.cluster_pickles))
                     for file in sorted(os.listdir(local.cluster_pickles)):
+                        if ONLY_GR and "GR" not in file:
+                            continue
                         print(file, end="\r")
                         os.remove(os.path.join(local.cluster_pickles, file))
             generate_dihedrals_df(force=False or PROCESS_ALL)
 
+
+
             for file in sorted(os.listdir(root.dihedrals)):
+                if ONLY_GR and "GR" not in file:
+                    continue
                 dihedrals_path = os.path.join(root.dihedrals, file)
                 cluster1_folder = cluster_angles(dihedrals_path,
                                                  bandwidth=40,
                                                  angles=["a0", "a1", "a2"],
                                                  cluster_name="angle_cluster1",
                                                  folder="angle_clusters1")
-
-
-            for file in sorted(os.listdir(cluster1_folder)):
-                if ONLY_GR and "GR" not in file:
-                    continue
-                dihedrals_path = os.path.join(cluster1_folder, file)
 
 
 
@@ -243,14 +245,12 @@ def main(PROCESS_ALL = False,
 
 
 
-
             if SNAPSHOTS:
                 from pyMol import pymol_start
                 pymol_start(show=False)
 
 
             for n, file in enumerate(sorted(os.listdir(cluster2_folder))):
-
                 if "--1" in file:
                     continue
                 if ONLY_GR and "GR" not in file:
@@ -262,6 +262,12 @@ def main(PROCESS_ALL = False,
                 create_clusters(dihedrals_path, ref )
 
             cluster_redundancy()
+            cluster_dihedrals()
+
+
+
+
+
 
         if ONLY_GR:
             identifier = "GR"
@@ -401,9 +407,9 @@ if __name__ == "__main__":
         DIMENSIONS_PCA = [0,1,2],
         MINIMUM_SCORE = 0,
 
-        HEATMAPS = True,
-        GIFS = True,
-        SNAPSHOTS = True,
+        HEATMAPS = False,
+        GIFS = False,
+        SNAPSHOTS = False,
         CHAINBOWS = False,
         GENERATE_CLUSTERS = True,
         DELETE_PREVIOUS = True,

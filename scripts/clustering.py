@@ -1809,7 +1809,9 @@ class Cluster2:
         for row in sub2.itertuples():
             sub2.loc[row.Index, "reversed"] = not row.reversed
         self.subset = pd.concat([self.subset, sub2], axis= 0)
+        self.ndimers = len(self.subset)
         self.subset.sort_values(by="id", inplace=True)
+        self.remove_identical()
         self.ndimers = len(self.subset)
         cluster2.redundant = True
         cluster2.redundant_to = self.id
@@ -1922,6 +1924,25 @@ class Cluster2:
         return snapshot_path
 
 
+    def remove_identical(self):
+        id_list = []
+        for row in self.subset.itertuples():
+            if not row.id in [i[0] for i in id_list]:
+                #print(id_list)
+                #print(row.id)
+                #print(row.id in id_list)
+                id_list.append((row.id, row.Index))
+            else:
+                #print("identical dimers found:", row.id)
+                #print(id_list)
+                #print("Removing:")
+                if row.is1to2:
+                    #print(self.subset.loc[id_list[[i[0] for i in id_list].index(row.id)][1]])
+                    self.subset.drop(id_list[[i[0] for i in id_list].index(row.id)][1], inplace=True)
+                else:
+                    #print(self.subset.loc[row.Index])
+                    self.subset.drop(row.Index, inplace=True)
+        self.ndimers = len(self.subset)
 
 
 
@@ -1966,3 +1987,5 @@ def cluster_redundancy(**kwargs):
 
 
 
+def cluster_dihedrals():
+    pass
