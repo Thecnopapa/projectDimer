@@ -275,7 +275,7 @@ def main(PROCESS_ALL = False,
             identifier = "ALL"
         for cluster in load_clusters(identifier=identifier, onebyone=True):
             sprint(cluster.id)
-            cluster.reprocess_cluster(force = REFRESH_PLOTS, gif =GIFS, matrix = HEATMAPS, snapshot = SNAPSHOTS)
+            cluster.reprocess_cluster(force = REFRESH_PLOTS and not GENERATE_CLUSTERS, gif =GIFS, matrix = HEATMAPS, snapshot = SNAPSHOTS)
 
 
 
@@ -407,13 +407,13 @@ if __name__ == "__main__":
         DIMENSIONS_PCA = [0,1,2],
         MINIMUM_SCORE = 0,
 
-        HEATMAPS = False,
+        HEATMAPS = True,
         GIFS = False,
-        SNAPSHOTS = False,
+        SNAPSHOTS = True,
         CHAINBOWS = False,
-        GENERATE_CLUSTERS = True,
+        GENERATE_CLUSTERS = False,
         DELETE_PREVIOUS = True,
-        REFRESH_PLOTS = False,
+        REFRESH_PLOTS = True,
 
 
         )
