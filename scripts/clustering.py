@@ -1949,14 +1949,15 @@ class Cluster2:
                     self.subset.drop(row.Index, inplace=True)
         self.ndimers = len(self.subset)
 
-    def show_mpl(self, save=True, gif = False, show=False):
+    def show_mpl(self, save=True, gif = False, show=False, mergedMatrix = None):
         if self.matrix is None:
             self.process_cluster(matrix=True)
         import matplotlib as mpl
         import matplotlib.pyplot as plt
         fig = plt.figure(figsize=(10, 10))
         ax = fig.add_subplot(111, projection='3d')
-        mergedMatrix = [m1+m2 for m1, m2 in zip(self.oneDmatrix1, self.oneDmatrix2)]
+        if mergedMatrix is None:
+            mergedMatrix = [m1+m2 for m1, m2 in zip(self.oneDmatrix1, self.oneDmatrix2)]
 
         #cvals = (min(mergedMatrix), (max(mergedMatrix)-min(mergedMatrix))/2, max(mergedMatrix))
         cvals = (0,0.5,1)
@@ -2045,7 +2046,7 @@ def get_faces():
         if not cluster.is_all:
             continue
 
-        cluster.show_mpl()
+
         coord_array = np.array([atom.coord for atom in cluster.structure.get_atoms()])
         preference_array = [m1 + m2 for m1, m2 in zip(cluster.oneDmatrix1, cluster.oneDmatrix2)]
         from sklearn.cluster import AffinityPropagation
@@ -2063,5 +2064,6 @@ def get_faces():
         print(np.array(model.affinity_matrix_))
         #[print(n, z) for n, z in enumerate(model.labels_)]
         #print(model.cluster_centers_)
+        cluster.show_mpl(show=True, save=False, mergedMatrix = model.labels_)
 
 
