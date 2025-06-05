@@ -1600,6 +1600,8 @@ class Cluster2:
         if matrix:
             if self.matrix is None or force:
                 self.get_matrix(threshold=10,)
+                if plot:
+                    self.show_mpl(gif=gif, show=show)
         if plot:
             if self.plot_path is None or force:
                 self.plot_path, self.gif_path = self.get_plot(self.subset, self.cluster_cols, self.id,
@@ -1961,23 +1963,25 @@ class Cluster2:
         norm = plt.Normalize(min(cvals), max(cvals))
         tuples = list(zip(map(norm, cvals), colors))
         cmap = mpl.colors.LinearSegmentedColormap.from_list("colormap", tuples)
-        for res, value in zip(self.structure.get_atoms(), mergedMatrix):
+        for res, value in zip(self.structure.get_residues(), mergedMatrix):
             atom  = res.get_list()[0]
-            ax.scatter(atom.coord[0], atom.coord[1], atom.coord[2], c=cmap(value))
+            ax.scatter(atom.coord[0], atom.coord[1], atom.coord[2], s=150, c=cmap(value))
         ax_labels = ["X", "Y", "Z"]
-        cbar = plt.colorbar(ax, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
-        cbar_title = "Occurence"
-        cbar.set_label(cbar_title)
+
+        #cbar = plt.colorbar(ax, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
+        #cbar_title = "Occurence"
+        #cbar.set_label(cbar_title)
+        ax.set_aspect("equal")
         title = "CLUSTER_{}".format(self.id)
         fig.suptitle(self.id + " N={}".format(self.ndimers))
         fig_savepath = None
         gif_savepath = None
         if save:
-            local["dihedral_figs"] = "images/res_coords"
+            local["res_coords"] = "images/res_coords"
             fig_savepath = os.path.join(local.res_coords, title + ".png")
             plt.savefig(fig_savepath)
         if gif:
-            local["dihedral_gifs"] = "images/res_coords_gifs"
+            local["res_coords_gifs"] = "images/res_coords_gifs"
             gif_savepath = mpl_to_gif(fig, ax, name=title, folder=local.res_coords_gifs)
         if show:
             plt.show(block=vars.block)
@@ -2036,6 +2040,7 @@ def get_faces():
     from imports import load_clusters
     for cluster in load_clusters(identifier="all", onebyone=True):
         if not cluster.is_all:
+            cluster.show_mpl()
             continue
 
 

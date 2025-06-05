@@ -14,10 +14,6 @@ sprint("Loading References")
 vars["references"] = load_references(force_reload=True)
 print1("References loaded")
 
-for ref in vars.references:
-    sprint(ref.id)
-    print1(ref.header)
-
 
 
 
@@ -30,6 +26,10 @@ for cluster in load_clusters(onebyone=True):
 
 
 quit()
+for ref in vars.references:
+    sprint(ref.id)
+    print1(ref.header)
+
 
 
 dimer_list = sorted(os.listdir(local.dimers))

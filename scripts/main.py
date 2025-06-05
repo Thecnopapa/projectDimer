@@ -407,12 +407,12 @@ if __name__ == "__main__":
         DIMENSIONS_PCA = [0,1,2],
         MINIMUM_SCORE = 0,
 
-        HEATMAPS = True,
+        HEATMAPS = False,
         GIFS = False,
-        SNAPSHOTS = True,
+        SNAPSHOTS = False,
         CHAINBOWS = False,
         GENERATE_CLUSTERS = False or "clusters" in sys.argv,
-        DELETE_PREVIOUS = True,
+        DELETE_PREVIOUS = False,
         REFRESH_PLOTS = True,
 
 
