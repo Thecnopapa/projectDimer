@@ -1966,10 +1966,17 @@ class Cluster2:
             tuples = list(zip(map(norm, cvals), colors))
             cmap = mpl.colors.LinearSegmentedColormap.from_list("colormap", tuples)
         else:
-            cmap = mpl.colors
+            cmap = None
         for res, value in zip(self.structure.get_residues(), mergedMatrix):
             atom  = res.get_list()[0]
-            ax.scatter(atom.coord[0], atom.coord[1], atom.coord[2], s=150, c=cmap(value))
+            if cmap is not None:
+                ax.scatter(atom.coord[0], atom.coord[1], atom.coord[2], s=150, c=cmap(value))
+            else:
+                if value == -1:
+                    colour = "black"
+                else:
+                    colour = "C"+str(value)
+                ax.scatter(atom.coord[0], atom.coord[1], atom.coord[2], s=150, c=colour)
         ax_labels = ["X", "Y", "Z"]
 
         #cbar = plt.colorbar(ax, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
@@ -2067,12 +2074,29 @@ def get_faces():
         print("#####", m)
         median = np.median(model.affinity_matrix_)
         print("#####", median)
-        preference_array = [v*median for v in preference_array]
+        #preference_array = [v*median for v in preference_array]
         #model = AffinityPropagation(random_state=6, preference=preference_array, convergence_iter=100, verbose=True).fit(coord_array)
         print(model.labels_)
         print(np.array(model.affinity_matrix_).shape)
         #[print(n, z) for n, z in enumerate(model.labels_)]
         #print(model.cluster_centers_)
-        cluster.show_mpl(show=True, save=False, mergedMatrix = model.labels_)
 
+        faces = []
+        for c in set(model.labels_):
+            face=dict(
+            C = c,
+            N = sum([1 for i in model.labels_ if i ==c]),
+            M = np.mean([preference_array[n] for n, _ in enumerate(model.labels_) if model.labels_[n] == c])
+            )
+            print("C:{}, N:{}, M:{}".format(face["C"], face["N"], face["M"] ))
+            faces.append(face)
+        faces = sorted(faces, key=lambda face: face["M"], reverse=True)
+        [print(face) for face in faces]
+        labels = []
+        for l in model.labels_:
+            if l in [d["C"] for d in faces[:4]]:
+                labels.append(l)
+            else:
+                labels.append(-1)
+        cluster.show_mpl(show=True, save=False, mergedMatrix = labels)
 
