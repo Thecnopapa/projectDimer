@@ -2106,9 +2106,9 @@ def get_faces():
 
 
 
-        labels = [-1]*len(coord_array)
+        model = AffinityPropagation(random_state=6, damping=0.984).fit(coord_array)
 
-
+        labels = model.labels_
 
 
 
@@ -2118,14 +2118,13 @@ def get_faces():
         print([atom["cluster"] for atom in atoms])
         cluster.show_mpl(show=True, save=False, title = cluster.id+" n_clusters = {}".format(len(set(labels))), mergedMatrix = [atom["cluster"] for atom in atoms], secondary=preference_array)
 
+        cluster.atoms = atoms
+        cluster.pickle()
 
 
 
-        quit()
 
-
-
-        #print(preference_array)
+'''        #print(preference_array)
 
 
         #model = AffinityPropagation(random_state=6, damping=0.95).fit(coord_array)
@@ -2192,3 +2191,4 @@ def get_faces():
                 labels.append(-1)
         cluster.show_mpl(show=True, save=False, title = cluster.id+" n_clusters = {}".format(len(faces)), mergedMatrix = labels, secondary=preference_array)
 
+'''
