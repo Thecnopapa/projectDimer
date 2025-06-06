@@ -1580,6 +1580,8 @@ class Cluster2:
         self.comB = None
         self.stdA = None
         self.stdB = None
+        self.atoms = None
+        self.faces = None
 
 
 
@@ -2022,6 +2024,9 @@ class Cluster2:
 
 
 
+     def get_eva_face(self):
+
+
 
 
 
@@ -2069,11 +2074,13 @@ def cluster_dihedrals():
 
 
 
-def get_faces():
+def get_faces(force = False):
     from imports import load_clusters
     from maths import normalize1D
     for cluster in load_clusters(identifier="all", onebyone=True):
         if not cluster.is_all:
+            continue
+        if cluster.faces is not None and not force:
             continue
         outer_ids = cluster.outer_ids_complete
         from sklearn.cluster import AffinityPropagation, KMeans, BisectingKMeans, SpectralClustering, FeatureAgglomeration, AgglomerativeClustering
@@ -2101,6 +2108,7 @@ def get_faces():
         weighted_array = np.array([[*atom["coord"]]+ [atom["weight"]] for atom in atoms if atom["outer"]])
         print(weighted_array.shape)
         labels = None
+        centres = None
         # CLUSTERING STARTING HERE
 
 
@@ -2109,17 +2117,63 @@ def get_faces():
         model = AffinityPropagation(random_state=6, damping=0.984).fit(coord_array)
 
         labels = model.labels_
-
+        centres = model.cluster_centers_
 
 
         # CLUSTERING FINISHING HERE
         for label, atom in zip(labels, [a for a in atoms if a["outer"]]):
             atom["cluster"] = label
         print([atom["cluster"] for atom in atoms])
-        cluster.show_mpl(show=True, save=False, title = cluster.id+" n_clusters = {}".format(len(set(labels))), mergedMatrix = [atom["cluster"] for atom in atoms], secondary=preference_array)
+
+
+        faces = []
+        for c in set(labels):
+            face = dict(
+                name = str(c),
+                C=c,
+                N=sum([1 for i in labels if i == c]),
+                M=np.mean([preference_array[n] for n, _ in enumerate(labels) if labels[n] == c])
+            )
+            if centres is not None:
+                face["COM"] = model.cluster_centers_[c],
+            print("C:{}, N:{}, M:{}".format(face["C"], face["N"], face["M"]))
+            faces.append(face)
+        faces = sorted(faces, key=lambda face: face["M"], reverse=True)
 
         cluster.atoms = atoms
+        cluster.faces = faces
         cluster.pickle()
+        cluster.show_mpl(show=True, save=False, title = cluster.id+" n_clusters = {}".format(len(set(labels))), mergedMatrix = [atom["cluster"] for atom in atoms], secondary=preference_array)
+
+
+def compare_all_with_eva():
+    from imports import load_clusters
+    for cluster in load_clusters(identifier="all", onebyone=True):
+        if not cluster.is_all:
+            continue
+        from faces import GR_dict
+        resids = {n:resid for n, resid in enumerate(cluster.outer_ids_complete)}
+        #print(resids)
+        eva_scores = {}
+        scores = {}
+        for eva_face, res_list in GR_dict.items():
+            print(eva_face, len(res_list), "-->", end = " ")
+            res_list = [r for r in res_list if r in cluster.outer_ids_complete]
+            print(len(res_list))
+            eva_scores[eva_face] = {}
+            for face in cluster.faces:
+                eva_scores[eva_face][face["name"]] = 0
+                for n, atom in enumerate(cluster.atoms):
+                    if atom["cluster"] == face["C"] and resids[n] in res_list:
+                        eva_scores[eva_face][face["name"]] += 1
+                eva_scores[eva_face][face["name"]] /= len(res_list)
+                eva_scores[eva_face][face["name"]] *= 100
+            #eva_scores[eva_face] = sorted(eva_scores[eva_face], key=lambda x: x)
+        print(eva_scores)
+
+
+
+
 
 
 

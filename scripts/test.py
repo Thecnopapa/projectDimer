@@ -15,8 +15,9 @@ vars["references"] = load_references(force_reload=True)
 print1("References loaded")
 
 
-from clustering import get_faces
-get_faces()
+from clustering import get_faces, compare_all_with_eva
+get_faces(force=False)
+compare_all_with_eva()
 quit()
 for cluster in load_clusters(onebyone=True):
     sprint(cluster.id)
