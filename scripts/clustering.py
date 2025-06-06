@@ -1591,7 +1591,7 @@ class Cluster2:
     def __repr__(self):
         return "<Cluster:{} {}-{} /N={}>". format(self.ref_name, self.c1, self.c2, self.ndimers)
 
-    def process_cluster(self, force = False, matrix=True,gif=False, show=False, faces=False, snapshot=False, **kwargs):
+    def process_cluster(self, force = False, matrix=True,gif=False, show=False, faces=True, snapshot=False, **kwargs):
         print1("Processing matrix={}, faces={}".format(matrix, faces))
         if not self.is_all:
             self.remove_identical()
@@ -1605,7 +1605,7 @@ class Cluster2:
                 self.get_matrix(threshold=10)
 
 
-    def show_cluster(self, force = False, angles=True, plot=True, show = False, snapshot=True, gif=False, **kwargs):
+    def plot_cluster(self, force = False, angles=True, plot=True, show = False, snapshot=True, gif=False, **kwargs):
         if angles:
             self.plot_path, self.gif_path = self.get_plot(self.subset, self.cluster_cols, self.id,
                                                           coms=(self.comA, self.comB),
@@ -1842,7 +1842,7 @@ class Cluster2:
             print(self.pickle_path)
             os.remove(self.pickle_path)
 
-    def show(self, snapshot =True, show_session=False, chainbows=False, cluster_colours=False, show_snapshot=False, regenerate_matrix=False, face_colours = False):
+    def show(self, snapshot =True, show_session=False, chainbows=False, cluster_colours=False, show_snapshot=False, regenerate_matrix=False, face_colours = False, **kwargs):
         if self.is_all and not show_session:
             return None
 
@@ -2062,7 +2062,7 @@ class Cluster2:
         #print(eva_scores)
         self.mon1_faces = sorted([[face, value] for face, value in eva_scores["mon1"].items()],
                             key=lambda x: x[1], reverse=True)
-        self.mon2_faces = sorted([[face, value] for face, value in eva_scores["mon1"].items()],
+        self.mon2_faces = sorted([[face, value] for face, value in eva_scores["mon2"].items()],
                             key=lambda x: x[1], reverse=True)
 
         self.faces = self.mon1_faces[0], self.mon2_faces[0]

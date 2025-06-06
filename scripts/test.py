@@ -21,8 +21,8 @@ from clustering import get_faces, compare_all_with_eva
 #quit()
 for cluster in load_clusters(onebyone=True):
     sprint(cluster.id)
-    cluster.get_eva_face()
-    cluster.pickle()
+    if not cluster.is_all:
+        print1(cluster.faces[0][0], cluster.faces[1][0])
 
 
 
