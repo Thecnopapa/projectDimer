@@ -1,6 +1,5 @@
 import os, sys
 
-from pyMol import pymol_delete
 from utilities import *
 from Globals import root, local, vars
 import numpy as np
@@ -1905,7 +1904,7 @@ class Cluster2:
             local["snapshots"] = "snapshots"
             from pyMol import pymol_start, pymol_load_path, pymol_colour, pymol_list_to_bfactors, pymol_save_snapshot, \
                 mpl_colours, mpl_ncolours, pymol_save_temp_session, pymol_open_session_terminal, pymol_split_states, \
-                pymol_orient, pymol_reinitialize, pymol_get_all_objects
+                pymol_orient, pymol_reinitialize, pymol_get_all_objects, pymol_paint_single_face
             pymol_start(show=False)
             pymol_reinitialize()
             for file in new_paths:
@@ -1918,8 +1917,8 @@ class Cluster2:
                 pymol_colour(mpl_colours[self.c2 % mpl_ncolours], "(all)")
                 extra_id = "_cluster_cols"
             elif self.faces is not None and face_colours:
-                from faces import GR_colours
-                pymol_colour(GR_colours[self.faces[0][0]], "{} and c. {}", )
+                pymol_paint_single_face(chains_to_align)
+                extra_id = "_faces"
             else:
                 pymol_colour("blue_yellow_red", "(all)", spectrum="b")
                 extra_id = "_heatmap"
