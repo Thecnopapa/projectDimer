@@ -1592,17 +1592,17 @@ class Cluster2:
         return "<Cluster:{} {}-{} /N={}>". format(self.ref_name, self.c1, self.c2, self.ndimers)
 
     def process_cluster(self, force = False, matrix=True,gif=False, show=False, faces=True, snapshot=False, **kwargs):
-        print1("Processing matrix={}, faces={}".format(matrix, faces))
+        print1("Processing {}: matrix={}, faces={}".format(self.id, matrix, faces))
         if not self.is_all:
             self.remove_identical()
             if self.comA is None or force:
                 self.get_com()
-            if faces:
-                self.get_eva_face()
 
         if matrix:
             if self.matrix is None or force:
                 self.get_matrix(threshold=10)
+        if faces and not self.is_all:
+            self.get_eva_face()
 
 
     def plot_cluster(self, force = False, angles=True, plot=True, show = False, snapshot=True, gif=False, **kwargs):
@@ -2037,6 +2037,8 @@ class Cluster2:
         eva_scores = {"mon1": {}, "mon2": {}}
         scores = {}
         threshold_ratio = 2
+        if self.oneDmatrix1 is None or self.oneDmatrix2 is None:
+            self.process_cluster(matrix=True, faces=False)
         t1, t2 = max(self.oneDmatrix1)/threshold_ratio, max(self.oneDmatrix2)/threshold_ratio
 
         for eva_face, res_list in GR_dict.items():

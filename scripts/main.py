@@ -273,6 +273,8 @@ def main(PROCESS_ALL = False,
 
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
+            if cluster.is_all:
+                continue
             sprint(cluster.id)
             cluster.reprocess_cluster(force=REPROCESS_CLUSTERS)
             cluster.pickle()

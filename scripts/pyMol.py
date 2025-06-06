@@ -414,6 +414,7 @@ def pymol_paint_single_face(obj_list, face1, face2):
         print(o)
         chain1 = o[1]
         chain1ischain1 = o[2]
+
         sele1 = "c. {}".format(obj,chain1)
         sele2 = "!(c. {})".format(obj,chain1ischain1)
         if not chain1ischain1:
