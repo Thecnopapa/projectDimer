@@ -409,7 +409,9 @@ def pymol_sphere(coords, name = None, colour="white", state = -1, scale = 8):
 
 def pymol_paint_single_face(obj_list, face1, face2):
     from faces import GR_colours
-    for n, (obj, o) in enumerate(zip(pymol_get_all_objects(), obj_list)):
+    print(obj_list)
+    for n, (obj, o) in enumerate(zip(pymol_get_all_objects(), obj_list.values())):
+        print(o)
         chain1 = o[1]
         chain1ischain1 = o[2]
         sele1 = "c. {}".format(obj,chain1)

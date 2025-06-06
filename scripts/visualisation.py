@@ -339,7 +339,7 @@ if __name__ == "__main__":
             if not "pymol" in sys.argv:
                 show_objects(load_clusters(identifier=sys.argv[2]), sys.argv[2:])
             for cluster in load_clusters(identifier = sys.argv[2], onebyone=True):
-                cluster.show(show_snapshot = not "pymol" in sys.argv, show_session = "pymol" in sys.argv)
+                cluster.show(show_snapshot = not "pymol" in sys.argv, show_session = "pymol" in sys.argv, face_colours = True)
             tprint("Showing clusters")
         else:
             sprint("Available clusters")

@@ -1591,27 +1591,31 @@ class Cluster2:
     def __repr__(self):
         return "<Cluster:{} {}-{} /N={}>". format(self.ref_name, self.c1, self.c2, self.ndimers)
 
-    def process_cluster(self, force = False, matrix=False, plot=False, gif=False, show=False, snapshot=False, **kwargs):
-        print1("Processing matrix={}, plot={}, gif={}, show={}".format(matrix, plot, gif, show))
+    def process_cluster(self, force = False, matrix=True,gif=False, show=False, faces=False, snapshot=False, **kwargs):
+        print1("Processing matrix={}, faces={}".format(matrix, faces))
         if not self.is_all:
             self.remove_identical()
             if self.comA is None or force:
                 self.get_com()
+            if faces:
+                self.get_eva_face()
 
         if matrix:
             if self.matrix is None or force:
-                self.get_matrix(threshold=10,)
-                if plot:
-                    self.show_mpl(gif=gif, show=show)
+                self.get_matrix(threshold=10)
+
+
+    def show_cluster(self, force = False, angles=True, plot=True, show = False, snapshot=True, gif=False, **kwargs):
+        if angles:
+            self.plot_path, self.gif_path = self.get_plot(self.subset, self.cluster_cols, self.id,
+                                                          coms=(self.comA, self.comB),
+                                                          stds=(self.stdA, self.stdB),
+                                                          show=show, gif=gif)
         if plot:
-            if self.plot_path is None or force:
-                self.plot_path, self.gif_path = self.get_plot(self.subset, self.cluster_cols, self.id,
-                                                              coms=(self.comA, self.comB),
-                                                              stds=(self.stdA, self.stdB),
-                                                              show=show, gif=gif)
+            self.show_mpl(gif=gif, show=show)
         if snapshot:
-            if self.snapshot_path is None or force:
-                self.snapshot_path = self.show(snapshot=True, show_session=False)
+            self.snapshot_path = self.show(snapshot=True, show_session=show, **kwargs)
+
 
 
 
@@ -1917,7 +1921,7 @@ class Cluster2:
                 pymol_colour(mpl_colours[self.c2 % mpl_ncolours], "(all)")
                 extra_id = "_cluster_cols"
             elif self.faces is not None and face_colours:
-                pymol_paint_single_face(chains_to_align)
+                pymol_paint_single_face(chains_to_align, self.faces[0][0], self.faces[1][0])
                 extra_id = "_faces"
             else:
                 pymol_colour("blue_yellow_red", "(all)", spectrum="b")
@@ -2128,6 +2132,8 @@ def get_faces(force = False):
         from sklearn.cluster import AffinityPropagation, KMeans, BisectingKMeans, SpectralClustering, FeatureAgglomeration, AgglomerativeClustering
 
         print("-"*102)
+        if cluster.oneDmatrix1 is None or cluster.oneDmatrix2 is None:
+            cluster.reprocess(matrix=True)
         preference_array = [m1 + m2 for m1, m2 in zip(cluster.oneDmatrix1, cluster.oneDmatrix2)]
         preference_array = normalize1D(preference_array)
         for n, p in enumerate(preference_array):

@@ -54,6 +54,7 @@ def main(PROCESS_ALL = False,
          GENERATE_CLUSTERS = True,
          DELETE_PREVIOUS = True,
          REFRESH_PLOTS = True,
+         REPROCESS_CLUSTERS = False,
          ):
 
 
@@ -201,7 +202,8 @@ def main(PROCESS_ALL = False,
     tprint("CLUSTERING v2")
 
     if not SKIP_CLUSTERING or PROCESS_ALL and False:
-        from clustering import generate_dihedrals_df, cluster_angles, create_clusters, cluster_redundancy, cluster_dihedrals
+        from clustering import generate_dihedrals_df, cluster_angles, create_clusters, cluster_redundancy, cluster_dihedrals, \
+            get_faces, compare_all_with_eva
         from imports import load_clusters
 
 
@@ -264,18 +266,23 @@ def main(PROCESS_ALL = False,
             cluster_redundancy()
             cluster_dihedrals()
 
-
-
-
-
-
         if ONLY_GR:
             identifier = "GR"
         else:
             identifier = "ALL"
+
+
         for cluster in load_clusters(identifier=identifier, onebyone=True):
             sprint(cluster.id)
-            cluster.reprocess_cluster(force = REFRESH_PLOTS and not GENERATE_CLUSTERS, plot=True, gif =GIFS, matrix = HEATMAPS, snapshot = SNAPSHOTS)
+            cluster.reprocess_cluster(force=REPROCESS_CLUSTERS)
+            cluster.pickle()
+
+        get_faces(force=GENERATE_CLUSTERS)
+        compare_all_with_eva()
+
+        for cluster in load_clusters(identifier=identifier, onebyone=True):
+            sprint(cluster.id)
+            cluster.plot_cluster(force = REFRESH_PLOTS and not GENERATE_CLUSTERS, plot=True, gif =GIFS, matrix = HEATMAPS, snapshot = SNAPSHOTS, faces= True, face_colours = True)
             cluster.pickle()
 
 
@@ -407,13 +414,14 @@ if __name__ == "__main__":
         DIMENSIONS_PCA = [0,1,2],
         MINIMUM_SCORE = 0,
 
-        HEATMAPS = True,
+        HEATMAPS = False,
         GIFS = False,
         SNAPSHOTS = False,
         CHAINBOWS = False,
         GENERATE_CLUSTERS = False or "clusters" in sys.argv,
         DELETE_PREVIOUS = False,
         REFRESH_PLOTS = True,
+        REPROCESS_CLUSTERS = False,
 
 
         )
