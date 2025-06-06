@@ -1839,7 +1839,7 @@ class Cluster2:
             print(self.pickle_path)
             os.remove(self.pickle_path)
 
-    def show(self, snapshot =True, show_session=False, chainbows=False, cluster_colours=False, show_snapshot=False, regenerate_matrix=False):
+    def show(self, snapshot =True, show_session=False, chainbows=False, cluster_colours=False, show_snapshot=False, regenerate_matrix=False, face_colours = False):
         if self.is_all and not show_session:
             return None
 
@@ -1917,6 +1917,9 @@ class Cluster2:
             elif cluster_colours:
                 pymol_colour(mpl_colours[self.c2 % mpl_ncolours], "(all)")
                 extra_id = "_cluster_cols"
+            elif self.faces is not None and face_colours:
+                from faces import GR_colours
+                pymol_colour(GR_colours[self.faces[0][0]], "{} and c. {}", )
             else:
                 pymol_colour("blue_yellow_red", "(all)", spectrum="b")
                 extra_id = "_heatmap"
@@ -2024,7 +2027,47 @@ class Cluster2:
 
 
 
-     def get_eva_face(self):
+    def get_eva_face(self):
+        from faces import GR_dict
+        resids = {n: resid for n, resid in enumerate(self.outer_ids_complete)}
+        # print(resids)
+        eva_scores = {"mon1": {}, "mon2": {}}
+        scores = {}
+        threshold_ratio = 2
+        t1, t2 = max(self.oneDmatrix1)/threshold_ratio, max(self.oneDmatrix2)/threshold_ratio
+
+        for eva_face, res_list in GR_dict.items():
+            print(eva_face, len(res_list), "-->", end=" ")
+            res_list = [r for r in res_list if r in self.outer_ids_complete]
+            print(len(res_list))
+            eva_scores["mon1"][eva_face] = 0
+            eva_scores["mon2"][eva_face] = 0
+
+            for n, (a1, a2) in enumerate(zip(self.oneDmatrix1, self.oneDmatrix2)):
+                if resids[n] in res_list:
+                    if a1 >= t1:
+                        eva_scores["mon1"][eva_face] += 1
+                    if a2 >= t2:
+                        eva_scores["mon2"][eva_face] += 1
+
+
+            eva_scores["mon1"][eva_face] /= len(res_list)
+            eva_scores["mon1"][eva_face] *= 100
+            eva_scores["mon2"][eva_face] /= len(res_list)
+            eva_scores["mon2"][eva_face] *= 100
+        # eva_scores[eva_face] = sorted(eva_scores[eva_face], key=lambda x: x)
+        #print(eva_scores)
+        self.mon1_faces = sorted([[face, value] for face, value in eva_scores["mon1"].items()],
+                            key=lambda x: x[1], reverse=True)
+        self.mon2_faces = sorted([[face, value] for face, value in eva_scores["mon1"].items()],
+                            key=lambda x: x[1], reverse=True)
+
+        self.faces = self.mon1_faces[0], self.mon2_faces[0]
+        for f in self.faces:
+            if f[1] == 0:
+                f[1] = None
+        print(self.faces)
+
 
 
 

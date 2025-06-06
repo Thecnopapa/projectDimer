@@ -16,14 +16,14 @@ print1("References loaded")
 
 
 from clustering import get_faces, compare_all_with_eva
-get_faces(force=False)
-compare_all_with_eva()
-quit()
+#get_faces(force=False)
+#compare_all_with_eva()
+#quit()
 for cluster in load_clusters(onebyone=True):
     sprint(cluster.id)
-    fig_path = cluster.show_mpl(show=True)
-    open_file_from_system(fig_path)
-    break
+    cluster.get_eva_face()
+    cluster.pickle()
+
 
 
 

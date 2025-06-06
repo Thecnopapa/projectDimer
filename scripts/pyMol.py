@@ -407,7 +407,7 @@ def pymol_sphere(coords, name = None, colour="white", state = -1, scale = 8):
 
 
 
-
+def pymol_paint_single_face(obj_list)
 
 def pymol_paint_all_faces(obj):
     print("(PyMOL) paining all faces in {}".format(obj.id))
