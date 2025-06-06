@@ -413,10 +413,11 @@ def pymol_paint_single_face(obj_list, face1, face2):
     for n, (obj, o) in enumerate(zip(pymol_get_all_objects(), obj_list.values())):
         print(o)
         chain1 = o[1]
-        chain1ischain1 = o[2]
+        chain1ischain1 = True
 
-        sele1 = "c. {}".format(obj,chain1)
-        sele2 = "!(c. {})".format(obj,chain1ischain1)
+
+        sele1 = "c. {}".format(chain1)
+        sele2 = "not c. {}".format(chain1)
         if not chain1ischain1:
             sele1, sele2 = sele2, sele1
         pymol_colour(GR_colours[face1], obj, sele1, silent = False)
