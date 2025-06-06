@@ -2075,18 +2075,56 @@ def get_faces():
     for cluster in load_clusters(identifier="all", onebyone=True):
         if not cluster.is_all:
             continue
+        outer_ids = cluster.outer_ids_complete
+        from sklearn.cluster import AffinityPropagation, KMeans, BisectingKMeans, SpectralClustering, FeatureAgglomeration, AgglomerativeClustering
 
-
-        coord_array = np.array([atom.coord for atom in cluster.structure.get_atoms()])
+        print("-"*102)
         preference_array = [m1 + m2 for m1, m2 in zip(cluster.oneDmatrix1, cluster.oneDmatrix2)]
-        from sklearn.cluster import AffinityPropagation, KMeans, BisectingKMeans, SpectralClustering, FeatureAgglomeration
-        print(coord_array)
-
-        print("###")
-        preference_array = normalize1D(preference_array, add_to=1)
+        preference_array = normalize1D(preference_array)
         for n, p in enumerate(preference_array):
-            print(add_front_0(n,digits=3, zero=" ")+ "|"+"#"*round(p*100)+" "*(100-round(p*100))+"|")
-        print("###")
+            print(add_front_0(n, digits=3, zero=" ") + "|" + "#" * round(p * 100) + " " * (100 - round(p * 100)) + "|")
+        preference_array = normalize1D(preference_array, add_to=1)
+        print("-"*102)
+
+
+        atoms = []
+        for n, atom in enumerate(cluster.structure.get_atoms()):
+            new_atom = dict(coord = atom.coord, weight = preference_array[n], outer = outer_ids[n] is not None)
+            if new_atom["outer"]:
+                new_atom["cluster"] = None
+            else:
+                new_atom["cluster"] = -1
+            atoms.append(new_atom)
+
+        coord_array = np.array([atom["coord"] for atom in atoms if atom["outer"]])
+        print(coord_array.shape)
+        weighted_array = np.array([[*atom["coord"]]+ [atom["weight"]] for atom in atoms if atom["outer"]])
+        print(weighted_array.shape)
+        labels = None
+        # CLUSTERING STARTING HERE
+
+
+
+
+        labels = [-1]*len(coord_array)
+
+
+
+
+
+        # CLUSTERING FINISHING HERE
+        for label, atom in zip(labels, [a for a in atoms if a["outer"]]):
+            atom["cluster"] = label
+        print([atom["cluster"] for atom in atoms])
+        cluster.show_mpl(show=True, save=False, title = cluster.id+" n_clusters = {}".format(len(set(labels))), mergedMatrix = [atom["cluster"] for atom in atoms], secondary=preference_array)
+
+
+
+
+        quit()
+
+
+
         #print(preference_array)
 
 
@@ -2105,43 +2143,50 @@ def get_faces():
             coord2 = coord2[:3]
             from maths import distance
             print((1-(weight1+weight2)/2))
-            return abs(distance(coord1, coord2)) * (1-(weight1+weight2)/2)
+            return abs(distance(coord1, coord2)) / (1-(weight1+weight2)/2)
         #affinity = [v*maximum*len(preference_array)/5 for v in preference_array]
         #print(affinity)
         weighted_array = []
         for a, p in zip(coord_array, preference_array):
             print([*a]+[p])
-            weighted_array.append([*a]+[p])
+            if p>0:
+                weighted_array.append([*a]+[p])
         print(weighted_array)
         model = AffinityPropagation(random_state=6, convergence_iter=100, verbose=True).fit(weighted_array)
+        #model = AgglomerativeClustering(n_clusters=4)
         print(model.labels_)
         #model2 = FeatureAgglomeration(n_clusters=4).fit(model.cluster_centers_)
         #print(model2.labels_)
         from scipy.cluster.hierarchy import linkage, cut_tree
-        Z = linkage(weighted_array, method='average', metric=custom_metric)
+        #Z = linkage(weighted_array, method='average', metric=custom_metric)
+        #Z = linkage(weighted_array, method='weighted', metric="euclidean")
+
         #print(Z)
         #y = cut_tree(Z, 3)
         #print(y)
         from scipy.cluster.hierarchy import dendrogram
+        #print(Z[:,2])
+        #D = dendrogram(Z, color_threshold=0.4*max(Z[:,2]))
+        #D = dendrogram(Z, p=4, truncate_mode="level")
+        #label_list = D["leaves_color_list"]
+        #cluster.show_mpl(show=True, save=False, title = cluster.id+" n_clusters = {}".format(len(set(label_list))), mergedMatrix = D["leaves_color_list"], secondary=preference_array)
 
-        D = dendrogram(Z, p=2)
-        cluster.show_mpl(show=True, save=False, title = cluster.id+" n_clusters = {}".format(len(set(D["leaves_color_list"]))), mergedMatrix = D["leaves_color_list"], secondary=preference_array)
-
+        label_list = model.labels_
         faces = []
-        for c in set(model.labels_):
+        for c in set(label_list):
             face=dict(
-            com = model.cluster_centers_[c],
+            #com = model.cluster_centers_[c],
             C = c,
-            N = sum([1 for i in model.labels_ if i ==c]),
-            M = sum([preference_array[n] for n, _ in enumerate(model.labels_) if model.labels_[n] == c])
+            N = sum([1 for i in label_list if i ==c]),
+            M = np.mean([preference_array[n] for n, _ in enumerate(label_list) if label_list[n] == c])
             )
             print("C:{}, N:{}, M:{}".format(face["C"], face["N"], face["M"] ))
             faces.append(face)
-        faces = sorted(faces, key=lambda face: face["N"], reverse=True)
+        faces = sorted(faces, key=lambda face: face["M"], reverse=True)
         [print(face) for face in faces]
         labels = []
-        for l in model.labels_:
-            if l in [d["C"] for d in faces]:
+        for l in label_list:
+            if l in [d["C"] for d in faces[:4]]:
                 labels.append(l)
             else:
                 labels.append(-1)
