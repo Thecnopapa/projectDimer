@@ -310,7 +310,7 @@ def mpl_to_gif(fig, axes, name = "animation.gif", folder=None, dpf=1, total_d = 
 
     import io, PIL
 
-    if type(axes) is not list:
+    if type(axes) not in (list, tuple):
         axes = [axes]
     if folder is None:
         from Globals import local
