@@ -114,7 +114,7 @@ def main(PROCESS_ALL = False,
     ###### SYMMETRY & DIMER GENERATION #################################################################################
     tprint("SYMMETRY & DIMER GENERATION")
 
-    if not SKIP_SYMMETRY or PROCESS_ALL:
+    if not SKIP_SYMMETRY or PROCESS_ALL or len(os.listdir(local.molecules)) == 0:
         progress = ProgressBar(len(molecule_list))
         for m in molecule_list:
             if "lock" in m:
@@ -221,6 +221,7 @@ def main(PROCESS_ALL = False,
 
 
             for file in sorted(os.listdir(root.dihedrals)):
+                sprint("Clusetring1")
                 if ONLY_GR and "GR" not in file:
                     continue
                 dihedrals_path = os.path.join(root.dihedrals, file)
@@ -233,6 +234,7 @@ def main(PROCESS_ALL = False,
 
 
             for file in sorted(os.listdir(cluster1_folder)):
+                sprint("Clusetring2")
                 if ONLY_GR and "GR" not in file:
                     continue
                 dihedrals_path = os.path.join(cluster1_folder, file)
@@ -357,7 +359,7 @@ if __name__ == "__main__":
 
     print(sys.argv)
     if len(sys.argv) > 1 and not "all" in sys.argv:
-        DO_ONLY = [arg.upper() for arg in sys.argv[1:]]
+        DO_ONLY = [arg.upper() for arg in sys.argv[2:]]
 
 
     # Imports that need globals initialized:

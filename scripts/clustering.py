@@ -1136,6 +1136,7 @@ def generate_dihedrals_df(dimer_list = None, force = False):
     sprint("Generating dihedrals dataframe")
     root["clustering2"] = "dataframes/clustering2"
     root["dihedrals"] = "dataframes/clustering2/dihedrals"
+    print(force, len(os.listdir(root.dihedrals)) == 0)
     if force or len(os.listdir(root.dihedrals)) == 0:
         from imports import load_single_pdb
         if dimer_list is None:
