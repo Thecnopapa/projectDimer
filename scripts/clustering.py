@@ -2123,7 +2123,7 @@ def cluster_dihedrals():
 
 
 
-def get_faces(force = False):
+def get_faces(force = False, gif=False):
     from imports import load_clusters
     from maths import normalize1D
     for cluster in load_clusters(identifier="all", onebyone=True):
@@ -2194,7 +2194,7 @@ def get_faces(force = False):
         cluster.atoms = atoms
         cluster.faces = faces
         cluster.pickle()
-        cluster.show_mpl(show=True, save=False, title = cluster.id+" n_clusters = {}".format(len(set(labels))), mergedMatrix = [atom["cluster"] for atom in atoms], secondary=preference_array)
+        cluster.show_mpl(show=True, save=False, gif=gif, title = cluster.id+"_{}_clusters".format(len(set(labels))), mergedMatrix = [atom["cluster"] for atom in atoms], secondary=preference_array)
 
 
 def compare_all_with_eva():
