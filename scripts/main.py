@@ -268,72 +268,71 @@ def main(PROCESS_ALL = False,
             cluster_redundancy()
             cluster_dihedrals()
 
-    if ONLY_GR:
-        identifier = "GR"
-    else:
-        identifier = "ALL"
+        if ONLY_GR:
+            identifier = "GR"
+        else:
+            identifier = "ALL"
 
-    # ONLY FOR ALL- ALL
-    get_faces(force=True, gif=True)
-    quit()
-    compare_all_with_eva()
+        # ONLY FOR ALL- ALL
+        get_faces(force=True, gif=True)
+        compare_all_with_eva()
 
-    for cluster in load_clusters(identifier=identifier, onebyone=True):
-            if cluster.is_all:
-                continue
+        for cluster in load_clusters(identifier=identifier, onebyone=True):
+                if cluster.is_all:
+                    continue
+                sprint(cluster.id)
+                cluster.reprocess_cluster(force=REPROCESS_CLUSTERS)
+                cluster.pickle()
+
+
+
+        for cluster in load_clusters(identifier=identifier, onebyone=True):
             sprint(cluster.id)
-            cluster.reprocess_cluster(force=REPROCESS_CLUSTERS)
+            cluster.plot_cluster(force = REFRESH_PLOTS and not GENERATE_CLUSTERS, plot=True, gif =GIFS, matrix = HEATMAPS, snapshot = SNAPSHOTS, faces= True, face_colours = True)
             cluster.pickle()
 
 
 
-    for cluster in load_clusters(identifier=identifier, onebyone=True):
-        sprint(cluster.id)
-        cluster.plot_cluster(force = REFRESH_PLOTS and not GENERATE_CLUSTERS, plot=True, gif =GIFS, matrix = HEATMAPS, snapshot = SNAPSHOTS, faces= True, face_colours = True)
-        cluster.pickle()
+
+        """matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path,
+                                                            clusters="angle_cluster2",
+                                                            subset_col="angle_cluster2",
+                                                            subset = None,
+                                                            heatmap = HEATMAPS, hm_threshold=10,
+                                                            outer_ids_complete=ref.get_outer_res_list(complete_list=True),
+                                                            gif=GIFS,
+                                                            snapshot=SNAPSHOTS,
+                                                            chainbows = CHAINBOWS,
+                                                            include_all=True,)"""
 
 
 
 
-    """matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path,
-                                                        clusters="angle_cluster2",
-                                                        subset_col="angle_cluster2",
-                                                        subset = None,
-                                                        heatmap = HEATMAPS, hm_threshold=10,
-                                                        outer_ids_complete=ref.get_outer_res_list(complete_list=True),
-                                                        gif=GIFS,
-                                                        snapshot=SNAPSHOTS,
-                                                        chainbows = CHAINBOWS,
-                                                        include_all=True,)"""
-
-
-
-
-    '''from clustering import compare_contacts, get_clusters, cluster, split_by_faces, cluster_by_face
-    for reference in vars.references:
-        sprint(reference.name)
-        if reference.name != "GR" and ONLY_GR:
+        '''from clustering import compare_contacts, get_clusters, cluster, split_by_faces, cluster_by_face
+        for reference in vars.references:
+            sprint(reference.name)
+            if reference.name != "GR" and ONLY_GR:
+                reference.pickle()
+                continue
+            if SPLIT_FACES or SPLIT_FACES_ANYWAY:
+                split_by_faces(reference, force=FORCE_SPLIT, by_com= FACES_BY_COM)
+            if reference.name == "GR" and (COMPARE or PROCESS_ALL):
+                if not "classified_df" in reference.__dict__ or (FORCE_COMPARE or PROCESS_ALL):
+                    reference.classified_df = compare_contacts(reference, force = FORCE_COMPARE or PROCESS_ALL)
+                from clustering import add_info_to_classified
+                #save_dfs(general=False, clustering=True)
+                add_info_to_classified(reference)
+                from visualisation import classified_chart
+                classified_chart()
+                #reference.clusters_eva = get_clusters(reference.classified_df, column = "Best_Match", ref_name=reference.name)
+    
+    
+            cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, minimum_score=MINIMUM_SCORE,
+                            n_clusters=N_CLUSTERS, pca=CLUSTER_BY_PCA, pca_dimensions = DIMENSIONS_PCA,
+                            splitted=SPLIT_FACES, rem_red=REMOVE_REDUNDANCY, method = CLUSTERING_METHOD,
+                            quantile=QUANTILE, n_sample_multiplier=N_SAMPLE_MULTIPLIER, bandwidth = BANDWIDTH)
             reference.pickle()
-            continue
-        if SPLIT_FACES or SPLIT_FACES_ANYWAY:
-            split_by_faces(reference, force=FORCE_SPLIT, by_com= FACES_BY_COM)
-        if reference.name == "GR" and (COMPARE or PROCESS_ALL):
-            if not "classified_df" in reference.__dict__ or (FORCE_COMPARE or PROCESS_ALL):
-                reference.classified_df = compare_contacts(reference, force = FORCE_COMPARE or PROCESS_ALL)
-            from clustering import add_info_to_classified
-            #save_dfs(general=False, clustering=True)
-            add_info_to_classified(reference)
-            from visualisation import classified_chart
-            classified_chart()
-            #reference.clusters_eva = get_clusters(reference.classified_df, column = "Best_Match", ref_name=reference.name)
-
-
-        cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, minimum_score=MINIMUM_SCORE,
-                        n_clusters=N_CLUSTERS, pca=CLUSTER_BY_PCA, pca_dimensions = DIMENSIONS_PCA,
-                        splitted=SPLIT_FACES, rem_red=REMOVE_REDUNDANCY, method = CLUSTERING_METHOD,
-                        quantile=QUANTILE, n_sample_multiplier=N_SAMPLE_MULTIPLIER, bandwidth = BANDWIDTH)
-        reference.pickle()
-    #save_dfs(general=False, clustering=True)'''
+        #save_dfs(general=False, clustering=True)'''
 
 
 
