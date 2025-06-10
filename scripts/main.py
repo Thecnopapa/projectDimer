@@ -286,12 +286,19 @@ def main(PROCESS_ALL = False,
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
             sprint(cluster.id)
-            cluster.plot_cluster(force = REFRESH_PLOTS and not GENERATE_CLUSTERS, plot=True, gif =GIFS, matrix = HEATMAPS, snapshot = SNAPSHOTS, faces= True, face_colours = True)
+            cluster.plot_cluster(force = REFRESH_PLOTS and not GENERATE_CLUSTERS, plot=True, matrix = HEATMAPS, snapshot = SNAPSHOTS, faces= True, face_colours = True)
             cluster.pickle()
+
+
 
         # ONLY FOR ALL- ALL
         get_faces(force=True, gif=GIFS)
         compare_all_with_eva()
+
+        for cluster in load_clusters(identifier=identifier, onebyone=True):
+            sprint(cluster.id)
+            cluster.plot_cluster(plot=True, gif =GIFS)
+            cluster.pickle()
 
 
         """matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path,
