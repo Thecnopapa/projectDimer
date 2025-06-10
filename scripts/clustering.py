@@ -1826,7 +1826,7 @@ class Cluster2:
         self.ndimers = len(self.subset)
         cluster2.redundant = True
         cluster2.redundant_to = self.id
-        cluster2.pickle()
+        cluster2.delete()
         self.pickle()
 
 
@@ -2089,24 +2089,31 @@ def cluster_redundancy(**kwargs):
             done_clusters.append(cluster1.id)
             continue
         print2(cluster1.id)
-        for cluster2 in load_clusters(onebyone=False, identifier=cluster1.ref_name):
+        for cluster2 in load_clusters(identifier=cluster1.ref_name, onebyone=True):
 
             if cluster1.id == cluster2.id:
                 continue
             if cluster2.id in done_clusters or cluster2.is_all or cluster2.redundant or cluster2.outlier:
                 continue
             #print3(cluster2.id)
-            d1 = distance(cluster1.comA, cluster2.comB)
-            d2 = distance(cluster1.comB, cluster2.comA)
-            v1 = 10+ cluster1.stdA + cluster2.stdB
-            v2 = 10+ cluster1.stdB + cluster2.stdA
+            d1a = distance(cluster1.comA, cluster2.comB)
+            d2a = distance(cluster1.comB, cluster2.comA)
+            v1a = 10+ (cluster1.stdA + cluster2.stdB)*3
+            v2a = 10+ (cluster1.stdB + cluster2.stdA)*3
 
-            if d1 <= v1:
-                if d2 <= v2:
-                    print3("Redundant cluster:", cluster2.id)
-                    print4(d1, v1)
-                    print4(d2, v2)
-                    cluster1.merge(cluster2)
+            d1b = distance(cluster1.comA, cluster2.comA)
+            d2b = distance(cluster1.comB, cluster2.comB)
+            v1b = 10 + (cluster1.stdA + cluster2.stdA)*3
+            v2b = 10 + (cluster1.stdB + cluster2.stdB)*3
+
+            for d1, d2, v1, v2 in [[d1a, d2a, v1a, v2a], [d1b, d2b, v1b, v2b]]:
+                print(cluster2.id, d1, d2, v1, v2)
+                if d1 <= v1:
+                    if d2 <= v2:
+                        print3("Redundant cluster:", cluster2.id)
+                        print4(d1, v1)
+                        print4(d2, v2)
+                        cluster1.merge(cluster2)
         done_clusters.append(cluster1.id)
 
     for cluster in load_clusters(onebyone=True):
@@ -2223,7 +2230,69 @@ def compare_all_with_eva():
         print(eva_scores)
 
 
+def generate_cluster_grids(identifier="GR", use_faces="eva"):
+    from imports import load_clusters
+    faces = []
+    for cluster in load_clusters(identifier = identifier, onebyone=True):
+        if cluster.is_all:
+            continue
+        faces.append(sorted([face[0] for face in cluster.faces]) + [cluster.id])
+    faces = sorted(faces, key=lambda face: face[1])
+    faces = sorted(faces, key=lambda face: face[0])
+    [print(face) for face in faces]
+    face_combinations = list(set([face[0] + "-" + face[1] for face in faces]))
 
+    face_combinations = [f.split("-") for f in face_combinations]
+
+    print(face_combinations)
+    face_combinations = [f + [sum([1 for face in faces if face[:2] == f])] for f in face_combinations]
+    [print(f) for f in face_combinations]
+    for f in face_combinations:
+        import matplotlib as mpl
+        import matplotlib.pyplot as plt
+        import PIL.Image as image
+        local["clusters_by_face"] = "images/clusters_by_face"
+
+        fig, axes = plt.subplots((((f[2] - 1) // 3) + 1), 3,
+                                 # sharex="col",
+                                 # gridspec_kw={'height_ratios': [4, 2], "width_ratios": [2, 4]},
+                                 figsize=(18, 4 * ((f[2] // 3) + 1)))
+        sprint(f[:2])
+        n_dimers = 0
+        n = 0
+        for face in faces:
+            # print(face[:2], f[:2])
+            snapshots = []
+            if face[:2] == f[:2]:
+                print1(face)
+                cluster = list(load_clusters(identifier=face[2], onebyone=True))
+                cluster = cluster[0]
+                if cluster.redundant:
+                    continue
+
+                print2(cluster)
+                ss_path = cluster.snapshot_path
+                print3(ss_path)
+
+                snapshots.append(ss_path)
+                print(n, n // 3, n % 3)
+                try:
+                    ax = axes[n // 3, n % 3]
+                except:
+                    ax = axes[n % 3]
+                if ss_path is not None:
+                    im = image.open(ss_path)
+                    ax.imshow(im)
+                    n_dimers += cluster.ndimers
+                ax.set_title(face[2] + " (N={})".format(cluster.ndimers))
+                n += 1
+        # fig.tight_layout()
+        for ax in axes.flatten():
+            ax.set_axis_off()
+        # plt.show(block = True)
+        filename = "{}-{}_(N={})".format(f[0], f[1], n_dimers)
+
+        plt.savefig(os.path.join(local.clusters_by_face, filename))
 
 
 

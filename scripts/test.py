@@ -15,14 +15,12 @@ vars["references"] = load_references(force_reload=True)
 print1("References loaded")
 
 
-from clustering import get_faces, compare_all_with_eva
+from clustering import get_faces, compare_all_with_eva, cluster_redundancy
 #get_faces(force=False)
 #compare_all_with_eva()
 #quit()
-for cluster in load_clusters(onebyone=True):
-    sprint(cluster.id)
-    if not cluster.is_all:
-        print1(cluster.faces[0][0], cluster.faces[1][0])
+
+cluster_redundancy()
 
 
 

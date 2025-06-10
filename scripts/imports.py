@@ -74,7 +74,7 @@ def load_from_files(pdb_folder, load_class = PDB, ignore_selection = False, pick
 
 class PickleIterator:
     def __init__(self, id_list, quiet=True, silent=True, **kwargs):
-        self.id_list = sorted(id_list)
+        self.id_list = sorted(id_list, reverse=False)
         self.kwargs = kwargs
         self.kwargs["quiet"] = quiet
         self.kwargs["silent"] = silent
