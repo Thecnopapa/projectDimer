@@ -92,9 +92,11 @@ class PickleIterator:
                 sprint(self.id_list[self.n])
                 self.progress.add(info=self.id_list[self.n])
             loaded = load_single_pdb(self.id_list[self.n], **self.kwargs)
-            assert len(loaded) == 1, "More than one object with the same id! \n{}:\n{}".format(self.id_list[self.n], loaded)
+            assert len(loaded) <= 1, "More than one ({}) object with the same id! \n{}:\n{}".format(len(loaded), self.id_list[self.n], loaded)
 
             self.n += 1
+            if len(loaded) == 0:
+                return None
             return loaded[0]
 
 

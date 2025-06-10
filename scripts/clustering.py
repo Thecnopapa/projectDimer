@@ -2085,12 +2085,17 @@ def cluster_redundancy(**kwargs):
     from maths import distance
     done_clusters = []
     for cluster1 in load_clusters(onebyone=True):
+        if cluster1 is None:
+            done_clusters.append(cluster1)
+            continue
         if cluster1.is_all or cluster1.redundant or cluster1.outlier:
             done_clusters.append(cluster1.id)
             continue
         print2(cluster1.id)
         for cluster2 in load_clusters(identifier=cluster1.ref_name, onebyone=True):
 
+            if cluster2 is None:
+                continue
             if cluster1.id == cluster2.id:
                 continue
             if cluster2.id in done_clusters or cluster2.is_all or cluster2.redundant or cluster2.outlier:
@@ -2290,7 +2295,8 @@ def generate_cluster_grids(identifier="GR", use_faces="eva"):
         for ax in axes.flatten():
             ax.set_axis_off()
         # plt.show(block = True)
-        filename = "{}-{}_(N={})".format(f[0], f[1], n_dimers)
+        fig.suptitle("{}-{}_(N={})".format(f[0], f[1], n_dimers))
+        filename = "{}-{}".format(f[0], f[1])
 
         plt.savefig(os.path.join(local.clusters_by_face, filename))
 
