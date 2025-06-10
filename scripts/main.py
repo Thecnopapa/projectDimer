@@ -273,9 +273,7 @@ def main(PROCESS_ALL = False,
         else:
             identifier = "ALL"
 
-        # ONLY FOR ALL- ALL
-        get_faces(force=True, gif=True)
-        compare_all_with_eva()
+
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
                 if cluster.is_all:
@@ -291,7 +289,9 @@ def main(PROCESS_ALL = False,
             cluster.plot_cluster(force = REFRESH_PLOTS and not GENERATE_CLUSTERS, plot=True, gif =GIFS, matrix = HEATMAPS, snapshot = SNAPSHOTS, faces= True, face_colours = True)
             cluster.pickle()
 
-
+        # ONLY FOR ALL- ALL
+        get_faces(force=True, gif=GIFS)
+        compare_all_with_eva()
 
 
         """matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path,
@@ -420,11 +420,11 @@ if __name__ == "__main__":
         MINIMUM_SCORE = 0,
 
         HEATMAPS = True,
-        GIFS = True,
+        GIFS = False,
         SNAPSHOTS = True,
         CHAINBOWS = False,
         GENERATE_CLUSTERS = False or "clusters" in sys.argv,
-        DELETE_PREVIOUS = False,
+        DELETE_PREVIOUS = False or "delete" in sys.argv,
         REFRESH_PLOTS = True,
         REPROCESS_CLUSTERS = False,
 

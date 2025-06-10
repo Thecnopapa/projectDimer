@@ -1,6 +1,8 @@
 import os
 import sys
 
+from matplotlib.pyplot import savefig
+
 from Globals import root, local, vars
 from maths import angle_between_vectors
 
@@ -333,7 +335,7 @@ if __name__ == "__main__":
         tprint("Showing references")
         show_objects(refs, sys.argv[2:])
 
-    elif "cluster" in sys.argv[1]:
+    elif "cluster" == sys.argv[1] and not "clusters2" == sys.argv[1]:
         if len(sys.argv[2:]) != 0:
             print(sys.argv[2])
             if not "pymol" in sys.argv:
@@ -345,6 +347,73 @@ if __name__ == "__main__":
             sprint("Available clusters")
             for file in os.listdir(local.cluster_pickles):
                 print1(file.split(".")[0])
+
+    elif "clusters-eva" == sys.argv[1]:
+        faces = []
+        for cluster in load_clusters(onebyone=True):
+            if cluster.is_all:
+                continue
+            faces.append(sorted([face[0] for face in cluster.faces])+[cluster.id])
+        faces = sorted(faces, key = lambda face: face[1])
+        faces = sorted(faces, key = lambda face: face[0])
+        [print(face) for face in faces]
+        face_combinations = list(set([face[0]+"-"+face[1] for face in faces]))
+
+        face_combinations = [f.split("-") for f in face_combinations]
+
+        print(face_combinations)
+        face_combinations = [f + [sum([1 for face in faces if face[:2] == f])] for f in face_combinations]
+        [print(f) for f in face_combinations]
+        for f in face_combinations:
+            import matplotlib as mpl
+            import matplotlib.pyplot as plt
+            import PIL.Image as image
+            local["clusters_by_face"] = "images/clusters_by_face"
+
+            fig, axes = plt.subplots((((f[2]-1)//3)+1), 3,
+                                     # sharex="col",
+                                     #gridspec_kw={'height_ratios': [4, 2], "width_ratios": [2, 4]},
+                                     figsize=(18, 4*((f[2]//3)+1)))
+            sprint(f[:2])
+            n_dimers = 0
+            n = 0
+            for face in faces:
+                #print(face[:2], f[:2])
+                snapshots = []
+                if face[:2] == f[:2]:
+                    print1(face)
+                    cluster = list(load_clusters(identifier = face[2], onebyone = True))
+                    cluster = cluster[0]
+
+                    print2(cluster)
+                    ss_path = cluster.snapshot_path
+                    print3(ss_path)
+
+                    snapshots.append(ss_path)
+                    print(n, n//3, n%3)
+                    try:
+                        ax = axes[n//3, n%3]
+                    except:
+                        ax = axes[n%3]
+                    if ss_path is not None:
+                        im = image.open(ss_path)
+                        ax.imshow(im)
+                        n_dimers += cluster.ndimers
+                    ax.set_title(face[2]+" (N={})".format(cluster.ndimers))
+                    n+=1
+            #fig.tight_layout()
+            for ax in axes.flatten():
+                ax.set_axis_off()
+            #plt.show(block = True)
+            filename = "{}-{}_(N={})".format(f[0], f[1], n_dimers)
+
+            plt.savefig(os.path.join(local.clusters_by_face, filename))
+
+
+
+
+
+
 
 
 
