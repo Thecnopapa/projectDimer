@@ -407,8 +407,13 @@ def pymol_sphere(coords, name = None, colour="white", state = -1, scale = 8):
 
 
 
-def pymol_paint_single_face(obj_list, face1, face2):
-    from faces import GR_colours
+def pymol_paint_single_face(obj_list, face1, face2, color_dict):
+    if color_dict is not None:
+        color1 = color_dict[face1]
+        color2 = color_dict[face2]
+    else:
+        color1 = mpl_colours[int(face1)%mpl_ncolours]
+        color2 = mpl_colours[int(face2)%mpl_ncolours]
     print(obj_list)
     for n, (obj, o) in enumerate(zip(pymol_get_all_objects(), obj_list.values())):
         print(o)
@@ -420,8 +425,8 @@ def pymol_paint_single_face(obj_list, face1, face2):
         sele2 = "not c. {}".format(chain1)
         if not chain1ischain1:
             sele1, sele2 = sele2, sele1
-        pymol_colour(GR_colours[face1], obj, sele1, silent = False)
-        pymol_colour(GR_colours[face2], obj, sele2, silent = False)
+        pymol_colour(color1, obj, sele1, silent = False)
+        pymol_colour(color2, obj, sele2, silent = False)
 
 
 

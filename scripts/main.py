@@ -55,6 +55,7 @@ def main(PROCESS_ALL = False,
          DELETE_PREVIOUS = True,
          REFRESH_PLOTS = True,
          REPROCESS_CLUSTERS = False,
+         USE_FACES = "eva",
          ):
 
 
@@ -273,27 +274,28 @@ def main(PROCESS_ALL = False,
         else:
             identifier = "ALL"
 
-
+        # ONLY FOR ALL- ALL
+        get_faces(force=False, gif=GIFS)
+        compare_all_with_eva()
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
                 if cluster.is_all:
                     continue
                 sprint(cluster.id)
-                cluster.reprocess_cluster(force=REPROCESS_CLUSTERS)
+                cluster.process_cluster(force=REPROCESS_CLUSTERS or USE_FACES not in cluster.faces.keys(), use_face=USE_FACES)
                 cluster.pickle()
 
 
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
             sprint(cluster.id)
-            cluster.plot_cluster(force = REFRESH_PLOTS and not GENERATE_CLUSTERS, plot=True, matrix = HEATMAPS, snapshot = SNAPSHOTS, faces= True, face_colours = True)
+            cluster.plot_cluster(force = REFRESH_PLOTS, plot=True,
+                                 matrix = False, snapshot = SNAPSHOTS, face_colours = USE_FACES)
             cluster.pickle()
 
 
 
-        # ONLY FOR ALL- ALL
-        get_faces(force=True, gif=GIFS)
-        compare_all_with_eva()
+
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
             sprint(cluster.id)
@@ -434,6 +436,7 @@ if __name__ == "__main__":
         DELETE_PREVIOUS = False or "delete" in sys.argv,
         REFRESH_PLOTS = True,
         REPROCESS_CLUSTERS = False,
+        USE_FACES = "generated", # "eva" or "generated"
 
 
         )

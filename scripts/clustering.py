@@ -1575,13 +1575,17 @@ class Cluster2:
         self.oneDmatrix2 = None
         self.plot_path = None
         self.gif_path = None
-        self.snapshot_path = None
+        self.snapshot_path = {}
         self.comA = None
         self.comB = None
         self.stdA = None
         self.stdB = None
         self.atoms = None
-        self.faces = None
+        self.all_faces = None
+        self.faces = {}
+        self.mon1_faces = {}
+        self.mon2_faces = {}
+
 
 
 
@@ -1592,7 +1596,7 @@ class Cluster2:
     def __repr__(self):
         return "<Cluster:{} {}-{} /N={}>". format(self.ref_name, self.c1, self.c2, self.ndimers)
 
-    def process_cluster(self, force = False, matrix=True,gif=False, show=False, faces=True, snapshot=False, **kwargs):
+    def process_cluster(self, force = False, matrix=True, faces=True, use_face="eva", **kwargs):
         print1("Processing {}: matrix={}, faces={}".format(self.id, matrix, faces))
         if not self.is_all:
             self.remove_identical()
@@ -1603,7 +1607,7 @@ class Cluster2:
             if self.matrix is None or force:
                 self.get_matrix(threshold=10)
         if faces and not self.is_all:
-            self.get_eva_face()
+            self.get_face(method=use_face)
 
 
     def plot_cluster(self, force = False, angles=True, plot=True, show = False, snapshot=True, gif=False, **kwargs):
@@ -1793,7 +1797,7 @@ class Cluster2:
         if gif:
             local["dihedral_gifs"] = "images/dihedral_gifs"
             gif_savepath = mpl_to_gif(fig, axes, name=title, folder=local.dihedral_gifs)
-        if show:
+        if show and vars.block:
             plt.show(block = vars.block)
         return fig_savepath, gif_savepath
 
@@ -1838,12 +1842,13 @@ class Cluster2:
     def delete(self):
         try:
             os.remove(self.pickle_path)
-        except:
+        except FileNotFoundError as e:
+            print(e)
             print("Failed to delete {}:".format(self.id))
             print(self.pickle_path)
-            os.remove(self.pickle_path)
 
-    def show(self, snapshot =True, show_session=False, chainbows=False, cluster_colours=False, show_snapshot=False, regenerate_matrix=False, face_colours = False, **kwargs):
+
+    def show(self, snapshot =False, show_session=False, chainbows=False, cluster_colours=False, show_snapshot=False, regenerate_matrix=False, face_colours = "eva", **kwargs):
         if self.is_all and not show_session:
             return None
 
@@ -1875,33 +1880,35 @@ class Cluster2:
         super_data = superpose_many_chains(chains_to_align, file_name=self.id + ".pdb", save_folder=local.cluster_pdbs)
         monster_path = super_data["out_path"]
 
-        if regenerate_matrix:
-            self.reprocess_cluster(matrix=True,force=True)
-        if self.oneDmatrix1 is not None and self.oneDmatrix2 is not None:
-            structure = PDBParser(QUIET=True).get_structure(self.id, monster_path)
-            assert len(list(structure.get_models())) == len(chains_to_align)
-            for model, (key,value) in zip(structure.get_models(), chains_to_align.items()):
-                model.id = key
-                for chain in model.get_chains():
-                    is_chain1 = chain.id == value[1]
-                    if is_chain1:
-                        alter_bfactors(chain, self.oneDmatrix1)
-                    else:
-                        alter_bfactors(chain, self.oneDmatrix2)
+        structure = PDBParser(QUIET=True).get_structure(self.id, monster_path)
+        for model, (key, value) in zip(structure.get_models(), chains_to_align.items()):
+            model.id = key
+        if face_colours is None and not chainbows and not cluster_colours:
+            if regenerate_matrix or self.matrix is None:
+                self.reprocess_cluster(matrix=True,force=True)
+            if self.oneDmatrix1 is not None and self.oneDmatrix2 is not None:
+                assert len(list(structure.get_models())) == len(chains_to_align)
+                for model, (key,value) in zip(structure.get_models(), chains_to_align.items()):
+                    for chain in model.get_chains():
+                        is_chain1 = chain.id == value[1]
+                        if is_chain1:
+                            alter_bfactors(chain, self.oneDmatrix1)
+                        else:
+                            alter_bfactors(chain, self.oneDmatrix2)
 
 
-            new_paths = []
-            for n, model in enumerate(structure.get_models()):
-                new_structure = Structure.Structure(model.id)
-                new_structure.add(model)
-                exporter = PDBIO()
-                exporter.set_structure(new_structure)
-                new_folder = os.path.join(local.cluster_pdbs, monster_path.split(".")[0])
-                os.makedirs(new_folder, exist_ok=True)
-                new_path = model.id + "_{}.pdb".format(add_front_0(n, digits=4))
-                new_path = os.path.join(new_folder, new_path)
-                exporter.save(new_path)
-                new_paths.append(new_path)
+        new_paths = []
+        for n, model in enumerate(structure.get_models()):
+            new_structure = Structure.Structure(model.id)
+            new_structure.add(model)
+            exporter = PDBIO()
+            exporter.set_structure(new_structure)
+            new_folder = os.path.join(local.cluster_pdbs, monster_path.split(".")[0])
+            os.makedirs(new_folder, exist_ok=True)
+            new_path = model.id + "_{}.pdb".format(add_front_0(n, digits=4))
+            new_path = os.path.join(new_folder, new_path)
+            exporter.save(new_path)
+            new_paths.append(new_path)
 
 
         snapshot_path = None
@@ -1921,21 +1928,30 @@ class Cluster2:
             elif cluster_colours:
                 pymol_colour(mpl_colours[self.c2 % mpl_ncolours], "(all)")
                 extra_id = "_cluster_cols"
-            elif self.faces is not None and face_colours:
-                pymol_paint_single_face(chains_to_align, self.faces[0][0], self.faces[1][0])
-                extra_id = "_faces"
+            elif face_colours is not None:
+                if face_colours == "eva":
+                    from faces import GR_colours as color_dict
+                else:
+                    color_dict = None
+                pymol_paint_single_face(chains_to_align, self.faces[face_colours][0][0], self.faces[face_colours][1][0], color_dict=color_dict)
+                extra_id = "_faces_{}".format(face_colours)
             else:
                 pymol_colour("blue_yellow_red", "(all)", spectrum="b")
                 extra_id = "_heatmap"
             if not self.is_all:
-                snapshot_path = pymol_save_snapshot(self.id + extra_id, folder=local.snapshots)
+                if snapshot_path is None:
+                    snapshot_path = {}
+                local[extra_id] = "snapshots/{}".format(extra_id)
+                snapshot_path[extra_id] = pymol_save_snapshot(self.id + extra_id, folder=local[extra_id])
                 if show_snapshot:
-                    open_file_from_system(snapshot_path)
+                    open_file_from_system(snapshot_path[extra_id])
             if show_session:
                 session_path = pymol_save_temp_session()
                 pymol_open_session_terminal(session_path)
-
-        return snapshot_path
+        try:
+            return snapshot_path[extra_id]
+        except:
+            return None
 
 
     def remove_identical(self):
@@ -2025,14 +2041,19 @@ class Cluster2:
         if gif:
             local["res_coords_gifs"] = "images/res_coords_gifs"
             gif_savepath = mpl_to_gif(fig, ax, name=title, folder=local.res_coords_gifs)
-        if show:
+        if show and vars.block:
             plt.show(block=vars.block)
         return fig_savepath, gif_savepath
 
 
 
-    def get_eva_face(self):
-        from faces import GR_dict
+    def get_face(self, method="eva"):
+        if method == "eva":
+            from faces import GR_dict as face_dict
+        elif method == "generated":
+            from imports import load_clusters
+            face_dict = load_clusters(identifier="{}-all-all".format(self.id.split("-")[0]), first_only=True).face_dict
+
         resids = {n: resid for n, resid in enumerate(self.outer_ids_complete)}
         # print(resids)
         eva_scores = {"mon1": {}, "mon2": {}}
@@ -2042,37 +2063,37 @@ class Cluster2:
             self.process_cluster(matrix=True, faces=False)
         t1, t2 = max(self.oneDmatrix1)/threshold_ratio, max(self.oneDmatrix2)/threshold_ratio
 
-        for eva_face, res_list in GR_dict.items():
-            print(eva_face, len(res_list), "-->", end=" ")
+        for face, res_list in face_dict.items():
+            print(face, len(res_list), "-->", end=" ")
             res_list = [r for r in res_list if r in self.outer_ids_complete]
             print(len(res_list))
-            eva_scores["mon1"][eva_face] = 0
-            eva_scores["mon2"][eva_face] = 0
+            eva_scores["mon1"][face] = 0
+            eva_scores["mon2"][face] = 0
 
             for n, (a1, a2) in enumerate(zip(self.oneDmatrix1, self.oneDmatrix2)):
                 if resids[n] in res_list:
                     if a1 >= t1:
-                        eva_scores["mon1"][eva_face] += 1
+                        eva_scores["mon1"][face] += 1
                     if a2 >= t2:
-                        eva_scores["mon2"][eva_face] += 1
+                        eva_scores["mon2"][face] += 1
 
 
-            eva_scores["mon1"][eva_face] /= len(res_list)
-            eva_scores["mon1"][eva_face] *= 100
-            eva_scores["mon2"][eva_face] /= len(res_list)
-            eva_scores["mon2"][eva_face] *= 100
-        # eva_scores[eva_face] = sorted(eva_scores[eva_face], key=lambda x: x)
+            eva_scores["mon1"][face] /= len(res_list)
+            eva_scores["mon1"][face] *= 100
+            eva_scores["mon2"][face] /= len(res_list)
+            eva_scores["mon2"][face] *= 100
+        # eva_scores[face] = sorted(eva_scores[face], key=lambda x: x)
         #print(eva_scores)
-        self.mon1_faces = sorted([[face, value] for face, value in eva_scores["mon1"].items()],
+        self.mon1_faces[method] = sorted([[face, value] for face, value in eva_scores["mon1"].items()],
                             key=lambda x: x[1], reverse=True)
-        self.mon2_faces = sorted([[face, value] for face, value in eva_scores["mon2"].items()],
+        self.mon2_faces[method] = sorted([[face, value] for face, value in eva_scores["mon2"].items()],
                             key=lambda x: x[1], reverse=True)
 
-        self.faces = self.mon1_faces[0], self.mon2_faces[0]
-        for f in self.faces:
+        self.faces[method] = self.mon1_faces[method][0], self.mon2_faces[method][0]
+        for f in self.faces[method]:
             if f[1] == 0:
                 f[1] = None
-        print(self.faces)
+        print(self.faces[method])
 
 
 
@@ -2084,6 +2105,7 @@ def cluster_redundancy(**kwargs):
     from imports import load_clusters
     from maths import distance
     done_clusters = []
+    redundant_list = []
     for cluster1 in load_clusters(onebyone=True):
         if cluster1 is None:
             done_clusters.append(cluster1)
@@ -2096,7 +2118,7 @@ def cluster_redundancy(**kwargs):
 
             if cluster2 is None:
                 continue
-            if cluster1.id == cluster2.id:
+            if cluster1.id == cluster2.id or cluster2.id in redundant_list:
                 continue
             if cluster2.id in done_clusters or cluster2.is_all or cluster2.redundant or cluster2.outlier:
                 continue
@@ -2119,10 +2141,11 @@ def cluster_redundancy(**kwargs):
                         print4(d1, v1)
                         print4(d2, v2)
                         cluster1.merge(cluster2)
+                        redundant_list.append(cluster2.id)
         done_clusters.append(cluster1.id)
 
     for cluster in load_clusters(onebyone=True):
-        if cluster.redundant:
+        if cluster.redundant or cluster.id in redundant_list:
             print(cluster.id, "is redundant to", cluster.redundant_to)
             cluster.delete()
         elif len(cluster.merged) != 0:
@@ -2138,11 +2161,12 @@ def cluster_dihedrals():
 def get_faces(force = False, gif=False):
     from imports import load_clusters
     from maths import normalize1D
-    for cluster in load_clusters(identifier="all", onebyone=True):
+    for cluster in load_clusters(identifier="all-all", onebyone=True):
         if not cluster.is_all:
             continue
-        if cluster.faces is not None and not force:
+        if cluster.all_faces is not None and not force:
             continue
+
         outer_ids = cluster.outer_ids_complete
         from sklearn.cluster import AffinityPropagation, KMeans, BisectingKMeans, SpectralClustering, FeatureAgglomeration, AgglomerativeClustering
 
@@ -2159,7 +2183,8 @@ def get_faces(force = False, gif=False):
 
         atoms = []
         for n, atom in enumerate(cluster.structure.get_atoms()):
-            new_atom = dict(coord = atom.coord, weight = preference_array[n], outer = outer_ids[n] is not None)
+            new_atom = dict(coord = atom.coord, weight = preference_array[n], outer = outer_ids[n] is not None,
+                            n=n, res=atom.parent.id[1])
             if new_atom["outer"]:
                 new_atom["cluster"] = None
             else:
@@ -2201,10 +2226,20 @@ def get_faces(force = False, gif=False):
                 face["COM"] = model.cluster_centers_[c],
             print("C:{}, N:{}, M:{}".format(face["C"], face["N"], face["M"]))
             faces.append(face)
-        faces = sorted(faces, key=lambda face: face["M"], reverse=True)
+        faces = sorted(faces, key=lambda face: face["C"], reverse=False)
 
         cluster.atoms = atoms
-        cluster.faces = faces
+        cluster.all_faces = faces
+        [print(a) for a in cluster.atoms]
+        [print(c) for c in cluster.faces]
+        face_dict = {}
+
+        for face in faces:
+            res_list = [atom["res"] for atom in atoms if atom["cluster"] == face["C"]]
+            face_dict[face["name"]] = res_list
+
+        print(face_dict)
+        cluster.face_dict = face_dict
         cluster.pickle()
         cluster.show_mpl(show=True, save=False, gif=gif, title = cluster.id+"_{}_clusters".format(len(set(labels))), mergedMatrix = [atom["cluster"] for atom in atoms], secondary=preference_array)
 
@@ -2256,7 +2291,7 @@ def generate_cluster_grids(identifier="GR", use_faces="eva"):
         import matplotlib as mpl
         import matplotlib.pyplot as plt
         import PIL.Image as image
-        local["clusters_by_face"] = "images/clusters_by_face"
+        local[use_faces] = "images/clusters_by_face/{}".format(use_faces)
 
         fig, axes = plt.subplots((((f[2] - 1) // 3) + 1), 3,
                                  # sharex="col",
@@ -2276,7 +2311,7 @@ def generate_cluster_grids(identifier="GR", use_faces="eva"):
                     continue
 
                 print2(cluster)
-                ss_path = cluster.snapshot_path
+                ss_path = cluster.snapshot_path[use_faces]
                 print3(ss_path)
 
                 snapshots.append(ss_path)
@@ -2298,7 +2333,7 @@ def generate_cluster_grids(identifier="GR", use_faces="eva"):
         fig.suptitle("{}-{}_(N={})".format(f[0], f[1], n_dimers))
         filename = "{}-{}".format(f[0], f[1])
 
-        plt.savefig(os.path.join(local.clusters_by_face, filename))
+        plt.savefig(os.path.join(local[use_faces], filename))
 
 
 

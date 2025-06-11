@@ -20,7 +20,7 @@ from clustering import get_faces, compare_all_with_eva, cluster_redundancy
 #compare_all_with_eva()
 #quit()
 
-cluster_redundancy()
+get_faces(force=True)
 
 
 
