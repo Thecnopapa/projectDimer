@@ -290,12 +290,15 @@ def main(PROCESS_ALL = False,
         for cluster in load_clusters(identifier=identifier, onebyone=True):
             sprint(cluster.id)
             cluster.plot_cluster(force = REFRESH_PLOTS, plot=True,
-                                 matrix = False, snapshot = SNAPSHOTS, face_colours = USE_FACES)
+                                 snapshot = SNAPSHOTS, face_colours = USE_FACES)
             cluster.pickle()
 
 
         from clustering import generate_cluster_grids
-        generate_cluster_grids(identifier=identifier, use_faces=USE_FACES)
+        for ref in vars.references:
+            if ref.name != "GR" and ONLY_GR:
+                continue
+            generate_cluster_grids(identifier=ref.name, use_faces=USE_FACES)
 
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
@@ -417,7 +420,7 @@ if __name__ == "__main__":
         # Clustering, from SM to plotting
         SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
         FORCE_CLUSTERING=True,  # Force clustering if already calculated (overridden by PROCESS_ALL)
-        ONLY_GR = True, # Whether to only cluster GR
+        ONLY_GR = False, # Whether to only cluster GR
         REMOVE_REDUNDANCY = True,
         CLUSTERING_METHOD = "MeanShift",
         QUANTILE= 0.1,
