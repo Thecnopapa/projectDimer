@@ -295,7 +295,7 @@ def main(PROCESS_ALL = False,
 
 
         from clustering import generate_cluster_grids
-        generate_cluster_grids(identifier="GR", use_faces=USE_FACES)
+        generate_cluster_grids(identifier=identifier, use_faces=USE_FACES)
 
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
