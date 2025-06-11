@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 
 
-def generate_piechart(df_name:str = None, column = None, extra_data:dict[str, int] = None, name= None):
+def generate_piechart(df_name:str = None, column = None, extra_data:dict[str, int] = None, name= None, folder = None):
     labels = []
     sizes = []
     large_labels = []
@@ -50,7 +50,9 @@ def generate_piechart(df_name:str = None, column = None, extra_data:dict[str, in
         fig_name = "{}.png".format(name)
     fig.legend(title="Best Fit:", labels=labels, loc="lower right")
 
-    fig_path = os.path.join(root.charts, fig_name)
+    if folder is None:
+        folder = root.charts
+    fig_path = os.path.join(folder, fig_name)
     fig.savefig(fig_path)
     print1("{} generated".format(fig_name))
 

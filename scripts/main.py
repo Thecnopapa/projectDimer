@@ -282,7 +282,7 @@ def main(PROCESS_ALL = False,
                 if cluster.is_all:
                     continue
                 sprint(cluster.id)
-                cluster.process_cluster(force=REPROCESS_CLUSTERS or USE_FACES not in cluster.faces.keys(), use_face=USE_FACES)
+                cluster.process_cluster(force=REPROCESS_CLUSTERS or USE_FACES not in cluster.faces.keys(), faces = True, use_face=USE_FACES)
                 cluster.pickle()
 
 
@@ -294,12 +294,11 @@ def main(PROCESS_ALL = False,
             cluster.pickle()
 
 
-        from clustering import generate_cluster_grids
+        from clustering import generate_cluster_grids, generate_cluster_piecharts
         for ref in vars.references:
             if ref.name != "GR" and ONLY_GR:
                 continue
             generate_cluster_grids(identifier=ref.name, use_faces=USE_FACES)
-
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
             sprint(cluster.id)

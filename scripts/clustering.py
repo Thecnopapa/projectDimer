@@ -1596,7 +1596,7 @@ class Cluster2:
     def __repr__(self):
         return "<Cluster:{} {}-{} /N={}>". format(self.ref_name, self.c1, self.c2, self.ndimers)
 
-    def process_cluster(self, force = False, matrix=True, faces=True, use_face="eva", **kwargs):
+    def process_cluster(self, force = False, matrix=True, faces=False, use_face="generated", **kwargs):
         print1("Processing {}: matrix={}, faces={}".format(self.id, matrix, faces))
         if not self.is_all:
             self.remove_identical()
@@ -1848,7 +1848,8 @@ class Cluster2:
             print(self.pickle_path)
 
 
-    def show(self, snapshot =False, show_session=False, chainbows=False, cluster_colours=False, show_snapshot=False, regenerate_matrix=False, face_colours = "eva", **kwargs):
+    def show(self, snapshot =False, show_session=False, chainbows=False, cluster_colours=False, show_snapshot=False,
+             regenerate_matrix=False, face_colours = "generated", **kwargs):
         if self.is_all and not show_session:
             return None
 
@@ -2047,7 +2048,7 @@ class Cluster2:
 
 
 
-    def get_face(self, method="eva"):
+    def get_face(self, method="generated"):
         if method == "eva":
             from faces import GR_dict as face_dict
         elif method == "generated":
@@ -2056,8 +2057,8 @@ class Cluster2:
 
         resids = {n: resid for n, resid in enumerate(self.outer_ids_complete)}
         # print(resids)
-        eva_scores = {"mon1": {}, "mon2": {}}
-        scores = {}
+
+        scores = {"mon1": {}, "mon2": {}}
         threshold_ratio = 2
         if self.oneDmatrix1 is None or self.oneDmatrix2 is None:
             self.process_cluster(matrix=True, faces=False)
@@ -2067,26 +2068,26 @@ class Cluster2:
             print(face, len(res_list), "-->", end=" ")
             res_list = [r for r in res_list if r in self.outer_ids_complete]
             print(len(res_list))
-            eva_scores["mon1"][face] = 0
-            eva_scores["mon2"][face] = 0
+            scores["mon1"][face] = 0
+            scores["mon2"][face] = 0
 
             for n, (a1, a2) in enumerate(zip(self.oneDmatrix1, self.oneDmatrix2)):
                 if resids[n] in res_list:
                     if a1 >= t1:
-                        eva_scores["mon1"][face] += 1
+                        scores["mon1"][face] += 1
                     if a2 >= t2:
-                        eva_scores["mon2"][face] += 1
+                        scores["mon2"][face] += 1
 
 
-            eva_scores["mon1"][face] /= len(res_list)
-            eva_scores["mon1"][face] *= 100
-            eva_scores["mon2"][face] /= len(res_list)
-            eva_scores["mon2"][face] *= 100
-        # eva_scores[face] = sorted(eva_scores[face], key=lambda x: x)
-        #print(eva_scores)
-        self.mon1_faces[method] = sorted([[face, value] for face, value in eva_scores["mon1"].items()],
+            scores["mon1"][face] /= len(res_list)
+            scores["mon1"][face] *= 100
+            scores["mon2"][face] /= len(res_list)
+            scores["mon2"][face] *= 100
+        # scores[face] = sorted(scores[face], key=lambda x: x)
+        #print(scores)
+        self.mon1_faces[method] = sorted([[face, value] for face, value in scores["mon1"].items()],
                             key=lambda x: x[1], reverse=True)
-        self.mon2_faces[method] = sorted([[face, value] for face, value in eva_scores["mon2"].items()],
+        self.mon2_faces[method] = sorted([[face, value] for face, value in scores["mon2"].items()],
                             key=lambda x: x[1], reverse=True)
 
         self.faces[method] = self.mon1_faces[method][0], self.mon2_faces[method][0]
@@ -2270,7 +2271,7 @@ def compare_all_with_eva():
         print(eva_scores)
 
 
-def generate_cluster_grids(identifier="GR", use_faces="eva"):
+def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = True):
     from imports import load_clusters
     faces = []
     for cluster in load_clusters(identifier = identifier, onebyone=True):
@@ -2287,6 +2288,7 @@ def generate_cluster_grids(identifier="GR", use_faces="eva"):
     print(face_combinations)
     face_combinations = [f + [sum([1 for face in faces if face[:2] == f])] for f in face_combinations]
     [print(f) for f in face_combinations]
+    extra_data = {}
     for f in face_combinations:
         import matplotlib as mpl
         import matplotlib.pyplot as plt
@@ -2332,9 +2334,22 @@ def generate_cluster_grids(identifier="GR", use_faces="eva"):
             ax.set_axis_off()
         # plt.show(block = True)
         fig.suptitle("{}-{}_(N={})".format(f[0], f[1], n_dimers))
-        filename = "{}-{}".format(f[0], f[1])
-
+        filename = "{}-{}-{}".format(identifier, f[0], f[1])
         plt.savefig(os.path.join(local[use_faces], filename))
+        extra_data["{}-{}".format(identifier, f[0], f[1])] = n_dimers
+    if piecharts:
+        from visualisation import generate_piechart
+        generate_piechart(extra_data=extra_data, name = filename)
+
+
+
+
+
+
+
+
+
+
 
 
 
