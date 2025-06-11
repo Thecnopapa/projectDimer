@@ -335,13 +335,18 @@ if __name__ == "__main__":
         tprint("Showing references")
         show_objects(refs, sys.argv[2:])
 
-    elif "cluster" == sys.argv[1] and not "clusters2" == sys.argv[1]:
+    elif "cluster" == sys.argv[1]:
         if len(sys.argv[2:]) != 0:
             print(sys.argv[2])
+            face_colours = None
+            if "eva" in sys.argv[2:]:
+                face_colours = "eva"
+            if "generated" in sys.argv[2:]:
+                face_colours = "generated"
             if not "pymol" in sys.argv:
                 show_objects(load_clusters(identifier=sys.argv[2]), sys.argv[2:])
             for cluster in load_clusters(identifier = sys.argv[2], onebyone=True):
-                cluster.show(show_snapshot = not "pymol" in sys.argv, show_session = "pymol" in sys.argv, face_colours = True)
+                cluster.show(show_snapshot = not "pymol" in sys.argv, show_session = "pymol" in sys.argv, face_colours = face_colours)
             tprint("Showing clusters")
         else:
             sprint("Available clusters")
@@ -351,6 +356,10 @@ if __name__ == "__main__":
     elif "clusters-eva" == sys.argv[1]:
         from clustering import generate_cluster_grids
         generate_cluster_grids(identifier="GR", use_faces="eva")
+
+    elif "clusters-generated" == sys.argv[1]:
+        from clustering import generate_cluster_grids
+        generate_cluster_grids(identifier="GR", use_faces="generated")
 
 
 

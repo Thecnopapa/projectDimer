@@ -1619,7 +1619,7 @@ class Cluster2:
         if plot:
             self.show_mpl(gif=gif, show=show)
         if snapshot:
-            self.snapshot_path = self.show(snapshot=True, show_session=show, **kwargs)
+           self.show(snapshot=True, show_session=show, **kwargs)
 
 
 
@@ -1912,7 +1912,7 @@ class Cluster2:
 
 
         snapshot_path = None
-        if snapshot:
+        if snapshot or show_session:
             local["snapshots"] = "snapshots"
             from pyMol import pymol_start, pymol_load_path, pymol_colour, pymol_list_to_bfactors, pymol_save_snapshot, \
                 mpl_colours, mpl_ncolours, pymol_save_temp_session, pymol_open_session_terminal, pymol_split_states, \
@@ -1938,18 +1938,18 @@ class Cluster2:
             else:
                 pymol_colour("blue_yellow_red", "(all)", spectrum="b")
                 extra_id = "_heatmap"
-            if not self.is_all:
-                if snapshot_path is None:
-                    snapshot_path = {}
+            if not self.is_all and snapshot:
+                if self.snapshot_path is None or type(self.snapshot_path) is str:
+                    self.snapshot_path = {}
                 local[extra_id] = "snapshots/{}".format(extra_id)
-                snapshot_path[extra_id] = pymol_save_snapshot(self.id + extra_id, folder=local[extra_id])
+                self.snapshot_path[extra_id] = pymol_save_snapshot(self.id + extra_id, folder=local[extra_id])
                 if show_snapshot:
                     open_file_from_system(snapshot_path[extra_id])
             if show_session:
                 session_path = pymol_save_temp_session()
                 pymol_open_session_terminal(session_path)
         try:
-            return snapshot_path[extra_id]
+            return self.snapshot_path[extra_id]
         except:
             return None
 
@@ -2276,7 +2276,7 @@ def generate_cluster_grids(identifier="GR", use_faces="eva"):
     for cluster in load_clusters(identifier = identifier, onebyone=True):
         if cluster.is_all:
             continue
-        faces.append(sorted([face[0] for face in cluster.faces]) + [cluster.id])
+        faces.append(sorted([face[0] for face in cluster.faces[use_faces]]) + [cluster.id])
     faces = sorted(faces, key=lambda face: face[1])
     faces = sorted(faces, key=lambda face: face[0])
     [print(face) for face in faces]
@@ -2311,7 +2311,8 @@ def generate_cluster_grids(identifier="GR", use_faces="eva"):
                     continue
 
                 print2(cluster)
-                ss_path = cluster.snapshot_path[use_faces]
+                print(cluster.snapshot_path)
+                ss_path = cluster.snapshot_path["_faces_"+use_faces]
                 print3(ss_path)
 
                 snapshots.append(ss_path)
