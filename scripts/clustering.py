@@ -2373,7 +2373,7 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
         generate_piechart(extra_data=extra_data, name = identifier+"_piechart_{}".format(use_faces))
     return face_combinations
 
-def get_space_groups(identifier="GR", use_faces="generated", piecharts = True, force=False):
+def get_space_groups(identifier="GR", use_faces="generated", piecharts = True, force=False, **kwargs):
     from imports import load_clusters, load_single_pdb
     from visualisation import generate_piechart, nested_piechart
 
@@ -2383,12 +2383,12 @@ def get_space_groups(identifier="GR", use_faces="generated", piecharts = True, f
     print(main_cluster)
     face_combinations = main_cluster.face_combinations
     ref_name = main_cluster.ref_name
+    print(main_cluster.face_combinations)
 
 
-
-
+    by_face = {}
     by_space_group = {}
-    if "face_combinations" in main_cluster.__dict__ and not force:
+    if "by_space_group" not in main_cluster.__dict__ or "by_face" not in main_cluster.__dict__ or force:
         for f in face_combinations:
             space_groups = {}
             face ="{}-{}".format(f[0], f[1])
@@ -2415,6 +2415,14 @@ def get_space_groups(identifier="GR", use_faces="generated", piecharts = True, f
                         space_groups[sg] = 1
                     else:
                         space_groups[sg] += 1
+
+                    if face not in by_face:
+                        by_face[face] = {}
+                    if sg not in by_face[face]:
+                        by_face[face][sg] = 1
+                    else:
+                        by_face[face][sg] += 1
+
                     if sg not in by_space_group:
                         by_space_group[sg] = {}
                     if face not in by_space_group[sg]:
@@ -2427,12 +2435,15 @@ def get_space_groups(identifier="GR", use_faces="generated", piecharts = True, f
             local["space_groups"] = "images/space_groups"
             generate_piechart(folder = local.space_groups, extra_data=space_groups, name=ref_name + "_{}_{}-{}".format(use_faces, f[0], f[1]))
             main_cluster.by_space_group = by_space_group
+            main_cluster.by_face = by_face
             main_cluster.pickle()
     for key, value in main_cluster.by_space_group.items():
         generate_piechart(folder = local.space_groups, extra_data=value, name=ref_name + "_{}_{}".format(use_faces, key))
 
     nested_piechart(main_cluster.by_space_group, title=ref_name + "_{}_space_groups".format(use_faces),
-                    legend_title="dimer interface")
+                    legend_title=["Space Group", "Dimer Interface"], **kwargs)
+    nested_piechart(main_cluster.by_face, title=ref_name + "_{}_faces".format(use_faces),
+                    legend_title=["Dimer Interface", "Space Group",], **kwargs)
 
 
 

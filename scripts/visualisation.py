@@ -10,6 +10,7 @@ from maths import angle_between_vectors
 from utilities import *
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 
@@ -59,36 +60,54 @@ def generate_piechart(df_name:str = None, column = None, extra_data:dict[str, in
     plt.close()
 
 
-def nested_piechart(data:dict, title= None, folder=None, legend_title="Legend"):
+def nested_piechart(data:dict, title= None, folder=None, **kwargs):
     fig = plt.figure(figsize=(16, 9))
     ax = fig.add_subplot()
     size = 0.3
 
 
-    data1 = {key: sum(data[key].values()) for key in data.keys()}
-    labels1 = list(data1.keys())
-    print(data1)
-    data2 = {}
-    for value1 in data.values():
-        for key2, value2 in value1.items():
-            data2[key2] = value2
-    labels2 = list(data2.keys())
-    total = sum([v for v in data2.values()])
+    data1 = [[key,sum([v for v in data[key].values()])] for key in data.keys()]
+    data1 = sorted(data1, key=lambda x: x[0])
+    labels1 = [d[0] for d in data1]
+    values1 = [d[1] for d in data1]
+    [print(d) for d in zip(labels1, values1)]
+    data2 = []
+    for label1 in labels1:
+        d = data[label1]
+        stotal = sum([v for v in d.values()])
+        for key2, value2 in sorted(d.items(), key=lambda x: x[0]):
+            data2.append([key2, value2, value2 /stotal >=0.33])
+
+    #data2 = sorted(data2, )
+    labels2 = [d[0] for d in data2]
+    values2 = [d[1] for d in data2]
+    total = sum([v for v in values2])
     if title is None:
         title = "Nested Piechart"
     if folder is None:
         folder = root.charts
+    from pyMol import mpl_colours, mpl_ncolours
+    color_dict1 = {key: mpl_colours[n%mpl_ncolours] for n, key in enumerate(sorted(set(labels1)))}
+    color_dict2 = {key: mpl_colours[n%mpl_ncolours] for n, key in enumerate(sorted(set(labels2)))}
+    colors1 = [color_dict1[value] for value in labels1]
+    colors2 = [color_dict2[value] for value in labels2]
 
-    ax.pie(data1.values(), labels=labels1, radius=1,
+    ax.pie(values1, labels=labels1, radius=1 - size, colors=colors1, labeldistance = 0.8, textprops=dict(color="black"),
            wedgeprops=dict(width=size, edgecolor='w'))
 
-    ax.pie(data2.values(), labels=labels2, radius=1 - size,
+    ax.pie(values2, labels=labels2, radius=1, colors = colors2, labeldistance = 1.1,
            wedgeprops=dict(width=size, edgecolor='w'))
+
+
 
     ax.set(aspect="equal")
 
     ax.set_title("{} (N = {})".format(title, total))
     fig_name = "{}.png".format(title)
+    try:
+        legend_title = kwargs["legend_title"]
+    except:
+        legend_title = [None, None]
     if type(legend_title) is str:
         legend_title1 = legend_title
         legend_title2 = None
@@ -96,8 +115,8 @@ def nested_piechart(data:dict, title= None, folder=None, legend_title="Legend"):
         legend_title1 = legend_title[0]
         legend_title2 = legend_title[1]
 
-    ax.legend(title=legend_title2, labels=data2.keys(), loc = 'best', bbox_to_anchor = (0.5, 0., 0.5, 0.5))
-    ax.legend(title=legend_title1, labels=data1.keys(), loc = 'best', bbox_to_anchor = (0.5, 0., 0.5, 0.5))
+    fig.legend(title=legend_title1, labels=sorted(list(set(labels1))), loc = 'lower right', bbox_to_anchor = (0.8, 0., 0.2, 0.5))
+    fig.legend(title=legend_title2, labels=sorted(list(set(labels2))), loc = 'lower left', bbox_to_anchor = (0.8, 0., 0.2, 0.5))
 
 
     fig_path = os.path.join(folder, fig_name)
