@@ -2277,6 +2277,8 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
     for cluster in load_clusters(identifier = identifier, onebyone=True):
         if cluster.is_all:
             continue
+        if cluster.ref_name != "GR" and use_faces == "eva":
+            continue
         faces.append(sorted([face[0] for face in cluster.faces[use_faces]]) + [cluster.id])
     faces = sorted(faces, key=lambda face: face[1])
     faces = sorted(faces, key=lambda face: face[0])
@@ -2314,7 +2316,10 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
 
                 print2(cluster)
                 print(cluster.snapshot_path)
-                ss_path = cluster.snapshot_path["_faces_"+use_faces]
+                try:
+                    ss_path = cluster.snapshot_path["_faces_"+use_faces]
+                except:
+                    ss_path = None
                 print3(ss_path)
 
                 snapshots.append(ss_path)
@@ -2326,7 +2331,7 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
                 if ss_path is not None:
                     im = image.open(ss_path)
                     ax.imshow(im)
-                    n_dimers += cluster.ndimers
+                n_dimers += cluster.ndimers
                 ax.set_title(face[2] + " (N={})".format(cluster.ndimers))
                 n += 1
         # fig.tight_layout()
@@ -2336,10 +2341,10 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
         fig.suptitle("{}-{}_(N={})".format(f[0], f[1], n_dimers))
         filename = "{}-{}-{}".format(identifier, f[0], f[1])
         plt.savefig(os.path.join(local[use_faces], filename))
-        extra_data["{}-{}".format(identifier, f[0], f[1])] = n_dimers
+        extra_data["{}-{}".format(f[0], f[1])] = n_dimers
     if piecharts:
         from visualisation import generate_piechart
-        generate_piechart(extra_data=extra_data, name = filename)
+        generate_piechart(extra_data=extra_data, name = identifier+"_piechart")
 
 
 

@@ -99,6 +99,9 @@ class PickleIterator:
                 return None
             return loaded[0]
 
+    def list(self):
+        return list(iter(self))
+
 
 def load_clusters(identifier = "all", onebyone=False, **kwargs):
     if onebyone:
@@ -112,14 +115,13 @@ def load_list_1by1(identifier = None, id_list=None, quiet=True, ignore_do_only=F
         assert "pickle_folder" in kwargs, "pickle folder or id list must be provided"
         id_list = os.listdir(kwargs["pickle_folder"])
         if not keep_extension:
-            id_list = [file.split(".")[0] for file in id_list]
+            id_list = [file.split(".")[0] for file in id_list if "." in file]
     if "do_only" in vars and not ignore_do_only:
         if len(vars.do_only) > 0:
             id_list = [f for f in id_list if any([s in f for s in vars.do_only])]
     if identifier is not None:
         identifier = identifier.upper()
         id_list = [f for f in id_list if (identifier == "ALL" or identifier in f.upper()) and "lock" not in f and not any([bl in f for bl in vars.blacklist])]
-
     return iter(PickleIterator(id_list, quiet, **kwargs))
 
 def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None, force_reload=False, object_class = PDB, quiet=False, first_only=False, **kwargs):

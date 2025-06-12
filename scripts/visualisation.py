@@ -333,7 +333,8 @@ if __name__ == "__main__":
         show_objects(molecules, sys.argv[2:])
 
     elif "ref" in sys.argv[1] and len(sys.argv[2:]) != 0:
-        refs = load_references(identifier = sys.argv[2])
+        refs = load_list_1by1(identifier="REFERENCE_"+sys.argv[2], pickle_folder=local.refs).list()
+        sprint(sys.argv[2])
         tprint("Showing references")
         show_objects(refs, sys.argv[2:])
 
@@ -361,7 +362,9 @@ if __name__ == "__main__":
 
     elif "clusters-generated" == sys.argv[1]:
         from clustering import generate_cluster_grids
-        generate_cluster_grids(identifier="GR", use_faces="generated")
+        for ref in load_references():
+            generate_cluster_grids(identifier=ref.name, use_faces="generated")
+
 
 
 
