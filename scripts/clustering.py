@@ -2045,6 +2045,7 @@ class Cluster2:
             gif_savepath = mpl_to_gif(fig, ax, name=title, folder=local.res_coords_gifs)
         if show and vars.block:
             plt.show(block=vars.block)
+        plt.close()
         return fig_savepath, gif_savepath
 
 
@@ -2184,6 +2185,7 @@ def get_faces(algorithm="affinity", identifier = None, force = False, gif=False,
         for n, p in enumerate(preference_array):
             print(add_front_0(n, digits=3, zero=" ") + "|" + "#" * round(p * 100) + " " * (100 - round(p * 100)) + "|")
         preference_array = normalize1D(preference_array, add_to=1)
+        cluster.preference_array = preference_array
         print("-"*102)
 
 
@@ -2291,13 +2293,14 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
     faces = []
     for cluster in load_clusters(identifier = identifier, onebyone=True):
         if cluster.is_all:
+            main_cluster = cluster
             continue
         if cluster.ref_name != "GR" and use_faces == "eva":
             continue
         if use_faces not in cluster.faces:
             cluster.get_face(use_faces)
         faces.append(sorted([face[0] for face in cluster.faces[use_faces]]) + [cluster.id])
-        main_cluster = cluster
+
     faces = sorted(faces, key=lambda face: face[1])
     faces = sorted(faces, key=lambda face: face[0])
     [print(face) for face in faces]
@@ -2308,6 +2311,11 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
     print(face_combinations)
     face_combinations = [f + [sum([1 for face in faces if face[:2] == f])] for f in face_combinations]
     [print(f) for f in face_combinations]
+    face_combinations = sorted(face_combinations, key=lambda face: face[1])
+    face_combinations = sorted(face_combinations, key=lambda face: face[0])
+    print(main_cluster)
+    main_cluster.face_combinations = face_combinations
+    main_cluster.pickle()
     extra_data = {}
     for f in face_combinations:
         import matplotlib as mpl
@@ -2365,55 +2373,66 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
         generate_piechart(extra_data=extra_data, name = identifier+"_piechart_{}".format(use_faces))
     return face_combinations
 
-def get_space_groups(ref_name, face_combinations, use_faces="generated"):
+def get_space_groups(identifier="GR", use_faces="generated", piecharts = True, force=False):
     from imports import load_clusters, load_single_pdb
-    from visualisation import generate_piechart
+    from visualisation import generate_piechart, nested_piechart
+
+    for cluster in load_clusters(identifier = identifier, onebyone=True):
+        if cluster.is_all:
+            main_cluster = cluster
+    print(main_cluster)
+    face_combinations = main_cluster.face_combinations
+    ref_name = main_cluster.ref_name
+
+
+
 
     by_space_group = {}
-    face_combinations = sorted(face_combinations, key=lambda face: face[1])
-    face_combinations = sorted(face_combinations, key=lambda face: face[0])
-    for f in face_combinations:
-        space_groups = {}
-        face ="{}-{}".format(f[0], f[1])
-        done_molecules = []
-        tprint(f[0]+"-"+f[1])
-        for cluster in load_clusters(identifier=ref_name, onebyone=True):
-            if cluster.is_all:
-                continue
-            #print(sorted([face[0] for face in cluster.faces[use_faces]], reverse=True) != f[:2], [face[0] for face in cluster.faces[use_faces]] , f[:2])
-            if sorted([face[0] for face in cluster.faces[use_faces]], reverse=False) != f[:2]:
-                continue
-            print1(cluster.id, sorted([face[0] for face in cluster.faces[use_faces]], reverse=False))
-            progress = ProgressBar(len(cluster.subset), silent=True)
-            for row in cluster.subset.itertuples():
-                short_id = row.id.split("_")[0]
-                if short_id in done_molecules:
-                    progress.add()
+    if "face_combinations" in main_cluster.__dict__ and not force:
+        for f in face_combinations:
+            space_groups = {}
+            face ="{}-{}".format(f[0], f[1])
+            done_molecules = []
+            tprint(f[0]+"-"+f[1])
+            for cluster in load_clusters(identifier=ref_name, onebyone=True):
+                if cluster.is_all:
                     continue
-                molecule = load_single_pdb(short_id, pickle_folder=local.molecules, first_only=True, quiet=True)
+                #print(sorted([face[0] for face in cluster.faces[use_faces]], reverse=True) != f[:2], [face[0] for face in cluster.faces[use_faces]] , f[:2])
+                if sorted([face[0] for face in cluster.faces[use_faces]], reverse=False) != f[:2]:
+                    continue
+                print1(cluster.id, sorted([face[0] for face in cluster.faces[use_faces]], reverse=False))
+                progress = ProgressBar(len(cluster.subset), silent=True)
+                for row in cluster.subset.itertuples():
+                    short_id = row.id.split("_")[0]
+                    if short_id in done_molecules and False:
+                        progress.add()
+                        continue
+                    molecule = load_single_pdb(short_id, pickle_folder=local.molecules, first_only=True, quiet=True)
 
-                sg = molecule.space_group[0]
-                #print(sg, end = "\r")
-                if sg not in space_groups:
-                    space_groups[sg] = 1
-                else:
-                    space_groups[sg] += 1
-                if sg not in by_space_group:
-                    by_space_group[sg] = {}
-                if face not in by_space_group[sg]:
-                    by_space_group[sg][face] = 1
-                else:
-                    by_space_group[sg][face] += 1
-                done_molecules.append(short_id)
-                progress.add(info = sg)
+                    sg = molecule.space_group[0]
+                    #print(sg, end = "\r")
+                    if sg not in space_groups:
+                        space_groups[sg] = 1
+                    else:
+                        space_groups[sg] += 1
+                    if sg not in by_space_group:
+                        by_space_group[sg] = {}
+                    if face not in by_space_group[sg]:
+                        by_space_group[sg][face] = 1
+                    else:
+                        by_space_group[sg][face] += 1
+                    done_molecules.append(short_id)
+                    progress.add(info = sg)
 
-        local["space_groups"] = "images/space_groups"
-        generate_piechart(folder = local.space_groups, extra_data=space_groups, name=ref_name + "_{}_{}-{}".format(use_faces, f[0], f[1]))
-
-    for key, value in by_space_group.items():
+            local["space_groups"] = "images/space_groups"
+            generate_piechart(folder = local.space_groups, extra_data=space_groups, name=ref_name + "_{}_{}-{}".format(use_faces, f[0], f[1]))
+            main_cluster.by_space_group = by_space_group
+            main_cluster.pickle()
+    for key, value in main_cluster.by_space_group.items():
         generate_piechart(folder = local.space_groups, extra_data=value, name=ref_name + "_{}_{}".format(use_faces, key))
 
-
+    nested_piechart(main_cluster.by_space_group, title=ref_name + "_{}_space_groups".format(use_faces),
+                    legend_title="dimer interface")
 
 
 

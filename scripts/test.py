@@ -21,10 +21,10 @@ from clustering import get_faces, compare_all_with_eva, cluster_redundancy, get_
 #quit()
 
 from clustering import generate_cluster_grids, get_space_groups
-for ref in vars.references:
-    face_combinations = generate_cluster_grids(identifier=ref.name, use_faces="generated")
-    get_space_groups(ref.name, face_combinations, use_faces="generated")
-#get_faces(algorithm="kmeans", show=True, force=True)
+
+#face_combinations = generate_cluster_grids(identifier="GR", use_faces="generated")
+get_space_groups(identifier="GR", use_faces="generated")
+
 
 
 

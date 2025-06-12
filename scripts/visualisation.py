@@ -40,7 +40,7 @@ def generate_piechart(df_name:str = None, column = None, extra_data:dict[str, in
             large_labels.append(label)
         else:
             large_labels.append("")
-    fig = plt.figure(figsize=(9, 16))
+    fig = plt.figure(figsize=(16, 9))
     ax = fig.add_subplot()
     ax.pie(sizes, labels=large_labels, startangle=90)
     if df_name is not None:
@@ -57,6 +57,55 @@ def generate_piechart(df_name:str = None, column = None, extra_data:dict[str, in
     fig.savefig(fig_path)
     print1("{} generated".format(fig_name))
     plt.close()
+
+
+def nested_piechart(data:dict, title= None, folder=None, legend_title="Legend"):
+    fig = plt.figure(figsize=(16, 9))
+    ax = fig.add_subplot()
+    size = 0.3
+
+
+    data1 = {key: sum(data[key].values()) for key in data.keys()}
+    labels1 = list(data1.keys())
+    print(data1)
+    data2 = {}
+    for value1 in data.values():
+        for key2, value2 in value1.items():
+            data2[key2] = value2
+    labels2 = list(data2.keys())
+    total = sum([v for v in data2.values()])
+    if title is None:
+        title = "Nested Piechart"
+    if folder is None:
+        folder = root.charts
+
+    ax.pie(data1.values(), labels=labels1, radius=1,
+           wedgeprops=dict(width=size, edgecolor='w'))
+
+    ax.pie(data2.values(), labels=labels2, radius=1 - size,
+           wedgeprops=dict(width=size, edgecolor='w'))
+
+    ax.set(aspect="equal")
+
+    ax.set_title("{} (N = {})".format(title, total))
+    fig_name = "{}.png".format(title)
+    if type(legend_title) is str:
+        legend_title1 = legend_title
+        legend_title2 = None
+    else:
+        legend_title1 = legend_title[0]
+        legend_title2 = legend_title[1]
+
+    ax.legend(title=legend_title2, labels=data2.keys(), loc = 'best', bbox_to_anchor = (0.5, 0., 0.5, 0.5))
+    ax.legend(title=legend_title1, labels=data1.keys(), loc = 'best', bbox_to_anchor = (0.5, 0., 0.5, 0.5))
+
+
+    fig_path = os.path.join(folder, fig_name)
+    fig.savefig(fig_path)
+    print1("{} generated".format(fig_name))
+    plt.show(block=vars.block)
+    plt.close()
+
 
 
 
@@ -343,15 +392,17 @@ if __name__ == "__main__":
     elif "cluster" == sys.argv[1]:
         if len(sys.argv[2:]) != 0:
             print(sys.argv[2])
-            face_colours = None
+            face_colours = "generated"
             if "eva" in sys.argv[2:]:
                 face_colours = "eva"
-            if "generated" in sys.argv[2:]:
-                face_colours = "generated"
-            if not "pymol" in sys.argv:
-                show_objects(load_clusters(identifier=sys.argv[2]), sys.argv[2:])
-            for cluster in load_clusters(identifier = sys.argv[2], onebyone=True):
-                cluster.show(show_snapshot = not "pymol" in sys.argv, show_session = "pymol" in sys.argv, face_colours = face_colours)
+            for cluster in load_clusters(identifier=sys.argv[2], onebyone=True):
+                if "mpl" in sys.argv:
+                    show_objects(load_clusters(identifier=sys.argv[2]), sys.argv[2:])
+                    cluster.show_mpl(show=True, save=False)
+                if "pymol" in sys.argv:
+                    cluster.show(show_snapshot = True, show_session = "session" in sys.argv, face_colours = face_colours)
+                else:
+                    show_objects(load_clusters(identifier=sys.argv[2]), sys.argv[2:])
             tprint("Showing clusters")
         else:
             sprint("Available clusters")
