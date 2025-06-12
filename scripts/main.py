@@ -275,7 +275,7 @@ def main(PROCESS_ALL = False,
             identifier = "ALL"
 
         # ONLY FOR ALL- ALL
-        get_faces(force=False, gif=GIFS)
+        get_faces(algorithm = "kmeans", force=True, gif=GIFS)
         compare_all_with_eva()
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
@@ -299,7 +299,7 @@ def main(PROCESS_ALL = False,
             if ref.name != "GR" and ONLY_GR:
                 continue
             face_combinations = generate_cluster_grids(identifier=ref.name, use_faces=USE_FACES)
-            get_space_groups(ref.name, face_combinations)
+            get_space_groups(ref.name, face_combinations, use_faces=USE_FACES)
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
             sprint(cluster.id)

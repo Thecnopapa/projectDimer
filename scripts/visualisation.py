@@ -41,7 +41,7 @@ def generate_piechart(df_name:str = None, column = None, extra_data:dict[str, in
         else:
             large_labels.append("")
     fig = plt.figure(figsize=(9, 16))
-    fig, ax = fig.add_subplot()
+    ax = fig.add_subplot()
     ax.pie(sizes, labels=large_labels, startangle=90)
     if df_name is not None:
         ax.set_title("{} in {} (N = {})".format(column, df_name, total))
@@ -56,6 +56,7 @@ def generate_piechart(df_name:str = None, column = None, extra_data:dict[str, in
     fig_path = os.path.join(folder, fig_name)
     fig.savefig(fig_path)
     print1("{} generated".format(fig_name))
+    plt.close()
 
 
 

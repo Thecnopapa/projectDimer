@@ -2211,11 +2211,17 @@ def get_faces(algorithm="affinity", identifier = None, force = False, gif=False,
             labels = model.labels_
             centres = model.cluster_centers_
 
-        if algorithm == "kmeans":
+        elif algorithm == "kmeans":
             from sklearn.cluster import KMeans
             model = KMeans(n_clusters=4).fit(coord_array)
             labels = model.labels_
             centres = model.cluster_centers_
+
+
+
+
+        else:
+            print("Please select a valid algorithm.")
 
 
         # CLUSTERING FINISHING HERE
@@ -2392,12 +2398,12 @@ def get_space_groups(ref_name, face_combinations, use_faces="generated"):
                     space_groups[sg] = 1
                 else:
                     space_groups[sg] += 1
-                if face not in by_space_group:
-                    by_space_group[face] = {}
-                if sg not in by_space_group[face]:
-                    by_space_group[face][sg] = 1
+                if sg not in by_space_group:
+                    by_space_group[sg] = {}
+                if face not in by_space_group[sg]:
+                    by_space_group[sg][face] = 1
                 else:
-                    by_space_group[face][sg] += 1
+                    by_space_group[sg][face] += 1
                 done_molecules.append(short_id)
                 progress.add(info = sg)
 
