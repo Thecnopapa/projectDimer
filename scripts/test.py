@@ -15,12 +15,16 @@ vars["references"] = load_references(force_reload=True)
 print1("References loaded")
 
 
-from clustering import get_faces, compare_all_with_eva, cluster_redundancy
+from clustering import get_faces, compare_all_with_eva, cluster_redundancy, get_space_groups
 #get_faces(force=False)
 #compare_all_with_eva()
 #quit()
 
-get_faces(force=True)
+from clustering import generate_cluster_grids, get_space_groups
+for ref in vars.references:
+    face_combinations = generate_cluster_grids(identifier=ref.name, use_faces="generated")
+    get_space_groups(ref.name, face_combinations, use_faces="generated")
+#get_faces(algorithm="kmeans", show=True, force=True)
 
 
 

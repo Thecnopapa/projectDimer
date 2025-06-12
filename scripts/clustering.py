@@ -2001,7 +2001,8 @@ class Cluster2:
             if cmap is not None:
                 colour = cmap(value)
             else:
-                if type(value) in [int, float, np.int64]:
+                #if type(value) in [int, float, np.int64]:
+                if np.issubdtype(type(value), np.integer):
                     if value == -1:
                         colour = "black"
                     else:
@@ -2031,8 +2032,8 @@ class Cluster2:
         ax.set_aspect("equal")
         ax.view_init(elev=-55., azim=-80, roll= 80)
         if title is None:
-            title = self.id + " N={}".format(self.ndimers)
-        fig.suptitle(title)
+            title = self.id
+        fig.suptitle(title + " N={}".format(self.ndimers))
         fig_savepath = None
         gif_savepath = None
         if save:
@@ -2159,10 +2160,14 @@ def cluster_dihedrals():
 
 
 
-def get_faces(force = False, gif=False):
+def get_faces(algorithm="affinity", identifier = None, force = False, gif=False, show=False, save=True):
     from imports import load_clusters
     from maths import normalize1D
-    for cluster in load_clusters(identifier="all-all", onebyone=True):
+    if identifier is None:
+        identifier = "all-all"
+    else:
+        identifier = identifier+"-all-all"
+    for cluster in load_clusters(identifier=identifier, onebyone=True):
         if not cluster.is_all:
             continue
         if cluster.all_faces is not None and not force:
@@ -2200,13 +2205,17 @@ def get_faces(force = False, gif=False):
         centres = None
         # CLUSTERING STARTING HERE
 
+        if algorithm == "affinity":
+            from sklearn.cluster import AffinityPropagation
+            model = AffinityPropagation(random_state=6, damping=0.984).fit(coord_array)
+            labels = model.labels_
+            centres = model.cluster_centers_
 
-
-
-        model = AffinityPropagation(random_state=6, damping=0.984).fit(coord_array)
-
-        labels = model.labels_
-        centres = model.cluster_centers_
+        if algorithm == "kmeans":
+            from sklearn.cluster import KMeans
+            model = KMeans(n_clusters=4).fit(coord_array)
+            labels = model.labels_
+            centres = model.cluster_centers_
 
 
         # CLUSTERING FINISHING HERE
@@ -2242,7 +2251,7 @@ def get_faces(force = False, gif=False):
         print(face_dict)
         cluster.face_dict = face_dict
         cluster.pickle()
-        cluster.show_mpl(show=True, save=False, gif=gif, title = cluster.id+"_{}_clusters".format(len(set(labels))), mergedMatrix = [atom["cluster"] for atom in atoms], secondary=preference_array)
+        cluster.show_mpl(show=show, save=save, gif=gif, title = cluster.id+"_{}".format(algorithm), mergedMatrix = [atom["cluster"] for atom in atoms], secondary=preference_array)
 
 
 def compare_all_with_eva():
@@ -2282,6 +2291,7 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
         if use_faces not in cluster.faces:
             cluster.get_face(use_faces)
         faces.append(sorted([face[0] for face in cluster.faces[use_faces]]) + [cluster.id])
+        main_cluster = cluster
     faces = sorted(faces, key=lambda face: face[1])
     faces = sorted(faces, key=lambda face: face[0])
     [print(face) for face in faces]
@@ -2349,13 +2359,53 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
         generate_piechart(extra_data=extra_data, name = identifier+"_piechart_{}".format(use_faces))
     return face_combinations
 
-def get_space_groups(face_combinations):
+def get_space_groups(ref_name, face_combinations, use_faces="generated"):
     from imports import load_clusters, load_single_pdb
-    for f in face_combinations:
-        for cluster in load_clusters(onebyone=True):
-            for row in cluster.subset.itertuples():
-                dimer = load_single_pdb(row.id)
+    from visualisation import generate_piechart
 
+    by_space_group = {}
+    face_combinations = sorted(face_combinations, key=lambda face: face[1])
+    face_combinations = sorted(face_combinations, key=lambda face: face[0])
+    for f in face_combinations:
+        space_groups = {}
+        face ="{}-{}".format(f[0], f[1])
+        done_molecules = []
+        tprint(f[0]+"-"+f[1])
+        for cluster in load_clusters(identifier=ref_name, onebyone=True):
+            if cluster.is_all:
+                continue
+            #print(sorted([face[0] for face in cluster.faces[use_faces]], reverse=True) != f[:2], [face[0] for face in cluster.faces[use_faces]] , f[:2])
+            if sorted([face[0] for face in cluster.faces[use_faces]], reverse=False) != f[:2]:
+                continue
+            print1(cluster.id, sorted([face[0] for face in cluster.faces[use_faces]], reverse=False))
+            progress = ProgressBar(len(cluster.subset), silent=True)
+            for row in cluster.subset.itertuples():
+                short_id = row.id.split("_")[0]
+                if short_id in done_molecules:
+                    progress.add()
+                    continue
+                molecule = load_single_pdb(short_id, pickle_folder=local.molecules, first_only=True, quiet=True)
+
+                sg = molecule.space_group[0]
+                #print(sg, end = "\r")
+                if sg not in space_groups:
+                    space_groups[sg] = 1
+                else:
+                    space_groups[sg] += 1
+                if face not in by_space_group:
+                    by_space_group[face] = {}
+                if sg not in by_space_group[face]:
+                    by_space_group[face][sg] = 1
+                else:
+                    by_space_group[face][sg] += 1
+                done_molecules.append(short_id)
+                progress.add(info = sg)
+
+        local["space_groups"] = "images/space_groups"
+        generate_piechart(folder = local.space_groups, extra_data=space_groups, name=ref_name + "_{}_{}-{}".format(use_faces, f[0], f[1]))
+
+    for key, value in by_space_group.items():
+        generate_piechart(folder = local.space_groups, extra_data=value, name=ref_name + "_{}_{}".format(use_faces, key))
 
 
 

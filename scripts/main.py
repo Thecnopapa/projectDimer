@@ -294,11 +294,12 @@ def main(PROCESS_ALL = False,
             cluster.pickle()
 
 
-        from clustering import generate_cluster_grids, generate_cluster_piecharts
+        from clustering import generate_cluster_grids, get_space_groups
         for ref in vars.references:
             if ref.name != "GR" and ONLY_GR:
                 continue
-            generate_cluster_grids(identifier=ref.name, use_faces=USE_FACES)
+            face_combinations = generate_cluster_grids(identifier=ref.name, use_faces=USE_FACES)
+            get_space_groups(ref.name, face_combinations)
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
             sprint(cluster.id)

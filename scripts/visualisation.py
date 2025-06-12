@@ -40,7 +40,8 @@ def generate_piechart(df_name:str = None, column = None, extra_data:dict[str, in
             large_labels.append(label)
         else:
             large_labels.append("")
-    fig, ax = plt.subplots()
+    fig = plt.figure(figsize=(9, 16))
+    fig, ax = fig.add_subplot()
     ax.pie(sizes, labels=large_labels, startangle=90)
     if df_name is not None:
         ax.set_title("{} in {} (N = {})".format(column, df_name, total))
