@@ -2279,6 +2279,8 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
             continue
         if cluster.ref_name != "GR" and use_faces == "eva":
             continue
+        if use_faces not in cluster.faces:
+            cluster.get_face(use_faces)
         faces.append(sorted([face[0] for face in cluster.faces[use_faces]]) + [cluster.id])
     faces = sorted(faces, key=lambda face: face[1])
     faces = sorted(faces, key=lambda face: face[0])
@@ -2344,7 +2346,15 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
         extra_data["{}-{}".format(f[0], f[1])] = n_dimers
     if piecharts:
         from visualisation import generate_piechart
-        generate_piechart(extra_data=extra_data, name = identifier+"_piechart")
+        generate_piechart(extra_data=extra_data, name = identifier+"_piechart_{}".format(use_faces))
+    return face_combinations
+
+def get_space_groups(face_combinations):
+    from imports import load_clusters, load_single_pdb
+    for f in face_combinations:
+        for cluster in load_clusters(onebyone=True):
+            for row in cluster.subset.itertuples():
+                dimer = load_single_pdb(row.id)
 
 
 
