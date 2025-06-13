@@ -2036,6 +2036,8 @@ class Cluster2:
         fig.suptitle(title + " N={}".format(self.ndimers))
         fig_savepath = None
         gif_savepath = None
+        plt.axis('off')
+        plt.grid(b=None)
         if save:
             local["res_coords"] = "images/res_coords"
             fig_savepath = os.path.join(local.res_coords, title + ".png")

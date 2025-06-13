@@ -299,7 +299,7 @@ def main(PROCESS_ALL = False,
             if ref.name != "GR" and ONLY_GR:
                 continue
             face_combinations = generate_cluster_grids(identifier=ref.name, use_faces=USE_FACES)
-            get_space_groups(ref.name, face_combinations, use_faces=USE_FACES)
+            get_space_groups(identifier=ref.name, use_faces=USE_FACES)
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
             sprint(cluster.id)

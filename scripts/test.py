@@ -15,6 +15,24 @@ vars["references"] = load_references(force_reload=True)
 print1("References loaded")
 
 
+
+
+
+list_path = os.path.join(root.pdb_lists, "rcsb_pdb_ids_20250524034011.txt")
+
+l = []
+with open(list_path, "r") as f:
+    for line in f:
+        l.extend(line.split(","))
+print(l)
+list_to_table(l, ncols = 10, path=os.path.join(root.pdb_lists, "rcsb_pdb_ids_20250524034011-70x10.csv"))
+
+
+
+
+
+
+quit()
 from clustering import get_faces, compare_all_with_eva, cluster_redundancy, get_space_groups
 #get_faces(force=False)
 #compare_all_with_eva()
