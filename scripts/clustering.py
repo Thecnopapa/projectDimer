@@ -2385,7 +2385,7 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
         for ax in axes.flatten():
             ax.set_axis_off()
         # plt.show(block = True)
-        fig.suptitle("{}-{}_(N={})".format(f[0], f[1], n_dimers))
+        fig.suptitle("{}-{}-{}_(N={})".format(identifier, f[0], f[1], n_dimers))
         filename = "{}-{}-{}".format(identifier, f[0], f[1])
         plt.savefig(os.path.join(local[use_faces], filename))
         extra_data["{}-{}".format(f[0], f[1])] = n_dimers
@@ -2410,18 +2410,19 @@ def get_space_groups(identifier="GR", use_faces="generated", piecharts = True, f
     by_face = {}
     by_space_group = {}
     if "by_space_group" not in main_cluster.__dict__ or "by_face" not in main_cluster.__dict__ or force:
+        tprint("Space Groups")
         for f in face_combinations:
             space_groups = {}
             face ="{}-{}".format(f[0], f[1])
             done_molecules = []
-            tprint(f[0]+"-"+f[1])
+            print1(f[0]+"-"+f[1])
             for cluster in load_clusters(identifier=ref_name, onebyone=True):
                 if cluster.is_all:
                     continue
                 #print(sorted([face[0] for face in cluster.faces[use_faces]], reverse=True) != f[:2], [face[0] for face in cluster.faces[use_faces]] , f[:2])
                 if sorted([face[0] for face in cluster.faces[use_faces]], reverse=False) != f[:2]:
                     continue
-                print1(cluster.id, sorted([face[0] for face in cluster.faces[use_faces]], reverse=False))
+                print2(cluster.id, sorted([face[0] for face in cluster.faces[use_faces]], reverse=False))
                 progress = ProgressBar(len(cluster.subset), silent=True)
                 for row in cluster.subset.itertuples():
                     short_id = row.id.split("_")[0]

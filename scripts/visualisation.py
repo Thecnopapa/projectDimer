@@ -122,7 +122,8 @@ def nested_piechart(data:dict, title= None, folder=None, **kwargs):
     fig_path = os.path.join(folder, fig_name)
     fig.savefig(fig_path)
     print1("{} generated".format(fig_name))
-    plt.show(block=vars.block)
+    if vars.block:
+        plt.show(block=vars.block)
     plt.close()
 
 

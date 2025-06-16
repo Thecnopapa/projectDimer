@@ -13,6 +13,9 @@ def normalize1D(values, add_to=None):
     r = abs(maximum-minimum)
     new_values = []
     for v in values:
+        if r == 0:
+            new_values.append(v)
+            continue
         new_values.append((v-minimum)/r)
     if add_to is not None:
         total = sum([v for v in new_values])
