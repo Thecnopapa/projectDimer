@@ -16,9 +16,10 @@ def tprint(*strings, head=10, style="#", end="\n", sep=" ", log=True):  # Print 
     string = " ".join(strings)
     tail = width - head - len(string)
     out = "\n{}{}{}{}{}".format(style*head, sep, string, sep, style*tail)
-    if globals_loaded:
-        if log:
-            vars.log(out, end = end, timestamp=False)
+    try:
+        vars.log(out, end = end, timestamp=False)
+    except:
+        pass
     print(out, end=end)
 
 def eprint(*strings, head=10, style = "^", sep=" "):  # Print end of section
@@ -26,10 +27,17 @@ def eprint(*strings, head=10, style = "^", sep=" "):  # Print end of section
 
 def sprint(*strings,**kwargs): # Print Subtitle
     str_strings = map(str, strings)
+    prefix = "\n"
+    out = " # "+ " ".join(str_strings)
+    try:
+        vars.log(out,prefix = prefix, **kwargs)
+    except:
+            pass
     if globals_loaded and "quiet" in vars:
         if vars.quiet:
             return
-    print("\n #", " ".join(str_strings),**kwargs)
+
+    print(prefix+out,**kwargs)
 
 def print1(*strings, space=2, log=True, **kwargs): # Print with 1 indent
     str_strings = []
@@ -41,9 +49,11 @@ def print1(*strings, space=2, log=True, **kwargs): # Print with 1 indent
             str_strings.append(str(string))
     #str_strings = map(str, strings)
     out = "{}> {}".format(" " * space, " ".join(str_strings))
+    try:
+        vars.log(out, **kwargs)
+    except:
+        pass
     if globals_loaded:
-        if log:
-            vars.log(out, **kwargs)
         if vars.quiet:
             return
     print(out, **kwargs)
@@ -299,7 +309,7 @@ def KeepInterpreter():
 
 class LogFile:
     def __init__(self, folder= None, filename=None):
-
+        self.logging = True
         if filename is None:
             filename = self.get_timestamp()
         if "." not in filename:
@@ -335,11 +345,12 @@ class LogFile:
 
 
 
-    def write(self, data:str, timestamp = True, end="\n", **kwargs):
+    def write(self, data:str, timestamp = True, end="\n", prefix = "", **kwargs):
         with open(self.path, "a") as f:
             if timestamp:
                 data = self.get_timestamp()+"> " + data
-            f.write(data+end)
+            data = prefix + data + end
+            f.write(data)
 
     def delete(self):
         os.remove(self.path)

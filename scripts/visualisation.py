@@ -382,6 +382,8 @@ if __name__ == "__main__":
 
     sprint("Argvs:")
     print(sys.argv)
+    tprint("Visualizing")
+
 
 
 
