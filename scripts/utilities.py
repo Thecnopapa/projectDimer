@@ -4,18 +4,22 @@ import os
 import datetime
 
 try:
-    from Globals import vars, root, local
+    from Globals import vars
     globals_loaded = True
 except:
     globals_loaded = False
 
 
 
-def tprint(*strings, head=10, style="#", end="\n", sep=" "):  # Print section title
+def tprint(*strings, head=10, style="#", end="\n", sep=" ", log=True):  # Print section title
     width = shutil.get_terminal_size()[0] -2
     string = " ".join(strings)
     tail = width - head - len(string)
-    print("\n{}{}{}{}{}".format(style*head, sep, string, sep, style*tail), end=end)
+    out = "\n{}{}{}{}{}".format(style*head, sep, string, sep, style*tail)
+    if globals_loaded:
+        if log:
+            vars.log(out, end = end, timestamp=False)
+    print(out, end=end)
 
 def eprint(*strings, head=10, style = "^", sep=" "):  # Print end of section
     tprint(*strings, head=head, style=style, end="\n\n", sep=sep)
@@ -27,7 +31,7 @@ def sprint(*strings,**kwargs): # Print Subtitle
             return
     print("\n #", " ".join(str_strings),**kwargs)
 
-def print1(*strings, space=2, **kwargs): # Print with 1 indent
+def print1(*strings, space=2, log=True, **kwargs): # Print with 1 indent
     str_strings = []
     for string in strings:
         if type(string) == list or type(string) == tuple:
@@ -36,10 +40,13 @@ def print1(*strings, space=2, **kwargs): # Print with 1 indent
         else:
             str_strings.append(str(string))
     #str_strings = map(str, strings)
-    if globals_loaded and "quiet" in vars:
+    out = "{}> {}".format(" " * space, " ".join(str_strings))
+    if globals_loaded:
+        if log:
+            vars.log(out, **kwargs)
         if vars.quiet:
             return
-    print("{}> {}".format(" " * space, " ".join(str_strings)), **kwargs)
+    print(out, **kwargs)
 
 def print2(*strings, **kwargs): # Print with 2 indents
     print1(strings, space=4, **kwargs)
@@ -294,13 +301,17 @@ class LogFile:
     def __init__(self, folder= None, filename=None):
 
         if filename is None:
-            filename = self.get_timestamp(second=False)
+            filename = self.get_timestamp()
         if "." not in filename:
             filename += ".log"
         self.filename = filename
-        if folder is None and globals_loaded:
+        try:
+            from Globals import local
             local["logs"] = "logs"
             folder = local.logs
+        except:
+            folder = "logs"
+
         self.folder = folder
         self.path = os.path.join(self.folder, self.filename)
 
@@ -324,11 +335,11 @@ class LogFile:
 
 
 
-    def write(self, data:str, timestamp = True):
+    def write(self, data:str, timestamp = True, end="\n", **kwargs):
         with open(self.path, "a") as f:
             if timestamp:
                 data = self.get_timestamp()+"> " + data
-            f.write(data+"\n")
+            f.write(data+end)
 
     def delete(self):
         os.remove(self.path)

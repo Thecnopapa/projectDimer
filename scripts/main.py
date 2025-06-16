@@ -85,6 +85,7 @@ def main(PROCESS_ALL = False,
     # Load/Import molecule references
     sprint("Loading References")
     vars["references"] = load_references(force_reload=PROCESS_ALL)
+    vars.log("References loaded:", *[vars.references])
     print1("References loaded")
 
 
@@ -110,7 +111,7 @@ def main(PROCESS_ALL = False,
     if len(vars.do_only) > 0:
         molecule_list = [f for f in molecule_list if any([s in f for s in vars.do_only])]
     #[print(m) for m in sorted(molecule_list)]
-    print1("Molecule list obtained:", len(molecule_list), "molecules, DO_ONLY = ", DO_ONLY)
+    print1("Molecule list obtained:", len(molecule_list), "molecules, DO_ONLY = ", DO_ONLY, log=True)
 
     eprint("SET UP")
     ###### SYMMETRY & DIMER GENERATION #################################################################################
@@ -419,7 +420,7 @@ if __name__ == "__main__":
         FORCE_SPLIT=True,
 
         # Clustering, from SM to plotting
-        SKIP_CLUSTERING=False, # Skip th entire block (overridden by PROCESS_ALL)
+        SKIP_CLUSTERING=False and "clustering" not in sys.argv, # Skip th entire block (overridden by PROCESS_ALL)
         FORCE_CLUSTERING=True,  # Force clustering if already calculated (overridden by PROCESS_ALL)
         ONLY_GR = False, # Whether to only cluster GR
         REMOVE_REDUNDANCY = True,
