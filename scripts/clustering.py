@@ -1615,10 +1615,6 @@ class Cluster2:
 
     def plot_cluster(self, force = False, angles=True, plot=True, show = False, snapshot=True, gif=False, **kwargs):
 
-        #TODO: REMOVE THIS #######
-        self.mpl_path = None     #
-        self.mpl_gif_path = None #
-        #TODO:####################
         if angles:
             if force or  self.plot_path is None or (self.gif_path is None and gif) :
                 self.plot_path, self.gif_path = self.get_plot(self.subset, self.cluster_cols, self.id,
@@ -2300,15 +2296,17 @@ def compare_all_with_eva():
             #eva_scores[eva_face] = sorted(eva_scores[eva_face], key=lambda x: x)
         sprint("EVA scores:")
         for key, values in eva_scores.items():
-            print1(key)
+            print1(key, values)
             for k, v in values.items():
                 print2("{}: {}".format(k, v))
 
 
 def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = True):
     from imports import load_clusters
+    sprint("Generating cluster grids")
     faces = []
     n_clusters = 0
+    main_cluster = None
     if identifier != "GR" and use_faces == "eva":
         return None
     for cluster in load_clusters(identifier = identifier, onebyone=True):
@@ -2319,6 +2317,8 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
             cluster.get_face(use_faces)
         n_clusters += 1
         faces.append(sorted([face[0] for face in cluster.faces[use_faces]]) + [cluster.id])
+    if main_cluster is None:
+        return None
     sprint("Main cluster:", main_cluster)
     print1("{}: Number of clusters: {}".format(identifier, n_clusters))
     faces = sorted(faces, key=lambda face: face[1])
