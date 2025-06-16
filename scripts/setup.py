@@ -1,6 +1,5 @@
 import os, sys, platform
 
-from scipy.ndimage import black_tophat
 
 
 def setup(local_path=None, deepness_of_script =2):
@@ -54,11 +53,19 @@ try:
 except:
     pass
 
+
+vars["log"] = LogFile()
+vars.log.log("SYS ARGV:", sys.argv)
+
+
+
+
 vars["blacklist"] = []
 if "blacklist" in os.listdir(root.pdb_lists):
     with open(os.path.join(root.pdb_lists, "blacklist"), "r") as f:
         for line in f:
             vars["blacklist"].append(line)
+vars.log.log("BLACKLIST:", vars.blacklist)
 
 if "force" in sys.argv or "-f" in sys.argv:
     vars["force"] = True
@@ -66,6 +73,7 @@ if "force" in sys.argv or "-f" in sys.argv:
     supress(sys.argv.remove, "-f")
 else:
     vars["force"] = False
+vars.log.log("FORCE:", vars.force)
 
 if "verbose" in sys.argv or "-v" in sys.argv:
     vars["verbose"] = True
@@ -73,6 +81,7 @@ if "verbose" in sys.argv or "-v" in sys.argv:
     supress(sys.argv.remove, "-v")
 else:
     vars["verbose"] = False
+vars.log.log("VERBOSE:", vars.verbose)
 
 if "quiet" in sys.argv or "-q" in sys.argv:
     supress(sys.argv.remove, "quiet")
@@ -80,6 +89,7 @@ if "quiet" in sys.argv or "-q" in sys.argv:
     vars["quiet"] = True
 else:
     vars["quiet"] = False
+vars.log.log("QUIET:", vars.quiet)
 
 
 if "block" in sys.argv or "-q" in sys.argv:
@@ -88,6 +98,9 @@ if "block" in sys.argv or "-q" in sys.argv:
     vars["block"] = True
 else:
     vars["block"] = False
+vars.log.log("BLOCK:", vars.block)
+
+
 
 
 def get_sys_vars():

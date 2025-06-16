@@ -15,7 +15,7 @@ vars["references"] = load_references(force_reload=True)
 print1("References loaded")
 
 
-
+quit()
 
 
 list_path = os.path.join(root.pdb_lists, "rcsb_pdb_ids_20250524034011.txt")

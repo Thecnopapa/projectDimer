@@ -1160,7 +1160,7 @@ def generate_dihedrals_df(dimer_list = None, force = False):
                     dataframes[dimer.best_fit].append([dimer.id, False] + chains + dihedrals_2to1 + dihedrals_1to2[3:-1])
                 else:
                     dataframes[dimer.best_fit] = [[dimer.id, True] + chains + dihedrals_1to2 + dihedrals_2to1[3:-1]]
-                    dataframes[dimer.best_fit] = [[dimer.id, False] + chains + dihedrals_2to1 + dihedrals_1to2[3:-1]]
+                    dataframes[dimer.best_fit].append([dimer.id, False] + chains + dihedrals_2to1 + dihedrals_1to2[3:-1])
 
                 progress.add(info=dimer.id)
         for key in dataframes.keys():

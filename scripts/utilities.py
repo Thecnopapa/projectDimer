@@ -1,9 +1,10 @@
 import shutil
 import time
 import os
+import datetime
 
 try:
-    from Globals import vars
+    from Globals import vars, root, local
     globals_loaded = True
 except:
     globals_loaded = False
@@ -287,6 +288,58 @@ def KeepInterpreter():
     except HaltException as h:
         print(h)
         # now what?
+
+
+class LogFile:
+    def __init__(self, folder= None, filename=None):
+
+        if filename is None:
+            filename = self.get_timestamp(second=False)
+        if "." not in filename:
+            filename += ".log"
+        self.filename = filename
+        if folder is None and globals_loaded:
+            local["logs"] = "logs"
+            folder = local.logs
+        self.folder = folder
+        self.path = os.path.join(self.folder, self.filename)
+
+    def __call__(self, *args, **kwargs):
+        self.log(*args, **kwargs)
+
+
+    @staticmethod
+    def get_timestamp(year=False, second=True):
+        ct = datetime.datetime.now()
+        ts = "{}_{}_{}:{}".format(add_front_0(ct.month, digits=2),
+                                  add_front_0(ct.day, digits=2),
+                                  add_front_0(ct.hour,digits=2),
+                                  add_front_0(ct.minute, digits=2))
+        if year:
+            ts = "{}_".format(add_front_0(ct.year, digits=4)) + ts
+        if second:
+            ts = ts + ":{}".format(add_front_0(ct.second, digits=2))
+        return ts
+
+
+
+
+    def write(self, data:str, timestamp = True):
+        with open(self.path, "a") as f:
+            if timestamp:
+                data = self.get_timestamp()+"> " + data
+            f.write(data+"\n")
+
+    def delete(self):
+        os.remove(self.path)
+
+    def log(self, *text, **kwargs):
+
+        text = [str(t) for t in text]
+        text = " ".join(text)
+        self.write(text, **kwargs)
+
+
 
 
 def int_input(prompt, all="all"):

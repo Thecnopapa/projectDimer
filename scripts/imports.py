@@ -195,17 +195,20 @@ def load_dimers(molecules = None, folder = "dimers", extension = ".dimer",force_
 def download_pdbs(list_path:str=None , save_folder=None, pdb_list:list = None, terminal = True):
     sprint("Downloading PDBs:")
     local[save_folder] = save_folder
+
     if list_path is not None:
         pdb_list = []
         with open(list_path, "r") as f:
             for line in f:
                 pdb_list.extend(line.split(","))
         pdb_links = list_path + "_links.txt"
+        vars.log("Downloading entries from file: {}".format(list_path))
     elif pdb_list is not None:
         pdb_links = os.path.join(root.pdb_lists, "temp_list_links.txt")
     else:
         print("Please provide either a list or a path to a PDB list")
         return
+
     #print(pdb_list)
     print1("{} pdbs for download".format(len(pdb_list)))
     open(pdb_links, "w")
@@ -214,10 +217,12 @@ def download_pdbs(list_path:str=None , save_folder=None, pdb_list:list = None, t
             if not any([bl in pdb for bl in vars.blacklist]):
                 f.write("https://files.rcsb.org/download/{}.pdb\n".format(pdb))
     print1("Links saved at {}".format(pdb_links))
+    vars.log("PDB links file at: {}".format(pdb_links))
 
     if not terminal:
         import wget
         counter =0
+        failed_counter = 0
         print(pdb_links)
         with open(pdb_links, "r") as f:
             for line in f:
@@ -226,10 +231,15 @@ def download_pdbs(list_path:str=None , save_folder=None, pdb_list:list = None, t
                     wget.download(line, out=local[save_folder])
                 except:
                     print3("Failed to import", line)
+                    failed_counter += 1
                 counter+=1
     else:
         import subprocess
         subprocess.run(["wget","-i", pdb_links, "-P", local[save_folder]])
+
+    vars.log("{} files downloaded to: {}. Current files in {}: {}".format(len(pdb_list), local[save_folder], save_folder, len(os.listdir(local[save_folder]))))
+
+
 
 def pickle(list):
     progress = ProgressBar(len(list), silent=True, title=False)
