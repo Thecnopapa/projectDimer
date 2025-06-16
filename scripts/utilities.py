@@ -8,13 +8,13 @@ try:
 except:
     globals_loaded = False
 
+
+
 def tprint(*strings, head=10, style="#", end="\n", sep=" "):  # Print section title
     width = shutil.get_terminal_size()[0] -2
     string = " ".join(strings)
     tail = width - head - len(string)
     print("\n{}{}{}{}{}".format(style*head, sep, string, sep, style*tail), end=end)
-
-
 
 def eprint(*strings, head=10, style = "^", sep=" "):  # Print end of section
     tprint(*strings, head=head, style=style, end="\n\n", sep=sep)
@@ -102,6 +102,10 @@ def print_dict(dict):
     for k, v in dict.items():
         print("{}: {}".format(k, v))
 
+def open_file_from_system(path):
+    import subprocess
+    print("Opening:", path)
+    subprocess.Popen(["nohup", "xdg-open", path], start_new_session=True)
 
 class ProgressBar:
     def __init__(self, total=100, style="=", start=0, silent = False, title=True):
@@ -306,7 +310,7 @@ def mpl_to_gif(fig, axes, name = "animation.gif", folder=None, dpf=1, total_d = 
 
     import io, PIL
 
-    if type(axes) is not list:
+    if type(axes) not in (list, tuple):
         axes = [axes]
     if folder is None:
         from Globals import local
@@ -338,7 +342,34 @@ def mpl_to_gif(fig, axes, name = "animation.gif", folder=None, dpf=1, total_d = 
     return path
 
 
+def list_to_table(l, nrows:int=None, ncols:int=None, path=None):
+    import numpy as np
+    import pandas as pd
+    length = len(l)
+    target_cols = None
+    target_rows = None
+    if ncols is not None:
+        target_cols = ncols
+    if nrows is not None:
+        target_rows = nrows
+    assert nrows is not None or ncols is not None
+    if target_cols is None:
+        target_cols = ((length-1) // target_rows) +1
+    if target_rows is None:
+        target_rows = ((length-1) // target_cols) +1
+    volume = target_rows * target_cols
+    if length < volume:
+        l = l + [None]*(volume-length)
 
+    array = np.array(l)
+    print("Target rows:", target_rows)
+    print("Target cols:", target_cols)
+    array = array.reshape(target_rows, target_cols)
+    print(array)
+    df = pd.DataFrame(np.array(array))
+    print(df)
+    if path is not None:
+        df.to_csv(path, index=False, header=False)
 
 
 

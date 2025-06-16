@@ -579,11 +579,11 @@ class ContactSurface:
                     continue
                 n2 = - n
                 if o is None:
-                    axBottom.plot((n-1,n), (oneDmatrix1[n-1], p1), c="black",  linestyle='--', linewidth=0.5)
-                    axLeft.plot((oneDmatrix2[n - 1], p2), (n2 + 1, n2),  c="black", linestyle='--', linewidth=0.5)
+                    axBottom.plot((n-1,n), (oneDmatrix1[n-1], p1), c="black",  linestyle='-', linewidth=0.5)
+                    axLeft.plot((oneDmatrix2[n - 1], p2), (n2 + 1, n2),  c="black", linestyle='-', linewidth=0.5)
                 else:
-                    axBottom.plot((n - 1, n), (oneDmatrix1[n - 1], p1), c=cmap(p1), linestyle='--', linewidth=0.5)
-                    axLeft.plot((oneDmatrix2[n - 1], p2), (n2 + 1, n2), c=cmap(p2), linestyle='--', linewidth=0.5)
+                    axBottom.plot((n - 1, n), (oneDmatrix1[n - 1], p1), c=cmap(p1), linestyle='-', linewidth=0.5)
+                    axLeft.plot((oneDmatrix2[n - 1], p2), (n2 + 1, n2), c=cmap(p2), linestyle='-', linewidth=0.5)
             #fig.tight_layout()
             fig.subplots_adjust(right=0.8)
 

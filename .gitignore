@@ -260,3 +260,7 @@ fabric.properties
 /images/dihedral_figs/
 /images/dihedral_gifs/
 nohup.out
+__*
+_*
+.idea/
+.~lock

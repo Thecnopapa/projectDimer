@@ -1,6 +1,5 @@
 import os, sys
 
-
 from utilities import *
 from Globals import root, local, vars
 import numpy as np
@@ -1137,6 +1136,7 @@ def generate_dihedrals_df(dimer_list = None, force = False):
     sprint("Generating dihedrals dataframe")
     root["clustering2"] = "dataframes/clustering2"
     root["dihedrals"] = "dataframes/clustering2/dihedrals"
+    print(force, len(os.listdir(root.dihedrals)) == 0)
     if force or len(os.listdir(root.dihedrals)) == 0:
         from imports import load_single_pdb
         if dimer_list is None:
@@ -1531,11 +1531,16 @@ class Cluster2:
     path = None
 
     def __init__(self,ref, df,cluster_cols, c1=None, c2=None, is_all=False, **kwargs):
-
+        self.kwargs = kwargs
         self.ref_name = ref.name
+        self.structure = ref.structure
         self.outer_ids_complete = ref.get_outer_res_list(complete_list=True)
+        self.outer_ids_binary = ref.get_outer_res_list(complete_list=True, binary=True)
         self.cluster_cols = cluster_cols
         self.outlier = False
+        self.merged = []
+        self.redundant = False
+        self.redundant_to = None
         if not is_all:
             assert c1 is not None and c2 is not None
             self.is_all = False
@@ -1548,16 +1553,21 @@ class Cluster2:
             print(cluster_cols)
             print(" & ".join(["{} == {}".format(self.cluster_cols[n], self.cnums[n]) for n in range(len(self.cnums))]))
             self.subset = df.query(" & ".join(["{} == {}".format(self.cluster_cols[n], self.cnums[n]) for n in range(len(self.cnums))]), inplace=False)
+            self.id = "{}-{}-{}".format(self.ref_name, add_front_0(self.c1, digits=2), add_front_0(self.c2, digits=2))
         else:
             self.c1, self.c2 = "all", "all"
             self.is_all = True
             self.subset = df.copy()
-        self.id = "{}-{}-{}".format(self.ref_name, self.c1, self.c2)
+            self.id = "{}-{}-{}".format(self.ref_name, self.c1, self.c2)
+
+
+        self.subset["reversed"] = [False] * len(self.subset)
         self.ndimers = len(self.subset)
         print(self.id)
         print(self.subset)
         if len(self.subset) == 0:
             quit()
+        self.subset.sort_values(by="id", inplace=True)
 
 
         self.matrix = None
@@ -1565,30 +1575,56 @@ class Cluster2:
         self.oneDmatrix2 = None
         self.plot_path = None
         self.gif_path = None
+        self.snapshot_path = {}
         self.comA = None
         self.comB = None
         self.stdA = None
         self.stdB = None
+        self.atoms = None
+        self.all_faces = None
+        self.faces = {}
+        self.mon1_faces = {}
+        self.mon2_faces = {}
+
+
 
 
         if not self.outlier:
-            self.process_cluster(**kwargs)
+            self.process_cluster(**self.kwargs)
             self.pickle()
 
     def __repr__(self):
         return "<Cluster:{} {}-{} /N={}>". format(self.ref_name, self.c1, self.c2, self.ndimers)
 
-    def process_cluster(self, matrix=True, plot=True, gif=True, show=False, **kwargs):
-        print1("Processing matrix={}, plot={}, gif={}, show={}".format(matrix, plot, gif, show))
+    def process_cluster(self, force = False, matrix=True, faces=False, use_face="generated", **kwargs):
+        print1("Processing {}: matrix={}, faces={}".format(self.id, matrix, faces))
         if not self.is_all:
-            self.get_com()
+            self.remove_identical()
+            if self.comA is None or force:
+                self.get_com()
+
         if matrix:
-            self.matrix, self.oneDmatrix1, self.oneDmatrix2 = self.get_matrix(threshold=10)
-        if plot:
+            if self.matrix is None or force:
+                self.get_matrix(threshold=10)
+        if faces and not self.is_all:
+            self.get_face(method=use_face)
+
+
+    def plot_cluster(self, force = False, angles=True, plot=True, show = False, snapshot=True, gif=False, **kwargs):
+        if angles:
             self.plot_path, self.gif_path = self.get_plot(self.subset, self.cluster_cols, self.id,
                                                           coms=(self.comA, self.comB),
                                                           stds=(self.stdA, self.stdB),
                                                           show=show, gif=gif)
+        if plot:
+            self.show_mpl(gif=gif, show=show)
+        if snapshot:
+           self.show(snapshot=True, show_session=show, **kwargs)
+
+
+
+
+
 
 
 
@@ -1602,30 +1638,117 @@ class Cluster2:
         distancesB = [distance(point, self.comB) for point in anglesB]
         self.stdA = np.std(distancesA)
         self.stdB = np.std(distancesB)
-        print(self.stdA, self.comA)
-        print(self.stdB, self.comB)
+        #print(self.stdA, self.comA)
+        #print(self.stdB, self.comB)
+
+
+    def plot_matrix(self, show=False, **kwargs):
+        import matplotlib as mpl
+        import matplotlib.pyplot as plt
+
+        cvals = (0,0.5,1)
+        colors = ("blue", "yellow", "red")
+        norm = plt.Normalize(min(cvals), max(cvals))
+        tuples = list(zip(map(norm, cvals), colors))
+        cmap = mpl.colors.LinearSegmentedColormap.from_list("colormap", tuples)
+
+        outer_ids_matrix = np.array([self.outer_ids_binary] * len(self.outer_ids_binary))
+        colors2 = ((0, 0, 0, 1), (0.0, 0.0, 0.0, 0.0))
+        tuples2 = list(zip([0, 1], colors2))
+        cmap2 = mpl.colors.LinearSegmentedColormap.from_list("black0s", tuples2)
+
+        fig, axes = plt.subplots(2, 2,
+                                 # sharex="col",
+                                 gridspec_kw={'height_ratios': [4, 2], "width_ratios": [2, 4]},
+                                 figsize=(12, 9.6))
+
+        ax = axes[0, 1]
+        axLeft = axes[0, 0]
+        axBottom = axes[1, 1]
+        fig.subplots_adjust(right=0.8)
+        main_fig1 = ax.imshow(self.matrix.T, cmap=cmap)
+        cbar = plt.colorbar(main_fig1, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
+        ax.imshow(outer_ids_matrix, cmap=cmap2)
+        ax.imshow(outer_ids_matrix.T, cmap=cmap2)
+        #print(self.oneDmatrix1)
+        #print(self.oneDmatrix2)
+        #print(self.outer_ids_complete)
+        for n, (p1b, p2b, ob) in enumerate(zip(self.oneDmatrix1, self.oneDmatrix2, self.outer_ids_complete)):
+            if n == 0:
+                continue
+            n2 = - n
+            p1a, p2a, oa = self.oneDmatrix1[n-1], self.oneDmatrix2[n-1], self.outer_ids_complete[n-1]
+            if oa is None:
+                c1a = "black"
+                c2a = "black"
+            else:
+                c1a = cmap(p1a)
+                c2a = cmap(p2a)
+
+            if ob is None:
+                c1b = "black"
+                c2b = "black"
+            else:
+                c1b =  cmap(p1b)
+                c2b =  cmap(p2b)
+
+            middle1 = (p1a + p1b) / 2
+            middle2 = (p2a + p2b) / 2
+
+
+            axBottom.plot((n - 1, n-0.5), (p1a, middle1), c=c1a, linestyle='--', linewidth=0.5)
+            axBottom.plot((n, n - 0.5), (p1b, middle1), c=c1b, linestyle='--', linewidth=0.5)
+            axLeft.plot( (p2a, middle2), (n2 + 1, n2 + 0.5), c=c2a, linestyle='--', linewidth=0.5)
+            axLeft.plot( (p2b, middle2), (n2, n2 + 0.5), c=c2b, linestyle='--', linewidth=0.5)
+
+
+        cbar_title = "Occurence"
+        cbar.set_label(cbar_title)
+        #ax.set_title(self.id + " N={}".format(self.ndimers))
+        fig.suptitle(self.id + " N={}".format(self.ndimers))
+
+
+        #fig.tight_layout()
+        local["heatmaps"] = "images/heatmaps"
+        fig_path = os.path.join(local.heatmaps, self.id + ".png")
+        plt.savefig(fig_path)
+        if show:
+            plt.show(block=vars.block)
+        return fig_path
 
 
 
-    def get_matrix(self, threshold):
+
+    def get_matrix(self, threshold, plot = True, **kwargs):
         from imports import load_single_pdb
         print2("Generating cluster matrix")
         matrix = None
+        self.subset.sort_values(by="id", inplace=True)
         progress = ProgressBar(len(self.subset), silent=True)
         for point in self.subset.itertuples():
             dimer = load_single_pdb(point.id, pickle_folder=local.dimers, first_only=True, quiet=True)
+            is1to2 = point.is1to2
+            if point.reversed:
+                is1to2 = not is1to2
+
             if matrix is None:
-                matrix = dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not point.is1to2)
+                matrix = dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not is1to2)
             else:
-                matrix = np.add(matrix, dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not point.is1to2))
+                matrix = np.add(matrix, dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not is1to2))
             progress.add(info=point.id)
 
         oneDmatrix1 = [sum(i)/ len(self.outer_ids_complete) for i in matrix]
         oneDmatrix2 = [sum(i) / len(self.outer_ids_complete) for i in matrix.T]
-        return matrix, oneDmatrix1, oneDmatrix2
+
+        self.matrix, self.oneDmatrix1, self.oneDmatrix2 = matrix, oneDmatrix1, oneDmatrix2
+        if plot:
+            self.plot_matrix(**kwargs)
+
+        return self.matrix, self.oneDmatrix1, self.oneDmatrix2
 
     @staticmethod
-    def get_plot(subset, cluster_cols, id, coms=(None,None),stds=(None,None), gif=True, id_labels=False, save=True, show=False, show_outliers=False):
+    def get_plot(subset, cluster_cols, cluster_id, coms=(None,None),stds=(None,None), gif=True, id_labels=False, save=True, show=False, show_outliers=False):
+        subset.sort_values(by="id", inplace=True)
         import matplotlib.pyplot as plt
         fig = plt.figure(figsize=(20,10))
         ax1 = fig.add_subplot(121, projection='3d')
@@ -1655,7 +1778,7 @@ class Cluster2:
             ax1.scatter(coms[0][0], coms[0][1], coms[0][2], c=cols[0], s=stds[0]*180, linewidths=2, alpha=0.3)
             ax2.scatter(coms[1][0],coms[1][1], coms[1][2], c=cols[1], s=stds[1]*180, linewidths=2, alpha=0.3)
         ax_labels = ["0", "1", "2"]
-        title = "CLUSTER_{}".format(id)
+        title = "CLUSTER_{}".format(cluster_id)
         for ax, l in zip(axes, ("a", "b")):
             ax.set_xlabel(l+ax_labels[0])
             ax.set_ylabel(l+ax_labels[1])
@@ -1673,8 +1796,8 @@ class Cluster2:
             plt.savefig(fig_savepath)
         if gif:
             local["dihedral_gifs"] = "images/dihedral_gifs"
-            gif_savepath = mpl_to_gif(fig, ax, name=title, folder=local.dihedral_gifs)
-        if show:
+            gif_savepath = mpl_to_gif(fig, axes, name=title, folder=local.dihedral_gifs)
+        if show and vars.block:
             plt.show(block = vars.block)
         return fig_savepath, gif_savepath
 
@@ -1692,7 +1815,714 @@ class Cluster2:
             pickle.dump(self, f)
 
 
+    def merge(self, cluster2):
+        self.merged.append(cluster2.id)
+        self.merged.extend(cluster2.merged)
+        sub2 = cluster2.subset
+        sub2.rename(columns={'a0': 'b0', 'a1': 'b1', 'a2': 'b2',
+                             'b0': 'a0', 'b1': 'a1', 'b2': 'a2' }, inplace=True)
+        for row in sub2.itertuples():
+            sub2.loc[row.Index, "reversed"] = not row.reversed
+        self.subset = pd.concat([self.subset, sub2], axis= 0)
+        self.ndimers = len(self.subset)
+        self.subset.sort_values(by="id", inplace=True)
+        self.remove_identical()
+        self.ndimers = len(self.subset)
+        cluster2.redundant = True
+        cluster2.redundant_to = self.id
+        cluster2.delete()
+        self.pickle()
 
 
-def cluster_redundancy():
+    def reprocess_cluster(self, **kwargs):
+        self.process_cluster(**kwargs)
+        self.pickle()
+
+
+    def delete(self):
+        try:
+            os.remove(self.pickle_path)
+        except FileNotFoundError as e:
+            print(e)
+            print("Failed to delete {}:".format(self.id))
+            print(self.pickle_path)
+
+
+    def show(self, snapshot =False, show_session=False, chainbows=False, cluster_colours=False, show_snapshot=False,
+             regenerate_matrix=False, face_colours = "generated", **kwargs):
+        if self.is_all and not show_session:
+            return None
+
+        from imports import load_references, load_single_pdb
+        from superpose import superpose_many_chains
+        from Bio.PDB import PDBParser, PDBIO, Structure
+        ref = load_references(identifier=self.ref_name)[0]
+        self.subset.sort_values(by="id", inplace=True)
+        print(self.subset)
+        chains_to_align = {ref.name: (ref.path, ref.chain, True, False, 0)}
+        for n, row in enumerate(self.subset.itertuples()):
+            dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)[0]
+            name = row.id + str(row.is1to2)
+            is1to2 = row.is1to2
+            if row.reversed:
+                is1to2 = not is1to2
+            if is1to2:
+                chains_to_align[name] = (dimer.replaced_path, row.mon1, row.is1to2, row.reversed, n+1)
+            else:
+                chains_to_align[name] = (dimer.replaced_path, row.mon2, row.is1to2, row.reversed, n+1)
+        self.chains_to_align = chains_to_align
+        local["cluster_pdbs"] = "exports/cluster_pdbs"
+
+        def alter_bfactors(chain, value_list):
+            assert  len(chain) == len(value_list)
+            for atom, value in zip(chain.get_atoms(), value_list):
+                atom.bfactor = value
+
+        super_data = superpose_many_chains(chains_to_align, file_name=self.id + ".pdb", save_folder=local.cluster_pdbs)
+        monster_path = super_data["out_path"]
+
+        structure = PDBParser(QUIET=True).get_structure(self.id, monster_path)
+        for model, (key, value) in zip(structure.get_models(), chains_to_align.items()):
+            model.id = key
+        if face_colours is None and not chainbows and not cluster_colours:
+            if regenerate_matrix or self.matrix is None:
+                self.reprocess_cluster(matrix=True,force=True)
+            if self.oneDmatrix1 is not None and self.oneDmatrix2 is not None:
+                assert len(list(structure.get_models())) == len(chains_to_align)
+                for model, (key,value) in zip(structure.get_models(), chains_to_align.items()):
+                    for chain in model.get_chains():
+                        is_chain1 = chain.id == value[1]
+                        if is_chain1:
+                            alter_bfactors(chain, self.oneDmatrix1)
+                        else:
+                            alter_bfactors(chain, self.oneDmatrix2)
+
+
+        new_paths = []
+        for n, model in enumerate(structure.get_models()):
+            new_structure = Structure.Structure(model.id)
+            new_structure.add(model)
+            exporter = PDBIO()
+            exporter.set_structure(new_structure)
+            new_folder = os.path.join(local.cluster_pdbs, monster_path.split(".")[0])
+            os.makedirs(new_folder, exist_ok=True)
+            new_path = model.id + "_{}.pdb".format(add_front_0(n, digits=4))
+            new_path = os.path.join(new_folder, new_path)
+            exporter.save(new_path)
+            new_paths.append(new_path)
+
+
+        snapshot_path = None
+        if snapshot or show_session:
+            local["snapshots"] = "snapshots"
+            from pyMol import pymol_start, pymol_load_path, pymol_colour, pymol_list_to_bfactors, pymol_save_snapshot, \
+                mpl_colours, mpl_ncolours, pymol_save_temp_session, pymol_open_session_terminal, pymol_split_states, \
+                pymol_orient, pymol_reinitialize, pymol_get_all_objects, pymol_paint_single_face
+            pymol_start(show=False)
+            pymol_reinitialize()
+            for file in new_paths:
+                pymol_load_path(file, os.path.basename(file))
+            pymol_orient()
+            if chainbows:
+                pymol_colour("chainbow", "(all)")
+                extra_id = "_chainbows"
+            elif cluster_colours:
+                pymol_colour(mpl_colours[self.c2 % mpl_ncolours], "(all)")
+                extra_id = "_cluster_cols"
+            elif face_colours is not None:
+                if face_colours == "eva":
+                    from faces import GR_colours as color_dict
+                else:
+                    color_dict = None
+                pymol_paint_single_face(chains_to_align, self.faces[face_colours][0][0], self.faces[face_colours][1][0], color_dict=color_dict)
+                extra_id = "_faces_{}".format(face_colours)
+            else:
+                pymol_colour("blue_yellow_red", "(all)", spectrum="b")
+                extra_id = "_heatmap"
+            if not self.is_all and snapshot:
+                if self.snapshot_path is None or type(self.snapshot_path) is str:
+                    self.snapshot_path = {}
+                local[extra_id] = "snapshots/{}".format(extra_id)
+                self.snapshot_path[extra_id] = pymol_save_snapshot(self.id + extra_id, folder=local[extra_id])
+                if show_snapshot:
+                    open_file_from_system(snapshot_path[extra_id])
+            if show_session:
+                session_path = pymol_save_temp_session()
+                pymol_open_session_terminal(session_path)
+        try:
+            return self.snapshot_path[extra_id]
+        except:
+            return None
+
+
+    def remove_identical(self):
+        id_list = []
+        for row in self.subset.itertuples():
+            if not row.id in [i[0] for i in id_list]:
+                #print(id_list)
+                #print(row.id)
+                #print(row.id in id_list)
+                id_list.append((row.id, row.Index))
+            else:
+                #print("identical dimers found:", row.id)
+                #print(id_list)
+                #print("Removing:")
+                if row.is1to2:
+                    #print(self.subset.loc[id_list[[i[0] for i in id_list].index(row.id)][1]])
+                    self.subset.drop(id_list[[i[0] for i in id_list].index(row.id)][1], inplace=True)
+                else:
+                    #print(self.subset.loc[row.Index])
+                    self.subset.drop(row.Index, inplace=True)
+        self.ndimers = len(self.subset)
+
+    def show_mpl(self, save=True, gif = False, show=False, mergedMatrix = None, secondary=None, title=None):
+        if self.matrix is None:
+            self.process_cluster(matrix=True)
+        import matplotlib as mpl
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d.art3d import Line3D
+        from maths import points_to_line, get_middlepoint, normalize1D
+        fig = plt.figure(figsize=(10, 10))
+        ax = fig.add_subplot(111, projection='3d')
+        if mergedMatrix is None:
+            mergedMatrix = [m1+m2 for m1, m2 in zip(self.oneDmatrix1, self.oneDmatrix2)]
+            mergedMatrix = normalize1D(mergedMatrix)
+            #cvals = (min(mergedMatrix), (max(mergedMatrix)-min(mergedMatrix))/2, max(mergedMatrix))
+            cvals = (0,0.5,1)
+            colors = ("blue", "yellow", "red")
+            norm = plt.Normalize(min(cvals), max(cvals))
+            tuples = list(zip(map(norm, cvals), colors))
+            cmap = mpl.colors.LinearSegmentedColormap.from_list("colormap", tuples)
+        else:
+            cmap = None
+
+        atom_list = list(self.structure.get_atoms())
+        def get_colour(value, cmap=None):
+            if cmap is not None:
+                colour = cmap(value)
+            else:
+                #if type(value) in [int, float, np.int64]:
+                if np.issubdtype(type(value), np.integer):
+                    if value == -1:
+                        colour = "black"
+                    else:
+                        colour = "C" + str(value)
+                else:
+                    colour = value
+            return colour
+        for n, (atom, value) in enumerate(zip(atom_list, mergedMatrix)):
+            colour0 = get_colour(mergedMatrix[n-1], cmap=cmap)
+            colour1 = get_colour(value, cmap=cmap)
+            size = 100
+            if secondary is not None:
+                size=secondary[n]*200*len(secondary)
+            ax.scatter(atom.coord[0], atom.coord[1], atom.coord[2], s=size, c=colour1)
+            if n != 0:
+                middle = get_middlepoint(atom_list[n-1].coord, atom.coord)
+                line1 = Line3D(*points_to_line(atom_list[n-1].coord, middle), linewidth=5, color=colour0)
+                line2 = Line3D(*points_to_line(middle, atom.coord), linewidth=5, color=colour1 )
+
+                ax.add_line(line1)
+                ax.add_line(line2)
+        ax_labels = ["X", "Y", "Z"]
+
+        #cbar = plt.colorbar(ax, cax=fig.add_axes([0.85, 0.15, 0.05, 0.7]))
+        #cbar_title = "Occurence"
+        #cbar.set_label(cbar_title)
+        ax.set_aspect("equal")
+        ax.view_init(elev=-55., azim=-80, roll= 80)
+        if title is None:
+            title = self.id
+        fig.suptitle(title + " N={}".format(self.ndimers))
+        fig_savepath = None
+        gif_savepath = None
+        plt.axis('off')
+        plt.grid(b=None)
+        if save:
+            local["res_coords"] = "images/res_coords"
+            fig_savepath = os.path.join(local.res_coords, title + ".png")
+            plt.savefig(fig_savepath)
+        if gif:
+            local["res_coords_gifs"] = "images/res_coords_gifs"
+            gif_savepath = mpl_to_gif(fig, ax, name=title, folder=local.res_coords_gifs)
+        if show and vars.block:
+            plt.show(block=vars.block)
+        plt.close()
+        return fig_savepath, gif_savepath
+
+
+
+    def get_face(self, method="generated"):
+        if method == "eva":
+            from faces import GR_dict as face_dict
+        elif method == "generated":
+            from imports import load_clusters
+            face_dict = load_clusters(identifier="{}-all-all".format(self.id.split("-")[0]), first_only=True).face_dict
+
+        resids = {n: resid for n, resid in enumerate(self.outer_ids_complete)}
+        # print(resids)
+
+        scores = {"mon1": {}, "mon2": {}}
+        threshold_ratio = 2
+        if self.oneDmatrix1 is None or self.oneDmatrix2 is None:
+            self.process_cluster(matrix=True, faces=False)
+        t1, t2 = max(self.oneDmatrix1)/threshold_ratio, max(self.oneDmatrix2)/threshold_ratio
+
+        for face, res_list in face_dict.items():
+            print(face, len(res_list), "-->", end=" ")
+            res_list = [r for r in res_list if r in self.outer_ids_complete]
+            print(len(res_list))
+            scores["mon1"][face] = 0
+            scores["mon2"][face] = 0
+
+            for n, (a1, a2) in enumerate(zip(self.oneDmatrix1, self.oneDmatrix2)):
+                if resids[n] in res_list:
+                    if a1 >= t1:
+                        scores["mon1"][face] += 1
+                    if a2 >= t2:
+                        scores["mon2"][face] += 1
+
+
+            scores["mon1"][face] /= len(res_list)
+            scores["mon1"][face] *= 100
+            scores["mon2"][face] /= len(res_list)
+            scores["mon2"][face] *= 100
+        # scores[face] = sorted(scores[face], key=lambda x: x)
+        #print(scores)
+        self.mon1_faces[method] = sorted([[face, value] for face, value in scores["mon1"].items()],
+                            key=lambda x: x[1], reverse=True)
+        self.mon2_faces[method] = sorted([[face, value] for face, value in scores["mon2"].items()],
+                            key=lambda x: x[1], reverse=True)
+
+        self.faces[method] = self.mon1_faces[method][0], self.mon2_faces[method][0]
+        for f in self.faces[method]:
+            if f[1] == 0:
+                f[1] = None
+        print(self.faces[method])
+
+
+
+
+
+
+
+def cluster_redundancy(**kwargs):
+    from imports import load_clusters
+    from maths import distance
+    done_clusters = []
+    redundant_list = []
+    for cluster1 in load_clusters(onebyone=True):
+        if cluster1 is None:
+            done_clusters.append(cluster1)
+            continue
+        if cluster1.is_all or cluster1.redundant or cluster1.outlier:
+            done_clusters.append(cluster1.id)
+            continue
+        print2(cluster1.id)
+        for cluster2 in load_clusters(identifier=cluster1.ref_name, onebyone=True):
+
+            if cluster2 is None:
+                continue
+            if cluster1.id == cluster2.id or cluster2.id in redundant_list:
+                continue
+            if cluster2.id in done_clusters or cluster2.is_all or cluster2.redundant or cluster2.outlier:
+                continue
+            #print3(cluster2.id)
+            d1a = distance(cluster1.comA, cluster2.comB)
+            d2a = distance(cluster1.comB, cluster2.comA)
+            v1a = 10+ (cluster1.stdA + cluster2.stdB)*3
+            v2a = 10+ (cluster1.stdB + cluster2.stdA)*3
+
+            d1b = distance(cluster1.comA, cluster2.comA)
+            d2b = distance(cluster1.comB, cluster2.comB)
+            v1b = 10 + (cluster1.stdA + cluster2.stdA)*3
+            v2b = 10 + (cluster1.stdB + cluster2.stdB)*3
+
+            for d1, d2, v1, v2 in [[d1a, d2a, v1a, v2a], [d1b, d2b, v1b, v2b]]:
+                print(cluster2.id, d1, d2, v1, v2)
+                if d1 <= v1:
+                    if d2 <= v2:
+                        print3("Redundant cluster:", cluster2.id)
+                        print4(d1, v1)
+                        print4(d2, v2)
+                        cluster1.merge(cluster2)
+                        redundant_list.append(cluster2.id)
+        done_clusters.append(cluster1.id)
+
+    for cluster in load_clusters(onebyone=True):
+        if cluster.redundant or cluster.id in redundant_list:
+            print(cluster.id, "is redundant to", cluster.redundant_to)
+            cluster.delete()
+        elif len(cluster.merged) != 0:
+            cluster.reprocess_cluster(force=True, **kwargs)
+
+
+
+def cluster_dihedrals():
     pass
+
+
+
+def get_faces(algorithm="affinity", identifier = None, force = False, gif=False, show=False, save=True):
+    from imports import load_clusters
+    from maths import normalize1D
+    if identifier is None:
+        identifier = "all-all"
+    else:
+        identifier = identifier+"-all-all"
+    for cluster in load_clusters(identifier=identifier, onebyone=True):
+        if not cluster.is_all:
+            continue
+        if cluster.all_faces is not None and not force:
+            continue
+
+        outer_ids = cluster.outer_ids_complete
+        from sklearn.cluster import AffinityPropagation, KMeans, BisectingKMeans, SpectralClustering, FeatureAgglomeration, AgglomerativeClustering
+
+        print("-"*102)
+        if cluster.oneDmatrix1 is None or cluster.oneDmatrix2 is None:
+            cluster.reprocess(matrix=True)
+        preference_array = [m1 + m2 for m1, m2 in zip(cluster.oneDmatrix1, cluster.oneDmatrix2)]
+        preference_array = normalize1D(preference_array)
+        for n, p in enumerate(preference_array):
+            print(add_front_0(n, digits=3, zero=" ") + "|" + "#" * round(p * 100) + " " * (100 - round(p * 100)) + "|")
+        preference_array = normalize1D(preference_array, add_to=1)
+        cluster.preference_array = preference_array
+        print("-"*102)
+
+
+        atoms = []
+        for n, atom in enumerate(cluster.structure.get_atoms()):
+            new_atom = dict(coord = atom.coord, weight = preference_array[n], outer = outer_ids[n] is not None,
+                            n=n, res=atom.parent.id[1])
+            if new_atom["outer"]:
+                new_atom["cluster"] = None
+            else:
+                new_atom["cluster"] = -1
+            atoms.append(new_atom)
+
+        coord_array = np.array([atom["coord"] for atom in atoms if atom["outer"]])
+        print(coord_array.shape)
+        weighted_array = np.array([[*atom["coord"]]+ [atom["weight"]] for atom in atoms if atom["outer"]])
+        print(weighted_array.shape)
+        labels = None
+        centres = None
+        # CLUSTERING STARTING HERE
+
+        if algorithm == "affinity":
+            from sklearn.cluster import AffinityPropagation
+            model = AffinityPropagation(random_state=6, damping=0.984).fit(coord_array)
+            labels = model.labels_
+            centres = model.cluster_centers_
+
+        elif algorithm == "kmeans":
+            from sklearn.cluster import KMeans
+            model = KMeans(n_clusters=4).fit(coord_array)
+            labels = model.labels_
+            centres = model.cluster_centers_
+
+
+
+
+        else:
+            print("Please select a valid algorithm.")
+
+
+        # CLUSTERING FINISHING HERE
+        for label, atom in zip(labels, [a for a in atoms if a["outer"]]):
+            atom["cluster"] = label
+        print([atom["cluster"] for atom in atoms])
+
+
+        faces = []
+        for c in set(labels):
+            face = dict(
+                name = str(c),
+                C=c,
+                N=sum([1 for i in labels if i == c]),
+                M=np.mean([preference_array[n] for n, _ in enumerate(labels) if labels[n] == c])
+            )
+            if centres is not None:
+                face["COM"] = model.cluster_centers_[c],
+            print("C:{}, N:{}, M:{}".format(face["C"], face["N"], face["M"]))
+            faces.append(face)
+        faces = sorted(faces, key=lambda face: face["C"], reverse=False)
+
+        cluster.atoms = atoms
+        cluster.all_faces = faces
+        [print(a) for a in cluster.atoms]
+        [print(c) for c in cluster.faces]
+        face_dict = {}
+
+        for face in faces:
+            res_list = [atom["res"] for atom in atoms if atom["cluster"] == face["C"]]
+            face_dict[face["name"]] = res_list
+
+        print(face_dict)
+        cluster.face_dict = face_dict
+        cluster.pickle()
+        cluster.show_mpl(show=show, save=save, gif=gif, title = cluster.id+"_{}".format(algorithm), mergedMatrix = [atom["cluster"] for atom in atoms], secondary=preference_array)
+
+
+def compare_all_with_eva():
+    from imports import load_clusters
+    for cluster in load_clusters(identifier="all", onebyone=True):
+        if not cluster.is_all:
+            continue
+        from faces import GR_dict
+        resids = {n:resid for n, resid in enumerate(cluster.outer_ids_complete)}
+        #print(resids)
+        eva_scores = {}
+        scores = {}
+        for eva_face, res_list in GR_dict.items():
+            print(eva_face, len(res_list), "-->", end = " ")
+            res_list = [r for r in res_list if r in cluster.outer_ids_complete]
+            print(len(res_list))
+            eva_scores[eva_face] = {}
+            for face in cluster.faces:
+                eva_scores[eva_face][face["name"]] = 0
+                for n, atom in enumerate(cluster.atoms):
+                    if atom["cluster"] == face["C"] and resids[n] in res_list:
+                        eva_scores[eva_face][face["name"]] += 1
+                eva_scores[eva_face][face["name"]] /= len(res_list)
+                eva_scores[eva_face][face["name"]] *= 100
+            #eva_scores[eva_face] = sorted(eva_scores[eva_face], key=lambda x: x)
+        print(eva_scores)
+
+
+def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = True):
+    from imports import load_clusters
+    faces = []
+    for cluster in load_clusters(identifier = identifier, onebyone=True):
+        if cluster.is_all:
+            main_cluster = cluster
+            continue
+        if cluster.ref_name != "GR" and use_faces == "eva":
+            continue
+        if use_faces not in cluster.faces:
+            cluster.get_face(use_faces)
+        faces.append(sorted([face[0] for face in cluster.faces[use_faces]]) + [cluster.id])
+
+    faces = sorted(faces, key=lambda face: face[1])
+    faces = sorted(faces, key=lambda face: face[0])
+    [print(face) for face in faces]
+    face_combinations = list(set([face[0] + "-" + face[1] for face in faces]))
+
+    face_combinations = [f.split("-") for f in face_combinations]
+
+    print(face_combinations)
+    face_combinations = [f + [sum([1 for face in faces if face[:2] == f])] for f in face_combinations]
+    [print(f) for f in face_combinations]
+    face_combinations = sorted(face_combinations, key=lambda face: face[1])
+    face_combinations = sorted(face_combinations, key=lambda face: face[0])
+    print(main_cluster)
+    main_cluster.face_combinations = face_combinations
+    main_cluster.pickle()
+    extra_data = {}
+    for f in face_combinations:
+        import matplotlib as mpl
+        import matplotlib.pyplot as plt
+        import PIL.Image as image
+        local[use_faces] = "images/clusters_by_face/{}".format(use_faces)
+
+        fig, axes = plt.subplots((((f[2] - 1) // 3) + 1), 3,
+                                 # sharex="col",
+                                 # gridspec_kw={'height_ratios': [4, 2], "width_ratios": [2, 4]},
+                                 figsize=(18, 4 * ((f[2] // 3) + 1)))
+        sprint(f[:2])
+        n_dimers = 0
+        n = 0
+        for face in faces:
+            # print(face[:2], f[:2])
+            snapshots = []
+            if face[:2] == f[:2]:
+                print1(face)
+                cluster = list(load_clusters(identifier=face[2], onebyone=True))
+                cluster = cluster[0]
+                if cluster.redundant:
+                    continue
+
+                print2(cluster)
+                print(cluster.snapshot_path)
+                try:
+                    ss_path = cluster.snapshot_path["_faces_"+use_faces]
+                except:
+                    ss_path = None
+                print3(ss_path)
+
+                snapshots.append(ss_path)
+                print(n, n // 3, n % 3)
+                try:
+                    ax = axes[n // 3, n % 3]
+                except:
+                    ax = axes[n % 3]
+                if ss_path is not None:
+                    im = image.open(ss_path)
+                    ax.imshow(im)
+                n_dimers += cluster.ndimers
+                ax.set_title(face[2] + " (N={})".format(cluster.ndimers))
+                n += 1
+        # fig.tight_layout()
+        for ax in axes.flatten():
+            ax.set_axis_off()
+        # plt.show(block = True)
+        fig.suptitle("{}-{}_(N={})".format(f[0], f[1], n_dimers))
+        filename = "{}-{}-{}".format(identifier, f[0], f[1])
+        plt.savefig(os.path.join(local[use_faces], filename))
+        extra_data["{}-{}".format(f[0], f[1])] = n_dimers
+    if piecharts:
+        from visualisation import generate_piechart
+        generate_piechart(extra_data=extra_data, name = identifier+"_piechart_{}".format(use_faces))
+    return face_combinations
+
+def get_space_groups(identifier="GR", use_faces="generated", piecharts = True, force=False, **kwargs):
+    from imports import load_clusters, load_single_pdb
+    from visualisation import generate_piechart, nested_piechart
+
+    for cluster in load_clusters(identifier = identifier, onebyone=True):
+        if cluster.is_all:
+            main_cluster = cluster
+    print(main_cluster)
+    face_combinations = main_cluster.face_combinations
+    ref_name = main_cluster.ref_name
+    print(main_cluster.face_combinations)
+
+
+    by_face = {}
+    by_space_group = {}
+    if "by_space_group" not in main_cluster.__dict__ or "by_face" not in main_cluster.__dict__ or force:
+        for f in face_combinations:
+            space_groups = {}
+            face ="{}-{}".format(f[0], f[1])
+            done_molecules = []
+            tprint(f[0]+"-"+f[1])
+            for cluster in load_clusters(identifier=ref_name, onebyone=True):
+                if cluster.is_all:
+                    continue
+                #print(sorted([face[0] for face in cluster.faces[use_faces]], reverse=True) != f[:2], [face[0] for face in cluster.faces[use_faces]] , f[:2])
+                if sorted([face[0] for face in cluster.faces[use_faces]], reverse=False) != f[:2]:
+                    continue
+                print1(cluster.id, sorted([face[0] for face in cluster.faces[use_faces]], reverse=False))
+                progress = ProgressBar(len(cluster.subset), silent=True)
+                for row in cluster.subset.itertuples():
+                    short_id = row.id.split("_")[0]
+                    if short_id in done_molecules and False:
+                        progress.add()
+                        continue
+                    molecule = load_single_pdb(short_id, pickle_folder=local.molecules, first_only=True, quiet=True)
+
+                    sg = molecule.space_group[0]
+                    #print(sg, end = "\r")
+                    if sg not in space_groups:
+                        space_groups[sg] = 1
+                    else:
+                        space_groups[sg] += 1
+
+                    if face not in by_face:
+                        by_face[face] = {}
+                    if sg not in by_face[face]:
+                        by_face[face][sg] = 1
+                    else:
+                        by_face[face][sg] += 1
+
+                    if sg not in by_space_group:
+                        by_space_group[sg] = {}
+                    if face not in by_space_group[sg]:
+                        by_space_group[sg][face] = 1
+                    else:
+                        by_space_group[sg][face] += 1
+                    done_molecules.append(short_id)
+                    progress.add(info = sg)
+
+            local["space_groups"] = "images/space_groups"
+            generate_piechart(folder = local.space_groups, extra_data=space_groups, name=ref_name + "_{}_{}-{}".format(use_faces, f[0], f[1]))
+            main_cluster.by_space_group = by_space_group
+            main_cluster.by_face = by_face
+            main_cluster.pickle()
+    for key, value in main_cluster.by_space_group.items():
+        generate_piechart(folder = local.space_groups, extra_data=value, name=ref_name + "_{}_{}".format(use_faces, key))
+
+    nested_piechart(main_cluster.by_space_group, title=ref_name + "_{}_space_groups".format(use_faces),
+                    legend_title=["Space Group", "Dimer Interface"], **kwargs)
+    nested_piechart(main_cluster.by_face, title=ref_name + "_{}_faces".format(use_faces),
+                    legend_title=["Dimer Interface", "Space Group",], **kwargs)
+
+
+
+
+
+
+
+
+
+
+
+
+'''        #print(preference_array)
+
+
+        #model = AffinityPropagation(random_state=6, damping=0.95).fit(coord_array)
+        #m = np.amin(model.affinity_matrix_)
+        #print("#####", m)
+        #median = np.median(model.affinity_matrix_)
+        #print("#####", median)
+        #maximum = np.amin(model.affinity_matrix_)
+        # TODO: double check metric and weights
+        # TODO: check Eva's clustering algorithm
+        def custom_metric(coord1, coord2):
+            weight1 = coord1[3]
+            weight2 = coord2[3]
+            coord1 = coord1[:3]
+            coord2 = coord2[:3]
+            from maths import distance
+            print((1-(weight1+weight2)/2))
+            return abs(distance(coord1, coord2)) / (1-(weight1+weight2)/2)
+        #affinity = [v*maximum*len(preference_array)/5 for v in preference_array]
+        #print(affinity)
+        weighted_array = []
+        for a, p in zip(coord_array, preference_array):
+            print([*a]+[p])
+            if p>0:
+                weighted_array.append([*a]+[p])
+        print(weighted_array)
+        model = AffinityPropagation(random_state=6, convergence_iter=100, verbose=True).fit(weighted_array)
+        #model = AgglomerativeClustering(n_clusters=4)
+        print(model.labels_)
+        #model2 = FeatureAgglomeration(n_clusters=4).fit(model.cluster_centers_)
+        #print(model2.labels_)
+        from scipy.cluster.hierarchy import linkage, cut_tree
+        #Z = linkage(weighted_array, method='average', metric=custom_metric)
+        #Z = linkage(weighted_array, method='weighted', metric="euclidean")
+
+        #print(Z)
+        #y = cut_tree(Z, 3)
+        #print(y)
+        from scipy.cluster.hierarchy import dendrogram
+        #print(Z[:,2])
+        #D = dendrogram(Z, color_threshold=0.4*max(Z[:,2]))
+        #D = dendrogram(Z, p=4, truncate_mode="level")
+        #label_list = D["leaves_color_list"]
+        #cluster.show_mpl(show=True, save=False, title = cluster.id+" n_clusters = {}".format(len(set(label_list))), mergedMatrix = D["leaves_color_list"], secondary=preference_array)
+
+        label_list = model.labels_
+        faces = []
+        for c in set(label_list):
+            face=dict(
+            #com = model.cluster_centers_[c],
+            C = c,
+            N = sum([1 for i in label_list if i ==c]),
+            M = np.mean([preference_array[n] for n, _ in enumerate(label_list) if label_list[n] == c])
+            )
+            print("C:{}, N:{}, M:{}".format(face["C"], face["N"], face["M"] ))
+            faces.append(face)
+        faces = sorted(faces, key=lambda face: face["M"], reverse=True)
+        [print(face) for face in faces]
+        labels = []
+        for l in label_list:
+            if l in [d["C"] for d in faces[:4]]:
+                labels.append(l)
+            else:
+                labels.append(-1)
+        cluster.show_mpl(show=True, save=False, title = cluster.id+" n_clusters = {}".format(len(faces)), mergedMatrix = labels, secondary=preference_array)
+
+'''

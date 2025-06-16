@@ -125,12 +125,22 @@ def pymol_save_small(file_name, folder, dpi=300, height=100, width=150, save_ses
     pymol.cmd.png(image_path, width=width, height=height, dpi=dpi)
     return image_path
 
-def pymol_save_snapshot(file_name, folder, dpi=300, height=200, width=300):
+def pymol_save_snapshot(file_name, folder, dpi=300, height=400, width=600, orient=True):
     print("(PyMol) Saving snapshot:", folder, file_name)
-    image_path = os.path.join(folder, file_name+"ss.png")
+    image_path = os.path.join(folder, file_name)
+    if image_path[-1].isdigit():
+        image_path += "ss.png"
+    else:
+        image_path += ".png"
     #print(os.listdir(folder))
+    if orient:
+        pymol_orient()
     print(image_path)
-    pymol.cmd.png(image_path, width=width, height=height, dpi=dpi, quiet=0, ray=0)
+    try:
+        pymol.cmd.png(image_path, width=width, height=height, dpi=dpi, quiet=0, ray=0)
+    except:
+        print("(PyMol) Failed to save image:", image_path)
+        image_path = None
     #pymol.cmd.png("test.png")
     #pymol.cmd.save(image_path, quiet=0)
     return image_path
@@ -397,6 +407,27 @@ def pymol_sphere(coords, name = None, colour="white", state = -1, scale = 8):
 
 
 
+def pymol_paint_single_face(obj_list, face1, face2, color_dict):
+    if color_dict is not None:
+        color1 = color_dict[face1]
+        color2 = color_dict[face2]
+    else:
+        color1 = mpl_colours[int(face1)%mpl_ncolours]
+        color2 = mpl_colours[int(face2)%mpl_ncolours]
+    print(obj_list)
+    for n, (obj, o) in enumerate(zip(pymol_get_all_objects(), obj_list.values())):
+        print(o)
+        chain1 = o[1]
+        chain1ischain1 = True
+
+
+        sele1 = "c. {}".format(chain1)
+        sele2 = "not c. {}".format(chain1)
+        if not chain1ischain1:
+            sele1, sele2 = sele2, sele1
+        pymol_colour(color1, obj, sele1, silent = False)
+        pymol_colour(color2, obj, sele2, silent = False)
+
 
 
 def pymol_paint_all_faces(obj):
@@ -419,11 +450,8 @@ def pymol_save_temp_session(path=None, name="temp_session.pse"):
     return path
 
 def pymol_open_session_terminal(path):
-    open_session_terminal(path)
-def open_session_terminal(path):
-    import subprocess
-    print("Opening:", path)
-    subprocess.Popen(["nohup", "xdg-open", path], start_new_session=True)
+    open_file_from_system(path)
+
 
 def pymol_command_in_new_process(path, command):
     import subprocess

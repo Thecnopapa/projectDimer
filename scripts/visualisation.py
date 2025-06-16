@@ -1,6 +1,8 @@
 import os
 import sys
 
+from matplotlib.pyplot import savefig
+
 from Globals import root, local, vars
 from maths import angle_between_vectors
 
@@ -8,11 +10,12 @@ from maths import angle_between_vectors
 from utilities import *
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 
 
-def generate_piechart(df_name:str = None, column = None, extra_data:dict[str, int] = None, name= None):
+def generate_piechart(df_name:str = None, column = None, extra_data:dict[str, int] = None, name= None, folder = None):
     labels = []
     sizes = []
     large_labels = []
@@ -38,7 +41,8 @@ def generate_piechart(df_name:str = None, column = None, extra_data:dict[str, in
             large_labels.append(label)
         else:
             large_labels.append("")
-    fig, ax = plt.subplots()
+    fig = plt.figure(figsize=(16, 9))
+    ax = fig.add_subplot()
     ax.pie(sizes, labels=large_labels, startangle=90)
     if df_name is not None:
         ax.set_title("{} in {} (N = {})".format(column, df_name, total))
@@ -48,9 +52,79 @@ def generate_piechart(df_name:str = None, column = None, extra_data:dict[str, in
         fig_name = "{}.png".format(name)
     fig.legend(title="Best Fit:", labels=labels, loc="lower right")
 
-    fig_path = os.path.join(root.charts, fig_name)
+    if folder is None:
+        folder = root.charts
+    fig_path = os.path.join(folder, fig_name)
     fig.savefig(fig_path)
     print1("{} generated".format(fig_name))
+    plt.close()
+
+
+def nested_piechart(data:dict, title= None, folder=None, **kwargs):
+    fig = plt.figure(figsize=(16, 9))
+    ax = fig.add_subplot()
+    size = 0.3
+
+
+    data1 = [[key,sum([v for v in data[key].values()])] for key in data.keys()]
+    data1 = sorted(data1, key=lambda x: x[0])
+    labels1 = [d[0] for d in data1]
+    values1 = [d[1] for d in data1]
+    [print(d) for d in zip(labels1, values1)]
+    data2 = []
+    for label1 in labels1:
+        d = data[label1]
+        stotal = sum([v for v in d.values()])
+        for key2, value2 in sorted(d.items(), key=lambda x: x[0]):
+            data2.append([key2, value2, value2 /stotal >=0.33])
+
+    #data2 = sorted(data2, )
+    labels2 = [d[0] for d in data2]
+    values2 = [d[1] for d in data2]
+    total = sum([v for v in values2])
+    if title is None:
+        title = "Nested Piechart"
+    if folder is None:
+        folder = root.charts
+    from pyMol import mpl_colours, mpl_ncolours
+    color_dict1 = {key: mpl_colours[n%mpl_ncolours] for n, key in enumerate(sorted(set(labels1)))}
+    color_dict2 = {key: mpl_colours[n%mpl_ncolours] for n, key in enumerate(sorted(set(labels2)))}
+    colors1 = [color_dict1[value] for value in labels1]
+    colors2 = [color_dict2[value] for value in labels2]
+
+    ax.pie(values1, labels=labels1, radius=1 - size, colors=colors1, labeldistance = 0.8, textprops=dict(color="black"),
+           wedgeprops=dict(width=size, edgecolor='w'))
+
+    ax.pie(values2, labels=labels2, radius=1, colors = colors2, labeldistance = 1.1,
+           wedgeprops=dict(width=size, edgecolor='w'))
+
+
+
+    ax.set(aspect="equal")
+
+    ax.set_title("{} (N = {})".format(title, total))
+    fig_name = "{}.png".format(title)
+    try:
+        legend_title = kwargs["legend_title"]
+    except:
+        legend_title = [None, None]
+    if type(legend_title) is str:
+        legend_title1 = legend_title
+        legend_title2 = None
+    else:
+        legend_title1 = legend_title[0]
+        legend_title2 = legend_title[1]
+
+    fig.legend(title=legend_title1, labels=sorted(list(set(labels1))), loc = 'lower right', bbox_to_anchor = (0.8, 0., 0.2, 0.5))
+    fig.legend(title=legend_title2, labels=sorted(list(set(labels2))), loc = 'lower left', bbox_to_anchor = (0.8, 0., 0.2, 0.5))
+
+
+    fig_path = os.path.join(folder, fig_name)
+    fig.savefig(fig_path)
+    print1("{} generated".format(fig_name))
+    plt.show(block=vars.block)
+    plt.close()
+
 
 
 
@@ -99,7 +173,8 @@ def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces 
         #print(obj.__dict__)
         for key, item in obj.__dict__.items():
             if key in ["lines", "c_lines", "sasas1D", "sasas2D", "full_array","contacts_faces1", "contacts_faces2",
-                       "contacts", "contacts_symm", "contacts_sasa", "outer_ids_complete" ]:
+                       "contacts", "contacts_symm", "contacts_sasa", "outer_ids_complete","outer_ids_binary",
+                       "oneDmatrix1", "oneDmatrix2", "atoms" ]:
                 try:
                     print1(key, ": OMITTED (len: {})".format(len(item)))
                 except:
@@ -328,14 +403,47 @@ if __name__ == "__main__":
         show_objects(molecules, sys.argv[2:])
 
     elif "ref" in sys.argv[1] and len(sys.argv[2:]) != 0:
-        refs = load_references(identifier = sys.argv[2])
+        refs = load_list_1by1(identifier="REFERENCE_"+sys.argv[2], pickle_folder=local.refs).list()
+        sprint(sys.argv[2])
         tprint("Showing references")
         show_objects(refs, sys.argv[2:])
 
-    elif "cluster" in sys.argv[1] and len(sys.argv[2:]) != 0:
-        clusters = load_clusters(identifier = sys.argv[2])
-        tprint("Showing clusters")
-        show_objects(clusters, sys.argv[2:])
+    elif "cluster" == sys.argv[1]:
+        if len(sys.argv[2:]) != 0:
+            print(sys.argv[2])
+            face_colours = "generated"
+            if "eva" in sys.argv[2:]:
+                face_colours = "eva"
+            for cluster in load_clusters(identifier=sys.argv[2], onebyone=True):
+                if "mpl" in sys.argv:
+                    show_objects(load_clusters(identifier=sys.argv[2]), sys.argv[2:])
+                    cluster.show_mpl(show=True, save=False)
+                if "pymol" in sys.argv:
+                    cluster.show(show_snapshot = True, show_session = "session" in sys.argv, face_colours = face_colours)
+                else:
+                    show_objects(load_clusters(identifier=sys.argv[2]), sys.argv[2:])
+            tprint("Showing clusters")
+        else:
+            sprint("Available clusters")
+            for file in os.listdir(local.cluster_pickles):
+                print1(file.split(".")[0])
+
+    elif "clusters-eva" == sys.argv[1]:
+        from clustering import generate_cluster_grids
+        generate_cluster_grids(identifier="GR", use_faces="eva")
+
+    elif "clusters-generated" == sys.argv[1]:
+        from clustering import generate_cluster_grids
+        for ref in load_references():
+            generate_cluster_grids(identifier=ref.name, use_faces="generated")
+
+
+
+
+
+
+
+
 
 
 

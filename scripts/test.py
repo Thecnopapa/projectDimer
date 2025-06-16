@@ -14,12 +14,45 @@ sprint("Loading References")
 vars["references"] = load_references(force_reload=True)
 print1("References loaded")
 
+
+
+
+
+list_path = os.path.join(root.pdb_lists, "rcsb_pdb_ids_20250524034011.txt")
+
+l = []
+with open(list_path, "r") as f:
+    for line in f:
+        l.extend(line.split(","))
+print(l)
+list_to_table(l, ncols = 10, path=os.path.join(root.pdb_lists, "rcsb_pdb_ids_20250524034011-70x10.csv"))
+
+
+
+
+
+
+quit()
+from clustering import get_faces, compare_all_with_eva, cluster_redundancy, get_space_groups
+#get_faces(force=False)
+#compare_all_with_eva()
+#quit()
+
+from clustering import generate_cluster_grids, get_space_groups
+
+#face_combinations = generate_cluster_grids(identifier="GR", use_faces="generated")
+get_space_groups(identifier="GR", use_faces="generated")
+
+
+
+
+
+
+quit()
 for ref in vars.references:
     sprint(ref.id)
     print1(ref.header)
 
-
-quit()
 
 
 dimer_list = sorted(os.listdir(local.dimers))

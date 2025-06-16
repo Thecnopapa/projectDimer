@@ -73,49 +73,60 @@ def load_from_files(pdb_folder, load_class = PDB, ignore_selection = False, pick
     return loaded
 
 class PickleIterator:
-    def __init__(self, id_list, quiet=True, **kwargs):
-        self.id_list = sorted(id_list)
+    def __init__(self, id_list, quiet=True, silent=True, **kwargs):
+        self.id_list = sorted(id_list, reverse=False)
         self.kwargs = kwargs
         self.kwargs["quiet"] = quiet
+        self.kwargs["silent"] = silent
 
     def __iter__(self):
         self.n = 0
-        self.progress = ProgressBar(len(self.id_list))
+        self.progress = ProgressBar(len(self.id_list), silent=self.kwargs["silent"])
         return self
 
     def __next__(self):
         if self.n >= len(self.id_list):
             raise StopIteration
         else:
-            if not vars.quiet:
+            if not vars.quiet and not self.kwargs["quiet"]:
                 sprint(self.id_list[self.n])
+                self.progress.add(info=self.id_list[self.n])
             loaded = load_single_pdb(self.id_list[self.n], **self.kwargs)
-            assert len(loaded) == 1, "More than one object with the same id! \n{}".format(self.id_list[self.n])
-            self.progress.add(info=self.id_list[self.n])
+            assert len(loaded) <= 1, "More than one ({}) object with the same id! \n{}:\n{}".format(len(loaded), self.id_list[self.n], loaded)
+
             self.n += 1
+            if len(loaded) == 0:
+                return None
             return loaded[0]
+
+    def list(self):
+        return list(iter(self))
 
 
 def load_clusters(identifier = "all", onebyone=False, **kwargs):
     if onebyone:
-        return load_list_1by1(pickle_folder=local.cluster_pickles, **kwargs)
+        return load_list_1by1(identifier=identifier, pickle_folder=local.cluster_pickles, ignore_do_only=True, quiet = True, **kwargs)
     else:
-        return load_single_pdb(identifier, pickle_folder=local.cluster_pickles, **kwargs)
+        return load_single_pdb(identifier, pickle_folder=local.cluster_pickles, quiet=True, **kwargs)
 
 
-def load_list_1by1(id_list=None, quiet=True, **kwargs):
+def load_list_1by1(identifier = None, id_list=None, quiet=True, ignore_do_only=False, keep_extension=False, **kwargs):
     if id_list is None:
         assert "pickle_folder" in kwargs, "pickle folder or id list must be provided"
-        id_list = [file.split(".")[0] for file in os.listdir(kwargs["pickle_folder"])]
-    if "do_only" in vars:
+        id_list = os.listdir(kwargs["pickle_folder"])
+        if not keep_extension:
+            id_list = [file.split(".")[0] for file in id_list if "." in file]
+    if "do_only" in vars and not ignore_do_only:
         if len(vars.do_only) > 0:
             id_list = [f for f in id_list if any([s in f for s in vars.do_only])]
-
+    if identifier is not None:
+        identifier = identifier.upper()
+        id_list = [f for f in id_list if (identifier == "ALL" or identifier in f.upper()) and "lock" not in f and not any([bl in f for bl in vars.blacklist])]
     return iter(PickleIterator(id_list, quiet, **kwargs))
 
-def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None, force_reload=False, object_class = PDB, quiet=False, first_only=False):
+def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None, force_reload=False, object_class = PDB, quiet=False, first_only=False, **kwargs):
     if not quiet:
-        print1("Loading pdb:", identifier, "-Force reload:", force_reload, "-class:", object_class.__name__)
+        print1("Loading single:", identifier, "-Force reload:", force_reload, "-Pickle folder:", pickle_folder)
     objects = []
     identifier = identifier.upper()
     if not force_reload and pickle_folder is not None:

@@ -6,6 +6,25 @@ import numpy as np
 import math
 
 
+
+def normalize1D(values, add_to=None):
+    maximum = max(values)
+    minimum = min(values)
+    r = abs(maximum-minimum)
+    new_values = []
+    for v in values:
+        new_values.append((v-minimum)/r)
+    if add_to is not None:
+        total = sum([v for v in new_values])
+        ratio = total/add_to
+        new_values = [v/ratio for v in new_values]
+    return new_values
+
+
+
+
+
+
 def dihedral_angle(p0, p1, p2, p3):
     """Praxeolitic formula
     1 sqrt, 1 cross product"""
