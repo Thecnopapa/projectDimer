@@ -369,9 +369,9 @@ def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centre
 
 
     if dimensions == 2:
-        ax.scatter(cc_out["1"], cc_out["2"], c=cc_out["colour"])
+        ax.scatter(cc_out["1"], cc_out["2"], color=cc_out["colour"])
     elif dimensions == 3:
-        ax.scatter(cc_out["3"], cc_out["2"],c=cc_out["colour"])
+        ax.scatter(cc_out["3"], cc_out["2"],color=cc_out["colour"])
     ax.scatter(0, 0, color='red')
 
     texts = []
@@ -415,7 +415,7 @@ def plot_cc(reference, force=True, dimensions = 3, labels = False, labels_centre
         # print(lines)
         for line in lines:
             # print(line)
-            ax.plot(line[2], line[1], c="black")
+            ax.plot(line[2], line[1], color="black")
         # scripts.Mpl.plot_lines(lines, ax)
         # ax.plot(data=lines(lines[2],lines[1]))
         if labels_centres:
@@ -904,13 +904,13 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
     elif len(pca_dimensions) <= 2:
         ax = fig.add_subplot(111)
     ax.set_title(title)
-    # ax.scatter(0,0,0, marker= "o", c="red")
+    # ax.scatter(0,0,0, marker= "o", color="red")
     for row in pca_df.itertuples():
         #print(row.variance_0, row.variance_1, row.variance_2)
         if row.__getattribute__(cluster_column) == -1:
-            ax.scatter(*[row.__getattribute__(v) for v in columns], c="black")
+            ax.scatter(*[row.__getattribute__(v) for v in columns], color="black")
         else:
-            ax.scatter(*[row.__getattribute__(v) for v in columns], c=row.colour)
+            ax.scatter(*[row.__getattribute__(v) for v in columns], color=row.colour)
 
     texts = []
     if plot_centres and subset is None:
@@ -967,7 +967,7 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
         # print(lines)
         for line in lines:
             # print(line)
-            ax.plot(*line, c="black")
+            ax.plot(*line, color="black")
         # scripts.Mpl.plot_lines(lines, ax)
         # ax.plot(data=lines(lines[2],lines[1]))
 
@@ -1222,7 +1222,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
                     col = "black"
                 else:
                     col = "C"+str(cl)
-                ax.scatter(point.a0, point.a1, point.a2, c=col)
+                ax.scatter(point.a0, point.a1, point.a2, color=col)
                 if heatmap or get_matrix:
                     dimer = load_single_pdb(point.id, pickle_folder=local.dimers, first_only=True, quiet=True)
                     if hm is None:
@@ -1561,7 +1561,7 @@ class Cluster2:
             self.id = "{}-{}-{}".format(self.ref_name, self.c1, self.c2)
 
 
-        self.subset["reversed"] = [False] * len(self.subset)
+        self.subset.loc[:,"reversed"] = [False] * len(self.subset)
         self.ndimers = len(self.subset)
         print(self.id)
         print(self.subset)
@@ -1573,9 +1573,11 @@ class Cluster2:
         self.matrix = None
         self.oneDmatrix1 = None
         self.oneDmatrix2 = None
+        self.snapshot_path = {}
         self.plot_path = None
         self.gif_path = None
-        self.snapshot_path = {}
+        self.mpl_path = None
+        self.mpl_gif_path = None
         self.comA = None
         self.comB = None
         self.stdA = None
@@ -1597,7 +1599,7 @@ class Cluster2:
         return "<Cluster:{} {}-{} /N={}>". format(self.ref_name, self.c1, self.c2, self.ndimers)
 
     def process_cluster(self, force = False, matrix=True, faces=False, use_face="generated", **kwargs):
-        print1("Processing {}: matrix={}, faces={}".format(self.id, matrix, faces))
+        print1("Processing {}: FORCE={} matrix={}, faces={}".format(self.id, force, matrix, faces))
         if not self.is_all:
             self.remove_identical()
             if self.comA is None or force:
@@ -1607,19 +1609,28 @@ class Cluster2:
             if self.matrix is None or force:
                 self.get_matrix(threshold=10)
         if faces and not self.is_all:
-            self.get_face(method=use_face)
+            if self.faces is None or force:
+                self.get_face(method=use_face)
 
 
     def plot_cluster(self, force = False, angles=True, plot=True, show = False, snapshot=True, gif=False, **kwargs):
+
+        #TODO: REMOVE THIS #######
+        self.mpl_path = None     #
+        self.mpl_gif_path = None #
+        #TODO:####################
         if angles:
-            self.plot_path, self.gif_path = self.get_plot(self.subset, self.cluster_cols, self.id,
-                                                          coms=(self.comA, self.comB),
-                                                          stds=(self.stdA, self.stdB),
-                                                          show=show, gif=gif)
+            if force or  self.plot_path is None or (self.gif_path is None and gif) :
+                self.plot_path, self.gif_path = self.get_plot(self.subset, self.cluster_cols, self.id,
+                                                              coms=(self.comA, self.comB),
+                                                              stds=(self.stdA, self.stdB),
+                                                              show=show, gif=gif)
         if plot:
-            self.show_mpl(gif=gif, show=show)
+            if force or  self.mpl_path is None or (self.mpl_gif_path is None and gif) :
+                self.mpl_path, self.mpl_gif_path = self.show_mpl(gif=gif, show=show)
         if snapshot:
-           self.show(snapshot=True, show_session=show, **kwargs)
+            if len(self.snapshot_path) == 0 or force:
+               self.show(snapshot=True, show_session=show, **kwargs)
 
 
 
@@ -1696,10 +1707,10 @@ class Cluster2:
             middle2 = (p2a + p2b) / 2
 
 
-            axBottom.plot((n - 1, n-0.5), (p1a, middle1), c=c1a, linestyle='--', linewidth=0.5)
-            axBottom.plot((n, n - 0.5), (p1b, middle1), c=c1b, linestyle='--', linewidth=0.5)
-            axLeft.plot( (p2a, middle2), (n2 + 1, n2 + 0.5), c=c2a, linestyle='--', linewidth=0.5)
-            axLeft.plot( (p2b, middle2), (n2, n2 + 0.5), c=c2b, linestyle='--', linewidth=0.5)
+            axBottom.plot((n - 1, n-0.5), (p1a, middle1), color=c1a, linestyle='--', linewidth=0.5)
+            axBottom.plot((n, n - 0.5), (p1b, middle1), color=c1b, linestyle='--', linewidth=0.5)
+            axLeft.plot( (p2a, middle2), (n2 + 1, n2 + 0.5), color=c2a, linestyle='--', linewidth=0.5)
+            axLeft.plot( (p2b, middle2), (n2, n2 + 0.5), color=c2b, linestyle='--', linewidth=0.5)
 
 
         cbar_title = "Occurence"
@@ -1768,15 +1779,15 @@ class Cluster2:
                     cols.append("C" + str(cl))
             if not show_outliers and "black" in cols:
                 continue
-            ax1.scatter(point.a0, point.a1, point.a2, c=cols[1], edgecolors=cols[0], s=50, linewidths=2)
-            ax2.scatter(point.b0, point.b1, point.b2, c=cols[1], edgecolors=cols[0], s=50, linewidths=2)
+            ax1.scatter(point.a0, point.a1, point.a2, color=cols[1], edgecolors=cols[0], s=50, linewidths=2)
+            ax2.scatter(point.b0, point.b1, point.b2, color=cols[1], edgecolors=cols[0], s=50, linewidths=2)
             if id_labels:
                 ax1.text(point.a0, point.a1, point.a2, point.id)
                 ax2.text(point.a0, point.a1, point.a2, point.id)
             progress.add(info=point.id)
         if None not in coms:
-            ax1.scatter(coms[0][0], coms[0][1], coms[0][2], c=cols[0], s=stds[0]*180, linewidths=2, alpha=0.3)
-            ax2.scatter(coms[1][0],coms[1][1], coms[1][2], c=cols[1], s=stds[1]*180, linewidths=2, alpha=0.3)
+            ax1.scatter(coms[0][0], coms[0][1], coms[0][2], color=cols[0], s=stds[0]*180, linewidths=2, alpha=0.3)
+            ax2.scatter(coms[1][0],coms[1][1], coms[1][2], color=cols[1], s=stds[1]*180, linewidths=2, alpha=0.3)
         ax_labels = ["0", "1", "2"]
         title = "CLUSTER_{}".format(cluster_id)
         for ax, l in zip(axes, ("a", "b")):
@@ -2016,7 +2027,7 @@ class Cluster2:
             size = 100
             if secondary is not None:
                 size=secondary[n]*200*len(secondary)
-            ax.scatter(atom.coord[0], atom.coord[1], atom.coord[2], s=size, c=colour1)
+            ax.scatter(atom.coord[0], atom.coord[1], atom.coord[2], s=size, color=colour1)
             if n != 0:
                 middle = get_middlepoint(atom_list[n-1].coord, atom.coord)
                 line1 = Line3D(*points_to_line(atom_list[n-1].coord, middle), linewidth=5, color=colour0)
@@ -2058,7 +2069,7 @@ class Cluster2:
         elif method == "generated":
             from imports import load_clusters
             face_dict = load_clusters(identifier="{}-all-all".format(self.id.split("-")[0]), first_only=True).face_dict
-
+        print2("Identifying faces")
         resids = {n: resid for n, resid in enumerate(self.outer_ids_complete)}
         # print(resids)
 
@@ -2069,9 +2080,9 @@ class Cluster2:
         t1, t2 = max(self.oneDmatrix1)/threshold_ratio, max(self.oneDmatrix2)/threshold_ratio
 
         for face, res_list in face_dict.items():
-            print(face, len(res_list), "-->", end=" ")
+            #print(face, len(res_list), "-->", end=" ")
             res_list = [r for r in res_list if r in self.outer_ids_complete]
-            print(len(res_list))
+            #print(len(res_list))
             scores["mon1"][face] = 0
             scores["mon2"][face] = 0
 
@@ -2202,9 +2213,9 @@ def get_faces(algorithm="affinity", identifier = None, force = False, gif=False,
             atoms.append(new_atom)
 
         coord_array = np.array([atom["coord"] for atom in atoms if atom["outer"]])
-        print(coord_array.shape)
+        #print(coord_array.shape)
         weighted_array = np.array([[*atom["coord"]]+ [atom["weight"]] for atom in atoms if atom["outer"]])
-        print(weighted_array.shape)
+        #print(weighted_array.shape)
         labels = None
         centres = None
         # CLUSTERING STARTING HERE
@@ -2231,7 +2242,7 @@ def get_faces(algorithm="affinity", identifier = None, force = False, gif=False,
         # CLUSTERING FINISHING HERE
         for label, atom in zip(labels, [a for a in atoms if a["outer"]]):
             atom["cluster"] = label
-        print([atom["cluster"] for atom in atoms])
+        #print([atom["cluster"] for atom in atoms])
 
 
         faces = []
@@ -2244,13 +2255,13 @@ def get_faces(algorithm="affinity", identifier = None, force = False, gif=False,
             )
             if centres is not None:
                 face["COM"] = model.cluster_centers_[c],
-            print("C:{}, N:{}, M:{}".format(face["C"], face["N"], face["M"]))
+            #print("C:{}, N:{}, M:{}".format(face["C"], face["N"], face["M"]))
             faces.append(face)
         faces = sorted(faces, key=lambda face: face["C"], reverse=False)
 
         cluster.atoms = atoms
         cluster.all_faces = faces
-        [print(a) for a in cluster.atoms]
+        #[print(a) for a in cluster.atoms]
         [print(c) for c in cluster.faces]
         face_dict = {}
 
@@ -2287,35 +2298,43 @@ def compare_all_with_eva():
                 eva_scores[eva_face][face["name"]] /= len(res_list)
                 eva_scores[eva_face][face["name"]] *= 100
             #eva_scores[eva_face] = sorted(eva_scores[eva_face], key=lambda x: x)
-        print(eva_scores)
+        sprint("EVA scores:")
+        for key, values in eva_scores.items():
+            print1(key)
+            for k, v in values.items():
+                print2("{}: {}".format(k, v))
 
 
 def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = True):
     from imports import load_clusters
     faces = []
+    n_clusters = 0
+    if identifier != "GR" and use_faces == "eva":
+        return None
     for cluster in load_clusters(identifier = identifier, onebyone=True):
         if cluster.is_all:
             main_cluster = cluster
             continue
-        if cluster.ref_name != "GR" and use_faces == "eva":
-            continue
         if use_faces not in cluster.faces:
             cluster.get_face(use_faces)
+        n_clusters += 1
         faces.append(sorted([face[0] for face in cluster.faces[use_faces]]) + [cluster.id])
-
+    sprint("Main cluster:", main_cluster)
+    print1("{}: Number of clusters: {}".format(identifier, n_clusters))
     faces = sorted(faces, key=lambda face: face[1])
     faces = sorted(faces, key=lambda face: face[0])
-    [print(face) for face in faces]
+    print1("Faces:")
+    [print2(face) for face in faces]
     face_combinations = list(set([face[0] + "-" + face[1] for face in faces]))
 
     face_combinations = [f.split("-") for f in face_combinations]
 
-    print(face_combinations)
+    print1("Face combinations:")
     face_combinations = [f + [sum([1 for face in faces if face[:2] == f])] for f in face_combinations]
-    [print(f) for f in face_combinations]
+    [print2(f) for f in face_combinations]
     face_combinations = sorted(face_combinations, key=lambda face: face[1])
     face_combinations = sorted(face_combinations, key=lambda face: face[0])
-    print(main_cluster)
+
     main_cluster.face_combinations = face_combinations
     main_cluster.pickle()
     extra_data = {}
@@ -2343,7 +2362,7 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
                     continue
 
                 print2(cluster)
-                print(cluster.snapshot_path)
+                print3(cluster.snapshot_path)
                 try:
                     ss_path = cluster.snapshot_path["_faces_"+use_faces]
                 except:

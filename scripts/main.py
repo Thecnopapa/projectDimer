@@ -300,13 +300,14 @@ def main(PROCESS_ALL = False,
         for ref in vars.references:
             if ref.name != "GR" and ONLY_GR:
                 continue
-            face_combinations = generate_cluster_grids(identifier=ref.name, use_faces=USE_FACES)
+            generate_cluster_grids(identifier=ref.name, use_faces=USE_FACES)
             get_space_groups(identifier=ref.name, use_faces=USE_FACES)
 
-        for cluster in load_clusters(identifier=identifier, onebyone=True):
-            sprint(cluster.id)
-            cluster.plot_cluster(plot=True, gif =GIFS)
-            cluster.pickle()
+        if GIFS:
+            for cluster in load_clusters(identifier=identifier, onebyone=True):
+                sprint(cluster.id)
+                cluster.plot_cluster(plot=True, gif =GIFS)
+                cluster.pickle()
 
 
         """matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path,
@@ -435,12 +436,12 @@ if __name__ == "__main__":
         MINIMUM_SCORE = 0,
 
         HEATMAPS = True,
-        GIFS = True,
+        GIFS = False,
         SNAPSHOTS = True,
         CHAINBOWS = False,
         GENERATE_CLUSTERS = False or "clusters" in sys.argv,
         DELETE_PREVIOUS = False or "delete" in sys.argv,
-        REFRESH_PLOTS = True,
+        REFRESH_PLOTS = False,
         REPROCESS_CLUSTERS = False,
         USE_FACES = "generated", # "eva" or "generated"
 
