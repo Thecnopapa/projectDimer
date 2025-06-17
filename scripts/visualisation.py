@@ -422,7 +422,7 @@ if __name__ == "__main__":
                     show_objects(load_clusters(identifier=sys.argv[2]), sys.argv[2:])
                     cluster.show_mpl(show=True, save=False)
                 if "pymol" in sys.argv:
-                    cluster.show(show_snapshot = True, show_session = "session" in sys.argv, face_colours = face_colours)
+                    cluster.show(snapshot  = True, show_snapshot = True, show_session = "session" in sys.argv, face_colours = face_colours)
                 else:
                     show_objects(load_clusters(identifier=sys.argv[2]), sys.argv[2:])
             tprint("Showing clusters")

@@ -1919,7 +1919,6 @@ class Cluster2:
             new_paths.append(new_path)
 
 
-        snapshot_path = None
         if snapshot or show_session:
             local["snapshots"] = "snapshots"
             from pyMol import pymol_start, pymol_load_path, pymol_colour, pymol_list_to_bfactors, pymol_save_snapshot, \
@@ -1952,7 +1951,7 @@ class Cluster2:
                 local[extra_id] = "snapshots/{}".format(extra_id)
                 self.snapshot_path[extra_id] = pymol_save_snapshot(self.id + extra_id, folder=local[extra_id])
                 if show_snapshot:
-                    open_file_from_system(snapshot_path[extra_id])
+                    open_file_from_system(self.snapshot_path[extra_id])
             if show_session:
                 session_path = pymol_save_temp_session()
                 pymol_open_session_terminal(session_path)
