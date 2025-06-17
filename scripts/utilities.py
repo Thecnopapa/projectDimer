@@ -11,13 +11,24 @@ except:
 
 
 
+def print(*args, **kwargs):
+    try:
+        if vars.verbose:
+            import builtins
+            vars.log(*args, **kwargs)
+            builtins.print(*args, **kwargs)
+    except:
+        pass
+
+
 def tprint(*strings, head=10, style="#", end="\n", sep=" ", log=True):  # Print section title
     width = shutil.get_terminal_size()[0] -2
     string = " ".join(strings)
     tail = width - head - len(string)
     out = "\n{}{}{}{}{}".format(style*head, sep, string, sep, style*tail)
     try:
-        vars.log(out, end = end, timestamp=False)
+        if not vars.verbose:
+            vars.log(out, end = end, timestamp=False)
     except:
         pass
     print(out, end=end)
@@ -30,7 +41,8 @@ def sprint(*strings,**kwargs): # Print Subtitle
     prefix = "\n"
     out = " # "+ " ".join(str_strings)
     try:
-        vars.log(out,prefix = prefix, **kwargs)
+        if not vars.verbose:
+            vars.log(out,prefix = prefix, **kwargs)
     except:
             pass
     if globals_loaded and "quiet" in vars:
@@ -50,7 +62,8 @@ def print1(*strings, space=2, log=True, **kwargs): # Print with 1 indent
     #str_strings = map(str, strings)
     out = "{}> {}".format(" " * space, " ".join(str_strings))
     try:
-        vars.log(out, **kwargs)
+        if not vars.verbose:
+            vars.log(out, **kwargs)
     except:
         pass
     if globals_loaded:
@@ -446,7 +459,14 @@ def list_to_table(l, nrows:int=None, ncols:int=None, path=None):
     if path is not None:
         df.to_csv(path, index=False, header=False)
 
-
+def query(df, conditions:dict, inplace = False):
+    print("Using broken functions")
+    return
+    if not inplace:
+        df = df.copy()
+    print(df)
+    c_string = " & ".join(["{} == {}".format(k, v) for k, v in conditions.items()])
+    return df.query(c_string, inplace=True)
 
 
 if __name__ == "__main__":

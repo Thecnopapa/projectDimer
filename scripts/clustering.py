@@ -4,6 +4,7 @@ from utilities import *
 from Globals import root, local, vars
 import numpy as np
 import pandas as pd
+pd.options.mode.chained_assignment = None  # default='warn'
 
 
 
@@ -1822,14 +1823,15 @@ class Cluster2:
             pickle.dump(self, f)
 
 
-    def merge(self, cluster2):
+    def merge(self, cluster2, reverse):
         self.merged.append(cluster2.id)
         self.merged.extend(cluster2.merged)
         sub2 = cluster2.subset
         sub2.rename(columns={'a0': 'b0', 'a1': 'b1', 'a2': 'b2',
                              'b0': 'a0', 'b1': 'a1', 'b2': 'a2' }, inplace=True)
-        for row in sub2.itertuples():
-            sub2.loc[row.Index, "reversed"] = not row.reversed
+        if reverse:
+            for row in sub2.itertuples():
+                sub2.loc[row.Index, "reversed"] = not row.reversed
         self.subset = pd.concat([self.subset, sub2], axis= 0)
         self.ndimers = len(self.subset)
         self.subset.sort_values(by="id", inplace=True)
@@ -2155,14 +2157,14 @@ def cluster_redundancy(**kwargs):
             v1b = 10 + (cluster1.stdA + cluster2.stdA)*3
             v2b = 10 + (cluster1.stdB + cluster2.stdB)*3
 
-            for d1, d2, v1, v2 in [[d1a, d2a, v1a, v2a], [d1b, d2b, v1b, v2b]]:
+            for d1, d2, v1, v2, reverse in [[d1a, d2a, v1a, v2a, True], [d1b, d2b, v1b, v2b, False]]:
                 print(cluster2.id, d1, d2, v1, v2)
                 if d1 <= v1:
                     if d2 <= v2:
                         print3("Redundant cluster:", cluster2.id)
                         print4(d1, v1)
                         print4(d2, v2)
-                        cluster1.merge(cluster2)
+                        cluster1.merge(cluster2, reverse=reverse)
                         redundant_list.append(cluster2.id)
         done_clusters.append(cluster1.id)
 
