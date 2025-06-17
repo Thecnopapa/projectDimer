@@ -4,7 +4,6 @@ from utilities import *
 from Globals import root, local, vars
 import numpy as np
 import pandas as pd
-pd.options.mode.chained_assignment = None  # default='warn'
 
 
 

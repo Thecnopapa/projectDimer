@@ -14,11 +14,11 @@ except:
 def print(*args, **kwargs):
     try:
         if vars.verbose:
-            import builtins
             vars.log(*args, **kwargs)
-            builtins.print(*args, **kwargs)
     except:
         pass
+    import builtins
+    builtins.print(*args, **kwargs)
 
 
 def tprint(*strings, head=10, style="#", end="\n", sep=" ", log=True):  # Print section title

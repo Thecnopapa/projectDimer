@@ -3,6 +3,7 @@
 # Essential imports
 import os, sys
 import pandas as pd
+pd.options.mode.chained_assignment = None  # default='warn'
 
 from utilities import *
 import platform
@@ -224,7 +225,7 @@ def main(PROCESS_ALL = False,
 
 
             for file in sorted(os.listdir(root.dihedrals)):
-                sprint("Clusetring1")
+                sprint("Clustering1")
                 if ONLY_GR and "GR" not in file:
                     continue
                 dihedrals_path = os.path.join(root.dihedrals, file)
@@ -237,7 +238,7 @@ def main(PROCESS_ALL = False,
 
 
             for file in sorted(os.listdir(cluster1_folder)):
-                sprint("Clusetring2")
+                sprint("Clustering2")
                 if ONLY_GR and "GR" not in file:
                     continue
                 dihedrals_path = os.path.join(cluster1_folder, file)
