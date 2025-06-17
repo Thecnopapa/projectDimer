@@ -1855,7 +1855,7 @@ class Cluster2:
             print(self.pickle_path)
 
 
-    def show(self, snapshot =False, show_session=False, chainbows=False, cluster_colours=False, show_snapshot=False,
+    def show(self, snapshot =False, show_session=False, chainbows=False, cluster_colours=None, show_snapshot=False,
              regenerate_matrix=False, face_colours = "generated", **kwargs):
         if self.is_all and not show_session:
             return None
@@ -1891,7 +1891,7 @@ class Cluster2:
         structure = PDBParser(QUIET=True).get_structure(self.id, monster_path)
         for model, (key, value) in zip(structure.get_models(), chains_to_align.items()):
             model.id = key
-        if face_colours is None and not chainbows and not cluster_colours:
+        if face_colours is None and not chainbows and cluster_colours is None:
             if regenerate_matrix or self.matrix is None:
                 self.reprocess_cluster(matrix=True,force=True)
             if self.oneDmatrix1 is not None and self.oneDmatrix2 is not None:
@@ -1932,9 +1932,20 @@ class Cluster2:
             if chainbows:
                 pymol_colour("chainbow", "(all)")
                 extra_id = "_chainbows"
-            elif cluster_colours:
-                pymol_colour(mpl_colours[self.c2 % mpl_ncolours], "(all)")
-                extra_id = "_cluster_cols"
+            elif cluster_colours is not None:
+                if cluster_colours == "clusters" or cluster_colours == "cluster":
+                    pymol_colour(mpl_colours[self.c2 % mpl_ncolours], "(all)")
+                    extra_id = "_cluster_cols"
+                else:
+                    try:
+                        pymol_colour(cluster_colours, "(all)")
+                        extra_id = "_solid"
+                    except:
+                        print("Not a valid pymol colour: {}".format(cluster_colours))
+                        pymol_colour(mpl_colours[self.c2 % mpl_ncolours], "(all)")
+                        extra_id = "_cluster_cols"
+
+
             elif face_colours is not None:
                 if face_colours == "eva":
                     from faces import GR_colours as color_dict

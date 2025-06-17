@@ -417,12 +417,20 @@ if __name__ == "__main__":
             face_colours = "generated"
             if "eva" in sys.argv[2:]:
                 face_colours = "eva"
+            if "hm" or "heatmap" in sys.argv[2:]:
+                face_colours = None
+            cluster_cols = None
+            for a in sys.argv[2:]:
+                if any([a.startswith(c) for c in ["color=", "colour=", "col=", "c="]]):
+                    cluster_cols = a.split("=")[1]
+                    break
+
             for cluster in load_clusters(identifier=sys.argv[2], onebyone=True):
                 if "mpl" in sys.argv:
                     show_objects(load_clusters(identifier=sys.argv[2]), sys.argv[2:])
                     cluster.show_mpl(show=True, save=False)
                 if "pymol" in sys.argv:
-                    cluster.show(snapshot  = True, show_snapshot = True, show_session = "session" in sys.argv, face_colours = face_colours)
+                    cluster.show(snapshot  = True, show_snapshot = True, show_session = "session" in sys.argv, face_colours = face_colours, cluster_colours = cluster_cols)
                 else:
                     show_objects(load_clusters(identifier=sys.argv[2]), sys.argv[2:])
             tprint("Showing clusters")
