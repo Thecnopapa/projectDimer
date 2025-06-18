@@ -1,5 +1,7 @@
 import os, sys
 
+from matplotlib import pyplot as plt
+
 from utilities import *
 from Globals import root, local, vars
 import numpy as np
@@ -2117,6 +2119,27 @@ class Cluster2:
             if f[1] == 0:
                 f[1] = None
         print(self.faces[method])
+
+    def get_right_angles(self):
+        pass
+
+    def cluster_dihedrals(self):
+        dihedrals = [[row.d0, row.d1, row.d2] for row in self.subset.itertuples()]
+        print(dihedrals)
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection="3d")
+
+        labels = quick_cluster(dihedrals)
+        print(labels)
+        for d, l in zip(dihedrals, labels):
+            print(d)
+            if l == -1:
+                c = "black"
+            else:
+                c = "C"+str(l)
+            ax.scatter(*d, color=c)
+        plt.show(block =True)
+
 
 
 

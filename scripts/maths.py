@@ -70,6 +70,13 @@ def dihedral_angle2(p0, p1, p2, p3):
     y = np.dot(np.cross(b1, v), w)
     return np.degrees(np.arctan2(y, x))
 
+def dihedral_angle_diff(angle1, angle2):
+    a1 = (angle1+360)%360
+    a2 = (angle2+360)%360
+    print(angle1, angle2)
+    print(a1, a2, a1-a2)
+    diff = a1-a2
+    return diff
 
 
 def pnt2line(pnt, start, end):
