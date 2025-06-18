@@ -1726,6 +1726,7 @@ class Cluster2:
         plt.savefig(fig_path)
         if show:
             plt.show(block=vars.block)
+        plt.close()
         return fig_path
 
 
@@ -1811,6 +1812,7 @@ class Cluster2:
             gif_savepath = mpl_to_gif(fig, axes, name=title, folder=local.dihedral_gifs)
         if show and vars.block:
             plt.show(block = vars.block)
+        plt.close()
         return fig_savepath, gif_savepath
 
 
@@ -2464,9 +2466,11 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
         filename = "{}-{}-{}".format(identifier, f[0], f[1])
         plt.savefig(os.path.join(local[use_faces], filename))
         extra_data["{}-{}".format(f[0], f[1])] = n_dimers
+        plt.close()
     if piecharts:
         from visualisation import generate_piechart
         generate_piechart(extra_data=extra_data, name = identifier+"_piechart_{}".format(use_faces))
+
     return face_combinations
 
 def get_space_groups(identifier="GR", use_faces="generated", piecharts = True, force=False, **kwargs):
