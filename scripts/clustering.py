@@ -2235,7 +2235,7 @@ def get_faces(algorithm="affinity", identifier = None, force = False, gif=False,
 
         elif algorithm == "kmeans":
             from sklearn.cluster import KMeans
-            model = KMeans(n_clusters=4).fit(coord_array)
+            model = KMeans(n_clusters=4, random_state=6).fit(coord_array)
             labels = model.labels_
             centres = model.cluster_centers_
 
@@ -2324,6 +2324,8 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
         if cluster.is_all:
             main_cluster = cluster
             continue
+        if cluster.ndimers <= 3:
+            continue
         if use_faces not in cluster.faces:
             cluster.get_face(use_faces)
         n_clusters += 1
@@ -2354,11 +2356,11 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
         import matplotlib.pyplot as plt
         import PIL.Image as image
         local[use_faces] = "images/clusters_by_face/{}".format(use_faces)
-
-        fig, axes = plt.subplots((((f[2] - 1) // 3) + 1), 3,
+        ncols  = min([f[2], 3])
+        fig, axes = plt.subplots((((f[2] - 1) // 3) + 1), ncols,
                                  # sharex="col",
                                  # gridspec_kw={'height_ratios': [4, 2], "width_ratios": [2, 4]},
-                                 figsize=(18, 4 * ((f[2] // 3) + 1)))
+                                 figsize=(6*ncols, 4 * ((f[2] // 3) + 1)))
         sprint(f[:2])
         n_dimers = 0
         n = 0
@@ -2385,7 +2387,11 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
                 try:
                     ax = axes[n // 3, n % 3]
                 except:
-                    ax = axes[n % 3]
+                    try:
+                        ax = axes[n % ncols]
+                    except:
+                        ax = axes
+
                 if ss_path is not None:
                     im = image.open(ss_path)
                     ax.imshow(im)
@@ -2393,8 +2399,11 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
                 ax.set_title(face[2] + " (N={})".format(cluster.ndimers))
                 n += 1
         # fig.tight_layout()
-        for ax in axes.flatten():
-            ax.set_axis_off()
+        try:
+            for ax in axes.flatten():
+                ax.set_axis_off()
+        except:
+            axes.set_axis_off()
         # plt.show(block = True)
         fig.suptitle("{}-{}-{}_(N={})".format(identifier, f[0], f[1], n_dimers))
         filename = "{}-{}-{}".format(identifier, f[0], f[1])

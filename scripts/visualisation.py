@@ -424,15 +424,28 @@ if __name__ == "__main__":
                 if any([a.startswith(c) for c in ["color=", "colour=", "col=", "c="]]):
                     cluster_cols = a.split("=")[1]
                     break
+            if "by-face" in sys.argv[2:]:
+                face = None
+                for cluster in load_clusters(identifier=sys.argv[2], onebyone=True):
+                    if cluster.is_all:
+                        [print("{}: {}-{} (N={})".format(n, f[0], f[1], f[2])) for n, f in enumerate(cluster.face_combinations)]
+                        fc = int_input("Select a face combination (int) \n>>>")
+                        face = cluster.face_combinations[fc]
+                        break
+                print("Selected face:", face)
 
-            for cluster in load_clusters(identifier=sys.argv[2], onebyone=True):
-                if "mpl" in sys.argv:
-                    show_objects(load_clusters(identifier=sys.argv[2]), sys.argv[2:])
-                    cluster.show_mpl(show=True, save=False)
-                if "pymol" in sys.argv:
-                    cluster.show(snapshot  = True, show_snapshot = True, show_session = "session" in sys.argv, face_colours = face_colours, cluster_colours = cluster_cols)
-                else:
-                    show_objects(load_clusters(identifier=sys.argv[2]), sys.argv[2:])
+
+
+
+            else:
+                for cluster in load_clusters(identifier=sys.argv[2], onebyone=True):
+                    if "mpl" in sys.argv:
+                        show_objects(load_clusters(identifier=sys.argv[2]), sys.argv[2:])
+                        cluster.show_mpl(show=True, save=False)
+                    if "pymol" in sys.argv:
+                        cluster.show(snapshot  = True, show_snapshot = True, show_session = "session" in sys.argv, face_colours = face_colours, cluster_colours = cluster_cols)
+                    else:
+                        show_objects(load_clusters(identifier=sys.argv[2]), sys.argv[2:])
             tprint("Showing clusters")
         else:
             sprint("Available clusters")
@@ -444,6 +457,11 @@ if __name__ == "__main__":
         generate_cluster_grids(identifier="GR", use_faces="eva")
 
     elif "clusters-generated" == sys.argv[1]:
+        from clustering import generate_cluster_grids
+        for ref in load_references():
+            generate_cluster_grids(identifier=ref.name, use_faces="generated")
+
+    elif "clusters-by-face" == sys.argv[1]:
         from clustering import generate_cluster_grids
         for ref in load_references():
             generate_cluster_grids(identifier=ref.name, use_faces="generated")
