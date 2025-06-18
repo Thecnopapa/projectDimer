@@ -20,8 +20,8 @@ from clustering import get_faces, compare_all_with_eva, cluster_redundancy, get_
 
 
 for cluster in load_clusters("GR", onebyone=True):
+    tprint(cluster.id)
     cluster.cluster_dihedrals()
-    quit()
 
 quit()
 generate_cluster_grids(identifier="ER")

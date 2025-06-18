@@ -77,7 +77,8 @@ def dihedral_angle_diff(angle1, angle2):
     print(a1, a2, a1-a2)
     diff = a1-a2
     return diff
-
+def angle_modulus(angle):
+    return (angle + 360) % 360
 
 def pnt2line(pnt, start, end):
     line_vec = vector(start, end)

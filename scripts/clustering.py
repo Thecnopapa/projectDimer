@@ -1606,6 +1606,7 @@ class Cluster2:
             self.remove_identical()
             if self.comA is None or force:
                 self.get_com()
+                self.cluster_dihedrals()
 
         if matrix:
             if self.matrix is None or force:
@@ -2124,12 +2125,13 @@ class Cluster2:
         pass
 
     def cluster_dihedrals(self):
-        dihedrals = [[row.d0, row.d1, row.d2] for row in self.subset.itertuples()]
+        from maths import angle_modulus
+        dihedrals = [list(map(angle_modulus,[row.d0, row.d1, row.d2])) for row in self.subset.itertuples()]
         print(dihedrals)
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
 
-        labels = quick_cluster(dihedrals)
+        labels = quick_cluster(dihedrals, bandwidth = 90)
         print(labels)
         for d, l in zip(dihedrals, labels):
             print(d)
@@ -2138,7 +2140,12 @@ class Cluster2:
             else:
                 c = "C"+str(l)
             ax.scatter(*d, color=c)
-        plt.show(block =True)
+        ax.set_aspect('equal')
+
+        self.subset.loc[:, "dihedral_cluster"] = labels
+        print(self.subset)
+        #plt.show(block=True)
+        plt.close()
 
 
 
