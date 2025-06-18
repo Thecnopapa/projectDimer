@@ -2398,12 +2398,13 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
                 n_dimers += cluster.ndimers
                 ax.set_title(face[2] + " (N={})".format(cluster.ndimers))
                 n += 1
-        # fig.tight_layout()
+
         try:
             for ax in axes.flatten():
                 ax.set_axis_off()
         except:
             axes.set_axis_off()
+        #fig.tight_layout()
         # plt.show(block = True)
         fig.suptitle("{}-{}-{}_(N={})".format(identifier, f[0], f[1], n_dimers))
         filename = "{}-{}-{}".format(identifier, f[0], f[1])
