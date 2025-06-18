@@ -57,6 +57,7 @@ def main(PROCESS_ALL = False,
          REFRESH_PLOTS = True,
          REPROCESS_CLUSTERS = False,
          USE_FACES = "eva",
+         PLOT_DIHEDRALS = False
          ):
 
 
@@ -288,12 +289,14 @@ def main(PROCESS_ALL = False,
                 cluster.process_cluster(force=REPROCESS_CLUSTERS or USE_FACES not in cluster.faces.keys(), faces = True, use_face=USE_FACES)
                 cluster.pickle()
 
-
+        cluster_colours = None
+        if PLOT_DIHEDRALS:
+            cluster_colours = "dihedrals"
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
             sprint(cluster.id)
             cluster.plot_cluster(force = REFRESH_PLOTS, plot=True,
-                                 snapshot = SNAPSHOTS, face_colours = USE_FACES)
+                                 snapshot = SNAPSHOTS, face_colours = USE_FACES, cluster_colours=cluster_colours)
             cluster.pickle()
 
 
@@ -307,7 +310,7 @@ def main(PROCESS_ALL = False,
         if GIFS:
             for cluster in load_clusters(identifier=identifier, onebyone=True):
                 sprint(cluster.id)
-                cluster.plot_cluster(plot=True, gif =GIFS)
+                cluster.plot_cluster(plot=True, gif =GIFS, cluster_colours=cluster_colours)
                 cluster.pickle()
 
 
@@ -442,9 +445,10 @@ if __name__ == "__main__":
         CHAINBOWS = False,
         GENERATE_CLUSTERS = False or "clusters" in sys.argv,
         DELETE_PREVIOUS = False or "delete" in sys.argv,
-        REFRESH_PLOTS = False,
-        REPROCESS_CLUSTERS = False,
+        REFRESH_PLOTS = False or "replot" in sys.argv,
+        REPROCESS_CLUSTERS = False ,
         USE_FACES = "generated", # "eva" or "generated"
+        PLOT_DIHEDRALS = False or "dihedrals" in sys.argv,
 
 
         )

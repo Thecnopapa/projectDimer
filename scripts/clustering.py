@@ -1543,6 +1543,7 @@ class Cluster2:
         self.merged = []
         self.redundant = False
         self.redundant_to = None
+
         if not is_all:
             assert c1 is not None and c2 is not None
             self.is_all = False
@@ -1589,6 +1590,7 @@ class Cluster2:
         self.faces = {}
         self.mon1_faces = {}
         self.mon2_faces = {}
+        self.cD_list = None
 
 
 
@@ -1870,17 +1872,22 @@ class Cluster2:
         ref = load_references(identifier=self.ref_name)[0]
         self.subset.sort_values(by="id", inplace=True)
         print(self.subset)
-        chains_to_align = {ref.name: (ref.path, ref.chain, True, False, 0)}
+        #DEVELOPMENT
+        if "dihedral_cluster" not in self.subset.columns:
+            self.cluster_dihedrals()
+            self.pickle()
+        chains_to_align = {ref.name: (ref.path, ref.chain, True, False, 0, -1)}
         for n, row in enumerate(self.subset.itertuples()):
             dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)[0]
             name = row.id + str(row.is1to2)
             is1to2 = row.is1to2
             if row.reversed:
                 is1to2 = not is1to2
+            dc= row.dihedral_cluster
             if is1to2:
-                chains_to_align[name] = (dimer.replaced_path, row.mon1, row.is1to2, row.reversed, n+1)
+                chains_to_align[name] = (dimer.replaced_path, row.mon1, row.is1to2, row.reversed, n+1, dc)
             else:
-                chains_to_align[name] = (dimer.replaced_path, row.mon2, row.is1to2, row.reversed, n+1)
+                chains_to_align[name] = (dimer.replaced_path, row.mon2, row.is1to2, row.reversed, n+1, dc)
         self.chains_to_align = chains_to_align
         local["cluster_pdbs"] = "exports/cluster_pdbs"
 
@@ -1940,6 +1947,19 @@ class Cluster2:
                 if cluster_colours == "clusters" or cluster_colours == "cluster":
                     pymol_colour(mpl_colours[self.c2 % mpl_ncolours], "(all)")
                     extra_id = "_cluster_cols"
+                elif cluster_colours == "dihedrals":
+                    #[print(c, *["{}:{}".format(n, c[n]) for n in range(len(c)) ]) for c in self.chains_to_align.values()]
+                    assert len(pymol_get_all_objects()) == len(chains_to_align.values())
+                    for obj, chain in zip(pymol_get_all_objects(), self.chains_to_align.values()):
+                        print(chain)
+                        c = chain[5]
+
+                        if c == -1:
+                            c = "black"
+                        else:
+                            c = mpl_colours[c]
+                        pymol_colour(c, obj)
+                    extra_id = "_dihedrals"
                 else:
                     try:
                         pymol_colour(cluster_colours, "(all)")
@@ -2127,12 +2147,12 @@ class Cluster2:
     def cluster_dihedrals(self):
         from maths import angle_modulus
         dihedrals = [list(map(angle_modulus,[row.d0, row.d1, row.d2])) for row in self.subset.itertuples()]
-        print(dihedrals)
+        #print(dihedrals)
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
 
         labels = quick_cluster(dihedrals, bandwidth = 90)
-        print(labels)
+        #print(labels)
         for d, l in zip(dihedrals, labels):
             print(d)
             if l == -1:
@@ -2143,7 +2163,11 @@ class Cluster2:
         ax.set_aspect('equal')
 
         self.subset.loc[:, "dihedral_cluster"] = labels
-        print(self.subset)
+        self.cD_list = labels
+        local["dihedral_subplots"] = "images/dihedral_subplots"
+        fig_path = os.path.join(local.dihedral_subplots, self.id+"_dihedrals.png")
+        fig.savefig(fig_path)
+        #print(self.subset)
         #plt.show(block=True)
         plt.close()
 

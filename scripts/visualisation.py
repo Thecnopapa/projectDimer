@@ -435,8 +435,6 @@ if __name__ == "__main__":
                 print("Selected face:", face)
 
 
-
-
             else:
                 for cluster in load_clusters(identifier=sys.argv[2], onebyone=True):
                     if "mpl" in sys.argv:
