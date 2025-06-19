@@ -988,20 +988,39 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
     return fig_path
 
 
-def quick_cluster(coords, n_clusters=3, method ="MeanShift",bandwidth = None):
+def quick_cluster(coords, n_clusters=3, method ="MeanShift",bandwidth = None, min_cluster=None):
 
-    if method=="KMeans":
+    if method == "KMeans":
         from sklearn.cluster import KMeans
-        model = KMeans(n_clusters=n_clusters, random_state=6, algorithm="elkan")
-    elif method=="MeanShift":
-        from sklearn.cluster import MeanShift, estimate_bandwidth
-        print1("Clustering with MeanShift, bandwith:", end=" ")
+        print1("Clustering with KMeans")
 
+        model = KMeans(n_clusters=n_clusters, random_state=6, algorithm="elkan")
+
+    elif method == "MeanShift" or method is None: # DEFAULT
+        from sklearn.cluster import MeanShift, estimate_bandwidth
+        print1("Clustering with MeanShift")
         if bandwidth is None:
             bandwidth = estimate_bandwidth(coords)
-        print2(bandwidth)
+        print2("Bandwith:", bandwidth)
         model = MeanShift(bandwidth=bandwidth, bin_seeding=False, cluster_all=False, n_jobs=-1)
 
+    elif method == "HDBSCAN":
+        from sklearn.cluster import HDBSCAN
+        print1("Clustering with HDBSCAN")
+        if len(coords) == 1:
+            return quick_cluster(coords, n_clusters=1, method="KMeans")
+        if min_cluster is None:
+            min_cluster = max(len(coords)//10, 2)
+        model = HDBSCAN(min_cluster_size=min_cluster, allow_single_cluster=True)
+
+    elif method == "DBSCAN":
+        from sklearn.cluster import DBSCAN
+        print1("Clustering with DBSCAN")
+        if len(coords) == 1:
+            return quick_cluster(coords, n_clusters=1, method="KMeans")
+        if min_cluster is None:
+            min_cluster = max(len(coords)//10, 2)
+        model = DBSCAN(min_samples=min_cluster, eps=5)
 
     model.fit(coords)
     print2("Clusters:", [int(l) for l in set(model.labels_)])
@@ -1602,13 +1621,13 @@ class Cluster2:
     def __repr__(self):
         return "<Cluster:{} {}-{} /N={}>". format(self.ref_name, self.c1, self.c2, self.ndimers)
 
-    def process_cluster(self, force = False, matrix=True, faces=False, use_face="generated", **kwargs):
+    def process_cluster(self, force = False, matrix=True, faces=False, use_face="generated", dihedral_algorithm=None,**kwargs):
         print1("Processing {}: FORCE={} matrix={}, faces={}".format(self.id, force, matrix, faces))
         if not self.is_all:
             self.remove_identical()
             if self.comA is None or force:
                 self.get_com()
-                self.cluster_dihedrals()
+                self.cluster_dihedrals(method=dihedral_algorithm)
 
         if matrix:
             if self.matrix is None or force:
@@ -2146,31 +2165,34 @@ class Cluster2:
     def get_right_angles(self):
         pass
 
-    def cluster_dihedrals(self):
+    def cluster_dihedrals(self, method=None, show=False):
         from maths import angle_modulus
         dihedrals = [list(map(angle_modulus,[row.d0, row.d1, row.d2])) for row in self.subset.itertuples()]
         #print(dihedrals)
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
 
-        labels = quick_cluster(dihedrals, bandwidth = 90)
+        labels = quick_cluster(dihedrals, bandwidth = 90, method = method)
         #print(labels)
         for d, l in zip(dihedrals, labels):
-            print(d)
+            #print(d)
             if l == -1:
                 c = "black"
             else:
                 c = "C"+str(l)
             ax.scatter(*d, color=c)
         ax.set_aspect('equal')
+        ax.set_title("{} ({}, N={})".format(self.id, method, len(dihedrals)))
 
         self.subset.loc[:, "dihedral_cluster"] = labels
         self.cD_list = labels
         local["dihedral_subplots"] = "images/dihedral_subplots"
         fig_path = os.path.join(local.dihedral_subplots, self.id+"_dihedrals.png")
         fig.savefig(fig_path)
+        print2("Saving to: {}".format(fig_path))
         #print(self.subset)
-        #plt.show(block=True)
+        if show:
+            plt.show(block=True)
         plt.close()
 
 

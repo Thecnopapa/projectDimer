@@ -437,6 +437,7 @@ if __name__ == "__main__":
 
             else:
                 for cluster in load_clusters(identifier=sys.argv[2], onebyone=True):
+                    print(cluster.subset.to_string())
                     if "mpl" in sys.argv:
                         show_objects(load_clusters(identifier=sys.argv[2]), sys.argv[2:])
                         cluster.show_mpl(show=True, save=False)
