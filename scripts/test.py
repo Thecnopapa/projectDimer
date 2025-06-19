@@ -21,7 +21,7 @@ from clustering import get_faces, compare_all_with_eva, cluster_redundancy, get_
 
 for cluster in load_clusters("ALL", onebyone=True):
     tprint(cluster.id)
-    cluster.cluster_dihedrals()
+    cluster.cluster_dihedrals(method="HDBSCAN")
     cluster.pickle()
 
 quit()

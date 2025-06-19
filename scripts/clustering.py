@@ -988,7 +988,14 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
     return fig_path
 
 
-def quick_cluster(coords, n_clusters=3, method ="MeanShift",bandwidth = None, min_cluster=None):
+def quick_cluster(coords, n_clusters=3, method ="MeanShift",bandwidth = None, min_cluster=None, return_method=False):
+    if len(coords) == 1 or method is None:
+        print1("No clustering for 1 sample or no algorith provided: n={} a={}".format(len(coords), method))
+        r = [0]*len(coords)
+        if return_method:
+            return r, method
+        else:
+            return r
 
     if method == "KMeans":
         from sklearn.cluster import KMeans
@@ -996,7 +1003,7 @@ def quick_cluster(coords, n_clusters=3, method ="MeanShift",bandwidth = None, mi
 
         model = KMeans(n_clusters=n_clusters, random_state=6, algorithm="elkan")
 
-    elif method == "MeanShift" or method is None: # DEFAULT
+    elif method == "MeanShift":
         from sklearn.cluster import MeanShift, estimate_bandwidth
         print1("Clustering with MeanShift")
         if bandwidth is None:
@@ -1007,24 +1014,28 @@ def quick_cluster(coords, n_clusters=3, method ="MeanShift",bandwidth = None, mi
     elif method == "HDBSCAN":
         from sklearn.cluster import HDBSCAN
         print1("Clustering with HDBSCAN")
-        if len(coords) == 1:
-            return quick_cluster(coords, n_clusters=1, method="KMeans")
         if min_cluster is None:
             min_cluster = max(len(coords)//10, 2)
-        model = HDBSCAN(min_cluster_size=min_cluster, allow_single_cluster=True)
+        model = HDBSCAN(min_cluster_size=min_cluster,
+                        allow_single_cluster=True,
+                        cluster_selection_epsilon=10,
+                        cluster_selection_method="leaf")
 
     elif method == "DBSCAN":
         from sklearn.cluster import DBSCAN
         print1("Clustering with DBSCAN")
-        if len(coords) == 1:
-            return quick_cluster(coords, n_clusters=1, method="KMeans")
         if min_cluster is None:
             min_cluster = max(len(coords)//10, 2)
         model = DBSCAN(min_samples=min_cluster, eps=5)
+    else:
+        print1("Unknown algorithm: {}".format(method))
 
     model.fit(coords)
     print2("Clusters:", [int(l) for l in set(model.labels_)])
-    return model.labels_
+    if return_method:
+        return model.labels_, method
+    else:
+        return model.labels_
 
 
 
@@ -1627,6 +1638,7 @@ class Cluster2:
             self.remove_identical()
             if self.comA is None or force:
                 self.get_com()
+            if self.dihedral_method != dihedral_algorithm or force:
                 self.cluster_dihedrals(method=dihedral_algorithm)
 
         if matrix:
@@ -1883,7 +1895,7 @@ class Cluster2:
 
 
     def show(self, snapshot =False, show_session=False, chainbows=False, cluster_colours=None, show_snapshot=False,
-             regenerate_matrix=False, face_colours = "generated", **kwargs):
+             regenerate_matrix=False, face_colours = "generated", plot_noise=False, **kwargs):
         if self.is_all and not show_session:
             return None
 
@@ -1955,7 +1967,7 @@ class Cluster2:
             local["snapshots"] = "snapshots"
             from pyMol import pymol_start, pymol_load_path, pymol_colour, pymol_list_to_bfactors, pymol_save_snapshot, \
                 mpl_colours, mpl_ncolours, pymol_save_temp_session, pymol_open_session_terminal, pymol_split_states, \
-                pymol_orient, pymol_reinitialize, pymol_get_all_objects, pymol_paint_single_face
+                pymol_orient, pymol_reinitialize, pymol_get_all_objects, pymol_paint_single_face, pymol_disable
             pymol_start(show=False)
             pymol_reinitialize()
             for file in new_paths:
@@ -1974,13 +1986,14 @@ class Cluster2:
                     for obj, chain in zip(pymol_get_all_objects(), self.chains_to_align.values()):
                         print(chain)
                         c = chain[5]
-
                         if c == -1:
                             c = "black"
                         else:
                             c = mpl_colours[c]
+                        if not plot_noise and c == "black":
+                            pymol_disable(obj)
                         pymol_colour(c, obj)
-                    extra_id = "_dihedrals"
+                    extra_id = "_dihedrals_{}".format(self.dihedral_method)
                 else:
                     try:
                         pymol_colour(cluster_colours, "(all)")
@@ -2165,14 +2178,14 @@ class Cluster2:
     def get_right_angles(self):
         pass
 
-    def cluster_dihedrals(self, method=None, show=False):
+    def cluster_dihedrals(self, method="MeanShift", show=False):
         from maths import angle_modulus
         dihedrals = [list(map(angle_modulus,[row.d0, row.d1, row.d2])) for row in self.subset.itertuples()]
         #print(dihedrals)
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
 
-        labels = quick_cluster(dihedrals, bandwidth = 90, method = method)
+        labels, new_method = quick_cluster(dihedrals, bandwidth = 90, method = method, return_method=True)
         #print(labels)
         for d, l in zip(dihedrals, labels):
             #print(d)
@@ -2182,12 +2195,13 @@ class Cluster2:
                 c = "C"+str(l)
             ax.scatter(*d, color=c)
         ax.set_aspect('equal')
-        ax.set_title("{} ({}, N={})".format(self.id, method, len(dihedrals)))
+        ax.set_title("{} ({}, N={})".format(self.id, new_method, len(dihedrals)))
 
         self.subset.loc[:, "dihedral_cluster"] = labels
         self.cD_list = labels
+        self.dihedral_method = method
         local["dihedral_subplots"] = "images/dihedral_subplots"
-        fig_path = os.path.join(local.dihedral_subplots, self.id+"_dihedrals.png")
+        fig_path = os.path.join(local.dihedral_subplots, self.id+"_dihedrals_{}.png".format(method))
         fig.savefig(fig_path)
         print2("Saving to: {}".format(fig_path))
         #print(self.subset)

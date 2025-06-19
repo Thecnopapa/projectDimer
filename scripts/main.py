@@ -301,7 +301,9 @@ def main(PROCESS_ALL = False,
         for cluster in load_clusters(identifier=identifier, onebyone=True):
             sprint(cluster.id)
             cluster.plot_cluster(force = REFRESH_PLOTS, plot=True,
-                                 snapshot = SNAPSHOTS, face_colours = USE_FACES, cluster_colours=cluster_colours)
+                                 snapshot = SNAPSHOTS,
+                                 face_colours = USE_FACES,
+                                 cluster_colours=cluster_colours)
             cluster.pickle()
 
 
@@ -454,7 +456,7 @@ if __name__ == "__main__":
         REPROCESS_CLUSTERS = False or "reprocess" in sys.argv,
         USE_FACES = "generated", # "eva" or "generated"
         PLOT_DIHEDRALS = False or "dihedrals" in sys.argv,
-        DIHEDRAL_ALGORITHM  = "DBSCAN",
+        DIHEDRAL_ALGORITHM  = "HDBSCAN",
 
 
         )
