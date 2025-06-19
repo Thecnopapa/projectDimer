@@ -1031,6 +1031,8 @@ def quick_cluster(coords, n_clusters=3, method ="MeanShift",bandwidth = None, mi
         print1("Unknown algorithm: {}".format(method))
 
     model.fit(coords)
+    if len(set(model.labels_)) == 1:
+        model.labels_ = [0]*len(model.labels_)
     print2("Clusters:", [int(l) for l in set(model.labels_)])
     if return_method:
         return model.labels_, method
@@ -1638,7 +1640,7 @@ class Cluster2:
             self.remove_identical()
             if self.comA is None or force:
                 self.get_com()
-            if self.dihedral_method != dihedral_algorithm or force:
+            if True or self.dihedral_method != dihedral_algorithm or force:
                 self.cluster_dihedrals(method=dihedral_algorithm)
 
         if matrix:
