@@ -58,7 +58,8 @@ def main(PROCESS_ALL = False,
          REPROCESS_CLUSTERS = False,
          USE_FACES = "eva",
          PLOT_DIHEDRALS = False,
-         DIHEDRAL_ALGORITHM  = "MeanShift"
+         DIHEDRAL_ALGORITHM  = "MeanShift",
+         FACE_ALGORITHM = "affinity",
          ):
 
 
@@ -280,7 +281,8 @@ def main(PROCESS_ALL = False,
             identifier = "ALL"
 
         # ONLY FOR ALL- ALL
-        get_faces(algorithm = "kmeans", force=True, gif=GIFS)
+        get_faces(algorithm = FACE_ALGORITHM, force=True, gif=GIFS)
+        quit()
         compare_all_with_eva()
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
@@ -311,7 +313,7 @@ def main(PROCESS_ALL = False,
         for ref in vars.references:
             if ref.name != "GR" and ONLY_GR:
                 continue
-            generate_cluster_grids(identifier=ref.name, use_faces=USE_FACES)
+            generate_cluster_grids(identifier=ref.name, use_faces=USE_FACES, face_algorithm=FACE_ALGORITHM)
             get_space_groups(identifier=ref.name, use_faces=USE_FACES)
 
         if GIFS:
@@ -454,6 +456,7 @@ if __name__ == "__main__":
         DELETE_PREVIOUS = False or "delete" in sys.argv,
         REFRESH_PLOTS = False or "replot" in sys.argv,
         REPROCESS_CLUSTERS = False or "reprocess" in sys.argv,
+        FACE_ALGORITHM = "weighted",
         USE_FACES = "generated", # "eva" or "generated"
         PLOT_DIHEDRALS = False or "dihedrals" in sys.argv,
         DIHEDRAL_ALGORITHM  = "HDBSCAN",

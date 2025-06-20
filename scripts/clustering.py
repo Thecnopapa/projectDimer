@@ -1640,7 +1640,7 @@ class Cluster2:
             self.remove_identical()
             if self.comA is None or force:
                 self.get_com()
-            if True or self.dihedral_method != dihedral_algorithm or force:
+            if self.dihedral_method != dihedral_algorithm or force:
                 self.cluster_dihedrals(method=dihedral_algorithm)
 
         if matrix:
@@ -2333,7 +2333,26 @@ def get_faces(algorithm="affinity", identifier = None, force = False, gif=False,
             labels = model.labels_
             centres = model.cluster_centers_
 
-
+        elif algorithm == "weighted":
+            def custom_metric(coord1, coord2):
+                weight1 = coord1[3]
+                weight2 = coord2[3]
+                coord1 = coord1[:3]
+                coord2 = coord2[:3]
+                from maths import distance
+                print((1 - (weight1 + weight2) / 2))
+                return abs(distance(coord1, coord2)) / (1 - (weight1 + weight2) / 2)
+            from scipy.cluster.hierarchy import linkage, cut_tree
+            Z = linkage(weighted_array, method='average', metric=custom_metric)
+            from scipy.cluster.hierarchy import dendrogram
+            print(Z[:,2])
+            D = dendrogram(Z, color_threshold=0.4*max(Z[:,2]))
+            #D = dendrogram(Z, p=4, truncate_mode="level")
+            plt.show(block = vars.block)
+            leaves = D["leaves"]
+            leave_colours = [int(d.replace("C","")) for d in D["leaves_color_list"]]
+            leave_dict = list = [[l,col] for l, col in zip(leaves, leave_colours)]
+            print(leave_dict)
 
 
         else:
@@ -2355,7 +2374,7 @@ def get_faces(algorithm="affinity", identifier = None, force = False, gif=False,
                 M=np.mean([preference_array[n] for n, _ in enumerate(labels) if labels[n] == c])
             )
             if centres is not None:
-                face["COM"] = model.cluster_centers_[c],
+                face["COM"] = centres[c],
             #print("C:{}, N:{}, M:{}".format(face["C"], face["N"], face["M"]))
             faces.append(face)
         faces = sorted(faces, key=lambda face: face["C"], reverse=False)
