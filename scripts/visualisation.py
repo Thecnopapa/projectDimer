@@ -164,7 +164,9 @@ def generate_html():
     pass
 
 
-def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces =False):
+def show_objects(obj_list, args, mates = False, merged = False,
+                 paint_all_faces =True,
+                 face_dict=None):
 
     merged = "merged" in sys.argv
 
@@ -231,13 +233,18 @@ def show_objects(obj_list, args, mates = False, merged = False, paint_all_faces 
                         else:
                             name = pymol_load_path(item, os.path.basename(item))
                         pymol_format("surface", os.path.basename(item), colour= "gray")
-                        if "is_reference" in obj.__dict__.keys() or paint_all_faces:
-                            if "best_fit" in obj.__dict__.keys():
-                                if obj.best_fit == "GR":
-                                    from pyMol import pymol_paint_all_faces
-                                    pymol_paint_all_faces(obj)
+                        if paint_all_faces:
+                            if face_dict is not None:
+                                from pyMol import pymol_paint_all_faces
+                                pymol_paint_all_faces(obj, face_dict=face_dict)
+                            elif "is_reference" in obj.__dict__.keys():
+                                if "best_fit" in obj.__dict__.keys():
+                                    if obj.best_fit == "GR":
+                                        from pyMol import pymol_paint_all_faces
+                                        pymol_paint_all_faces(obj)
 
-                        elif "faces" in args and not paint_all_faces:
+
+                        elif "faces" in args:
                             #print("Painting faces")
                             if "contacts_faces1" in obj.__dict__.keys():
                                 pymol_paint_contacts(os.path.basename(item), obj.contacts_faces1[1:],
@@ -407,9 +414,13 @@ if __name__ == "__main__":
 
     elif "ref" in sys.argv[1] and len(sys.argv[2:]) != 0:
         refs = load_list_1by1(identifier="REFERENCE_"+sys.argv[2], pickle_folder=local.refs).list()
+        c_ref = load_clusters(identifier=sys.argv[2]+"-all-all", first_only=True)
+        print(refs)
+        print(c_ref)
         sprint(sys.argv[2])
         tprint("Showing references")
-        show_objects(refs, sys.argv[2:])
+        show_objects(refs, sys.argv[2:], face_dict=c_ref.face_dict)
+
 
     elif "cluster" == sys.argv[1]:
         if len(sys.argv[2:]) != 0:

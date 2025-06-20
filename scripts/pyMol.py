@@ -430,16 +430,24 @@ def pymol_paint_single_face(obj_list, face1, face2, color_dict):
 
 
 
-def pymol_paint_all_faces(obj):
+def pymol_paint_all_faces(obj, face_dict=None):
     print("(PyMOL) paining all faces in {}".format(obj.id))
-    from faces import GR_colours, GR_dict
-    assert obj.best_fit == "GR"
-    for o in pymol_get_all_objects():
-        if obj.id in o:
-            for face, ress in GR_dict.items():
-                sele = "({})".format(" or ".join( "i. {}".format(res) for res in ress))
-                #print(sele)
-                pymol_colour(GR_colours[face], o, sele, silent=True)
+    if face_dict is None:
+        from faces import GR_colours, GR_dict
+        assert obj.best_fit == "GR"
+        for o in pymol_get_all_objects():
+            if obj.id in o:
+                for face, ress in GR_dict.items():
+                    sele = "({})".format(" or ".join("i. {}".format(res) for res in ress))
+                    # print(sele)
+                    pymol_colour(GR_colours[face], o, sele, silent=True)
+    else:
+        for o in pymol_get_all_objects():
+            if obj.id in o:
+                for face, ress in face_dict.items():
+                    sele = "({})".format(" or ".join( "i. {}".format(res) for res in ress))
+                    #print(sele)
+                    pymol_colour(mpl_colours[int(face)%mpl_ncolours], o, sele, silent=True)
 
 
 
