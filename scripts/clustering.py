@@ -2351,8 +2351,11 @@ def get_faces(algorithm="affinity", identifier = None, force = False, gif=False,
             plt.show(block = vars.block)
             leaves = D["leaves"]
             leave_colours = [int(d.replace("C","")) for d in D["leaves_color_list"]]
-            leave_dict = list = [[l,col] for l, col in zip(leaves, leave_colours)]
-            print(leave_dict)
+            leave_list= [[l,col] for l, col in zip(leaves, leave_colours)]
+            print(leave_list)
+            labels = [d[1] for d in sorted(leave_list, key = lambda l: l[0])]
+            print(labels)
+
 
 
         else:
