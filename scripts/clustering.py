@@ -1625,6 +1625,7 @@ class Cluster2:
         self.mon1_faces = {}
         self.mon2_faces = {}
         self.cD_list = None
+        self.dihedral_method = None
 
 
 
