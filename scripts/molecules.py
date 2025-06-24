@@ -679,6 +679,7 @@ class Dimer(BioObject):
             self.outer_ids = [ref for ref in vars.references if ref.name == self.best_fit][0].outer_ids
             self.contact_surface = ContactSurface(self.monomer1.replaced, self.monomer2.replaced, outer_ids=self.outer_ids)
 
+
     def process(self, sasa = False, pickle=True):
         print4("Processing dimer:", self)
         self.validate()

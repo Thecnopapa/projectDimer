@@ -1605,7 +1605,7 @@ class Cluster2:
             quit()
         self.subset.sort_values(by="id", inplace=True)
 
-
+        self.contact_surface = None
         self.matrix = None
         self.oneDmatrix1 = None
         self.oneDmatrix2 = None
@@ -1775,14 +1775,18 @@ class Cluster2:
         progress = ProgressBar(len(self.subset), silent=True)
         for point in self.subset.itertuples():
             dimer = load_single_pdb(point.id, pickle_folder=local.dimers, first_only=True, quiet=True)
+            if dimer is None:
+                print("Dimer not found, Try deleting dihedral dataframes")
             is1to2 = point.is1to2
             if point.reversed:
                 is1to2 = not is1to2
+            print(dimer)
+            new_matrix = dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not is1to2)
 
             if matrix is None:
-                matrix = dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not is1to2)
+                matrix = new_matrix
             else:
-                matrix = np.add(matrix, dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not is1to2))
+                matrix = np.add(matrix, new_matrix)
             progress.add(info=point.id)
 
         oneDmatrix1 = [sum(i)/ len(self.outer_ids_complete) for i in matrix]
