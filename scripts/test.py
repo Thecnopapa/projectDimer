@@ -21,10 +21,16 @@ print1("References loaded")
 from ARDB import *
 
 parse_ardb()
-
+ardb_sequence = parse_ardb_sequence()
+print(ardb_sequence)
 for ref in vars["references"]:
     print(ref)
     print(ref.sequence)
+    if ref.name == "AR":
+        from alignments import *
+        al = get_alignment_map(ref.sequence,ardb_sequence)
+        [print("{} : {}".format(k,v)) for k,v in al.items()]
+
 
 
 

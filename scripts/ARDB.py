@@ -25,6 +25,18 @@ class Mutation:
     def __repr__(self):
         return "Mutation {} ({}): \tr.{} {} --> {} \tleads to: {}".format(self.id, self.type, self.position, self.wt_res, self.mut_res, self.phenotype)
 
+
+def parse_ardb_sequence():
+    with open(os.path.join(root.data, 'ARDB_sequence'), 'r') as f:
+        s = ""
+        for line in f:
+            if line.startswith('#'):
+                continue
+            s += line
+        s = clean_string(s)
+        return s
+
+
 def parse_ardb():
     ardb = pd.read_excel(os.path.join(root.data, 'ARDB.xls'))
     ardb.rename(columns={o: n for o,n in zip(ardb.columns, map(clean_string, ardb.columns))}, inplace=True)

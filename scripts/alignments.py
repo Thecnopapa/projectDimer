@@ -11,7 +11,7 @@ d3to1 = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
              'ALA': 'A', 'VAL': 'V', 'GLU': 'E', 'TYR': 'Y', 'MET': 'M'}
 
 
-def create_aligner(matrix = 'BLASTP' ):
+def create_aligner(matrix = "BLOSUM62"):
 
     aligner = Align.PairwiseAligner()
     aligner.substitution_matrix = substitution_matrices.load(matrix)
@@ -27,10 +27,46 @@ def get_sequence(chain, id=None, out_fasta=False):
         except:
             pass
     fasta += "\n"
-
     return fasta
 
-def get_start_end():
-    aligner = create_aligner(matrix="BLOSUM62")
+
+def get_score(seq1, seq2, matrix = "BLOSUM62"):
+    aligner = create_aligner(matrix=matrix)
+    return aligner.score(seq1, seq2)
+
+def get_alignment(seq1, seq2, matrix = "BLOSUM62", first_only=True):
+    aligner = create_aligner(matrix=matrix)
+    aligner.open_gap_score = -0.5
+    aligner.extend_gap_score = -0.1
+    aligner.target_end_gap_score = 0.0
+    aligner.query_end_gap_score = 0.0
+    if first_only:
+        return aligner.align(seq1,seq2)[0]
+    return aligner.align(seq1,seq2)
+
+def get_alignment_map(keys_seq, target_seq, matrix = "BLOSUM62"):
+    al = get_alignment( target_seq, keys_seq, matrix)
+    al_keys = al[0]
+    al_target = al[1]
+    al_map = {}
+    n_keys = 0
+    n_target = 0
+    for k, target in zip(al_keys, al_target):
+        print(k, target)
+        if k == "-":
+            continue
+        if target == "-":
+            al_map[n_keys] = None
+        else:
+            al_map[n_keys] = n_target
+            n_target += 1
+
+        n_keys += 1
+    print(al_map)
+    return al_map
+
+
+
+
 
 
