@@ -33,9 +33,10 @@ def parse_ardb_sequence():
             if line.startswith('#'):
                 continue
             s += line
-        s = clean_string(s)
-        return s
+        return clean_string(s)
 
+
+ardb_sequence = parse_ardb_sequence()
 
 def parse_ardb():
     ardb = pd.read_excel(os.path.join(root.data, 'ARDB.xls'))

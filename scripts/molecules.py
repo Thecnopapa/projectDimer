@@ -2,6 +2,7 @@ import os
 
 from pkg_resources import non_empty_lines
 
+from alignments import get_alignment_map
 from symmetries import entity_to_orth, print_all_coords, convertFromFracToOrth
 from utilities import *
 from Globals import root, local, vars
@@ -291,7 +292,8 @@ class Monomer(BioObject):
         self.raw_monomers_entries = []
         self.failed_entries = []
         self.monomers_entries = []
-        self.sequence = None
+        from alignments import get_sequence
+        self.sequence = get_sequence(self.structure)
         self.scores = None
         self.sasas = None
         self.rmsds = {}
@@ -321,6 +323,12 @@ class Monomer(BioObject):
         if self.replaced is not None:
             if self.best_fit == "GR":
                 self.face_coms = get_face_coms(self)
+
+            if self.best_fit == "AR":
+                from ARDB import ardb_sequence
+                from alignments import get_alignment_map
+                self.ref_map = get_alignment_map(ardb_sequence, self.sequence)
+
             self.get_monomer_pca()
 
         self.pickle()
@@ -1006,8 +1014,12 @@ class Reference(Monomer):
         from alignments import get_sequence
 
         self.face_dict = None
-        if self.name == "GR":
-            self.face_dict = None
+
+        if self.name == "AR":
+            from ARDB import parse_ardb_sequence, parse_ardb
+            self.ref_seq = parse_ardb_sequence()
+            self.mutation_list = parse_ardb()
+
         from faces import get_pca, get_terminals, find_com, get_face_coms
         self.terminals = get_terminals(self.structure)
         #self.pca = get_pca(self.structure)
