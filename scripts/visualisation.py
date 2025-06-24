@@ -177,7 +177,7 @@ def show_objects(obj_list, args, mates = False, merged = False,
         for key, item in obj.__dict__.items():
             if key in ["lines", "c_lines", "sasas1D", "sasas2D", "full_array","contacts_faces1", "contacts_faces2",
                        "contacts", "contacts_symm", "contacts_sasa", "outer_ids_complete","outer_ids_binary",
-                       "oneDmatrix1", "oneDmatrix2", "atoms" ]:
+                       "oneDmatrix1", "oneDmatrix2", "atoms", "outer_ids" ]:
                 try:
                     print1(key, ": OMITTED (len: {})".format(len(item)))
                 except:
@@ -415,11 +415,16 @@ if __name__ == "__main__":
     elif "ref" in sys.argv[1] and len(sys.argv[2:]) != 0:
         refs = load_list_1by1(identifier="REFERENCE_"+sys.argv[2], pickle_folder=local.refs).list()
         c_ref = load_clusters(identifier=sys.argv[2]+"-all-all", first_only=True)
-        print(refs)
-        print(c_ref)
-        sprint(sys.argv[2])
-        tprint("Showing references")
-        show_objects(refs, sys.argv[2:], face_dict=c_ref.face_dict)
+        if c_ref is None or "face_dict" not in c_ref.keys():
+            print("Face dict not found in ref_cluster")
+            print("Ref cluster:", c_ref)
+            show_objects(refs, sys.argv[2:])
+        else:
+            print(refs)
+            print(c_ref)
+            sprint(sys.argv[2])
+            tprint("Showing references")
+            show_objects(refs, sys.argv[2:], face_dict=c_ref.face_dict)
 
 
     elif "cluster" == sys.argv[1]:

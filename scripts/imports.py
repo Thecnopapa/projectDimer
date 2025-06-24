@@ -154,8 +154,14 @@ def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None,
             print2("No objects loaded")
         else:
             print2("Objects loaded: {}".format(objects))
-    if len(objects) == 1 and first_only:
-        objects = objects[0]
+    if first_only:
+        if len(objects) == 1:
+            objects = objects[0]
+        if len(objects) == 0:
+            return None
+        else:
+            print2("Requested first only but multiple found")
+            quit()
     return objects
 
 def load_references(force_reload = False, identifier = "all"):

@@ -22,6 +22,10 @@ from ARDB import *
 
 parse_ardb()
 
+for ref in vars["references"]:
+    print(ref)
+    print(ref.sequence)
+
 
 
 

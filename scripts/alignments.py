@@ -30,5 +30,7 @@ def get_sequence(chain, id=None, out_fasta=False):
 
     return fasta
 
+def get_start_end():
+    aligner = create_aligner(matrix="BLOSUM62")
 
 

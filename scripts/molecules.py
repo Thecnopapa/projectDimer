@@ -1,6 +1,6 @@
 import os
 
-
+from pkg_resources import non_empty_lines
 
 from symmetries import entity_to_orth, print_all_coords, convertFromFracToOrth
 from utilities import *
@@ -70,7 +70,7 @@ class BioObject:
         else:
             return "{} ({} at {})".format(self.id, self.__class__.__name__, id(self))
 
-    def parse_structure(self, parse_original = False, calculate_sasa = False, n_points=100, radius=3):
+    def parse_structure(self, parse_original = False, calculate_sasa = False, n_points=100, radius=3, sequence=True):
         if self.path is None or parse_original:
             self.path = self.o_path
         try:
@@ -86,7 +86,6 @@ class BioObject:
             print2("Re-downloading {}".format(self.name))
             download_pdbs(save_folder=os.path.dirname(self.path), pdb_list=[self.name])
             try:
-
                 self.structure = PDBParser(QUIET=True).get_structure(self.name[:4], self.path)
             except:
                 print2("Could not parse redownloaded {}".format(self.path))
@@ -96,11 +95,19 @@ class BioObject:
             for model in self.structure.get_list()[1:]:
                 self.structure.__delitem__(model.id)
             for chain in self.structure.get_list()[0].get_list():
+
                 if chain.id not in string.ascii_uppercase:
                     try:
                         chain.id = string.ascii_uppercase.index(chain.id)
                     except:
                         chain.id = [letter for letter in string.ascii_uppercase if letter not in [c.id for c in self.structure.get_chains()]][0]
+                if sequence:
+                    from alignments import get_sequence
+                    if type(self.sequence) is dict:
+                        self.sequence[chain.id] = clean_string(get_sequence(chain))
+                    else:
+                        self.sequence = clean_string(get_sequence(chain))
+
                 if calculate_sasa:
                     from Bio.PDB.SASA import ShrakeRupley
                     sr = ShrakeRupley(n_points=n_points, probe_radius=radius)
@@ -154,6 +161,7 @@ class PDB(BioObject):
     pickle_folder = "molecules"
     def __init__(self, path):
         self.o_path = path
+        self.sequence = {}
         self.name = self.id = clean_string(os.path.basename(path).split(".")[0], allow = ["_"])
         self.complete = self.parse_structure()
         self.export()
@@ -979,6 +987,7 @@ class Reference(Monomer):
     def __init__(self, path):
 
         self.o_path = path
+        self.sequence = None
         self.parse_structure(parse_original=True, calculate_sasa=True, n_points=200, radius=6)
         self.outer_ids = self.get_outer_res_list()
         self.name = os.path.basename(path).split(".")[0]
@@ -994,8 +1003,8 @@ class Reference(Monomer):
         self.raw_monomers_entries = []
         self.failed_entries = []
         self.monomers_entries = []
+        from alignments import get_sequence
 
-        self.sequence = None
         self.face_dict = None
         if self.name == "GR":
             self.face_dict = None
