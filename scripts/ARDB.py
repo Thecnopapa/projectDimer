@@ -13,7 +13,7 @@ from Globals import root, local, vars
 
 
 class Mutation:
-    def __init__(self,  ids, mutation_type, phenotype, position, wt_res, mut_res):
+    def __init__(self, ids, mutation_type, phenotype, position, wt_res, mut_res):
         self.ids = ids
         self.id = self.ids[0]
         self.type = mutation_type
@@ -68,6 +68,7 @@ def parse_ardb():
 
     for mutation in ar_mutant_list:
         print(mutation)
+    return ar_mutant_list
 
 
 
