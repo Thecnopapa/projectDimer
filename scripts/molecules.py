@@ -348,7 +348,7 @@ class Monomer(BioObject):
         self.pickle()
 
     def get_mutations(self):
-            print1("Identifying mutations")
+            print2("Identifying mutations")
             self.mutations = []
             if self.best_fit == "AR":
                 from ARDB import ardb_mutations
@@ -365,8 +365,8 @@ class Monomer(BioObject):
 
 
                         if target_resmame == mut_res:
-                            print2(pos, exp_res.id[1], target_pos, mutation.wt_res, target_resmame, mut_res)
                             print3(mutation)
+                            print4(pos, exp_res.id[1], target_pos, mutation.wt_res, target_resmame, mut_res)
                             self.mutations.append(mutation)
 
 
