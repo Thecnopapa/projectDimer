@@ -161,7 +161,7 @@ def get_pca(structure, n_components = 3, com = None, closer_to = None, solver = 
         if clockwise:
             dh1 = dihedral_angle(pca.components_[1], com, pca.components_[0], add(pca.components_[2], com))
             dh2 = dihedral_angle(pca.components_[2], com, pca.components_[0], add(pca.components_[1], com))
-            print(dh1, dh2)
+            #print(dh1, dh2)
             if dh1 < dh2:
                 pca.inverse = True
 

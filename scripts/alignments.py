@@ -46,7 +46,8 @@ def get_alignment(seq1, seq2, matrix = "BLOSUM62", first_only=True):
     return aligner.align(seq1,seq2)
 
 def get_alignment_map(keys_seq, target_seq, matrix = "BLOSUM62"):
-    al = get_alignment( target_seq, keys_seq, matrix)
+    al = get_alignment(keys_seq, target_seq, matrix)
+    #print(al)
     al_keys = al[0]
     al_target = al[1]
     al_map = {}

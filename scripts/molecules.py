@@ -71,7 +71,7 @@ class BioObject:
         else:
             return "{} ({} at {})".format(self.id, self.__class__.__name__, id(self))
 
-    def parse_structure(self, parse_original = False, calculate_sasa = False, n_points=100, radius=3, sequence=True):
+    def parse_structure(self, parse_original = False, calculate_sasa = False, n_points=100, radius=3, sequence=True, only_ca = True, remove_disordered = False):
         if self.path is None or parse_original:
             self.path = self.o_path
         try:
@@ -119,8 +119,12 @@ class BioObject:
                         chain.__delitem__(residue.id)
                         continue
                     for atom in residue.get_list():
-                        if atom.name != "CA" or atom.bfactor > 90:
+                        if atom.name != "CA" and only_ca:
                             residue.__delitem__(atom.id)
+                            continue
+                        if remove_disordered and atom.bfactor > 90:
+                            residue.__delitem__(atom.id)
+                            continue
                     if len(residue.get_list()) == 0:
                         chain.__delitem__(residue.id)
         return True
@@ -260,6 +264,7 @@ class Monomer(BioObject):
 
     def __init__(self, name, chain, frac_structure, parent, is_mate = False, op_n = None, position = None, parent_monomer = None, sasa=False):
         self.name = name
+
         self.is_mate = is_mate
         self.fractional_structure = frac_structure
         self.params = parent.params
@@ -270,6 +275,9 @@ class Monomer(BioObject):
         self.parent_monomer = parent_monomer
         self.face = None
         self.faces = None
+        self.sequence = None
+        self.mutations = None
+        self.ref_map = None
         #self.parent = parent
 
         if self.is_mate:
@@ -279,8 +287,10 @@ class Monomer(BioObject):
             self.contacts = parent.contacts
 
         else:
+            self.sequence = parent.sequence[chain]
             self.chain = chain.upper()
             self.extra_id = ""
+
 
         self.structure.id = self.chain
         self.id = "{}_{}{}".format(name, chain, self.extra_id)
@@ -292,8 +302,6 @@ class Monomer(BioObject):
         self.raw_monomers_entries = []
         self.failed_entries = []
         self.monomers_entries = []
-        from alignments import get_sequence
-        self.sequence = get_sequence(self.structure)
         self.scores = None
         self.sasas = None
         self.rmsds = {}
@@ -308,30 +316,60 @@ class Monomer(BioObject):
             self.super_data = self.parent_monomer.super_data
             self.best_fit = self.parent_monomer.best_fit
             self.super_path = self.move_parent_superposition(self.parent_monomer.super_path)
+            self.sequence = self.parent_monomer.sequence
+            self.mutations = self.parent_monomer.mutations
             if self.super_path is not None:
                 self.replaced = PDBParser(QUIET=True).get_structure(self.id, self.super_path).get_list()[1].get_list()[0]
                 if sasa:
                     self.sasas = self.parent_monomer.sasas.copy()
 
+
         else:
             self.superpose()
+            print2("Best fit:", self.best_fit)
             if sasa:
                 from surface import get_monomer_sasa
                 get_monomer_sasa(self)
+            if self.replaced is not None:
+                if self.best_fit == "AR":
+                    from ARDB import ardb_sequence
+                    from alignments import get_alignment_map
+                    self.ref_map = get_alignment_map(ardb_sequence, self.sequence)
+                    #print(self.ref_map)
+                    self.mutations = self.get_mutations()
 
         from faces import get_face_coms
         if self.replaced is not None:
             if self.best_fit == "GR":
                 self.face_coms = get_face_coms(self)
 
-            if self.best_fit == "AR":
-                from ARDB import ardb_sequence
-                from alignments import get_alignment_map
-                self.ref_map = get_alignment_map(ardb_sequence, self.sequence)
-
             self.get_monomer_pca()
 
         self.pickle()
+
+    def get_mutations(self):
+            print1("Identifying mutations")
+            self.mutations = []
+            if self.best_fit == "AR":
+                from ARDB import ardb_mutations
+                from alignments import d3to1
+                for mutation in ardb_mutations:
+                    pos = mutation.position
+                    mut_res = d3to1[mutation.mut_res.upper()]
+                    #print(self.ref_map)
+                    target_pos = self.ref_map[pos]
+                    if target_pos is not None:
+                        exp_res = list(self.structure.get_residues())[target_pos]
+                        #print(mutation)
+                        target_resmame = d3to1[exp_res.resname]
+
+
+                        if target_resmame == mut_res:
+                            print2(pos, exp_res.id[1], target_pos, mutation.wt_res, target_resmame, mut_res)
+                            print3(mutation)
+                            self.mutations.append(mutation)
+
+
 
 
     def get_monomer_pca(self):
@@ -547,7 +585,7 @@ class Mate(BioObject):
             self.c_lines.extend(cl)
 
 
-    def reconstruct_mates(self, min_contacts = 0):
+    def reconstruct_mates(self, min_contacts = 1):
         from symmetries import generate_displaced_copy, entity_to_orth, get_operation, print_all_coords
         dimers = []
         import copy
@@ -996,7 +1034,7 @@ class Reference(Monomer):
 
         self.o_path = path
         self.sequence = None
-        self.parse_structure(parse_original=True, calculate_sasa=True, n_points=200, radius=6)
+        self.parse_structure(parse_original=True, calculate_sasa=True, n_points=200, radius=6, only_ca=True, remove_disordered=True)
         self.outer_ids = self.get_outer_res_list()
         self.name = os.path.basename(path).split(".")[0]
         self.best_fit = self.name
