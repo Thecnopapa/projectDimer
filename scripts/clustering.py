@@ -2045,6 +2045,7 @@ class Cluster2:
 
 
     def remove_identical(self):
+        # TODO: double check this, might have errors
         id_list = []
         for row in self.subset.itertuples():
             if not row.id in [i[0] for i in id_list]:
