@@ -26,7 +26,8 @@ def get_sequence(chain, id=None, out_fasta=False):
             fasta += d3to1[res.resname]
         except:
             pass
-    fasta += "\n"
+    if out_fasta:
+        fasta += "\n"
     return fasta
 
 
@@ -52,7 +53,7 @@ def get_alignment_map(keys_seq, target_seq, matrix = "BLOSUM62"):
     n_keys = 0
     n_target = 0
     for k, target in zip(al_keys, al_target):
-        print(k, target)
+        #print(k, target)
         if k == "-":
             continue
         if target == "-":
@@ -62,7 +63,7 @@ def get_alignment_map(keys_seq, target_seq, matrix = "BLOSUM62"):
             n_target += 1
 
         n_keys += 1
-    print(al_map)
+    #print(al_map)
     return al_map
 
 

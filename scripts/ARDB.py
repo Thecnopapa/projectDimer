@@ -28,12 +28,16 @@ class Mutation:
 
 def parse_ardb_sequence():
     with open(os.path.join(root.data, 'ARDB_sequence'), 'r') as f:
-        s = ""
+        s = []
         for line in f:
             if line.startswith('#'):
                 continue
-            s += line
-        return clean_string(s)
+            line = clean_string(line)
+            if len(line) == 0:
+                continue
+            print()
+            s.extend([l for l in line])
+        return "".join(s)
 
 
 ardb_sequence = parse_ardb_sequence()
@@ -41,7 +45,7 @@ ardb_sequence = parse_ardb_sequence()
 def parse_ardb():
     ardb = pd.read_excel(os.path.join(root.data, 'ARDB.xls'))
     ardb.rename(columns={o: n for o,n in zip(ardb.columns, map(clean_string, ardb.columns))}, inplace=True)
-    [print(e) for e in set(ardb["Phenotype"])]
+    #[print(e) for e in set(ardb["Phenotype"])]
     #print(ardb.columns)
     ar_mutant_list = []
     for row in ardb.itertuples():

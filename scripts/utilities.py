@@ -86,9 +86,13 @@ def print5(*strings, **kwargs):
 def print6(*strings, **kwargs):
     print1(strings, space=12, **kwargs)
 
-def clean_string(string, allow=(".", "_")):
+def clean_string(string, allow=(".", "_"), remove_newlines=True):
     from unidecode import unidecode
-    return ''.join(e for e in unidecode(str(string)) if e.isalnum() or e in allow)
+    string = unidecode(str(string))
+    if remove_newlines:
+        string = string.replace("\n", "")
+    r = ''.join(e for e in string if e.isalnum() or e in allow)
+    return r
 
 def get_digits(string, allow=("."), integer = False):
     from unidecode import unidecode
