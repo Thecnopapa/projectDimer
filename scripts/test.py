@@ -18,6 +18,24 @@ print1("References loaded")
 
 
 
+from clustering import cluster_redundancy
+cluster_redundancy()
+
+
+
+
+quit()
+
+df1 = pd.DataFrame([[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]])
+df2 = pd.DataFrame([[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]])
+print(df1)
+print(df2)
+print("#")
+print(pd.concat([df1,df2], axis=0))
+
+
+quit()
+
 from ARDB import *
 
 parse_ardb()

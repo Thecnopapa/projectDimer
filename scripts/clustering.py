@@ -1878,7 +1878,12 @@ class Cluster2:
         if reverse:
             for row in sub2.itertuples():
                 sub2.loc[row.Index, "reversed"] = not row.reversed
+        print("####")
+        print(self.subset)
+        print(sub2)
+        print("####")
         self.subset = pd.concat([self.subset, sub2], axis= 0)
+        print(self.subset)
         self.ndimers = len(self.subset)
         self.subset.sort_values(by="id", inplace=True)
         self.remove_identical()
@@ -2048,14 +2053,14 @@ class Cluster2:
                 #print(row.id in id_list)
                 id_list.append((row.id, row.Index))
             else:
-                #print("identical dimers found:", row.id)
+                print("identical dimers found:", row.id)
                 #print(id_list)
-                #print("Removing:")
+                print("Removing:")
                 if row.is1to2:
-                    #print(self.subset.loc[id_list[[i[0] for i in id_list].index(row.id)][1]])
+                    print(self.subset.loc[id_list[[i[0] for i in id_list].index(row.id)][1]])
                     self.subset.drop(id_list[[i[0] for i in id_list].index(row.id)][1], inplace=True)
                 else:
-                    #print(self.subset.loc[row.Index])
+                    print(self.subset.loc[row.Index])
                     self.subset.drop(row.Index, inplace=True)
         self.ndimers = len(self.subset)
 
@@ -2347,7 +2352,7 @@ def get_faces(algorithm="affinity", identifier = None, force = False, gif=False,
                 coord1 = coord1[:3]
                 coord2 = coord2[:3]
                 from maths import distance
-                print((1 - (weight1 + weight2) / 2))
+                #print((1 - (weight1 + weight2) / 2))
                 return abs(distance(coord1, coord2)) / (1 - (weight1 + weight2) / 2)
             from scipy.cluster.hierarchy import linkage, cut_tree
             Z = linkage(weighted_array, method='average', metric=custom_metric)
