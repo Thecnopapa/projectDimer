@@ -1,7 +1,7 @@
 import os
 
-from pyMol import pymol_colour
-from surface import get_dimer_sasa, get_monomer_sasa
+
+
 from symmetries import entity_to_orth, print_all_coords, convertFromFracToOrth
 from utilities import *
 from Globals import root, local, vars
