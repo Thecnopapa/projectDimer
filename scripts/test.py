@@ -16,6 +16,28 @@ sprint("Loading References")
 vars["references"] = load_references(force_reload=True)
 print1("References loaded")
 
+
+
+from ARDB import *
+
+parse_ardb()
+
+
+
+
+
+
+
+
+quit()
+
+
+
+
+
+
+
+
 from clustering import get_faces, compare_all_with_eva, cluster_redundancy, get_space_groups, generate_cluster_grids
 
 

@@ -1,6 +1,0 @@
-pandas~=2.2.3
-numpy~=2.2.1
-scipy~=1.15.3
-pymol~=3.0.4
-biopython~=1.85
-matplotlib~=3.10.0

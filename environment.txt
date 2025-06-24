@@ -6,7 +6,7 @@ conda activate py312np2
 # Essential
 conda install conda-forge::biopython
 conda install -c conda-forge -c schrodinger pymol-bundle
-conda install pandas matplotlib unidecode scikit-learn
+conda install pandas matplotlib unidecode scikit-learn, xlrd
 
 # Not essential but might require some tweaking to avoid errors
 pip install subprocess.run adjustText
