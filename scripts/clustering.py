@@ -1576,6 +1576,7 @@ class Cluster2:
         self.redundant = False
         self.redundant_to = None
 
+
         if not is_all:
             assert c1 is not None and c2 is not None
             self.is_all = False
@@ -1618,6 +1619,7 @@ class Cluster2:
         self.stdA = None
         self.stdB = None
         self.atoms = None
+        self.all_faces = None
         self.all_faces = None
         self.faces = {}
         self.mon1_faces = {}

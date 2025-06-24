@@ -155,10 +155,10 @@ def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None,
         else:
             print2("Objects loaded: {}".format(objects))
     if first_only:
-        if len(objects) == 1:
-            objects = objects[0]
         if len(objects) == 0:
             return None
+        if len(objects) == 1:
+            objects = objects[0]
         else:
             print2("Requested first only but multiple found")
             quit()
