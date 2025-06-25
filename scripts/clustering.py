@@ -1602,6 +1602,7 @@ class Cluster2:
         print(self.id)
         print(self.subset)
         if len(self.subset) == 0:
+            print("Cluster with no dimers:", self)
             quit()
         self.subset.sort_values(by="id", inplace=True)
 
@@ -1626,8 +1627,7 @@ class Cluster2:
         self.mon2_faces = {}
         self.cD_list = None
         self.dihedral_method = None
-
-
+        self.mutations = None
 
 
         if not self.outlier:
@@ -1768,22 +1768,25 @@ class Cluster2:
 
 
 
-    def get_matrix(self, threshold, plot = True, **kwargs):
+    def get_matrix(self, threshold, plot = True, muatations = True, **kwargs):
         from imports import load_single_pdb
         print2("Generating cluster matrix")
+        if muatations:
+            self.mutations = []
         matrix = None
         self.subset.sort_values(by="id", inplace=True)
         progress = ProgressBar(len(self.subset), silent=True)
         for point in self.subset.itertuples():
             dimer = load_single_pdb(point.id, pickle_folder=local.dimers, first_only=True, quiet=True)
-            if dimer is None:
-                print("Dimer not found, Try deleting dihedral dataframes")
+            if dimer is None or dimer.contact_surface is None:
+                print("Dimer not found or missprocessed, Try deleting dihedral dataframes")
             is1to2 = point.is1to2
             if point.reversed:
                 is1to2 = not is1to2
             #print(dimer)
             new_matrix = dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not is1to2)
-
+            if muatations:
+                self.mutations.append(dimer.mutations)
             if matrix is None:
                 matrix = new_matrix
             else:
@@ -2441,7 +2444,7 @@ def compare_all_with_eva():
                 print2("{}: {}".format(k, v))
 
 
-def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = True):
+def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = True, face_algorithm=None):
     from imports import load_clusters
     sprint("Generating cluster grids")
     faces = []

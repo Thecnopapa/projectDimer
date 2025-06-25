@@ -336,7 +336,7 @@ class Monomer(BioObject):
                     from alignments import get_alignment_map
                     self.ref_map = get_alignment_map(ardb_sequence, self.sequence)
                     #print(self.ref_map)
-                    self.mutations = self.get_mutations()
+                    self.get_mutations()
 
         from faces import get_face_coms
         if self.replaced is not None:
@@ -348,26 +348,26 @@ class Monomer(BioObject):
         self.pickle()
 
     def get_mutations(self):
-            print2("Identifying mutations")
-            self.mutations = []
-            if self.best_fit == "AR":
-                from ARDB import ardb_mutations
-                from alignments import d3to1
-                for mutation in ardb_mutations:
-                    pos = mutation.position
-                    mut_res = d3to1[mutation.mut_res.upper()]
-                    #print(self.ref_map)
-                    target_pos = self.ref_map[pos]
-                    if target_pos is not None:
-                        exp_res = list(self.structure.get_residues())[target_pos]
-                        #print(mutation)
-                        target_resmame = d3to1[exp_res.resname]
+        print2("Identifying mutations")
+        self.mutations = []
+        if self.best_fit == "AR":
+            from ARDB import ardb_mutations
+            from alignments import d3to1
+            for mutation in ardb_mutations:
+                pos = mutation.position
+                mut_res = d3to1[mutation.mut_res.upper()]
+                #print(self.ref_map)
+                target_pos = self.ref_map[pos]
+                if target_pos is not None:
+                    exp_res = list(self.structure.get_residues())[target_pos]
+                    #print(mutation)
+                    target_resmame = d3to1[exp_res.resname]
 
+                    if target_resmame == mut_res:
+                        print3(mutation)
+                        print4(pos, exp_res.id[1], target_pos, mutation.wt_res, target_resmame, mut_res)
+                        self.mutations.append(mutation)
 
-                        if target_resmame == mut_res:
-                            print3(mutation)
-                            print4(pos, exp_res.id[1], target_pos, mutation.wt_res, target_resmame, mut_res)
-                            self.mutations.append(mutation)
 
 
 
@@ -668,6 +668,7 @@ class Dimer(BioObject):
 
         self.outer_ids = None
         self.contact_surface = None
+        self.mutations = None
 
 
         self.process(sasa = sasa)
@@ -695,6 +696,8 @@ class Dimer(BioObject):
         self.pca2 = self.monomer2.get_monomer_pca()
         #print(self.com)
         self.get_contact_surface()
+        if self.best_fit == "AR":
+            self.mutations = self.monomer1.mutations + self.monomer2.mutations
         if pickle:
             self.pickle()
 

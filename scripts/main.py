@@ -66,6 +66,8 @@ def main(PROCESS_ALL = False,
     ###### SET UP ######################################################################################################
     tprint("SET UP")
 
+
+
     vars["do_only"] = DO_ONLY
     #vars["verbose"] = VERBOSE
     #vars["quiet"] = QUIET
@@ -145,10 +147,15 @@ def main(PROCESS_ALL = False,
     eprint("SYMMETRY & DIMER GENERATION")
     ###### DIMER ANALYSIS ##############################################################################################
     tprint("DIMER ANALYSIS v2")
-
-    if not SKIP_DIMERS and not PROCESS_ALL:
-            for dimer in load_list_1by1(pickle_folder=local.dimers):
-                dimer.reprocess(contacts=False, faces=False)
+    print("REPROCESSS_DIMERS:", REPROCESS_DIMERS)
+    if (not SKIP_DIMERS and not PROCESS_ALL) or REPROCESS_DIMERS:
+        print("HI")
+        print(local.dimers)
+        print(os.listdir(local.dimers))
+        for dimer in load_list_1by1(pickle_folder=local.dimers):
+            print1("Reprocessig:", dimer)
+            dimer.reprocess(contacts=False, faces=False)
+    quit()
 
 
 
@@ -264,7 +271,7 @@ def main(PROCESS_ALL = False,
                 dihedrals_path = os.path.join(cluster2_folder, file)
                 create_clusters(dihedrals_path, ref )
 
-            cluster_redundancy()
+            #cluster_redundancy()
             cluster_dihedrals()
 
         if ONLY_GR:
@@ -377,7 +384,8 @@ if __name__ == "__main__":
 
     print(sys.argv)
     if len(sys.argv) > 1 and not "all" in sys.argv:
-        DO_ONLY = [arg.upper() for arg in sys.argv[2:]]
+        #DO_ONLY = [arg.upper() for arg in sys.argv[2:]]
+        pass
 
 
     # Imports that need globals initialized:
@@ -401,8 +409,8 @@ if __name__ == "__main__":
         MINIMUM_CONTACTS=0,  # Minimum number of contacts to consider a dimer interface
 
         # Dimer processing, includes contact calculation and face identification, generates contact dataframes
-        SKIP_DIMERS = True, # Skip the entire block (overridden by PROCESS_ALL and REPROCESS_DIMERS)
-        REPROCESS_DIMERS = True,
+        SKIP_DIMERS = True and "dimers" not in sys.argv, # Skip the entire block (overridden by PROCESS_ALL and REPROCESS_DIMERS)
+        REPROCESS_DIMERS = False or "dimers" in sys.argv,
         FORCE_CONTACTS = False,  # Force contact calculation if already calculated (overridden by PROCESS_ALL)
         CONTACT_DISTANCE_CLUSTERING = 12,
         FACES_BY_COM = True,
