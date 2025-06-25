@@ -1768,10 +1768,10 @@ class Cluster2:
 
 
 
-    def get_matrix(self, threshold, plot = True, muatations = True, **kwargs):
+    def get_matrix(self, threshold, plot = True, mutations = True, **kwargs):
         from imports import load_single_pdb
         print2("Generating cluster matrix")
-        if muatations:
+        if mutations:
             self.mutations = []
         matrix = None
         self.subset.sort_values(by="id", inplace=True)
@@ -1785,7 +1785,8 @@ class Cluster2:
                 is1to2 = not is1to2
             #print(dimer)
             new_matrix = dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not is1to2)
-            if muatations:
+            if mutations:
+                print(dimer.id)
                 self.mutations.append(dimer.mutations)
             if matrix is None:
                 matrix = new_matrix
@@ -2048,8 +2049,9 @@ class Cluster2:
 
 
     def remove_identical(self):
+        pass
         # TODO: double check this, might have errors
-        id_list = []
+        """id_list = []
         for row in self.subset.itertuples():
             if not row.id in [i[0] for i in id_list]:
                 #print(id_list)
@@ -2065,7 +2067,8 @@ class Cluster2:
                     self.subset.drop(id_list[[i[0] for i in id_list].index(row.id)][1], inplace=True)
                 else:
                     print(self.subset.loc[row.Index])
-                    self.subset.drop(row.Index, inplace=True)
+                    self.subset.drop(row.Index, inplace=True)"""
+        self.subset.drop_duplicates(subset=["id"], keep="first", inplace=True)
         self.ndimers = len(self.subset)
 
     def show_mpl(self, save=True, gif = False, show=False, mergedMatrix = None, secondary=None, title=None):

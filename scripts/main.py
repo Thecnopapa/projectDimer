@@ -155,7 +155,6 @@ def main(PROCESS_ALL = False,
         for dimer in load_list_1by1(pickle_folder=local.dimers):
             print1("Reprocessig:", dimer)
             dimer.reprocess(contacts=False, faces=False)
-    quit()
 
 
 
