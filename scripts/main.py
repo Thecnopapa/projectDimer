@@ -213,7 +213,6 @@ def main(PROCESS_ALL = False,
             get_faces, compare_all_with_eva
         from imports import load_clusters
 
-
         if GENERATE_CLUSTERS or len(os.listdir(local.cluster_pickles))<=3:
             if DELETE_PREVIOUS:
                 if os.path.exists(local.cluster_pickles):
@@ -225,8 +224,6 @@ def main(PROCESS_ALL = False,
                         os.remove(os.path.join(local.cluster_pickles, file))
             generate_dihedrals_df(force=False or PROCESS_ALL)
 
-
-
             for file in sorted(os.listdir(root.dihedrals)):
                 sprint("Clustering1")
                 if ONLY_GR and "GR" not in file:
@@ -237,8 +234,6 @@ def main(PROCESS_ALL = False,
                                                  angles=["a0", "a1", "a2"],
                                                  cluster_name="angle_cluster1",
                                                  folder="angle_clusters1")
-
-
 
             for file in sorted(os.listdir(cluster1_folder)):
                 sprint("Clustering2")
@@ -254,12 +249,9 @@ def main(PROCESS_ALL = False,
                                                  save_together=True,
                                                  )
 
-
-
             if SNAPSHOTS:
                 from pyMol import pymol_start
                 pymol_start(show=False)
-
 
             for n, file in enumerate(sorted(os.listdir(cluster2_folder))):
                 if "--1" in file:
@@ -286,19 +278,18 @@ def main(PROCESS_ALL = False,
         compare_all_with_eva()
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
-                if cluster.is_all:
-                    continue
-                sprint(cluster.id)
-                cluster.process_cluster(force=REPROCESS_CLUSTERS or USE_FACES not in cluster.faces.keys(),
-                                        faces = True,
-                                        use_face=USE_FACES,
-                                        dihedral_algorithm=DIHEDRAL_ALGORITHM)
-                cluster.pickle()
+            if cluster.is_all:
+                continue
+            sprint(cluster.id)
+            cluster.process_cluster(force=REPROCESS_CLUSTERS or USE_FACES not in cluster.faces.keys(),
+                                    faces = True,
+                                    use_face=USE_FACES,
+                                    dihedral_algorithm=DIHEDRAL_ALGORITHM)
+            cluster.pickle()
 
         cluster_colours = None
         if PLOT_DIHEDRALS:
             cluster_colours = "dihedrals"
-
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
             sprint(cluster.id)
@@ -307,7 +298,6 @@ def main(PROCESS_ALL = False,
                                  face_colours = USE_FACES,
                                  cluster_colours=cluster_colours)
             cluster.pickle()
-
 
         from clustering import generate_cluster_grids, get_space_groups
         for ref in vars.references:
@@ -321,7 +311,6 @@ def main(PROCESS_ALL = False,
                 sprint(cluster.id)
                 cluster.plot_cluster(plot=True, gif =GIFS, cluster_colours=cluster_colours)
                 cluster.pickle()
-
 
         """matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path,
                                                             clusters="angle_cluster2",
