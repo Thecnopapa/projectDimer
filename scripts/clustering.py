@@ -1783,7 +1783,8 @@ class Cluster2:
             is1to2 = point.is1to2
             if point.reversed:
                 is1to2 = not is1to2
-            #print(dimer)
+            print(point)
+            print(dimer)
             new_matrix = dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not is1to2)
             if mutations:
                 print(dimer.id)

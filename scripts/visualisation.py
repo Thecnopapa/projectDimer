@@ -1,12 +1,9 @@
 import os
 import sys
 
-from matplotlib.pyplot import savefig
+
 
 from Globals import root, local, vars
-from maths import angle_between_vectors
-
-
 from utilities import *
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -50,6 +47,7 @@ def generate_piechart(df_name:str = None, column = None, extra_data:dict[str, in
     else:
         ax.set_title("{} (N = {})".format(name, total))
         fig_name = "{}.png".format(name)
+    fig.legend(title="Best Fit:", labels=labels, loc="lower right")
     fig.legend(title="Best Fit:", labels=labels, loc="lower right")
 
     if folder is None:
@@ -396,7 +394,7 @@ if __name__ == "__main__":
 
     if "dimer" in sys.argv[1] and len(sys.argv[2:]) != 0:
         vars["do_only"] = sys.argv[2:]
-        dimers = load_dimers()
+        dimers = load_list_1by1(sys.argv[2], pickle_folder=local.dimers)
         tprint("Showing dimers")
         show_objects(dimers, sys.argv[2:])
 

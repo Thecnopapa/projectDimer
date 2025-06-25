@@ -84,7 +84,8 @@ def parse_ardb():
             continue
 
     for mutation in ar_mutant_list:
-        print(mutation)
+        #print(mutation)
+        pass
     return ar_mutant_list
 ardb_mutations = parse_ardb()
 
