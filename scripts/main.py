@@ -148,7 +148,7 @@ def main(PROCESS_ALL = False,
     ###### DIMER ANALYSIS ##############################################################################################
     tprint("DIMER ANALYSIS v2")
     print("REPROCESSS_DIMERS:", REPROCESS_DIMERS)
-    if (not SKIP_DIMERS and not PROCESS_ALL) or REPROCESS_DIMERS:
+    if not SKIP_DIMERS or PROCESS_ALL or REPROCESS_DIMERS or len(os.listdir(local.dimers)) == 0:
         print("HI")
         print(local.dimers)
         print(os.listdir(local.dimers))
@@ -160,7 +160,7 @@ def main(PROCESS_ALL = False,
 
     eprint("DIMER ANALYSIS v2")
 
-
+    quit()
 
     """tprint("DIMER ANALYSIS")
 
@@ -280,7 +280,7 @@ def main(PROCESS_ALL = False,
 
         # ONLY FOR ALL- ALL
         get_faces(algorithm = FACE_ALGORITHM, force=True, gif=GIFS)
-        quit()
+        #quit()
         compare_all_with_eva()
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):

@@ -177,7 +177,7 @@ def show_objects(obj_list, args, mates = False, merged = False,
         for key, item in obj.__dict__.items():
             if key in ["lines", "c_lines", "sasas1D", "sasas2D", "full_array","contacts_faces1", "contacts_faces2",
                        "contacts", "contacts_symm", "contacts_sasa", "outer_ids_complete","outer_ids_binary",
-                       "oneDmatrix1", "oneDmatrix2", "atoms", "outer_ids", "cD_list" ]:
+                       "oneDmatrix1", "oneDmatrix2", "atoms", "outer_ids", "cD_list","ref_map" ]:
                 try:
                     print1(key, ": OMITTED (len: {})".format(len(item)))
                 except:
