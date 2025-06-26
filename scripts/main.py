@@ -60,6 +60,7 @@ def main(PROCESS_ALL = False,
          PLOT_DIHEDRALS = False,
          DIHEDRAL_ALGORITHM  = "MeanShift",
          FACE_ALGORITHM = "affinity",
+         FORCE_ANALYSIS = False
          ):
 
 
@@ -227,7 +228,7 @@ def main(PROCESS_ALL = False,
             identifier = "ALL"
 
         # ONLY FOR ALL- ALL
-        get_faces(algorithm = FACE_ALGORITHM, force=True, gif=GIFS)
+        get_faces(algorithm = FACE_ALGORITHM, force=FORCE_ANALYSIS, gif=GIFS)
         #quit()
         compare_all_with_eva()
 
@@ -260,7 +261,7 @@ def main(PROCESS_ALL = False,
             generate_cluster_grids(identifier=ref.name, use_faces=USE_FACES, face_algorithm=FACE_ALGORITHM)
             get_space_groups(identifier=ref.name, use_faces=USE_FACES)
             if ref.name == "AR":
-                get_mutation_distribution(identifier=ref.name, use_faces=USE_FACES)
+                get_mutation_distribution(identifier=ref.name, use_faces=USE_FACES, force=FORCE_ANALYSIS)
 
         if GIFS:
             for cluster in load_clusters(identifier=identifier, onebyone=True):
@@ -365,6 +366,7 @@ if __name__ == "__main__":
         USE_FACES = "generated", # "eva" or "generated"
         PLOT_DIHEDRALS = False or "dihedrals" in sys.argv,
         DIHEDRAL_ALGORITHM  = "HDBSCAN",
+        FORCE_ANALYSIS = True,
 
 
         )

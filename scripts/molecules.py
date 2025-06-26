@@ -71,7 +71,7 @@ class BioObject:
         else:
             return "{} ({} at {})".format(self.id, self.__class__.__name__, id(self))
 
-    def parse_structure(self, parse_original = False, calculate_sasa = False, n_points=100, radius=3, sequence=True, only_ca = False, remove_disordered = False):
+    def parse_structure(self, parse_original = False, calculate_sasa = False, n_points=100, radius=3, sequence=True, only_ca = True, remove_disordered = False):
         if self.path is None or parse_original:
             self.path = self.o_path
         try:
