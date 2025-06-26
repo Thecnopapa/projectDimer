@@ -2479,7 +2479,7 @@ def get_mutation_distribution(identifier="AR", use_faces="generated", piecharts 
 
     nested_piechart(main_cluster.phenotypes, title=ref_name + "_{}_phenotypes".format(use_faces),
                     legend_title=["Phenotype", "Dimer Interface"], **kwargs)
-    nested_piechart(main_cluster.faces, title=ref_name + "_{}_phenotypes_by_face".format(use_faces),
+    nested_piechart(main_cluster.phenotypes_by_face, title=ref_name + "_{}_phenotypes_by_face".format(use_faces),
                     legend_title=["Dimer Interface", "Phenotype",], **kwargs)
 
 

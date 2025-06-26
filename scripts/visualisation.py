@@ -73,6 +73,8 @@ def nested_piechart(data:dict, title= None, folder=None, **kwargs):
     for label1 in labels1:
         d = data[label1]
         stotal = sum([v for v in d.values()])
+        if stotal == 0:
+            continue
         for key2, value2 in sorted(d.items(), key=lambda x: x[0]):
             data2.append([key2, value2, value2 /stotal >=0.33])
 
