@@ -1,7 +1,7 @@
 import os
 import sys
 
-
+from Bio import phenotype
 
 from Globals import root, local, vars
 from utilities import *
@@ -175,7 +175,7 @@ def show_objects(obj_list, args, mates = False, merged = False,
         for key, item in obj.__dict__.items():
             if key in ["lines", "c_lines", "sasas1D", "sasas2D", "full_array","contacts_faces1", "contacts_faces2",
                        "contacts", "contacts_symm", "contacts_sasa", "outer_ids_complete","outer_ids_binary",
-                       "oneDmatrix1", "oneDmatrix2", "atoms", "outer_ids", "cD_list","ref_map" ]:
+                       "oneDmatrix1", "oneDmatrix2", "atoms", "outer_ids", "cD_list","ref_map", "map_to_ref" ]:
                 try:
                     print1(key, ": OMITTED (len: {})".format(len(item)))
                 except:
@@ -218,76 +218,39 @@ def show_objects(obj_list, args, mates = False, merged = False,
         if "pymol" in args:
             from pyMol import pymol_start, pymol_load_path, pymol_symmetries, pymol_group, pymol_paint_contacts, pymol_format, pymol_draw_line, pymol_set_state
             pymol_start(show=False)
+            names = []
             for key, item in obj.__dict__.items():
                 if type(item) == str:
                     #print(item.endswith(".pdb"), not "fractional" in item, not "merged" in item, not merged)
                     if item.endswith(".pdb"):
-                        if "fractional" in item or ("merged" in item and not merged):
-                            continue
-                        if "many_pdbs" in item:
-                            og = pymol_load_path(item, os.path.basename(item)+"_original")
-                        elif "pdb_" in item:
-                            name = pymol_load_path(item, os.path.basename(item) + "_processed")
-                        else:
-                            name = pymol_load_path(item, os.path.basename(item))
-                        pymol_format("surface", os.path.basename(item), colour= "gray")
-                        if paint_all_faces:
-                            if face_dict is not None:
-                                from pyMol import pymol_paint_all_faces
-                                pymol_paint_all_faces(obj, face_dict=face_dict)
-                            elif "is_reference" in obj.__dict__.keys():
-                                if "best_fit" in obj.__dict__.keys():
-                                    if obj.best_fit == "GR":
-                                        from pyMol import pymol_paint_all_faces
-                                        pymol_paint_all_faces(obj)
+                        nice_name = os.path.basename(item).replace(".pdb", "")
+                        phenotypes = []
+                        if "mutations" in sys.argv:
+                            phenotypes = list(set([clean_string(mut.phenotype) for mut in obj.mutations]))
+                            print(phenotypes)
 
+                            if "fractional" in item or ("merged" in item and not merged):
+                                continue
+                            if "many_pdbs" in item:
+                                names.append(pymol_load_path(item, nice_name+"_original"))
+                                og = names[-1]
+                                for phe in phenotypes:
+                                    names.append(pymol_load_path(item, "phe_"+nice_name+"_"+phe))
+                            elif "pdb_" in item:
+                                names.append(pymol_load_path(item, nice_name + "_processed"))
 
-                        elif "faces" in args:
-                            #print("Painting faces")
-                            if "contacts_faces1" in obj.__dict__.keys():
-                                pymol_paint_contacts(os.path.basename(item), obj.contacts_faces1[1:],
-                                                     colour=obj.contacts_faces1[0])
-                            if "contacts_faces2" in obj.__dict__.keys():
-                                pymol_paint_contacts(os.path.basename(item), obj.contacts_faces2[1:],
-                                                     colour=obj.contacts_faces2[0])
-                            #print("Faces painted")
-                        if "contacts_sasa" in obj.__dict__.keys():
-                            pymol_paint_contacts(os.path.basename(item), obj.contacts_sasa, colour ="red")
-                            pass
-                        if "contacts_symm" in obj.__dict__.keys():
-                            pymol_paint_contacts(os.path.basename(item), obj.contacts_symm)
-                            pass
-                        if "pca" in obj.__dict__.keys():
-                            from faces import pca_to_lines
-                            if type(obj.pca) is dict:
-                                pca = obj.pca["pca"]
                             else:
-                                pca = obj.pca
-                            #print(obj.com)
-                            point_list = pca_to_lines(pca, com=obj.com, just_points=True)
-                            for p in point_list:
-                                pymol_draw_line(coord1=p[0], coord2=p[1], name="pca-"+name.split(".")[0])
+                                names.append(pymol_load_path(item, nice_name))
+                                if "_x_" in nice_name:
+                                    for phe in phenotypes:
+                                        names.append(pymol_load_path(item, "phe_" + nice_name + "_" + phe))
 
-                        elif "pca1" in obj.__dict__.keys():
-                            from faces import pca_to_lines
-                            for pca in [obj.pca1, obj.pca2]:
-                                point_list = pca_to_lines(pca["pca"], com=pca["com"], just_points=True)
-                                print("point list:", point_list)
-                                for p in point_list:
-
-                                    pymol_draw_line(coord1=p[0], coord2=p[1], name="pca", quiet=False)
-                        if "face_coms" in obj.__dict__.keys():
-                            from faces import GR_colours
-                            from pyMol import pymol_sphere
-                            for face, com in obj.face_coms.items():
-                                pymol_sphere(com, colour=GR_colours[face], name="face_" + obj.id)
                 if key == "monomer1" or key == "monomer2":
                     from faces import GR_colours
                     from pyMol import pymol_sphere
                     if "face_coms" in obj.__getattribute__(key).__dict__.keys():
                         for face, com in obj.__getattribute__(key).face_coms.items():
                             pymol_sphere(com, colour=GR_colours[face], name="face_"+obj.id)
-
 
                 ### Development
                 if key == "mate_paths" or key == "dimer_paths" and mates:
@@ -309,8 +272,69 @@ def show_objects(obj_list, args, mates = False, merged = False,
                         pymol_draw_line(line[0], line[1], name  = "c")
                 if key == "contacs_sasa":
                     pass
-
                 ###
+
+            for name in names:
+                pymol_format("surface", name, colour="gray")
+                print("Painting:", name, "pain_all_faces:", paint_all_faces)
+                if paint_all_faces:
+                    if face_dict is not None:
+                        from pyMol import pymol_paint_all_faces
+                        pymol_paint_all_faces(obj, face_dict=face_dict)
+                    elif "is_reference" in obj.__dict__.keys():
+                        if "best_fit" in obj.__dict__.keys():
+                            if obj.best_fit == "GR":
+                                from pyMol import pymol_paint_all_faces
+                                pymol_paint_all_faces(obj)
+
+                elif "faces" in args:
+                    #print("Painting faces")
+                    if "contacts_faces1" in obj.__dict__.keys():
+                        pymol_paint_contacts(name, obj.contacts_faces1[1:],
+                                             colour=obj.contacts_faces1[0])
+                    if "contacts_faces2" in obj.__dict__.keys():
+                        pymol_paint_contacts(name, obj.contacts_faces2[1:],
+                                             colour=obj.contacts_faces2[0])
+                    #print("Faces painted")
+                if "contacts_sasa" in obj.__dict__.keys():
+                    pymol_paint_contacts(name, obj.contacts_sasa, colour ="red")
+                    pass
+                if "contacts_symm" in obj.__dict__.keys():
+                    pymol_paint_contacts(name, obj.contacts_symm)
+                    pass
+                #############################################
+                if "mutations" in sys.argv:
+                    print("painting mutations")
+                    [print(m) for m in obj.mutations]
+                    mut_list = [["*", mut.position] for mut in obj.mutations if clean_string(mut.phenotype) == name.split("_")[-1]]
+                    [print(m) for m in mut_list]
+                    pymol_paint_contacts(name, mut_list, colour="red", quiet=False)
+                #############################################
+                if "pca" in obj.__dict__.keys():
+                    from faces import pca_to_lines
+                    if type(obj.pca) is dict:
+                        pca = obj.pca["pca"]
+                    else:
+                        pca = obj.pca
+                    #print(obj.com)
+                    point_list = pca_to_lines(pca, com=obj.com, just_points=True)
+                    for p in point_list:
+                        pymol_draw_line(coord1=p[0], coord2=p[1], name="pca-"+name.split(".")[0])
+
+                elif "pca1" in obj.__dict__.keys():
+                    from faces import pca_to_lines
+                    for pca in [obj.pca1, obj.pca2]:
+                        point_list = pca_to_lines(pca["pca"], com=pca["com"], just_points=True)
+                        print("point list:", point_list)
+                        for p in point_list:
+                            pymol_draw_line(coord1=p[0], coord2=p[1], name="pca", quiet=False)
+
+                if "face_coms" in obj.__dict__.keys():
+                    from faces import GR_colours
+                    from pyMol import pymol_sphere
+                    for face, com in obj.face_coms.items():
+                        pymol_sphere(com, colour=GR_colours[face], name="face_" + obj.id)
+
 
             from pyMol import pymol_format, pymol_orient, pymol_show_cell, pymol_hide, pymol_disable
             if paint_all_faces:
@@ -324,6 +348,9 @@ def show_objects(obj_list, args, mates = False, merged = False,
             pymol_set_state(0)
             pymol_orient()
             pymol_show_cell()
+            if "mutations" in sys.argv:
+                for phe in phenotypes:
+                    pymol_group(identifier = phe)
             pymol_group(identifier="pca", name="pcas")
             pymol_disable("pca")
             pymol_group(identifier="face", name="faces")
@@ -343,6 +370,8 @@ def show_objects(obj_list, args, mates = False, merged = False,
                 pymol_group(identifier = "sym")
             except:
                 pass
+
+
             pymol_set_state(2)
     if "pymol" in args:
         session_path = pymol_save_temp_session()

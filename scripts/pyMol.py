@@ -346,11 +346,11 @@ def pymol_draw_line(coord1, coord2, name = "d", state = -1, quiet= True):
             pymol.cmd.pseudoatom("tmp1", pos=coord1, state=state)
             pymol.cmd.pseudoatom("tmp2", pos=coord2, state=state)
         print("Waiting for pymol... {}".format(n), end="\r")
-def pymol_paint_contacts(obj, contact_list, colour ="yellow"):
+def pymol_paint_contacts(obj, contact_list, colour ="yellow", quiet = True):
     print("(PyMol) Colouring contacts in {}".format(obj))
     for chain, resn, in contact_list:
         sele = "c. {} and i. {}".format(chain, resn)
-        pymol_colour(colour, obj, sele, silent = True)
+        pymol_colour(colour, obj, sele, silent = quiet)
 
 
 def pymol_temp_show(structure, disable = False, delete=False, name=None, folder = None):
