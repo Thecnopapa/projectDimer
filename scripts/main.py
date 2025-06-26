@@ -253,12 +253,14 @@ def main(PROCESS_ALL = False,
                                  cluster_colours=cluster_colours)
             cluster.pickle()
 
-        from clustering import generate_cluster_grids, get_space_groups
+        from clustering import generate_cluster_grids, get_space_groups, get_mutation_distribution
         for ref in vars.references:
             if ref.name != "GR" and ONLY_GR:
                 continue
             generate_cluster_grids(identifier=ref.name, use_faces=USE_FACES, face_algorithm=FACE_ALGORITHM)
             get_space_groups(identifier=ref.name, use_faces=USE_FACES)
+            if ref.name == "AR":
+                get_mutation_distribution(identifier=ref.name, use_faces=USE_FACES)
 
         if GIFS:
             for cluster in load_clusters(identifier=identifier, onebyone=True):

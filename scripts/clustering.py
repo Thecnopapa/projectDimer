@@ -1432,7 +1432,8 @@ class Cluster2:
         if matrix:
             if self.matrix is None or force:
                 self.get_matrix(threshold=10)
-            self.mutation_redundancy()
+            if self.ref_name == "AR":
+                self.mutation_redundancy()
         if faces and not self.is_all:
             if self.faces is None or force:
                 self.get_face(method=use_face)
@@ -1805,6 +1806,12 @@ class Cluster2:
                             pymol_disable(obj)
                         pymol_colour(c, obj)
                     extra_id = "_dihedrals_{}".format(self.dihedral_method)
+                elif cluster_colours == "mutations" and "mutations" in self.__dict__.keys():
+                    pymol_colour("blue", "(all)")
+                    for mutation in self.mutations:
+                        pymol_colour("yellow", obj="*", sele = "i. {}".format(mutation.position))
+                    extra_id = "_mutations"
+
                 else:
                     try:
                         pymol_colour(cluster_colours, "(all)")
@@ -2348,7 +2355,7 @@ def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = T
 def get_space_groups(identifier="GR", use_faces="generated", piecharts = True, force=False, **kwargs):
     from imports import load_clusters, load_single_pdb
     from visualisation import generate_piechart, nested_piechart
-
+    tprint("Space Groups")
     for cluster in load_clusters(identifier = identifier, onebyone=True):
         if cluster.is_all:
             main_cluster = cluster
@@ -2360,8 +2367,8 @@ def get_space_groups(identifier="GR", use_faces="generated", piecharts = True, f
 
     by_face = {}
     by_space_group = {}
-    if "by_space_group" not in main_cluster.__dict__ or "by_face" not in main_cluster.__dict__ or force:
-        tprint("Space Groups")
+    if "by_space_group" not in main_cluster.__dict__.keys() or "by_face" not in main_cluster.__dict__.keys() or force:
+
         for f in face_combinations:
             space_groups = {}
             face ="{}-{}".format(f[0], f[1])
@@ -2418,6 +2425,26 @@ def get_space_groups(identifier="GR", use_faces="generated", piecharts = True, f
     nested_piechart(main_cluster.by_face, title=ref_name + "_{}_faces".format(use_faces),
                     legend_title=["Dimer Interface", "Space Group",], **kwargs)
 
+
+def get_mutation_distribution(identifier="AR", use_faces="generated", piecharts = True, force=False, **kwargs):
+    from imports import load_clusters, load_single_pdb
+    from visualisation import generate_piechart, nested_piechart
+    tprint("Mutation distribution")
+    for cluster in load_clusters(identifier=identifier, onebyone=True):
+        if cluster.is_all:
+            main_cluster = cluster
+    print(main_cluster)
+    face_combinations = main_cluster.face_combinations
+    ref_name = main_cluster.ref_name
+    print(main_cluster.face_combinations)
+
+
+
+    faces = {}
+    phenotypes = {phe:{} for phe in set([m.phenotype for m in main_cluster.mutations])}
+    if "mutation_distribution" not in main_cluster.__dict__.keys() or force:
+        for cluster in load_clusters(identifier=identifier, onebyone=True):
+            print(cluster.id)
 
 
 

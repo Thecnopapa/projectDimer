@@ -62,6 +62,8 @@ def parse_ardb():
                     continue
                 phenotype = clean_string(row.Phenotype.replace("\n", " "), allow=[" "]).upper()
                 redundant = False
+                if phenotype == "NORMAL":
+                    continue
                 for mutation in ar_mutant_list:
                     if (mutation.type == mut_type
                             and mutation.phenotype == phenotype
