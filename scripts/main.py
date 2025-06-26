@@ -159,57 +159,6 @@ def main(PROCESS_ALL = False,
 
 
     eprint("DIMER ANALYSIS v2")
-
-
-    """tprint("DIMER ANALYSIS")
-
-    if not SKIP_DIMERS or REPROCESS_DIMERS or PROCESS_ALL or (SPLIT_FACES_ANYWAY and FORCE_SPLIT):
-        #print(list(vars.clustering["contacts"].keys()))
-        progress = ProgressBar(len(molecule_list))
-        from surface import build_contact_arrays
-        c_arrays = {ref.name: [] for ref in vars.references}
-        for m in molecule_list:
-            if "lock" in m:
-                sprint(".lock file detected:", m)
-                progress.add(info=m)
-                continue
-            filename = m.split(".")[0]
-            sprint(filename)
-            molecules = load_single_pdb(filename, local.molecules)
-            for molecule in molecules:
-                dimers = molecule.dimers
-                for dimer in dimers:
-                    print1(dimer)
-                    if REPROCESS_DIMERS:
-                        dimer.process()
-                    if dimer.incomplete:
-                        continue
-                    dimer.get_contacts(max_distance=CONTACT_DISTANCE_CLUSTERING, force= FORCE_CONTACTS)
-                    if dimer.best_fit == "GR":
-                        dimer.get_faces(by_com = FACES_BY_COM)
-                        face_df = vars["clustering"]["faces"][dimer.best_fit]
-                        face_df.loc[dimer.id] = [dimer.id, dimer.face1, dimer.face2, dimer.contact_face1, dimer.contact_face2]
-                    build_contact_arrays(dimer, c_arrays, sasa=SASA, force=FORCE_CONTACTS or PROCESS_ALL, max_contact_length=CONTACT_DISTANCE_CLUSTERING)
-                    dimer.pickle()
-
-            progress.add(info=m)
-
-        for key in c_arrays.keys():
-            vars.clustering["contacts"][key] = pd.concat([vars.clustering["contacts"][key].iloc[:,0:2], *c_arrays[key]], axis=1)
-            print(vars.clustering["contacts"][key])
-        save_dfs(general=False, clustering=True)
-
-        for reference in vars.references:
-            sprint("Faces and contact dfs for {}".format(reference.name))
-            reference.faces_df = vars.clustering["faces"][reference.name]
-            reference.contacts_df = vars.clustering["contacts"][reference.name]
-            reference.pickle()
-            print(reference.faces_df)
-            print(reference.contacts_df)
-
-
-
-    eprint("DIMER ANALYSIS")"""
     ###### CLUSTERING ##################################################################################################
     tprint("CLUSTERING v2")
 
@@ -316,47 +265,6 @@ def main(PROCESS_ALL = False,
                 sprint(cluster.id)
                 cluster.plot_cluster(plot=True, gif =GIFS, cluster_colours=cluster_colours)
                 cluster.pickle()
-
-        """matrix, oneDmatrix1, oneDmatrix2 = plot_dihedrals(dihedrals_path,
-                                                            clusters="angle_cluster2",
-                                                            subset_col="angle_cluster2",
-                                                            subset = None,
-                                                            heatmap = HEATMAPS, hm_threshold=10,
-                                                            outer_ids_complete=ref.get_outer_res_list(complete_list=True),
-                                                            gif=GIFS,
-                                                            snapshot=SNAPSHOTS,
-                                                            chainbows = CHAINBOWS,
-                                                            include_all=True,)"""
-
-
-
-
-        '''from clustering import compare_contacts, get_clusters, cluster, split_by_faces, cluster_by_face
-        for reference in vars.references:
-            sprint(reference.name)
-            if reference.name != "GR" and ONLY_GR:
-                reference.pickle()
-                continue
-            if SPLIT_FACES or SPLIT_FACES_ANYWAY:
-                split_by_faces(reference, force=FORCE_SPLIT, by_com= FACES_BY_COM)
-            if reference.name == "GR" and (COMPARE or PROCESS_ALL):
-                if not "classified_df" in reference.__dict__ or (FORCE_COMPARE or PROCESS_ALL):
-                    reference.classified_df = compare_contacts(reference, force = FORCE_COMPARE or PROCESS_ALL)
-                from clustering import add_info_to_classified
-                #save_dfs(general=False, clustering=True)
-                add_info_to_classified(reference)
-                from visualisation import classified_chart
-                classified_chart()
-                #reference.clusters_eva = get_clusters(reference.classified_df, column = "Best_Match", ref_name=reference.name)
-    
-    
-            cluster_by_face(reference, FORCE_ALL= FORCE_CLUSTERING or PROCESS_ALL, minimum_score=MINIMUM_SCORE,
-                            n_clusters=N_CLUSTERS, pca=CLUSTER_BY_PCA, pca_dimensions = DIMENSIONS_PCA,
-                            splitted=SPLIT_FACES, rem_red=REMOVE_REDUNDANCY, method = CLUSTERING_METHOD,
-                            quantile=QUANTILE, n_sample_multiplier=N_SAMPLE_MULTIPLIER, bandwidth = BANDWIDTH)
-            reference.pickle()
-        #save_dfs(general=False, clustering=True)'''
-
 
 
     eprint("CLUSTERING v2")
