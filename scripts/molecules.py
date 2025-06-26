@@ -71,7 +71,7 @@ class BioObject:
         else:
             return "{} ({} at {})".format(self.id, self.__class__.__name__, id(self))
 
-    def parse_structure(self, parse_original = False, calculate_sasa = False, n_points=100, radius=3, sequence=True, only_ca = True, remove_disordered = False):
+    def parse_structure(self, parse_original = False, calculate_sasa = False, n_points=100, radius=3, sequence=True, only_ca = False, remove_disordered = False):
         if self.path is None or parse_original:
             self.path = self.o_path
         try:
@@ -1061,6 +1061,7 @@ class Reference(Monomer):
             from ARDB import parse_ardb_sequence, parse_ardb
             self.ref_seq = parse_ardb_sequence()
             self.mutation_list = parse_ardb()
+            self.mutations = self.mutation_list
 
         from faces import get_pca, get_terminals, find_com, get_face_coms
         self.terminals = get_terminals(self.structure)

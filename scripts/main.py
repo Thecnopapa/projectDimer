@@ -218,7 +218,7 @@ def main(PROCESS_ALL = False,
                 dihedrals_path = os.path.join(cluster2_folder, file)
                 create_clusters(dihedrals_path, ref )
 
-            #cluster_redundancy()
+            cluster_redundancy()
             cluster_dihedrals()
 
         if ONLY_GR:

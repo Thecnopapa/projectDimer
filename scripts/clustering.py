@@ -1040,7 +1040,7 @@ def remove_redundancy(in_path, threshold=0.001):
                         break
     print(dimer_list)
 
-    print("Removed {} redundant dimers".format(starting_len - len(dimer_list)))
+    sprint("Removed {} redundant dimers".format(starting_len - len(dimer_list)))
     pca_df = pca_df.loc[pca_df["id"].isin(dimer_list)]
     print(pca_df)
     pca_df.to_csv(in_path)
@@ -1319,7 +1319,7 @@ def cluster_angles(dihedrals_path,
 
 
 def create_clusters(df_path, ref, include_all=True, **kwargs):
-
+    sprint("Creating clusters")
     df = pd.read_csv(df_path, index_col=0)
     cluster_cols = ["angle_cluster1", "angle_cluster2"]
     cluster1list = list(set(df[cluster_cols[0]]))
@@ -1336,7 +1336,9 @@ def create_clusters(df_path, ref, include_all=True, **kwargs):
             c = Cluster2(ref,df,cluster_cols, c1=c1, c2=c2, **kwargs)
             if not c.outlier:
                 new_clusters.append(c)
-    print(new_clusters)
+    sprint("Clusters created:")
+    [print1(c) for c in new_clusters]
+
 
 
 class Cluster2:
@@ -1430,9 +1432,17 @@ class Cluster2:
         if matrix:
             if self.matrix is None or force:
                 self.get_matrix(threshold=10)
+            self.mutation_redundancy()
         if faces and not self.is_all:
             if self.faces is None or force:
                 self.get_face(method=use_face)
+
+    def mutation_redundancy(self):
+        unique_mutations = []
+        for mutation in self.mutations:
+            if mutation.id not in [m.id for m in unique_mutations]:
+                unique_mutations.append(mutation)
+        self.mutations = unique_mutations
 
 
     def plot_cluster(self, force = False, angles=True, plot=True, show = False, snapshot=True, gif=False, **kwargs):
@@ -1564,12 +1574,12 @@ class Cluster2:
             is1to2 = point.is1to2
             if point.reversed:
                 is1to2 = not is1to2
-            print(point)
-            print(dimer)
+            #print(point)
+            #print(dimer)
             new_matrix = dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not is1to2)
             if mutations:
-                print(dimer.id)
-                self.mutations.append(dimer.mutations)
+                #print(dimer.id)
+                self.mutations.extend(dimer.mutations)
             if matrix is None:
                 matrix = new_matrix
             else:
@@ -1658,6 +1668,7 @@ class Cluster2:
     def merge(self, cluster2, reverse):
         self.merged.append(cluster2.id)
         self.merged.extend(cluster2.merged)
+        self.mutations.extend(cluster2.mutations)
         sub2 = cluster2.subset
         sub2.rename(columns={'a0': 'b0', 'a1': 'b1', 'a2': 'b2',
                              'b0': 'a0', 'b1': 'a1', 'b2': 'a2' }, inplace=True)

@@ -15,9 +15,10 @@ from maths import *
 sprint("Loading References")
 vars["references"] = load_references(force_reload=True)
 print1("References loaded")
+for ref in vars.references:
+    ref.pickle()
 
-
-
+quit()
 from clustering import cluster_redundancy
 cluster_redundancy()
 

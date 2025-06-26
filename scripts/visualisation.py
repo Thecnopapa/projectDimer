@@ -223,27 +223,29 @@ def show_objects(obj_list, args, mates = False, merged = False,
                 if type(item) == str:
                     #print(item.endswith(".pdb"), not "fractional" in item, not "merged" in item, not merged)
                     if item.endswith(".pdb"):
+                        print("PDB detected:", item)
                         nice_name = os.path.basename(item).replace(".pdb", "")
-                        phenotypes = []
-                        if "mutations" in sys.argv:
+                        phenotypes = None
+                        print("mutations" in sys.argv, "mutations" in obj.__dict__.keys())
+                        if "mutations" in sys.argv and "mutations" in obj.__dict__:
                             phenotypes = list(set([clean_string(mut.phenotype) for mut in obj.mutations]))
                             print(phenotypes)
-
-                            if "fractional" in item or ("merged" in item and not merged):
-                                continue
-                            if "many_pdbs" in item:
-                                names.append(pymol_load_path(item, nice_name+"_original"))
-                                og = names[-1]
+                        if "fractional" in item or ("merged" in item and not merged):
+                            continue
+                        if "many_pdbs" in item:
+                            names.append(pymol_load_path(item, nice_name+"_original"))
+                            og = names[-1]
+                            if phenotypes is not None:
                                 for phe in phenotypes:
                                     names.append(pymol_load_path(item, "phe_"+nice_name+"_"+phe))
-                            elif "pdb_" in item:
-                                names.append(pymol_load_path(item, nice_name + "_processed"))
+                        elif "pdb_" in item:
+                            names.append(pymol_load_path(item, nice_name + "_processed"))
 
-                            else:
-                                names.append(pymol_load_path(item, nice_name))
-                                if "_x_" in nice_name:
-                                    for phe in phenotypes:
-                                        names.append(pymol_load_path(item, "phe_" + nice_name + "_" + phe))
+                        else:
+                            names.append(pymol_load_path(item, nice_name))
+                            if ("_x_" in nice_name or obj.is_reference) and phenotypes is not None:
+                                for phe in phenotypes:
+                                    names.append(pymol_load_path(item, "phe_" + nice_name + "_" + phe))
 
                 if key == "monomer1" or key == "monomer2":
                     from faces import GR_colours
@@ -304,11 +306,12 @@ def show_objects(obj_list, args, mates = False, merged = False,
                     pass
                 #############################################
                 if "mutations" in sys.argv:
-                    print("painting mutations")
-                    [print(m) for m in obj.mutations]
-                    mut_list = [["*", mut.position] for mut in obj.mutations if clean_string(mut.phenotype) == name.split("_")[-1]]
-                    [print(m) for m in mut_list]
-                    pymol_paint_contacts(name, mut_list, colour="red", quiet=False)
+                    if name.startswith("phe_"):
+                        print("painting mutations")
+                        [print(m) for m in obj.mutations]
+                        mut_list = [["*", mut.position] for mut in obj.mutations if clean_string(mut.phenotype) == name.split("_")[-1]]
+                        [print(m) for m in mut_list]
+                        pymol_paint_contacts(name, mut_list, colour="red", quiet=False)
                 #############################################
                 if "pca" in obj.__dict__.keys():
                     from faces import pca_to_lines
@@ -348,7 +351,7 @@ def show_objects(obj_list, args, mates = False, merged = False,
             pymol_set_state(0)
             pymol_orient()
             pymol_show_cell()
-            if "mutations" in sys.argv:
+            if "mutations" in sys.argv and phenotypes is not None:
                 for phe in phenotypes:
                     pymol_group(identifier = phe)
             pymol_group(identifier="pca", name="pcas")
@@ -442,7 +445,7 @@ if __name__ == "__main__":
     elif "ref" in sys.argv[1] and len(sys.argv[2:]) != 0:
         refs = load_list_1by1(identifier="REFERENCE_"+sys.argv[2], pickle_folder=local.refs).list()
         c_ref = load_clusters(identifier=sys.argv[2]+"-all-all", first_only=True)
-        if c_ref is None or "face_dict" not in c_ref.keys():
+        if c_ref is None or "face_dict" not in c_ref.__dict__.keys():
             print("Face dict not found in ref_cluster")
             print("Ref cluster:", c_ref)
             show_objects(refs, sys.argv[2:])
