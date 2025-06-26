@@ -1420,9 +1420,9 @@ class Cluster2:
     def __repr__(self):
         return "<Cluster:{} {}-{} /N={}>". format(self.ref_name, self.c1, self.c2, self.ndimers)
 
-    def process_cluster(self, force = False, matrix=True, faces=False, use_face="generated", dihedral_algorithm=None,**kwargs):
+    def process_cluster(self, general=True, force = False, matrix=True, faces=False, use_face="generated", dihedral_algorithm=None,**kwargs):
         print1("Processing {}: FORCE={} matrix={}, faces={}".format(self.id, force, matrix, faces))
-        if not self.is_all:
+        if not self.is_all and general:
             self.remove_identical()
             if self.comA is None or force:
                 self.get_com()
@@ -2139,7 +2139,7 @@ def get_faces(algorithm="affinity", identifier = None, force = False, gif=False,
         labels = None
         centres = None
         # CLUSTERING STARTING HERE
-
+        algorithm = algorithm.lower()
         if algorithm == "affinity":
             from sklearn.cluster import AffinityPropagation
             model = AffinityPropagation(random_state=6, damping=0.984).fit(coord_array)
@@ -2439,12 +2439,49 @@ def get_mutation_distribution(identifier="AR", use_faces="generated", piecharts 
     print(main_cluster.face_combinations)
 
 
-
     faces = {}
     phenotypes = {phe:{} for phe in set([m.phenotype for m in main_cluster.mutations])}
     if "mutation_distribution" not in main_cluster.__dict__.keys() or force:
         for cluster in load_clusters(identifier=identifier, onebyone=True):
+            if cluster.is_all:
+                continue
             print(cluster.id)
+
+            if cluster.faces == {}:
+                cluster.process_cluster(faces = True, matrix =False, force = True, general=False)
+            print(cluster.faces)
+
+            face_comb = "{}-{}".format(*sorted([f[0] for f in cluster.faces[use_faces]]))
+            print(face_comb)
+
+            if face_comb not in faces.keys():
+                faces[face_comb] = {}
+            for phenotype in set([m.phenotype for m in cluster.mutations]):
+                if phenotype not in phenotypes.keys():
+                    phenotypes[phenotype] = {}
+
+                if phenotype not in faces[face_comb]:
+                    faces[face_comb][phenotype] = 0
+                else: faces[face_comb][phenotype] += 1
+
+                if face_comb not in phenotypes[phenotype].keys():
+                    phenotypes[phenotype][face_comb] = 1
+                else: phenotypes[phenotype][face_comb] += 1
+        print(faces)
+        print(phenotypes)
+        main_cluster.phenotypes_by_face = faces
+        main_cluster.phenotypes = phenotypes
+        main_cluster.pickle()
+
+    local["phenotypes"] = "images/phenotypes"
+    for key, value in main_cluster.phenotypes.items():
+        generate_piechart(folder = local.phenotypes, extra_data=value, name=ref_name + "_{}_{}".format(use_faces, key))
+
+    nested_piechart(main_cluster.phenotypes, title=ref_name + "_{}_phenotypes".format(use_faces),
+                    legend_title=["Phenotype", "Dimer Interface"], **kwargs)
+    nested_piechart(main_cluster.faces, title=ref_name + "_{}_phenotypes_by_face".format(use_faces),
+                    legend_title=["Dimer Interface", "Phenotype",], **kwargs)
+
 
 
 

@@ -16,7 +16,7 @@ sprint("Loading References")
 vars["references"] = load_references(force_reload=True)
 print1("References loaded")
 from clustering import  get_mutation_distribution, get_faces, generate_cluster_grids
-get_faces(identifier="AR")
+get_faces(identifier="AR", algorithm="KMeans", force=False)
 generate_cluster_grids(identifier="AR")
 get_mutation_distribution(force=True)
 
