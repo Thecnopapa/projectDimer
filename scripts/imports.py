@@ -167,7 +167,10 @@ def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None,
 
 def load_references(force_reload = False, identifier = "all"):
     local["refs"] = "pickles/refs"
-    return load_single_pdb(identifier = identifier, pickle_folder = local.refs, pdb_folder=root.references, force_reload = force_reload, object_class = Reference)
+    refs = load_single_pdb(identifier = identifier, pickle_folder = local.refs, pdb_folder=root.references, force_reload = force_reload, object_class = Reference)
+    for ref in refs:
+        vars[ref.name] = ref
+    return refs
 
 def load_monomers(molecules = None, folder = "monomers", extension = ".monomer",force_reload=False):
     sprint("Loading monomers, force reload:", force_reload)

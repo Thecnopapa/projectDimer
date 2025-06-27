@@ -353,7 +353,7 @@ class Monomer(BioObject):
         self.mutations = []
         residues = list(self.structure.get_residues())
         if self.best_fit == "AR":
-            from ARDB import ardb_mutations
+            ardb_mutations = vars.AR.mutations
             from alignments import d3to1
             for mutation in ardb_mutations:
                 pos = mutation.position -1
@@ -1044,6 +1044,9 @@ class Reference(Monomer):
 
         self.o_path = path
         self.sequence = None
+        self.parse_structure(parse_original=True, calculate_sasa=True, n_points=200, radius=6, only_ca=True,
+                             remove_disordered=False)
+        self.complete_structure = self.structure
         self.parse_structure(parse_original=True, calculate_sasa=True, n_points=200, radius=6, only_ca=True, remove_disordered=True)
         self.outer_ids = self.get_outer_res_list()
         self.name = os.path.basename(path).split(".")[0]
@@ -1066,8 +1069,23 @@ class Reference(Monomer):
         if self.name == "AR":
             from ARDB import parse_ardb_sequence, parse_ardb
             self.ref_seq = parse_ardb_sequence()
-            self.mutation_list = parse_ardb()
-            self.mutations = self.mutation_list
+            self.mutations = parse_ardb()
+
+            self.ref_map, self.alignment = get_alignment_map(self.ref_seq, self.sequence)
+            res_list = list(self.complete_structure.get_residues())
+
+            for mutation in self.mutations:
+                #print(mutation)
+                target_pos = self.ref_map[mutation.position]
+                if target_pos is not None:
+                    #print(res_list[target_pos].id[1], res_list[target_pos].id[1] in outer_ids)
+                    if res_list[target_pos].id[1] in self.outer_ids:
+                        mutation.is_outer=True
+                    else:
+                        mutation.is_outer=False
+                print(mutation)
+
+
 
         from faces import get_pca, get_terminals, find_com, get_face_coms
         self.terminals = get_terminals(self.structure)
@@ -1083,6 +1101,10 @@ class Reference(Monomer):
     def reshape_face_dict(self):
         from faces import GR_dict
         self.face_dict = GR_dict.copy()
+
+    def remove_disordered(self):
+        pass
+
 
     def get_outer_res_list(self, threshold=10, inner=False, id_only=True, complete_list = False, binary = False):
         res_list = []

@@ -14,22 +14,25 @@ from Globals import root, local, vars
 
 class Mutation:
     def __init__(self, ids, mutation_type, phenotype, position, wt_res, mut_res):
+
         self.ids = ids
         self.id = self.ids[0]
         self.type = mutation_type
         self.phenotype = phenotype
         self.position = position
-        self.wt_res = wt_res
-        self.mut_res = mut_res
+        self.wt_res = wt_res.upper()
+        self.mut_res = mut_res.upper()
         self.target_pos = None
+        self.is_outer = None
 
     def __repr__(self):
+        from alignments import d3to1
         if "target_pos" in self.__dict__.keys(): #Development
             if self.target_pos is not None:
-                return "Mutation {} ({}): \tr.{}/t.{} {} --> {} \tleads to: {}".format(self.id, self.type, self.position, self.target_pos,
-                                                                                  self.wt_res, self.mut_res,
+                return "Mutation {} (Outer: {}): \tr.{}/t.{} {} --> {} \tleads to: {}".format(self.id, self.is_outer, self.position, self.target_pos,
+                                                                                  d3to1[self.wt_res], d3to1[self.mut_res],
                                                                                   self.phenotype)
-        return "Mutation {} ({}): \tr.{} {} --> {} \tleads to: {}".format(self.id, self.type, self.position,
+        return "Mutation {} ({}): \tr.{} {} --> {} \tleads to: {}".format(self.id, self.is_outer, self.position,
                                                                           self.wt_res, self.mut_res, self.phenotype)
 
 
@@ -43,7 +46,6 @@ def parse_ardb_sequence():
             line = clean_string(line)
             if len(line) == 0:
                 continue
-            print()
             s.extend([l for l in line])
         return "".join(s)
 
@@ -97,7 +99,7 @@ def parse_ardb():
         #print(mutation)
         pass
     return ar_mutant_list
-ardb_mutations = parse_ardb()
+
 
 
 
