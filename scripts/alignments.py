@@ -9,6 +9,7 @@ d3to1 = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
              'ILE': 'I', 'PRO': 'P', 'THR': 'T', 'PHE': 'F', 'ASN': 'N',
              'GLY': 'G', 'HIS': 'H', 'LEU': 'L', 'ARG': 'R', 'TRP': 'W',
              'ALA': 'A', 'VAL': 'V', 'GLU': 'E', 'TYR': 'Y', 'MET': 'M'}
+d1to3 = {v:k for k, v in d3to1.items()}
 
 
 def create_aligner(matrix = "BLOSUM62"):
@@ -47,7 +48,7 @@ def get_alignment(seq1, seq2, matrix = "BLOSUM62", first_only=True):
 
 def get_alignment_map(keys_seq, target_seq, matrix = "BLOSUM62"):
     al = get_alignment(keys_seq, target_seq, matrix)
-    #print(al)
+    print(al)
     al_keys = al[0]
     al_target = al[1]
     al_map = {}
@@ -55,17 +56,20 @@ def get_alignment_map(keys_seq, target_seq, matrix = "BLOSUM62"):
     n_target = 0
     for k, target in zip(al_keys, al_target):
         #print(k, target)
+
         if k == "-":
             continue
         if target == "-":
             al_map[n_keys] = None
+            #print(k, target, keys_seq[n_keys], al_map[n_keys], n_keys, n_target)
         else:
             al_map[n_keys] = n_target
+            #print(k, target, keys_seq[n_keys], al_map[n_keys],n_keys, n_target)
             n_target += 1
 
         n_keys += 1
-    #print(al_map)
-    return al_map
+    [print("{} {} {} {}".format(k, v, keys_seq[k], target_seq[v])) for k,v in al_map.items() if v is not None]
+    return al_map, al
 
 
 

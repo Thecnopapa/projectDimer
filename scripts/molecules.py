@@ -334,7 +334,7 @@ class Monomer(BioObject):
                 if self.best_fit == "AR":
                     from ARDB import ardb_sequence
                     from alignments import get_alignment_map
-                    self.ref_map = get_alignment_map(ardb_sequence, self.sequence)
+                    self.ref_map, self.alignment = get_alignment_map(ardb_sequence, self.sequence)
                     #print(self.ref_map)
                     self.get_mutations()
 
@@ -348,25 +348,31 @@ class Monomer(BioObject):
         self.pickle()
 
     def get_mutations(self):
+        import copy
         print2("Identifying mutations")
         self.mutations = []
+        residues = list(self.structure.get_residues())
         if self.best_fit == "AR":
             from ARDB import ardb_mutations
             from alignments import d3to1
             for mutation in ardb_mutations:
-                pos = mutation.position
+                pos = mutation.position -1
                 mut_res = d3to1[mutation.mut_res.upper()]
                 #print(self.ref_map)
                 target_pos = self.ref_map[pos]
                 if target_pos is not None:
-                    exp_res = list(self.structure.get_residues())[target_pos]
+                    exp_res = self.sequence[target_pos]
                     #print(mutation)
-                    target_resmame = d3to1[exp_res.resname]
 
-                    if target_resmame == mut_res:
+
+                    if exp_res == mut_res:
+
+                        mutation = copy.deepcopy(mutation)
+                        mutation.target_pos = residues[target_pos].id[1]
                         print3(mutation)
-                        print4(pos, exp_res.id[1], target_pos, mutation.wt_res, target_resmame, mut_res)
+                        print4(pos, exp_res, target_pos, mutation.wt_res, exp_res, mut_res)
                         self.mutations.append(mutation)
+
 
 
 

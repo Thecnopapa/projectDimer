@@ -15,6 +15,26 @@ from maths import *
 sprint("Loading References")
 vars["references"] = load_references(force_reload=True)
 print1("References loaded")
+
+from clustering import get_mutation_distribution
+from alignments import get_alignment_map
+from ARDB import ardb_sequence
+with open("AR_list.txt", "w") as f:
+    l=[]
+    progress = ProgressBar(len(os.listdir(local.monomers)))
+    for monomer in load_list_1by1(pickle_folder=local.monomers, keep_extension=True):
+        if monomer.id not in l and monomer.best_fit == "AR" :
+            monomer.ref_map, monomer.alignment = get_alignment_map(ardb_sequence, monomer.sequence)
+            monomer.get_mutations()
+            monomer.pickle()
+            l.append(monomer.id)
+            if not monomer.is_mate:
+                f.write("\n> "+monomer.id+"\n")
+                f.write(monomer.sequence)
+        progress.add(info=monomer.id)
+
+get_mutation_distribution(force=True)
+quit()
 from clustering import  get_mutation_distribution, get_faces, generate_cluster_grids
 get_faces(identifier="AR", algorithm="KMeans", force=False)
 generate_cluster_grids(identifier="AR")

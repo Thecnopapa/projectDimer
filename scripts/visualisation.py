@@ -245,9 +245,13 @@ def show_objects(obj_list, args, mates = False, merged = False,
 
                         else:
                             names.append(pymol_load_path(item, nice_name))
-                            if ("_x_" in nice_name or obj.is_reference) and phenotypes is not None:
+                            if "_x_" in nice_name and phenotypes is not None:
                                 for phe in phenotypes:
                                     names.append(pymol_load_path(item, "phe_" + nice_name + "_" + phe))
+                            if "is_reference" in obj.__dict__.keys():
+                                if obj.is_reference:
+                                    for phe in phenotypes:
+                                        names.append(pymol_load_path(item, "phe_" + nice_name + "_" + phe))
 
                 if key == "monomer1" or key == "monomer2":
                     from faces import GR_colours
