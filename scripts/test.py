@@ -23,7 +23,7 @@ tprint("TEST SCRIPT a.k.a THE PATCHER")
 
 
 
-
+progress = ProgressBar(len(os.listdir(local.dimers)))
 for dimer in load_list_1by1(pickle_folder=local.dimers):
     if dimer.best_fit != "AR":
         continue
@@ -39,6 +39,7 @@ for dimer in load_list_1by1(pickle_folder=local.dimers):
     dimer.process()
     [print1(mut) for mut in dimer.mutations1]
     [print1(mut) for mut in dimer.mutations2]
+    progress.add(info=dimer.id)
 
 
 quit()
@@ -48,7 +49,7 @@ quit()
 
 
 
-
+progress = ProgressBar(len(os.listdir(local.cluster_pickles)))
 for cluster in load_list_1by1(pickle_folder=local.cluster_pickles):
     if cluster.ref_name != "AR": continue
     sprint(cluster)
@@ -60,6 +61,7 @@ for cluster in load_list_1by1(pickle_folder=local.cluster_pickles):
     [print1(mut) for mut in cluster.mutations1]
     [print1(mut) for mut in cluster.mutations2]
     cluster.pickle()
+    progress.add(info=cluster.id)
 
 
 quit()

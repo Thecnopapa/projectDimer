@@ -1435,19 +1435,22 @@ class Cluster2:
 
         if matrix:
             if self.matrix is None or force:
+                print("REFNAME = {}".format(self.ref_name))
                 self.get_matrix(threshold=10, mutations = self.ref_name == "AR")
             if self.ref_name == "AR":
-                self.mutation_redundancy()
+                #self.mutation_redundancy()
+                pass
         if faces and not self.is_all:
             if self.faces is None or force:
                 self.get_face(method=use_face)
 
-    def mutation_redundancy(self):
-        unique_mutations = {}
-        for mutation in self.mutations.keys():
+    @staticmethod
+    def unique_mutations(mutations):
+        unique_mutations = []
+        for mutation in mutations:
             if mutation.id not in [m.id for m in unique_mutations]:
                 unique_mutations.append(mutation)
-        self.mutations = unique_mutations
+        return unique_mutations
 
 
     def plot_cluster(self, force = False, angles=True, plot=True, show = False, snapshot=True, gif=False, **kwargs):
@@ -1587,7 +1590,8 @@ class Cluster2:
             #print(dimer)
             new_matrix = dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not is1to2)
             if mutations:
-                #print(dimer.id)
+                print(dimer)
+                resmap = {resn: n for n, resn in enumerate(dimer.contact_surface.residues)}
                 try:
                     self.mutations.extend(dimer.mutations1+dimer.mutations2)
                 except:
@@ -1602,11 +1606,11 @@ class Cluster2:
                     self.all_mutations1.extend(dimer.mutations2)
                     self.all_mutations2.extend(dimer.mutations1)
                 if is1to2:
-                    self.mutations1.extend([mut for mut in dimer.mutations1 if 1 in new_matrix[mut.target_pos]])
-                    self.mutations2.extend([mut for mut in dimer.mutations2 if 1 in new_matrix.T[mut.target_pos]])
+                    self.mutations1.extend([mut for mut in dimer.mutations1 if mut.target_pos in resmap and 1 in new_matrix[resmap[mut.target_pos]]])
+                    self.mutations2.extend([mut for mut in dimer.mutations2 if mut.target_pos in resmap and 1 in new_matrix.T[resmap[mut.target_pos]]])
                 else:
-                    self.mutations1.extend([mut for mut in dimer.mutations2 if 1 in new_matrix[mut.target_pos]])
-                    self.mutations2.extend([mut for mut in dimer.mutations1 if 1 in new_matrix.T[mut.target_pos]])
+                    self.mutations1.extend([mut for mut in dimer.mutations2 if mut.target_pos in resmap and 1 in new_matrix[resmap[mut.target_pos]]])
+                    self.mutations2.extend([mut for mut in dimer.mutations1 if mut.target_pos in resmap and 1 in new_matrix.T[resmap[mut.target_pos]]])
             if matrix is None:
                 matrix = new_matrix
             else:
@@ -1769,11 +1773,11 @@ class Cluster2:
 
         super_data = superpose_many_chains(chains_to_align, file_name=self.id + ".pdb", save_folder=local.cluster_pdbs)
         monster_path = super_data["out_path"]
-
+        chain1s = []
         structure = PDBParser(QUIET=True).get_structure(self.id, monster_path)
         for model, (key, value) in zip(structure.get_models(), chains_to_align.items()):
             model.id = key
-        if face_colours is None and not chainbows and cluster_colours is None:
+        if (face_colours is None and not chainbows and cluster_colours is None) or cluster_colours == "mutations":
             if regenerate_matrix or self.matrix is None:
                 self.reprocess_cluster(matrix=True,force=True)
             if self.oneDmatrix1 is not None and self.oneDmatrix2 is not None:
@@ -1783,6 +1787,7 @@ class Cluster2:
                         is_chain1 = chain.id == value[1]
                         if is_chain1:
                             alter_bfactors(chain, self.oneDmatrix1)
+                            chain1s.append(chain.id)
                         else:
                             alter_bfactors(chain, self.oneDmatrix2)
 
@@ -1834,8 +1839,15 @@ class Cluster2:
                     extra_id = "_dihedrals_{}".format(self.dihedral_method)
                 elif cluster_colours == "mutations" and "mutations" in self.__dict__.keys():
                     pymol_colour("blue", "(all)")
-                    for mutation in self.mutations:
-                        pymol_colour("yellow", obj="*", sele = "i. {}".format(mutation.position))
+                    pymol_colour("blue_yellow_red", "(all)", spectrum="b")
+                    print(list(zip(pymol_get_all_objects(), chain1s)))
+                    for obj, chain in zip(pymol_get_all_objects(), chain1s):
+                        for mutation in self.mutations1:
+                            print(mutation)
+                            pymol_colour("white", obj=obj, sele = "c. {} and i. {}".format(chain, mutation.position))
+                        for mutation in self.mutations2:
+                            print(mutation)
+                            pymol_colour("green", obj=obj, sele="(not c. {}) and i. {}".format(chain, mutation.position))
                     extra_id = "_mutations"
 
                 else:

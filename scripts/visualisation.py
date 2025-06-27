@@ -177,7 +177,7 @@ def show_objects(obj_list, args, mates = False, merged = False,
         for key, item in obj.__dict__.items():
             if key in ["lines", "c_lines", "sasas1D", "sasas2D", "full_array","contacts_faces1", "contacts_faces2",
                        "contacts", "contacts_symm", "contacts_sasa", "outer_ids_complete","outer_ids_binary",
-                       "oneDmatrix1", "oneDmatrix2", "atoms", "outer_ids", "cD_list","ref_map", "map_to_ref" ]:
+                       "oneDmatrix1", "oneDmatrix2", "atoms", "outer_ids", "cD_list","ref_map", "map_to_ref", "all_mutations1", "all_mutations2", "mutations" ]:
                 try:
                     print1(key, ": OMITTED (len: {})".format(len(item)))
                 except:
@@ -248,7 +248,7 @@ def show_objects(obj_list, args, mates = False, merged = False,
                             if "_x_" in nice_name and phenotypes is not None:
                                 for phe in phenotypes:
                                     names.append(pymol_load_path(item, "phe_" + nice_name + "_" + phe))
-                            if "is_reference" in obj.__dict__.keys():
+                            if "is_reference" in obj.__dict__.keys() and phenotypes is not None:
                                 if obj.is_reference:
                                     for phe in phenotypes:
                                         names.append(pymol_load_path(item, "phe_" + nice_name + "_" + phe))
