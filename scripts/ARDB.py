@@ -32,7 +32,8 @@ class Mutation:
                 return "Mutation {} (Outer: {}): \tr.{}/t.{} {} --> {} \tleads to: {}".format(self.id, self.is_outer, self.position, self.target_pos,
                                                                                   d3to1[self.wt_res], d3to1[self.mut_res],
                                                                                   self.phenotype)
-        return "Mutation {} ({}): \tr.{} {} --> {} \tleads to: {}".format(self.id, self.is_outer, self.position,
+
+        return "Mutation {} ({}): \tr.{} {} --> {} \tleads to: {}".format(self.id, self.type, self.position,
                                                                           self.wt_res, self.mut_res, self.phenotype)
 
 

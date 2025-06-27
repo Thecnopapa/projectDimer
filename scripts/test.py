@@ -13,8 +13,64 @@ from maths import *
 
 
 sprint("Loading References")
-vars["references"] = load_references(force_reload=True)
+vars["references"] = load_references(force_reload=True ,pickle=True)
 print1("References loaded")
+tprint("TEST SCRIPT a.k.a THE PATCHER")
+
+
+
+
+
+
+
+
+for dimer in load_list_1by1(pickle_folder=local.dimers):
+    if dimer.best_fit != "AR":
+        continue
+    print(dimer.id)
+    from ARDB import ardb_sequence
+    from alignments import get_alignment_map
+    dimer.monomer1.ref_map, dimer.monomer1.alignment = get_alignment_map(ardb_sequence, dimer.monomer1.sequence)
+    dimer.monomer1.get_mutations()
+    dimer.monomer1.pickle()
+    dimer.monomer2.ref_map, dimer.monomer2.alignment = get_alignment_map(ardb_sequence, dimer.monomer2.sequence)
+    dimer.monomer2.get_mutations()
+    dimer.monomer2.pickle()
+    dimer.process()
+    [print1(mut) for mut in dimer.mutations1]
+    [print1(mut) for mut in dimer.mutations2]
+
+
+quit()
+
+
+
+
+
+
+
+for cluster in load_list_1by1(pickle_folder=local.cluster_pickles):
+    if cluster.ref_name != "AR": continue
+    sprint(cluster)
+    cluster.get_matrix(threshold=10)
+    print("ALL")
+    [print1(mut) for mut in cluster.all_mutations1]
+    [print1(mut) for mut in cluster.all_mutations2]
+    print("CONTACT")
+    [print1(mut) for mut in cluster.mutations1]
+    [print1(mut) for mut in cluster.mutations2]
+    cluster.pickle()
+
+
+quit()
+
+
+
+
+
+
+
+quit()
 
 from clustering import get_mutation_distribution
 from alignments import get_alignment_map

@@ -449,6 +449,8 @@ class ResPair:
         self.vector12 = vector(self.coord1, self.coord2)
         self.vector21 = vector(self.coord2, self.coord1)
         self.dist = length(self.vector12)
+    def __repr__(self):
+        return "ResPair: {}-{} ({}A)".format(self.id1, self.id2, round(self.dist))
 
 
 

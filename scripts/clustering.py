@@ -1411,6 +1411,10 @@ class Cluster2:
         self.cD_list = None
         self.dihedral_method = None
         self.mutations = None
+        self.all_mutations1 = None
+        self.all_mutations2 = None
+        self.mutations1 = None
+        self.mutations2 = None
 
 
         if not self.outlier:
@@ -1431,7 +1435,7 @@ class Cluster2:
 
         if matrix:
             if self.matrix is None or force:
-                self.get_matrix(threshold=10)
+                self.get_matrix(threshold=10, mutations = self.ref_name == "AR")
             if self.ref_name == "AR":
                 self.mutation_redundancy()
         if faces and not self.is_all:
@@ -1439,8 +1443,8 @@ class Cluster2:
                 self.get_face(method=use_face)
 
     def mutation_redundancy(self):
-        unique_mutations = []
-        for mutation in self.mutations:
+        unique_mutations = {}
+        for mutation in self.mutations.keys():
             if mutation.id not in [m.id for m in unique_mutations]:
                 unique_mutations.append(mutation)
         self.mutations = unique_mutations
@@ -1560,11 +1564,15 @@ class Cluster2:
 
 
 
-    def get_matrix(self, threshold, plot = True, mutations = True, **kwargs):
+    def get_matrix(self, threshold, plot = True, mutations = False, **kwargs):
         from imports import load_single_pdb
         print2("Generating cluster matrix")
         if mutations:
             self.mutations = []
+            self.all_mutations1 = []
+            self.all_mutations2 = []
+            self.mutations1 = []
+            self.mutations2 = []
         matrix = None
         self.subset.sort_values(by="id", inplace=True)
         progress = ProgressBar(len(self.subset), silent=True)
@@ -1580,7 +1588,25 @@ class Cluster2:
             new_matrix = dimer.contact_surface.get_contact_map(threshold=threshold, transposed=not is1to2)
             if mutations:
                 #print(dimer.id)
-                self.mutations.extend(dimer.mutations)
+                try:
+                    self.mutations.extend(dimer.mutations1+dimer.mutations2)
+                except:
+                    print(dimer.best_fit)
+                    dimer.process()
+                    self.mutations.extend(dimer.mutations1 + dimer.mutations2)
+
+                if is1to2:
+                    self.all_mutations1.extend(dimer.mutations1)
+                    self.all_mutations2.extend(dimer.mutations2)
+                else:
+                    self.all_mutations1.extend(dimer.mutations2)
+                    self.all_mutations2.extend(dimer.mutations1)
+                if is1to2:
+                    self.mutations1.extend([mut for mut in dimer.mutations1 if 1 in new_matrix[mut.target_pos]])
+                    self.mutations2.extend([mut for mut in dimer.mutations2 if 1 in new_matrix.T[mut.target_pos]])
+                else:
+                    self.mutations1.extend([mut for mut in dimer.mutations2 if 1 in new_matrix[mut.target_pos]])
+                    self.mutations2.extend([mut for mut in dimer.mutations1 if 1 in new_matrix.T[mut.target_pos]])
             if matrix is None:
                 matrix = new_matrix
             else:

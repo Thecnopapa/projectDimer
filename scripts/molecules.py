@@ -675,6 +675,8 @@ class Dimer(BioObject):
         self.outer_ids = None
         self.contact_surface = None
         self.mutations = None
+        self.mutations1 = None
+        self.mutations2 = None
 
 
         self.process(sasa = sasa)
@@ -704,6 +706,9 @@ class Dimer(BioObject):
         self.get_contact_surface()
         if self.best_fit == "AR":
             self.mutations = self.monomer1.mutations + self.monomer2.mutations
+            self.mutations1 = self.monomer1.mutations
+            self.mutations2 = self.monomer2.mutations
+
         if pickle:
             self.pickle()
 

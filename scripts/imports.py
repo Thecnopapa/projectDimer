@@ -165,10 +165,12 @@ def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None,
             quit()
     return objects
 
-def load_references(force_reload = False, identifier = "all"):
+def load_references(force_reload = False, identifier = "all", pickle = False):
     local["refs"] = "pickles/refs"
     refs = load_single_pdb(identifier = identifier, pickle_folder = local.refs, pdb_folder=root.references, force_reload = force_reload, object_class = Reference)
     for ref in refs:
+        if pickle:
+            ref.pickle()
         vars[ref.name] = ref
     return refs
 
