@@ -425,7 +425,7 @@ def get_fractional_distance(coord1, coord2, params):
 
 
 
-def find_relevant_mates(self, orth_struct, params, key, minimum_chain_length = 100, contact_distance = 8, min_contacts = 0):
+def find_relevant_mates(self, orth_struct, params, key, minimum_chain_length = 100, contact_distance = 8, min_contacts = 1):
     print1("Finding relevant mates")
     print2("Space group:", key)
 
