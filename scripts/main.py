@@ -315,7 +315,7 @@ if __name__ == "__main__":
         SKIP_SYMMETRY = True, # Skip the entire block (overridden by PROCESS_ALL)
         MINIMUM_CHAIN_LENGTH=100,# Minimum number of residues to consider a chain for dimerization (to ignore ligands and small molecules)
         CONTACT_DISTANCE_SYMMETRY=8,  # Minimum (less or equal than) distance in Angstroms to consider a contact between atoms
-        MINIMUM_CONTACTS=0,  # Minimum number of contacts to consider a dimer interface
+        MINIMUM_CONTACTS=1,  # Minimum number of contacts to consider a dimer interface
 
         # Dimer processing, includes contact calculation and face identification, generates contact dataframes
         SKIP_DIMERS = True and "dimers" not in sys.argv, # Skip the entire block (overridden by PROCESS_ALL and REPROCESS_DIMERS)
@@ -356,7 +356,7 @@ if __name__ == "__main__":
 
         HEATMAPS = True,
         GIFS = False,
-        SNAPSHOTS = True,
+        SNAPSHOTS = False,
         CHAINBOWS = False,
         GENERATE_CLUSTERS = False or "clusters" in sys.argv,
         DELETE_PREVIOUS = False or "delete" in sys.argv,

@@ -226,7 +226,7 @@ class PDB(BioObject):
         return self.dimers
 
 
-    def get_all_dimers(self, force = False, minimum_chain_length = 100, contact_distance = 8, min_contacts = 0):
+    def get_all_dimers(self, force = False, minimum_chain_length = 100, contact_distance = 8, min_contacts = 1):
         if len(self.dimers) > 0 and not force:
             return self.dimers
         self.dimers = []

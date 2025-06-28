@@ -1569,7 +1569,7 @@ class Cluster2:
 
     def get_matrix(self, threshold, plot = True, mutations = False, **kwargs):
         from imports import load_single_pdb
-        print2("Generating cluster matrix")
+        print2("Generating cluster matrix, mutations={}".format(mutations))
         if mutations:
             self.mutations = []
             self.all_mutations1 = []
@@ -1609,8 +1609,8 @@ class Cluster2:
                     self.mutations1.extend([mut for mut in dimer.mutations1 if mut.target_pos in resmap and 1 in new_matrix[resmap[mut.target_pos]]])
                     self.mutations2.extend([mut for mut in dimer.mutations2 if mut.target_pos in resmap and 1 in new_matrix.T[resmap[mut.target_pos]]])
                 else:
-                    self.mutations1.extend([mut for mut in dimer.mutations2 if mut.target_pos in resmap and 1 in new_matrix[resmap[mut.target_pos]]])
-                    self.mutations2.extend([mut for mut in dimer.mutations1 if mut.target_pos in resmap and 1 in new_matrix.T[resmap[mut.target_pos]]])
+                    self.mutations2.extend([mut for mut in dimer.mutations1 if mut.target_pos in resmap and 1 in new_matrix[resmap[mut.target_pos]]])
+                    self.mutations1.extend([mut for mut in dimer.mutations2 if mut.target_pos in resmap and 1 in new_matrix.T[resmap[mut.target_pos]]])
             if matrix is None:
                 matrix = new_matrix
             else:
@@ -1699,7 +1699,8 @@ class Cluster2:
     def merge(self, cluster2, reverse):
         self.merged.append(cluster2.id)
         self.merged.extend(cluster2.merged)
-        self.mutations.extend(cluster2.mutations)
+        if self.ref_name =="AR":
+            self.mutations.extend(cluster2.mutations)
         sub2 = cluster2.subset
         sub2.rename(columns={'a0': 'b0', 'a1': 'b1', 'a2': 'b2',
                              'b0': 'a0', 'b1': 'a1', 'b2': 'a2' }, inplace=True)
@@ -2285,7 +2286,7 @@ def compare_all_with_eva():
                 print2("{}: {}".format(k, v))
 
 
-def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = True, face_algorithm=None):
+def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = True, face_algorithm=None, plot=True):
     from imports import load_clusters
     sprint("Generating cluster grids")
     faces = []

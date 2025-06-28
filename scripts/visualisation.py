@@ -1,7 +1,7 @@
 import os
 import sys
 
-from Bio import phenotype
+
 
 from Globals import root, local, vars
 from utilities import *
@@ -500,8 +500,10 @@ if __name__ == "__main__":
             tprint("Showing clusters")
         else:
             sprint("Available clusters")
-            for file in os.listdir(local.cluster_pickles):
-                print1(file.split(".")[0])
+            for refname in set([n.split("-")[0] for n in os.listdir(local.cluster_pickles)]):
+                sprint(refname, "N=",len([f for f in sorted(os.listdir(local.cluster_pickles)) if f.startswith(refname)])-1, "+1")
+                for file in [f for f in sorted(os.listdir(local.cluster_pickles)) if f.startswith(refname)]:
+                    print1(file.split(".")[0])
 
     elif "clusters-eva" == sys.argv[1]:
         from clustering import generate_cluster_grids
