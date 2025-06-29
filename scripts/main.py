@@ -259,7 +259,7 @@ def main(PROCESS_ALL = False,
             if ref.name != "GR" and ONLY_GR:
                 continue
             generate_cluster_grids(identifier=ref.name, use_faces=USE_FACES, face_algorithm=FACE_ALGORITHM)
-            get_space_groups(identifier=ref.name, use_faces=USE_FACES)
+            #get_space_groups(identifier=ref.name, use_faces=USE_FACES)
             if ref.name == "AR":
                 get_mutation_distribution(identifier=ref.name, use_faces=USE_FACES, force=FORCE_ANALYSIS)
 
@@ -315,7 +315,7 @@ if __name__ == "__main__":
         SKIP_SYMMETRY = True, # Skip the entire block (overridden by PROCESS_ALL)
         MINIMUM_CHAIN_LENGTH=100,# Minimum number of residues to consider a chain for dimerization (to ignore ligands and small molecules)
         CONTACT_DISTANCE_SYMMETRY=8,  # Minimum (less or equal than) distance in Angstroms to consider a contact between atoms
-        MINIMUM_CONTACTS=1,  # Minimum number of contacts to consider a dimer interface
+        MINIMUM_CONTACTS=2,  # Minimum number of contacts to consider a dimer interface
 
         # Dimer processing, includes contact calculation and face identification, generates contact dataframes
         SKIP_DIMERS = True and "dimers" not in sys.argv, # Skip the entire block (overridden by PROCESS_ALL and REPROCESS_DIMERS)
@@ -342,7 +342,7 @@ if __name__ == "__main__":
         # Clustering, from SM to plotting
         SKIP_CLUSTERING=False and "clustering" not in sys.argv, # Skip th entire block (overridden by PROCESS_ALL)
         FORCE_CLUSTERING=True,  # Force clustering if already calculated (overridden by PROCESS_ALL)
-        ONLY_GR = True, # Whether to only cluster GR
+        ONLY_GR = False, # Whether to only cluster GR
         REMOVE_REDUNDANCY = True,
         CLUSTERING_METHOD = "MeanShift",
         QUANTILE= 0.1,
