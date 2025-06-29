@@ -957,7 +957,9 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
     print2("Saving at {}".format(fig_path))
     print(fig_path)
     fig.savefig(fig_path, dpi=300)
-    plt.show(block=vars.block)
+    if vars.block:
+        plt.show(block=vars.block)
+    plt.close()
     return fig_path
 
 
@@ -1454,7 +1456,7 @@ class Cluster2:
         return unique_mutations
 
 
-    def plot_cluster(self, force = False, angles=True, plot=True, show = False, snapshot=True, gif=False, **kwargs):
+    def plot_cluster(self, force = False, angles=True, plot=True, show = False, snapshot=False, gif=False, **kwargs):
 
         if angles:
             if force or  self.plot_path is None or (self.gif_path is None and gif) :
@@ -1762,10 +1764,11 @@ class Cluster2:
             if row.reversed:
                 is1to2 = not is1to2
             dc= row.dihedral_cluster
-            if is1to2:
-                chains_to_align[name] = (dimer.replaced_path, row.mon1, row.is1to2, row.reversed, n+1, dc)
-            else:
-                chains_to_align[name] = (dimer.replaced_path, row.mon2, row.is1to2, row.reversed, n+1, dc)
+            if dc == 0:
+                if is1to2:
+                    chains_to_align[name] = (dimer.replaced_path, row.mon1, row.is1to2, row.reversed, n+1, dc)
+                else:
+                    chains_to_align[name] = (dimer.replaced_path, row.mon2, row.is1to2, row.reversed, n+1, dc)
         self.chains_to_align = chains_to_align
         local["cluster_pdbs"] = "exports/cluster_pdbs"
 
@@ -1780,7 +1783,7 @@ class Cluster2:
         structure = PDBParser(QUIET=True).get_structure(self.id, monster_path)
         for model, (key, value) in zip(structure.get_models(), chains_to_align.items()):
             model.id = key
-        if (face_colours is None and not chainbows and cluster_colours is None) or cluster_colours == "mutations":
+        if (face_colours is None and not chainbows and cluster_colours is None) or cluster_colours == "mutations" or cluster_colours == "matrix":
             if regenerate_matrix or self.matrix is None:
                 self.reprocess_cluster(matrix=True,force=True)
             if self.oneDmatrix1 is not None and self.oneDmatrix2 is not None:
@@ -1822,6 +1825,9 @@ class Cluster2:
             if chainbows:
                 pymol_colour("chainbow", "(all)")
                 extra_id = "_chainbows"
+            elif cluster_colours == "matrix":
+                pymol_colour("blue_yellow_red", "(all)", spectrum="b")
+                extra_id = "_heatmap"
             elif cluster_colours is not None:
                 if cluster_colours == "clusters" or cluster_colours == "cluster":
                     pymol_colour(mpl_colours[self.c2 % mpl_ncolours], "(all)")
@@ -1863,6 +1869,10 @@ class Cluster2:
                         extra_id = "_cluster_cols"
 
 
+            elif face_colours is None or cluster_colours == "matrix":
+                pymol_colour("blue_yellow_red", "(all)", spectrum="b")
+                extra_id = "_heatmap"
+
             elif face_colours is not None:
                 if face_colours == "eva":
                     from faces import GR_colours as color_dict
@@ -1870,9 +1880,7 @@ class Cluster2:
                     color_dict = None
                 pymol_paint_single_face(chains_to_align, self.faces[face_colours][0][0], self.faces[face_colours][1][0], color_dict=color_dict)
                 extra_id = "_faces_{}".format(face_colours)
-            else:
-                pymol_colour("blue_yellow_red", "(all)", spectrum="b")
-                extra_id = "_heatmap"
+
             if not self.is_all and snapshot:
                 if self.snapshot_path is None or type(self.snapshot_path) is str:
                     self.snapshot_path = {}
@@ -2216,7 +2224,9 @@ def get_faces(algorithm="affinity", identifier = None, force = False, gif=False,
             print(Z[:,2])
             D = dendrogram(Z, color_threshold=0.65*max(Z[:,2]))
             #D = dendrogram(Z, p=4, truncate_mode="level")
-            plt.show(block = vars.block)
+            if vars.block:
+                plt.show(block = vars.block)
+            plt.close()
             leaves = D["leaves"]
             leave_colours = [int(d.replace("C","")) for d in D["leaves_color_list"]]
             leave_list= [[l,col] for l, col in zip(leaves, leave_colours)]

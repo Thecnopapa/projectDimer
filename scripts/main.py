@@ -248,7 +248,7 @@ def main(PROCESS_ALL = False,
 
         for cluster in load_clusters(identifier=identifier, onebyone=True):
             sprint(cluster.id)
-            cluster.plot_cluster(force = REFRESH_PLOTS, plot=True,
+            cluster.plot_cluster(force = REFRESH_PLOTS,
                                  snapshot = SNAPSHOTS,
                                  face_colours = USE_FACES,
                                  cluster_colours=cluster_colours)
@@ -342,7 +342,7 @@ if __name__ == "__main__":
         # Clustering, from SM to plotting
         SKIP_CLUSTERING=False and "clustering" not in sys.argv, # Skip th entire block (overridden by PROCESS_ALL)
         FORCE_CLUSTERING=True,  # Force clustering if already calculated (overridden by PROCESS_ALL)
-        ONLY_GR = False, # Whether to only cluster GR
+        ONLY_GR = True, # Whether to only cluster GR
         REMOVE_REDUNDANCY = True,
         CLUSTERING_METHOD = "MeanShift",
         QUANTILE= 0.1,
@@ -356,7 +356,7 @@ if __name__ == "__main__":
 
         HEATMAPS = True,
         GIFS = False,
-        SNAPSHOTS = False,
+        SNAPSHOTS = True,
         CHAINBOWS = False,
         GENERATE_CLUSTERS = False or "clusters" in sys.argv,
         DELETE_PREVIOUS = False or "delete" in sys.argv,
