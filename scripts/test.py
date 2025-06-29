@@ -20,6 +20,9 @@ tprint("TEST SCRIPT a.k.a THE PATCHER")
 
 
 from clustering import *
+
+compare_all_with_eva()
+quit()
 get_faces(algorithm="weighted", save=True, force=True ,gif=True)
 quit()
 

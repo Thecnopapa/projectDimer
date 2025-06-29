@@ -362,7 +362,7 @@ if __name__ == "__main__":
         DELETE_PREVIOUS = False or "delete" in sys.argv,
         REFRESH_PLOTS = False or "replot" in sys.argv,
         REPROCESS_CLUSTERS = False or "reprocess" in sys.argv,
-        FACE_ALGORITHM = "kmeans",
+        FACE_ALGORITHM = "weighted",
         USE_FACES = "generated", # "eva" or "generated"
         PLOT_DIHEDRALS = False or "dihedrals" in sys.argv,
         DIHEDRAL_ALGORITHM  = "HDBSCAN",

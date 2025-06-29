@@ -2269,8 +2269,9 @@ def get_faces(algorithm="affinity", identifier = None, force = False, gif=False,
 def compare_all_with_eva():
     from imports import load_clusters
     for cluster in load_clusters(identifier="all", onebyone=True):
-        if not cluster.is_all:
+        if not cluster.is_all or cluster.ref_name != "GR":
             continue
+        sprint(cluster.ref_name)
         from faces import GR_dict
         resids = {n:resid for n, resid in enumerate(cluster.outer_ids_complete)}
         #print(resids)
