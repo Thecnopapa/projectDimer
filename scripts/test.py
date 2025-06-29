@@ -19,8 +19,18 @@ tprint("TEST SCRIPT a.k.a THE PATCHER")
 
 
 
+from clustering import *
+get_faces(algorithm="weighted", save=True, force=True ,gif=True)
+quit()
 
+from clustering import get_faces, compare_all_with_eva, cluster_redundancy, get_space_groups, generate_cluster_grids
 
+for cluster in load_clusters("GR", onebyone=True):
+    tprint(cluster.id)
+    cluster.cluster_dihedrals(method="HDBSCAN", show=False)
+    #cluster.pickle()
+
+quit()
 
 
 progress = ProgressBar(len(os.listdir(local.dimers)))
@@ -154,7 +164,7 @@ from clustering import get_faces, compare_all_with_eva, cluster_redundancy, get_
 for cluster in load_clusters("ALL", onebyone=True):
     tprint(cluster.id)
     cluster.cluster_dihedrals(method="HDBSCAN")
-    cluster.pickle()
+    #cluster.pickle()
 
 quit()
 generate_cluster_grids(identifier="ER")

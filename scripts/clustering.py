@@ -1156,6 +1156,7 @@ def plot_dihedrals(path, clusters=None, ax_labels=["0","1","2"], subset_col = No
         ax.set_xlim(0,180)
         ax.set_ylim(0,180)
         ax.set_zlim(0,180)
+        ax.set_aspect('equal')
         title = "{}-{}".format(name,subset)
         ax.set_title(title+" N={}".format(len(df)))
 
@@ -1630,7 +1631,7 @@ class Cluster2:
     def get_plot(subset, cluster_cols, cluster_id, coms=(None,None),stds=(None,None), gif=True, id_labels=False, save=True, show=False, show_outliers=False):
         subset.sort_values(by="id", inplace=True)
         import matplotlib.pyplot as plt
-        fig = plt.figure(figsize=(20,10))
+        fig = plt.figure(figsize=(16,8))
         ax1 = fig.add_subplot(121, projection='3d')
         ax2 = fig.add_subplot(122, projection='3d')
         axes = ax1, ax2
@@ -1667,6 +1668,7 @@ class Cluster2:
             ax.set_ylim(0, 180)
             ax.set_zlim(0, 180)
             ax.set_title(l+" "+title + " N={}".format(len(subset)))
+            ax.set_aspect('equal')
 
         fig_savepath = None
         gif_savepath = None
@@ -2040,9 +2042,10 @@ class Cluster2:
 
     def cluster_dihedrals(self, method="MeanShift", show=False):
         from maths import angle_modulus
+        import matplotlib as mpl
         dihedrals = [list(map(angle_modulus,[row.d0, row.d1, row.d2])) for row in self.subset.itertuples()]
         #print(dihedrals)
-        fig = plt.figure()
+        fig = plt.figure(figsize=(8, 8))
         ax = fig.add_subplot(111, projection="3d")
 
         labels, new_method = quick_cluster(dihedrals, bandwidth = 90, method = method, return_method=True)
@@ -2053,10 +2056,13 @@ class Cluster2:
                 c = "black"
             else:
                 c = "C"+str(l)
-            ax.scatter(*d, color=c)
-        ax.set_aspect('equal')
-        ax.set_title("{} ({}, N={})".format(self.id, new_method, len(dihedrals)))
+            ax.scatter(*d, color=c, s=(mpl.rcParams['lines.markersize'] ** 2) *2)
 
+        ax.set_title("{} ({}, N={})".format(self.id, new_method, len(dihedrals)))
+        ax.set_xlim(0, 360)
+        ax.set_ylim(0, 360)
+        ax.set_zlim(0, 360)
+        ax.set_aspect('equal')
         self.subset.loc[:, "dihedral_cluster"] = labels
         self.cD_list = labels
         self.dihedral_method = method
@@ -2156,6 +2162,7 @@ def get_faces(algorithm="affinity", identifier = None, force = False, gif=False,
         preference_array = normalize1D(preference_array)
         for n, p in enumerate(preference_array):
             print(add_front_0(n, digits=3, zero=" ") + "|" + "#" * round(p * 100) + " " * (100 - round(p * 100)) + "|")
+        preference_array2 = preference_array
         preference_array = normalize1D(preference_array, add_to=1)
         cluster.preference_array = preference_array
         print("-"*102)
@@ -2181,7 +2188,9 @@ def get_faces(algorithm="affinity", identifier = None, force = False, gif=False,
         algorithm = algorithm.lower()
         if algorithm == "affinity":
             from sklearn.cluster import AffinityPropagation
-            model = AffinityPropagation(random_state=6, damping=0.984).fit(coord_array)
+            preference_array2 = [a*100 for a in preference_array2]
+            print(preference_array2)
+            model = AffinityPropagation(random_state=6, damping=0.5, preference=preference_array2).fit(coord_array) # 0.984, 0.96
             labels = model.labels_
             centres = model.cluster_centers_
 
@@ -2201,10 +2210,11 @@ def get_faces(algorithm="affinity", identifier = None, force = False, gif=False,
                 #print((1 - (weight1 + weight2) / 2))
                 return abs(distance(coord1, coord2)) / (1 - (weight1 + weight2) / 2)
             from scipy.cluster.hierarchy import linkage, cut_tree
-            Z = linkage(weighted_array, method='average', metric=custom_metric)
+            Z = linkage(weighted_array, method='weighted', metric=custom_metric)
+            #Z = linkage(weighted_array, method='weighted')
             from scipy.cluster.hierarchy import dendrogram
             print(Z[:,2])
-            D = dendrogram(Z, color_threshold=0.4*max(Z[:,2]))
+            D = dendrogram(Z, color_threshold=0.65*max(Z[:,2]))
             #D = dendrogram(Z, p=4, truncate_mode="level")
             plt.show(block = vars.block)
             leaves = D["leaves"]
