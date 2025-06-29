@@ -355,7 +355,7 @@ if __name__ == "__main__":
         MINIMUM_SCORE = 0,
 
         HEATMAPS = True,
-        GIFS = False,
+        GIFS = True,
         SNAPSHOTS = False,
         CHAINBOWS = False,
         GENERATE_CLUSTERS = False or "clusters" in sys.argv,
