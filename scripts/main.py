@@ -225,7 +225,7 @@ def main(PROCESS_ALL = False,
         if ONLY_GR:
             identifier = "GR"
         else:
-            identifier = "ALL"
+            identifier = "GR"
 
         # ONLY FOR ALL- ALL
         get_faces(algorithm = FACE_ALGORITHM, force=FORCE_ANALYSIS, gif=GIFS)
