@@ -166,10 +166,14 @@ def generate_html():
 
 def show_objects(obj_list, args, mates = False, merged = False,
                  paint_all_faces =True,
-                 face_dict=None):
+                 face_dict=None,
+                 bfactors = None,
+                 outer = False):
 
     merged = "merged" in sys.argv
 
+    if type(obj_list) not in [list, tuple]:
+        obj_list = [obj_list]
 
     for obj in obj_list:
         sprint(obj.id)
@@ -177,7 +181,8 @@ def show_objects(obj_list, args, mates = False, merged = False,
         for key, item in obj.__dict__.items():
             if key in ["lines", "c_lines", "sasas1D", "sasas2D", "full_array","contacts_faces1", "contacts_faces2",
                        "contacts", "contacts_symm", "contacts_sasa", "outer_ids_complete","outer_ids_binary",
-                       "oneDmatrix1", "oneDmatrix2", "atoms", "outer_ids", "cD_list","ref_map", "map_to_ref", "all_mutations1", "all_mutations2", "mutations" ]:
+                       "oneDmatrix1", "oneDmatrix2", "atoms", "outer_ids", "cD_list","ref_map", "map_to_ref",
+                       "all_mutations1", "all_mutations2", "mutations", "preference_array" ]:
                 try:
                     print1(key, ": OMITTED (len: {})".format(len(item)))
                 except:
@@ -241,6 +246,16 @@ def show_objects(obj_list, args, mates = False, merged = False,
                                 for phe in phenotypes:
                                     names.append(pymol_load_path(item, "phe_"+nice_name+"_"+phe))
                         elif "pdb_" in item:
+                            if bfactors is not None:
+                                from Bio.PDB import PDBParser, PDBIO, Structure
+                                structure = PDBParser(QUIET=True).get_structure(nice_name, item)
+                                from clustering import alter_bfactors
+                                for chain in structure.get_chains():
+                                    alter_bfactors(chain, bfactors)
+                                exporter = PDBIO()
+                                exporter.set_structure(structure)
+                                item = os.path.join(local.temp,"temp.pdb")
+                                exporter.save(item)
                             names.append(pymol_load_path(item, nice_name + "_processed"))
 
                         else:
@@ -285,10 +300,13 @@ def show_objects(obj_list, args, mates = False, merged = False,
             for name in names:
                 pymol_format("surface", name, colour="gray")
                 print("Painting:", name, "pain_all_faces:", paint_all_faces)
-                if paint_all_faces:
+                if bfactors is not None:
+                    pymol_colour("blue_yellow_red", name, spectrum="b")
+                elif paint_all_faces and not name.startswith("phe_"):
+                    pymol_format("surface", name, colour="black")
                     if face_dict is not None:
                         from pyMol import pymol_paint_all_faces
-                        pymol_paint_all_faces(obj, face_dict=face_dict)
+                        pymol_paint_all_faces(name, face_dict=face_dict)
                     elif "is_reference" in obj.__dict__.keys():
                         if "best_fit" in obj.__dict__.keys():
                             if obj.best_fit == "GR":
@@ -317,7 +335,11 @@ def show_objects(obj_list, args, mates = False, merged = False,
                         [print(m) for m in obj.mutations]
                         mut_list = [["*", mut.position] for mut in obj.mutations if clean_string(mut.phenotype) == name.split("_")[-1]]
                         [print(m) for m in mut_list]
-                        pymol_paint_contacts(name, mut_list, colour="red", quiet=False)
+                        pymol_paint_contacts(name, mut_list, colour="yellow", quiet=False)
+                        if outer:
+                            inner_list = [["*", pos] for pos in obj.get_outer_res_list(inner=True, id_only = True)]
+                            #[print(m) for m in inner_list]
+                            pymol_paint_contacts(name, inner_list, colour="black", quiet=False)
                 #############################################
                 if "pca" in obj.__dict__.keys():
                     from faces import pca_to_lines
@@ -354,12 +376,18 @@ def show_objects(obj_list, args, mates = False, merged = False,
                 pymol_format("spheres", "neighbour", "all", colour="rainbow", spectrum="b")
                 pymol_format("mesh", "original", "all", colour="white")
                 pymol_format("mesh", "processed", "all", colour="blue")
+
             pymol_set_state(0)
             pymol_orient()
             pymol_show_cell()
             if "mutations" in sys.argv and phenotypes is not None:
+                pymol_hide("(all)")
+                pymol_format("mesh", "phe_")
+                pymol_format("cartoon", "processed")
                 for phe in phenotypes:
-                    pymol_group(identifier = phe)
+                    #pymol_group(identifier = phe)
+                    pass
+
             pymol_group(identifier="pca", name="pcas")
             pymol_disable("pca")
             pymol_group(identifier="face", name="faces")
@@ -450,17 +478,23 @@ if __name__ == "__main__":
 
     elif "ref" in sys.argv[1] and len(sys.argv[2:]) != 0:
         refs = load_list_1by1(identifier="REFERENCE_"+sys.argv[2], pickle_folder=local.refs).list()
-        c_ref = load_clusters(identifier=sys.argv[2]+"-all-all", first_only=True)
-        if c_ref is None or "face_dict" not in c_ref.__dict__.keys():
-            print("Face dict not found in ref_cluster")
-            print("Ref cluster:", c_ref)
-            show_objects(refs, sys.argv[2:])
-        else:
-            print(refs)
-            print(c_ref)
-            sprint(sys.argv[2])
-            tprint("Showing references")
-            show_objects(refs, sys.argv[2:], face_dict=c_ref.face_dict)
+        c_refs = load_clusters(identifier=sys.argv[2]+"-all-all", first_only=False)
+        for c_ref, ref in zip(c_refs, refs):
+            if c_ref is None or "face_dict" not in c_ref.__dict__.keys():
+                print("Face dict not found in ref_cluster")
+                print("Ref cluster:", c_ref)
+                show_objects(ref, sys.argv[2:])
+            else:
+                print(ref)
+                print(c_ref)
+                sprint(sys.argv[2])
+                tprint("Showing references")
+                bfactors =None
+                outer = None
+                if "matrix" in sys.argv:
+                    bfactors = c_ref.preference_array
+
+                show_objects(ref, sys.argv[2:], face_dict=c_ref.face_dict, bfactors = bfactors, outer = True)
 
 
     elif "cluster" == sys.argv[1]:

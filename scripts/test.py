@@ -19,7 +19,24 @@ tprint("TEST SCRIPT a.k.a THE PATCHER")
 
 
 
+
 from clustering import *
+#get_mutation_distribution(force = True)
+for cluster in load_clusters("AR-all-all", onebyone=True):
+    tprint(cluster.id)
+    #cluster.get_matrix(threshold=10, mutations = True)
+    print(cluster.mutations)
+    mutations = [m for m in vars.AR.mutations if m.position in vars.AR.outer_ids and clean_string(m.phenotype) in ["MAIS", "CAIS", "PAIS", "PROSTATECANCER"]]
+    for phe in set([clean_string(m.phenotype) for m in mutations]):
+        sprint(phe)
+        print(list(set([m.position for m in mutations if clean_string(m.phenotype) == phe])))
+        print1(len(list(set([m.position for m in mutations if clean_string(m.phenotype) == phe]))))
+    print(len(cluster.mutations))
+
+quit()
+
+
+
 
 compare_all_with_eva()
 quit()

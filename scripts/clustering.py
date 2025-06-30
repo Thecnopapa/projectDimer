@@ -1074,7 +1074,7 @@ def generate_dihedrals_df(dimer_list = None, force = False):
                 chains = [dimer.monomer1.chain, dimer.monomer2.chain]
                 dihedrals_1to2 = dimer.get_dihedrals(reverse=False)
                 dihedrals_2to1 = dimer.get_dihedrals(reverse=True)
-
+                # Add identical check
                 if dimer.best_fit in dataframes.keys():
                     dataframes[dimer.best_fit].append([dimer.id, True] + chains + dihedrals_1to2 + dihedrals_2to1[3:-1])
                     dataframes[dimer.best_fit].append([dimer.id, False] + chains + dihedrals_2to1 + dihedrals_1to2[3:-1])
@@ -1343,6 +1343,10 @@ def create_clusters(df_path, ref, include_all=True, **kwargs):
     [print1(c) for c in new_clusters]
 
 
+def alter_bfactors(chain, value_list):
+    assert len(chain) == len(value_list)
+    for atom, value in zip(chain.get_atoms(), value_list):
+        atom.bfactor = value
 
 class Cluster2:
     pickle_extension = '.cluster'
@@ -1772,10 +1776,7 @@ class Cluster2:
         self.chains_to_align = chains_to_align
         local["cluster_pdbs"] = "exports/cluster_pdbs"
 
-        def alter_bfactors(chain, value_list):
-            assert  len(chain) == len(value_list)
-            for atom, value in zip(chain.get_atoms(), value_list):
-                atom.bfactor = value
+
 
         super_data = superpose_many_chains(chains_to_align, file_name=self.id + ".pdb", save_folder=local.cluster_pdbs)
         monster_path = super_data["out_path"]
@@ -2286,25 +2287,32 @@ def compare_all_with_eva():
         resids = {n:resid for n, resid in enumerate(cluster.outer_ids_complete)}
         #print(resids)
         eva_scores = {}
-        scores = {}
+        scores = {face: {eva_face: 0 for eva_face in GR_dict.keys()} for face in cluster.face_dict.keys()}
         for eva_face, res_list in GR_dict.items():
             print(eva_face, len(res_list), "-->", end = " ")
             res_list = [r for r in res_list if r in cluster.outer_ids_complete]
             print(len(res_list))
             eva_scores[eva_face] = {}
-            for face in cluster.faces:
-                eva_scores[eva_face][face["name"]] = 0
-                for n, atom in enumerate(cluster.atoms):
-                    if atom["cluster"] == face["C"] and resids[n] in res_list:
-                        eva_scores[eva_face][face["name"]] += 1
-                eva_scores[eva_face][face["name"]] /= len(res_list)
-                eva_scores[eva_face][face["name"]] *= 100
+            print(cluster.faces)
+            for face, face_res in cluster.face_dict.items():
+                eva_scores[eva_face][face] = 0
+                for n, atom in enumerate(face_res):
+                    if atom  in res_list:
+                        eva_scores[eva_face][face] += 1
+                        scores[face][eva_face] += 1
+                eva_scores[eva_face][face] /= len(res_list)
+                eva_scores[eva_face][face] *= 100
             #eva_scores[eva_face] = sorted(eva_scores[eva_face], key=lambda x: x)
         sprint("EVA scores:")
         for key, values in eva_scores.items():
             print1(key, values)
             for k, v in values.items():
                 print2("{}: {}".format(k, v))
+        for key, values in scores.items():
+            print1(key, values)
+
+            for k, v in values.items():
+                print2("{}: {}".format(k, v/len(cluster.face_dict[key])*100))
 
 
 def generate_cluster_grids(identifier="GR", use_faces="generated", piecharts = True, face_algorithm=None, plot=True):

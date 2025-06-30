@@ -356,7 +356,7 @@ if __name__ == "__main__":
 
         HEATMAPS = True,
         GIFS = False,
-        SNAPSHOTS = True,
+        SNAPSHOTS = False,
         CHAINBOWS = False,
         GENERATE_CLUSTERS = False or "clusters" in sys.argv,
         DELETE_PREVIOUS = False or "delete" in sys.argv,
