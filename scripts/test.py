@@ -19,19 +19,32 @@ tprint("TEST SCRIPT a.k.a THE PATCHER")
 
 
 
-
+from visualisation import *
 from clustering import *
 #get_mutation_distribution(force = True)
 for cluster in load_clusters("AR-all-all", onebyone=True):
     tprint(cluster.id)
+    data = {}
     #cluster.get_matrix(threshold=10, mutations = True)
     print(cluster.mutations)
     mutations = [m for m in vars.AR.mutations if m.position in vars.AR.outer_ids and clean_string(m.phenotype) in ["MAIS", "CAIS", "PAIS", "PROSTATECANCER"]]
     for phe in set([clean_string(m.phenotype) for m in mutations]):
         sprint(phe)
-        print(list(set([m.position for m in mutations if clean_string(m.phenotype) == phe])))
-        print1(len(list(set([m.position for m in mutations if clean_string(m.phenotype) == phe]))))
-    print(len(cluster.mutations))
+
+        positions = list(set([m.position -1 for m in mutations if clean_string(m.phenotype) == phe]))
+        print1(len(positions))
+        if phe == "PROSTATECANCER":
+            phe = "PROSTATE\nCANCER"
+        data[phe] = {}
+        for face, face_res in cluster.face_dict.items():
+            #print(face_res)
+            #print1(positions)
+
+            face_muts = [pos for pos in positions if pos in face_res]
+            print2(face, len(face_muts))
+            data[phe][face] = len(face_muts)
+    nested_piechart(data=data, legends=False, label_distances=[0.6, 0.8] ,figsize=(10,8))
+
 
 quit()
 
