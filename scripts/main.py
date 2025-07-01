@@ -225,7 +225,7 @@ def main(PROCESS_ALL = False,
         if ONLY_GR:
             identifier = "GR"
         else:
-            identifier = "ALL"
+            identifier = "ER"
 
         # ONLY FOR ALL- ALL
         get_faces(algorithm = FACE_ALGORITHM, force=FORCE_ANALYSIS, gif=GIFS)
@@ -356,7 +356,7 @@ if __name__ == "__main__":
 
         HEATMAPS = True,
         GIFS = False,
-        SNAPSHOTS = False,
+        SNAPSHOTS = True,
         CHAINBOWS = False,
         GENERATE_CLUSTERS = False or "clusters" in sys.argv,
         DELETE_PREVIOUS = False or "delete" in sys.argv,

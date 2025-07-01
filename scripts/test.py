@@ -21,6 +21,14 @@ tprint("TEST SCRIPT a.k.a THE PATCHER")
 
 from visualisation import *
 from clustering import *
+
+
+generate_cluster_grids(identifier="ER")
+
+
+
+
+
 #get_mutation_distribution(force = True)
 for cluster in load_clusters("AR-all-all", onebyone=True):
     tprint(cluster.id)

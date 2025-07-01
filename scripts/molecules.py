@@ -1060,7 +1060,7 @@ class Reference(Monomer):
         self.replaced = self.structure
         self.chain = self.structure.id
         self.structure.id = self.chain
-        self.id = "reference_{}_{}".format(self.name, self.chain)
+        self.id = "{}_{}".format(self.name, self.chain)
         self.is_reference = True
         self.export()
 

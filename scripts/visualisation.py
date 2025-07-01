@@ -91,13 +91,13 @@ def nested_piechart(data:dict, title= None, folder=None, legends=True, **kwargs)
     try:
         colors1 = [mpl_colours[value] for value in labels1]
     except:
-        color_dict1 = {key: mpl_colours[n%mpl_ncolours] for n, key in enumerate(sorted(set(labels1)))}
+        color_dict1 = {key: mpl_colours[n+1%mpl_ncolours] for n, key in enumerate(sorted(set(labels1)))}
 
         colors1 = [color_dict1[value] for value in labels1]
     try:
         colors2 = [mpl_colours[value] for value in labels2]
     except:
-        color_dict2 = {key: mpl_colours[n % mpl_ncolours] for n, key in enumerate(sorted(set(labels2)))}
+        color_dict2 = {key: mpl_colours[n+1 % mpl_ncolours] for n, key in enumerate(sorted(set(labels2)))}
         colors2 = [color_dict2[value] for value in labels2]
 
     try:
@@ -315,7 +315,7 @@ def show_objects(obj_list, args, mates = False, merged = False,
                 pymol_format("surface", name, colour="gray")
                 print("Painting:", name, "pain_all_faces:", paint_all_faces)
                 if bfactors is not None:
-                    pymol_colour("blue_yellow_red", name, spectrum="b")
+                    pymol_colour("white_yellow_red", name, spectrum="b")
                 elif paint_all_faces and not name.startswith("phe_"):
                     pymol_format("surface", name, colour="black")
                     if face_dict is not None:
