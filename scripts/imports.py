@@ -8,6 +8,70 @@ from molecules import PDB, Monomer,Reference
 
 
 
+
+def filter_grep_cryst(grepfile):
+    blacklist = []
+    whitelist = []
+    def parse_grep_line(line):
+        values = [val for val in line.split(" ")[1:] if val != ""]
+        if line.split(":")[1][:6] != "CRYST1":
+            return None
+        #print(line.split(":")[1][:6], "CRYST1", line.split(":")[1][:6] != "CRYST1")
+        r =  dict(name = line.split(".")[0],
+                    line_header = line.split(":")[1][:6],
+                    cell_params = [float(v) for v in values[:3]],
+                    angles = values[3:6],
+                    group = values[6:-1]
+                    )
+        #print(r)
+        return r
+    with open(grepfile, "r") as f:
+        total = sum([1 for _ in f])
+
+
+    with open(grepfile, "r") as f:
+        progress = ProgressBar(total)
+        for line in f:
+            print(line)
+            progress.add(info=line.split(".")[0])
+            new = parse_grep_line(line)
+            if new is None:
+
+                continue
+            #print(new)
+            progress.add(info=new["name"])
+            if whitelist == []:
+                whitelist.append(new)
+                continue
+            blacklisted = False
+            for done in whitelist.copy():
+                params1 = done["cell_params"]
+                params2 = new["cell_params"]
+
+                #print([done["group"] != new["group"]])
+                if done["group"] == new["group"]:
+                    for p1, p2 in zip(params1, params2):
+                        threshold = (p1 + p2)/2 * 0.03
+                        if abs(p1-p2) <= threshold:
+                            blacklist.append(new["name"])
+                            print(params1, params2)
+                            blacklisted = True
+                            break
+            if not blacklisted:
+                whitelist.append(new)
+
+    print("Whitelist:", len(whitelist))
+    print("Blacklist:", len(blacklist))
+    with open(grepfile.split(".")[0]+"_blacklist", "w") as f:
+        for b in blacklist:
+            f.write(b+"\n")
+
+
+
+
+
+
+
 def load_pickles(folder, extension = (".pickle"), ignore_selection = False):
     print1("Looking for pickles in {}, with extension: {}".format(
         folder, extension))
@@ -111,6 +175,7 @@ def load_clusters(identifier = "all", onebyone=False, **kwargs):
 
 
 def load_list_1by1(identifier = None, id_list=None, quiet=True, ignore_do_only=False, keep_extension=False, **kwargs):
+    kwargs["keep_extension"] = keep_extension
     if id_list is None:
         assert "pickle_folder" in kwargs, "pickle folder or id list must be provided"
         id_list = os.listdir(kwargs["pickle_folder"])
@@ -121,11 +186,13 @@ def load_list_1by1(identifier = None, id_list=None, quiet=True, ignore_do_only=F
             id_list = [f for f in id_list if any([s in f for s in vars.do_only])]
     if identifier is not None:
         identifier = identifier.upper()
+        if not keep_extension:
+            identifier = identifier.split(".")[0]
         id_list = [f for f in id_list if (identifier == "ALL" or identifier in f.upper()) and "lock" not in f and not any([bl in f for bl in vars.blacklist])]
     #print(id_list)
     return iter(PickleIterator(id_list, quiet, **kwargs))
 
-def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None, force_reload=False, object_class = PDB, quiet=False, first_only=False, **kwargs):
+def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None, force_reload=False, object_class = PDB, quiet=False, first_only=False, keep_extension = True, **kwargs):
     if not quiet:
         print1("Loading single:", identifier, "-Force reload:", force_reload, "-Pickle folder:", pickle_folder)
     objects = []
@@ -134,7 +201,11 @@ def load_single_pdb(identifier = "all", pickle_folder = None, pdb_folder = None,
         if not quiet:
             print2("Loading PDB pickle from:", pickle_folder)
         for file in os.listdir(pickle_folder):
-            if (identifier == "ALL" or identifier in file.upper()) and "lock" not in file and not any([bl in file for bl in vars.blacklist]):
+            if not keep_extension:
+                file_name = file.split(".")[0]
+            else:
+                file_name = file
+            if (identifier == "ALL" or identifier in file_name.upper()) and "lock" not in file and not any([bl in file for bl in vars.blacklist]):
                 p = unpickle(os.path.join(pickle_folder, file))
                 try:
                     p.restore_dfs()

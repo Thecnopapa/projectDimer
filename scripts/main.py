@@ -177,7 +177,7 @@ def main(PROCESS_ALL = False,
                             continue
                         print(file, end="\r")
                         os.remove(os.path.join(local.cluster_pickles, file))
-            generate_dihedrals_df(force=False or PROCESS_ALL)
+            generate_dihedrals_df(force=False or PROCESS_ALL or GENERATE_CLUSTERS)
 
             for file in sorted(os.listdir(root.dihedrals)):
                 sprint("Clustering1")

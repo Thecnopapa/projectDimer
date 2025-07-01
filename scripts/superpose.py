@@ -31,6 +31,7 @@ def superpose_multiple(path_list, file_name="GESAMT_multiple_superposition.pdb",
     return data
 
 def superpose_many_chains(align_dict, file_name="GESAMT_multiple_superposition.pdb", save_folder=None):
+    print("Superposing with GESAMT", len(align_dict.keys()), "structures")
     import subprocess
     if save_folder is None:
         save_folder = local.temp

@@ -61,10 +61,11 @@ vars.log.log("SYS ARGV:", sys.argv)
 
 
 vars["blacklist"] = []
-if "blacklist" in os.listdir(root.pdb_lists):
-    with open(os.path.join(root.pdb_lists, "blacklist"), "r") as f:
-        for line in f:
-            vars["blacklist"].append(line)
+for file in os.listdir(root.pdb_lists):
+    if "blacklist" in file:
+        with open(os.path.join(root.pdb_lists, file), "r") as f:
+            for line in f:
+                vars["blacklist"].append(clean_string(line))
 vars.log.log("BLACKLIST:", vars.blacklist)
 
 if "force" in sys.argv or "-f" in sys.argv:

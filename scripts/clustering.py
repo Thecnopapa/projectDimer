@@ -2,6 +2,7 @@ import os, sys
 
 from matplotlib import pyplot as plt
 
+from imports import load_list_1by1
 from utilities import *
 from Globals import root, local, vars
 import numpy as np
@@ -1066,8 +1067,9 @@ def generate_dihedrals_df(dimer_list = None, force = False):
         dataframes = {}
         for d in dimer_list:
             dimers = load_single_pdb(d, pickle_folder=local.dimers, quiet=True)
+            print(dimers)
             for dimer in dimers:
-
+                print(dimer.id)
                 if dimer.best_fit is None or dimer.best_fit =="Missmatch":
                     progress.add(info=dimer.id)
                     continue
@@ -1753,7 +1755,8 @@ class Cluster2:
         from imports import load_references, load_single_pdb
         from superpose import superpose_many_chains
         from Bio.PDB import PDBParser, PDBIO, Structure
-        ref = load_references(identifier=self.ref_name)[0]
+        ref = load_single_pdb(identifier=self.ref_name, pickle_folder=local.refs, first_only=True, keep_extension=False)
+        assert ref.name == self.ref_name
         self.subset.sort_values(by="id", inplace=True)
         print(self.subset)
         #DEVELOPMENT
@@ -1762,7 +1765,10 @@ class Cluster2:
             self.pickle()
         chains_to_align = {ref.name: (ref.path, ref.chain, True, False, 0, -1)}
         for n, row in enumerate(self.subset.itertuples()):
-            dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)[0]
+            try:
+                dimer = load_single_pdb(identifier=row.id, pickle_folder=local.dimers, quiet=True)[0]
+            except:
+                continue
             name = row.id + str(row.is1to2)
             is1to2 = row.is1to2
             if row.reversed:
@@ -1882,7 +1888,7 @@ class Cluster2:
                 pymol_paint_single_face(chains_to_align, self.faces[face_colours][0][0], self.faces[face_colours][1][0], color_dict=color_dict)
                 extra_id = "_faces_{}".format(face_colours)
 
-            if not self.is_all and snapshot:
+            if not self.is_all and snapshot and "no_snapshot" not in sys.argv:
                 if self.snapshot_path is None or type(self.snapshot_path) is str:
                     self.snapshot_path = {}
                 local[extra_id] = "snapshots/{}".format(extra_id)
