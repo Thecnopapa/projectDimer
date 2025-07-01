@@ -22,6 +22,12 @@ tprint("TEST SCRIPT a.k.a THE PATCHER")
 from visualisation import *
 from clustering import *
 
+
+print(vars.blacklist)
+print(len(vars.blacklist))
+
+
+quit()
 filter_grep_cryst(os.path.join(root.pdb_lists, "full_list.txt"))
 quit()
 generate_cluster_grids(identifier="ER")
