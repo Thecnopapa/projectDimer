@@ -1,9 +1,37 @@
-# projectB
-**Iain Visa** @ IBMB-CSIC
-## Instructions:
+# ProjectDimer
+A tool for protein-protein interaction classification.
+<br>
+<br>
 
-- Install dependencies from `environment.txt`
-- Run `main.py`
+
+**Iain Visa** @ Universitat de Barcelona / IBMB-CSIC
+<br>
+<br>
+<br>
+
+## Installation: 
+In a Linux `bash` terminal (Windows not fully tested): 
+- Clone this repository wherever you like.
+- Download and install [conda](https://www.anaconda.com).
+- Follow instructions in `environment.txt` to setup the environment.
+- Source `bashrc.project` by adding the following snippet at the end of your `.bashrc` file:
+  ```
+  
+  FOLDER_PATH = "/path/to/.../projectDimer"
+  projectDimer(){
+      if [ -f $FOLDER_PATH/bashrc.project ]; then
+          source $FOLDER_PATH/bashrc.project
+      
+      fi
+  }
+  ```
+- Restart the shell (`bash` or `exec bash`).
+- Type `projectDimer`.
+- `run` and `show` commands should now be available.
+
+
+
+
 
 ## To see data/results 
 - Run `visualisation.py` with the following commands:
