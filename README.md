@@ -51,7 +51,7 @@ The main generated plots and images can be found in `localdata/projectDimer/`. T
 │   ├── charts
 │   └── dataframes
 ├──localdata
-    └── projectDimer
+.   └── projectDimer
         ├── images
         │   ├── clusters_by_face (clusters PyMol snapshots, by their interacting regions)
         │   ├── dihedral_figs (angles of clusters)
