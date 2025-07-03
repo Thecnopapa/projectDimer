@@ -3,9 +3,7 @@ A tool for protein-protein interaction classification.
 <br>
 <br>
 
-
 **Iain Visa** @ Universitat de Barcelona / IBMB-CSIC
-<br>
 <br>
 <br>
 
