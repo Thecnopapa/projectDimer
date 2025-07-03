@@ -43,7 +43,17 @@ To set up your desired dataset:
 - Execute main script with `run main`
 
 ## Visualising results
+The `show` command alows visualisation of the main elements of interest:
+- `molecule`
+- `monomer`
+- `dimer`
+- `cluster`
 
+Each element has a unique ID within its category, for example:
+- `molecule`: 1M2Z
+- `monomer`: 1M2Z_A, 1M2Z_A_2_000 
+- `dimer`: 1M2Z_A
+- `cluster`
 ## To see data/results 
 - Run `visualisation.py` with the following commands:
   * `dimer`/s + the dimer id, e.g. `1M2Z_AB'

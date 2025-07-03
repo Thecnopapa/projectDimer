@@ -190,7 +190,7 @@ def show_objects(obj_list, args, mates = False, merged = False,
         obj_list = [obj_list]
 
     for obj in obj_list:
-        sprint(obj.id)
+        #sprint(obj.id)
         #print(obj.__dict__)
         for key, item in obj.__dict__.items():
             if key in ["lines", "c_lines", "sasas1D", "sasas2D", "full_array","contacts_faces1", "contacts_faces2",
@@ -474,7 +474,7 @@ if __name__ == "__main__":
 
     if "dimer" in sys.argv[1] and len(sys.argv[2:]) != 0:
         vars["do_only"] = sys.argv[2:]
-        dimers = load_list_1by1(sys.argv[2], pickle_folder=local.dimers)
+        dimers = load_list_1by1(sys.argv[2], pickle_folder=local.dimers, as_list=True)
         tprint("Showing dimers")
         show_objects(dimers, sys.argv[2:])
 
