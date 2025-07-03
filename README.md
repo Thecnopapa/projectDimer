@@ -27,11 +27,22 @@ In a Linux `bash` terminal (Windows not fully tested):
   ```
 - Restart the shell (`bash` or `exec bash`).
 - Type `projectDimer`.
+- You should see printed:
+  ```
+  projectDimer path is: /path/to/.../projectDimer
+  ```
 - `run` and `show` commands should now be available.
 
 
+## Configuration
+To set up your desired dataset:
+- Save a`comma`separated list of PDB entries (can be downloaded from a query in the PDB) to the `data/pdb_lsits` folder.
+- Tweak all desired parameters in the config.txt file (WIP).
+- Set up file system with `run setup`.
+- To manually add PDB files for analysis add them to the `localdata/projectDimer/many_pdbs` folder if not changed.
+- Execute main script with `run main`
 
-
+## Visualising results
 
 ## To see data/results 
 - Run `visualisation.py` with the following commands:
