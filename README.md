@@ -43,7 +43,7 @@ To set up your desired dataset:
 - Execute main script with `run main`
 
 ## Visualising results
-All generated plots and images can be found in `localdata/projectDimer/`:
+The main generated plots and images can be found in `localdata/projectDimer/`. The following file structure shows were to fain some of these:
 ```
 
 .
