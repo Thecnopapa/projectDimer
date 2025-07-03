@@ -35,6 +35,8 @@ alias ....="cd ../../.."
 alias cloc="find . -name '*.py' | xargs wc -l"
 # alias cloc="cloc scripts/*.py --by-file --exclude-list-file=cloc_exclude.txt" # please apt-get install cloc
 
+alias tree="(tree -tf --noreport -I '*~' --charset ascii $1 | sed -e 's/| \+/  /g' -e 's/[|`]-\+/ */g' -e 's:\(* \)\(\(.*/\)\([^/]\+\)\):\1[\4](\2):g')"
+
 
 alias top="echo -en \"\033]0;Top\a\" && top"
 

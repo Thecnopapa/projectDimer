@@ -190,7 +190,7 @@ def show_objects(obj_list, args, mates = False, merged = False,
         obj_list = [obj_list]
 
     for obj in obj_list:
-        #sprint(obj.id)
+        sprint(obj.id)
         #print(obj.__dict__)
         for key, item in obj.__dict__.items():
             if key in ["lines", "c_lines", "sasas1D", "sasas2D", "full_array","contacts_faces1", "contacts_faces2",

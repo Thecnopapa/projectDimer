@@ -43,30 +43,65 @@ To set up your desired dataset:
 - Execute main script with `run main`
 
 ## Visualising results
-The `show` command alows visualisation of the main elements of interest:
-- `molecule`
-- `monomer`
-- `dimer`
-- `cluster`
+All generated plots and images can be found in `localdata/projectDimer/`:
+```
 
+.
+├──projectDimer (repository)
+│   ├── charts
+│   └── dataframes
+├──localdata
+    └── projectDimer
+        ├── images
+        │   ├── clusters_by_face (clusters PyMol snapshots, by their interacting regions)
+        │   ├── dihedral_figs (angles of clusters)
+        │   ├── heatmaps (interaction surface matrixes)
+        │   └── res_cords (mpl: interaction surface 3D representation)
+        └── snapshots
+            ├── _faces_generated (PyMol snapshots of each cluster, default)
+            └── ... (other requested cluster snapshots)
+
+```
+The `show` command allows visualisation of the main elements of interest.
 Each element has a unique ID within its category, for example:
 - `molecule`: 1M2Z
+- `ref`: GR
 - `monomer`: 1M2Z_A, 1M2Z_A_2_000 
-- `dimer`: 1M2Z_A
-- `cluster`
-## To see data/results 
-- Run `visualisation.py` with the following commands:
-  * `dimer`/s + the dimer id, e.g. `1M2Z_AB'
-  * `clusters-eva` to see clusters from Eva's classification
-  * `clusters-cc` to see clusters from CC analysis + KMeans
-  * `clusters-score`/s to see how (GR only) clusters compare between methods
+- `dimer`: 1M2Z_Aa_2_000
+- `cluster` GR-02-00
+
+The general command format is:  
+`show` `[category]` `ID` `option1` `option2` `...`  
 
 
-## Current clustering for GR
-![GR_cc_clustered.png](images/cc/GR_cc.png)
+Extra `options` to tweak the display are:
+- `pymol` to display th entity with PyMol (with `cluster`, must add `session` to keep the interactive session open)
+- `mpl` shows `matplotlib` representation (if available)
+- `plot` might display some related plots
+- `c=[colour]` to colour PyMol representations (if available), `colour` = any PyMol colour, or `matrix`, or `mutations` 
 
-## Current Data distribution:
-![GR_similarity.png](charts/Classified Similarities of GR.png)
-![monomers_df.png](charts/monomers_df.png)
-![failed_df.png](charts/failed_df.png)
+
+## Tweaking results
+Results can be partially regenerated with new parameters.  
+To do so modify the config.txt file with the desired parameters (WIP).  
+And then execute the `run main` command with the any of the following keywords:
+- `force` to redo EVERYTHING.
+- `dimers` to reprocess dimers
+- `clusters` to regenerate clusters
+- `reprocess` to reanalyse clusters
+- `replot` to regenerate all figures
+- `delete` to delete all previously generated clusters, and regenerate them
+
+
+
+
+
+
+
+
+
+
+
+
+
 
