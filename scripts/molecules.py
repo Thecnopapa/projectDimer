@@ -1088,7 +1088,7 @@ class Reference(Monomer):
                         mutation.is_outer=True
                     else:
                         mutation.is_outer=False
-                print(mutation)
+                #print(mutation)
 
 
 

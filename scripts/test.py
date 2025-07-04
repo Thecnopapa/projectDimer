@@ -23,6 +23,26 @@ from visualisation import *
 from clustering import *
 
 
+
+
+get_faces(identifier = "GR", algorithm="weighted", show=True, save=False, force=True)
+
+
+
+
+quit()
+
+
+
+
+
+
+
+
+
+
+
+
 print(vars.blacklist)
 print(len(vars.blacklist))
 

@@ -60,14 +60,16 @@ def main(PROCESS_ALL = False,
          PLOT_DIHEDRALS = False,
          DIHEDRAL_ALGORITHM  = "MeanShift",
          FACE_ALGORITHM = "affinity",
-         FORCE_ANALYSIS = False
+         FORCE_ANALYSIS = False,
+         IGNORE_BLACKLIST = False
          ):
 
 
     ###### SET UP ######################################################################################################
     tprint("SET UP")
 
-
+    if IGNORE_BLACKLIST:
+        vars.blacklist = []
 
     vars["do_only"] = DO_ONLY
     #vars["verbose"] = VERBOSE
@@ -367,6 +369,7 @@ if __name__ == "__main__":
         PLOT_DIHEDRALS = False or "dihedrals" in sys.argv,
         DIHEDRAL_ALGORITHM  = "HDBSCAN",
         FORCE_ANALYSIS = True,
+        IGNORE_BLACKLIST = True,
 
 
         )
