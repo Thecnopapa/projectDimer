@@ -491,7 +491,7 @@ if __name__ == "__main__":
         show_objects(molecules, sys.argv[2:])
 
     elif "ref" in sys.argv[1] and len(sys.argv[2:]) != 0:
-        refs = load_list_1by1(identifier="REFERENCE_"+sys.argv[2], pickle_folder=local.refs).list()
+        refs = load_list_1by1(identifier=sys.argv[2], pickle_folder=local.refs).list()
         c_refs = load_clusters(identifier=sys.argv[2]+"-all-all", first_only=False)
         for c_ref, ref in zip(c_refs, refs):
             if c_ref is None or "face_dict" not in c_ref.__dict__.keys():
