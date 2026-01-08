@@ -8,6 +8,9 @@ A tool for protein-protein interaction classification.<br>
 <br>
 <br>
 
+
+**Currently under re-editing and improvements as part of the [bioiain](https://github.com/Thecnopapa/bioiain) python package**
+
 ## Installation: 
 In a Linux `bash` terminal (Windows not fully tested): 
 - Clone this repository wherever you like.
