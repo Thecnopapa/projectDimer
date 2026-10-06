@@ -9,35 +9,12 @@
 #fi
 
 
-echo "projectDimer path is: $FOLDER_PATH"
-cd $FOLDER_PATH
+echo "projectDimer path is: $PROJECT_PATH"
+cd $PROJECT_PATH
 conda activate py312np2 || conda activate biop
-alias show="python $FOLDER_PATH/scripts/visualisation.py"
+alias show="python $PROJECT_PATH/scripts/visualisation.py"
 
 run(){
-        python $FOLDER_PATH/scripts/$1.py $@
+        python $PROJECT_PATH/scripts/$1.py $@
 }
 
-diagram(){
-    if [ $2 == ""]; then
-        python $FOLDER_PATH/scripts/diagram.py $1 $2 && xdg-open /cri4/iain/projectB/diagrams/$1/all.html
-    else
-        python $FOLDER_PATH/scripts/diagram.py $1 $2 && xdg-open /cri4/iain/projectB/diagrams/$1/$2.html
-    fi
-}
-
-
-alias bashrc="vim ~/.bashrc"
-alias ..="cd .."
-alias ...="cd ../.."
-alias ....="cd ../../.."
-
-#alias cloc="find . -name '*.py' | xargs wc -l"
-alias cloc="cloc scripts/*.py --by-file --exclude-list-file=cloc_exclude.txt | echo 'please apt-get install cloc'"
-
-alias tree="tree -tf --noreport -I '*~' --charset ascii $1 | echo 'please apt-get install tree'"
-
-
-alias top="echo -en \"\033]0;Top\a\" && top"
-
-alias please="sudo"
