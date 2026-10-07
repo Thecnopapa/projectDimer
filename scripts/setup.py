@@ -28,7 +28,6 @@ except:
     pass
 
 
-print(os.environ)
 setup(os.path.realpath(os.environ["PROJECT_PATH"]))
 
 #### Set up essential folders ###

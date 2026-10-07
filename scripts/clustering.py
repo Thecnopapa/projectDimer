@@ -965,6 +965,10 @@ def plot_clustered_pcas(reference, force=True, dimensions = 3, pca_dimensions = 
 
 
 def quick_cluster(coords, n_clusters=3, method ="MeanShift",bandwidth = None, min_cluster=None, return_method=False):
+    print("clustering.quick_cluster")
+    check = input("WARNING!: This might crash yoour computer!!\nType CONTINUE if you want to risk it:\n>>> ")
+    if check.strip().upper() != "CONTINUE":
+        exit(1)
     if len(coords) == 1 or method is None:
         print1("No clustering for 1 sample or no algorith provided: n={} a={}".format(len(coords), method))
         r = [0]*len(coords)
