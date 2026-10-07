@@ -344,7 +344,7 @@ if __name__ == "__main__":
         # Clustering, from SM to plotting
         SKIP_CLUSTERING=False and "clustering" not in sys.argv, # Skip th entire block (overridden by PROCESS_ALL)
         FORCE_CLUSTERING=True,  # Force clustering if already calculated (overridden by PROCESS_ALL)
-        ONLY_GR = False, # Whether to only cluster GR
+        ONLY_GR = True, # Whether to only cluster GR
         REMOVE_REDUNDANCY = True,
         CLUSTERING_METHOD = "MeanShift",
         QUANTILE= 0.1,
@@ -357,7 +357,7 @@ if __name__ == "__main__":
         MINIMUM_SCORE = 0,
 
         HEATMAPS = True,
-        GIFS = True,
+        GIFS = False,
         SNAPSHOTS = True,
         CHAINBOWS = False,
         GENERATE_CLUSTERS = False or "clusters" in sys.argv,

@@ -1,13 +1,14 @@
 
-numpy=2
+
 biopython
-pymol-bundle
+pymol-open-source
 pandas
 matplotlib
 unidecode
 scikit-learn
 xlrd
 subprocess.run
+
 
 # Not essential
 adjustText

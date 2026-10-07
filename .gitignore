@@ -2,16 +2,30 @@
 __pycache__/
 
 
+# Cache
+*.~lock
+*0-coot*
+*__rasmol.script
+*__view_structure.pdb
 
-# User defined
-*previews/*
-*secure/*
+
+# Bulk
+*logs/*
+*exports/*
+*pickles/*
+*superposed/*
+*many_pdbs/*
+
+
+# Heavy
 *dataframes/*
 *diagrams/*
 *charts/*
-*data/experimental/*
+*previews/*
 *images/*
+
+# Other
+*secure/*
+*data/experimental/*
 *nohup.out
-.idea/*
-*.~lock
-*0-coot*
+*.idea/*

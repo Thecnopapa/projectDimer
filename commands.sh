@@ -1,4 +1,6 @@
 
+export PROJECT_PATH=$PROJECT_PATH
+
 run(){
         python $PROJECT_PATH/scripts/$1.py "$@""
 }

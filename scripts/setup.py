@@ -28,16 +28,8 @@ except:
     pass
 
 
-if os.name == "nt":
-    setup("C:/Users/iainv/localdata/projectDimer")
-elif "cri4" in __file__:
-    setup("/localdata/iain/localdata/projectDimer")
-elif "EMERALD" in platform.node():
-    setup()
-elif "GARNET" in platform.node():
-    setup("/mnt/d/localdata/projectDimer")
-else:
-    setup()
+print(os.environ)
+setup(os.path.realpath(os.environ["PROJECT_PATH"]))
 
 #### Set up essential folders ###
 from Globals import root, local, vars

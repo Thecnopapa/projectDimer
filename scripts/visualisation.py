@@ -51,6 +51,7 @@ def generate_piechart(df_name:str = None, column = None, extra_data:dict[str, in
     fig.legend(title="Best Fit:", labels=labels, loc="lower right")
 
     if folder is None:
+        root["charts"] = "charts"
         folder = root.charts
     fig_path = os.path.join(folder, fig_name)
     fig.savefig(fig_path)

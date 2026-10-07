@@ -1,2 +1,4 @@
 python=3.12
 pip
+numpy=2
+setuptools=80
