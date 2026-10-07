@@ -1,0 +1,16 @@
+
+numpy=2
+biopython
+pymol-bundle
+pandas
+matplotlib
+unidecode
+scikit-learn
+xlrd
+subprocess.run
+
+# Not essential
+adjustText
+
+# Graphics
+pyflowchart
